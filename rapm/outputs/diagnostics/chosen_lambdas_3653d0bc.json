@@ -1,0 +1,18 @@
+{
+  "search_mode": "ridgecv",
+  "alpha_chosen": 500.0,
+  "best_lambdas": {
+    "lam_off": 500.0,
+    "lam_def": 500.0,
+    "lam_home": 25.0,
+    "lam_rb": 250.0,
+    "lam_playoff": 125.0,
+    "lam_b2b": 125.0,
+    "lam_coach": 500.0
+  },
+  "seasons": [
+    2024,
+    2025
+  ],
+  "window_label": "custom2024-2025"
+}

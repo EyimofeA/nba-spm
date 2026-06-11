@@ -1,0 +1,29 @@
+{
+  "career_csv": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/career/career_rapm_1year.csv",
+  "seasons": [
+    1997,
+    2024
+  ],
+  "n_player_seasons": 13417,
+  "n_players": 2651,
+  "n_deltas": 10621,
+  "n_observed_deltas": 9164,
+  "n_exit_deltas": 1457,
+  "age_min": 19,
+  "age_max": 40,
+  "ref_age": 27,
+  "delta_min_poss": 500,
+  "peak_age_min": 23,
+  "peak_age_max": 34,
+  "exit_weight": 0.25,
+  "exit_target": 0.0,
+  "smooth_frac": 0.4,
+  "elapsed_seconds": 7.3429248332977295,
+  "outputs": {
+    "curve": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/career_age_model_aging_curve.csv",
+    "player_seasons": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/career_age_model_player_seasons.csv",
+    "peak": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/career_age_model_peak.csv",
+    "peak_3yr": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/career_age_model_peak_3yr.csv",
+    "summary": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/career_age_model_summary.csv"
+  }
+}

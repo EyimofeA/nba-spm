@@ -1,0 +1,65 @@
+
+=== rapm_core run c825fd59 | 3yr | seasons [2022, 2023, 2024] ===
+Fetching possessions from MySQL...
+  fetched 766,112 possessions in 15.5s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (766112, 1641)  nnz = 9,236,327
+
+Exhaustive per-block lambda grid search...
+  grid combos: 16   folds: 3   total fits: 48
+  off grid: [750.0, 1500.0, 2500.0, 4000.0]
+  def grid: [1500.0, 3000.0, 4500.0, 6000.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/16]  off=750 def=1500  rmse=1.18817  (2s / est 26s)
+    [   2/16]  off=750 def=3000  rmse=1.18812  (3s / est 26s)
+    [   3/16]  off=750 def=4500  rmse=1.18812  (5s / est 27s)
+    [   4/16]  off=750 def=6000  rmse=1.18813  (7s / est 27s)
+    [   5/16]  off=1500 def=1500  rmse=1.18812  (9s / est 28s)
+    [   6/16]  off=1500 def=3000  rmse=1.18808  (11s / est 29s)
+    [   7/16]  off=1500 def=4500  rmse=1.18808  (13s / est 29s)
+    [   8/16]  off=1500 def=6000  rmse=1.18809  (14s / est 29s)
+    [   9/16]  off=2500 def=1500  rmse=1.18812  (17s / est 30s)
+    [  10/16]  off=2500 def=3000  rmse=1.18808  (19s / est 30s)
+    [  11/16]  off=2500 def=4500  rmse=1.18807  (20s / est 30s)
+    [  12/16]  off=2500 def=6000  rmse=1.18808  (22s / est 29s)
+    [  13/16]  off=4000 def=1500  rmse=1.18815  (24s / est 29s)
+    [  14/16]  off=4000 def=3000  rmse=1.18810  (26s / est 29s)
+    [  15/16]  off=4000 def=4500  rmse=1.18810  (28s / est 30s)
+    [  16/16]  off=4000 def=6000  rmse=1.18811  (30s / est 30s)
+
+  best combo: off=2500  def=4500
+  best rmse:  1.18807  (±0.00100 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+
+Computing Jacobs standard errors (closed-form)...
+  σ² = 2.73248  dof = 764473
+
+Diagnostics: condition number + regularization path...  condition number = nan
+  reg path → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/diagnostics/reg_path_09d33a81.csv
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_3yr_2022-23-24_optimal_3yr.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_3yr_2022-23-24.csv  (819 players)
+Top 15:
+                   Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def   VORP  Off_SE  Def_SE  RAPM_SE  Off_CI_lo  Off_CI_hi  Def_CI_lo  Def_CI_hi  RAPM_CI_lo  RAPM_CI_hi     Season
+           Nikola Jokic     203999 33.94 30-35     17418     17290 8.504 -3.303 11.807       -0.884       -2.451     9.388    -0.852 10.240   1.896   1.632    2.505      4.788     12.220     -6.501     -0.105       6.897      16.716 2022-23-24
+  Giannis Antetokounmpo     203507 33.47 30-35     15381     15337 6.219 -3.589  9.807       -0.884       -2.451     7.103    -1.138  8.241   1.620   1.460    2.187      3.044      9.394     -6.450     -0.727       5.522      14.093 2022-23-24
+           Kyrie Irving     202681 36.47 35-40     11467     11441 7.914 -1.872  9.787        0.011       -2.080     7.904     0.208  7.696   1.630   1.473    2.200      4.719     11.110     -4.758      1.014       5.474      14.099 2022-23-24
+           Jayson Tatum    1628369 36.20 35-40     19867     19860 6.822 -2.534  9.356        0.011       -2.080     6.811    -0.454  7.265   1.660   1.481    2.231      3.567     10.076     -5.437      0.368       4.984      13.728 2022-23-24
+            Paul George     202331 34.27 30-35     11334     11294 5.190 -4.153  9.342       -0.884       -2.451     6.074    -1.702  7.775   1.769   1.574    2.370      1.722      8.657     -7.238     -1.068       4.698      13.987 2022-23-24
+          Stephen Curry     201939 33.89 30-35     16494     16381 6.825 -2.356  9.181       -0.884       -2.451     7.709     0.095  7.614   1.727   1.530    2.313      3.440     10.210     -5.355      0.644       4.647      13.714 2022-23-24
+           Jrue Holiday     201950 32.77 30-35     15123     15087 5.873 -3.296  9.169       -0.884       -2.451     6.756    -0.846  7.602   1.557   1.412    2.100      2.820      8.925     -6.063     -0.529       5.054      13.284 2022-23-24
+           Kevin Durant     201142 36.78 35-40     14877     14845 6.479 -2.632  9.111        0.011       -2.080     6.468    -0.552  7.020   1.565   1.414    2.109      3.411      9.546     -5.403      0.139       4.978      13.244 2022-23-24
+            Joel Embiid     203954 34.05 30-35     13331     13306 4.015 -4.919  8.934       -0.884       -2.451     4.899    -2.468  7.368   1.853   1.612    2.460      0.384      7.647     -8.078     -1.760       4.112      13.757 2022-23-24
+          Kawhi Leonard     202695 33.98 30-35      8388      8358 4.099 -4.592  8.691       -0.884       -2.451     4.983    -2.141  7.124   1.906   1.676    2.543      0.363      7.835     -7.876     -1.308       3.706      13.675 2022-23-24
+           LeBron James       2544 35.94 35-40     15101     15083 6.666 -1.937  8.604        0.011       -2.080     6.656     0.143  6.513   1.574   1.428    2.127      3.582      9.751     -4.736      0.862       4.435      12.772 2022-23-24
+Shai Gilgeous-Alexander    1628983 34.73 30-35     14695     14646 6.391 -2.182  8.572       -0.884       -2.451     7.274     0.269  7.006   1.758   1.554    2.352      2.944      9.837     -5.228      0.865       3.962      13.183 2022-23-24
+         Damian Lillard     203081 35.88 35-40     11870     11840 7.194 -1.229  8.422        0.011       -2.080     7.183     0.851  6.332   1.693   1.510    2.269      3.875     10.513     -4.189      1.731       3.975      12.870 2022-23-24
+           Devin Booker    1626164 35.06 35-40     15399     15374 6.981 -1.209  8.190        0.011       -2.080     6.971     0.871  6.099   1.595   1.439    2.148      3.854     10.108     -4.029      1.611       3.981      12.399 2022-23-24
+        Anthony Edwards    1630162 35.12 35-40     17832     17777 5.054 -2.737  7.791        0.011       -2.080     5.044    -0.657  5.701   1.690   1.500    2.264      1.742      8.366     -5.677      0.203       3.355      12.228 2022-23-24
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (628.3s). run_id=09d33a81
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 4500.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+

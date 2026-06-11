@@ -1,0 +1,108 @@
+{
+  "seasons": [
+    2020,
+    2021
+  ],
+  "sample_size": 30000,
+  "baseline_score": -1.4069617663298997,
+  "individual_results": {
+    "META_home": {
+      "score": -1.4068795138975903,
+      "improvement": 8.225243230941537e-05
+    },
+    "META_rb_all": {
+      "score": -1.4069589482161744,
+      "improvement": 2.8181137252669686e-06
+    },
+    "META_rb_q1": {
+      "score": -1.4069539359898422,
+      "improvement": 7.830340057468632e-06
+    },
+    "META_rb_q2": {
+      "score": -1.4068887357175448,
+      "improvement": 7.303061235486297e-05
+    },
+    "META_rb_q3": {
+      "score": -1.4069380405535001,
+      "improvement": 2.372577639953022e-05
+    },
+    "META_rb_q4": {
+      "score": -1.4069427691128578,
+      "improvement": 1.8997217041905046e-05
+    },
+    "META_fatigue": {
+      "score": -1.4069614555041516,
+      "improvement": 3.1082574802887564e-07
+    },
+    "META_close_game": {
+      "score": -1.4069372903294504,
+      "improvement": 2.447600044930276e-05
+    },
+    "META_blowout": {
+      "score": -1.4069617661194633,
+      "improvement": 2.104363350241556e-10
+    },
+    "META_late_game": {
+      "score": -1.4069379914355191,
+      "improvement": 2.377489438054603e-05
+    }
+  },
+  "combo_results": [
+    {
+      "config": [
+        "META_home",
+        "META_rb_q2"
+      ],
+      "score": -1.406807785943445,
+      "improvement": 0.0001539803864547551
+    },
+    {
+      "config": [
+        "META_home",
+        "META_rb_q2",
+        "META_close_game"
+      ],
+      "score": -1.406782282379861,
+      "improvement": 0.00017948395003863915
+    },
+    {
+      "config": [
+        "META_home",
+        "META_rb_all",
+        "META_fatigue"
+      ],
+      "score": -1.4068759842827976,
+      "improvement": 8.57820471020787e-05
+    },
+    {
+      "config": [
+        "META_home",
+        "META_rb_q1",
+        "META_rb_q2",
+        "META_rb_q3",
+        "META_rb_q4",
+        "META_fatigue"
+      ],
+      "score": -1.4067556155757015,
+      "improvement": 0.00020615075419816442
+    }
+  ],
+  "best_combination": {
+    "config": [
+      "META_home",
+      "META_rb_q1",
+      "META_rb_q2",
+      "META_rb_q3",
+      "META_rb_q4",
+      "META_fatigue"
+    ],
+    "score": -1.4067556155757015,
+    "improvement": 0.00020615075419816442
+  },
+  "best_parameters": {
+    "fatigue_period_weight": 0.8,
+    "fatigue_progress_weight": 0.2
+  },
+  "final_score": -1.4067548292717365,
+  "total_improvement": 0.00020693705816321462
+}

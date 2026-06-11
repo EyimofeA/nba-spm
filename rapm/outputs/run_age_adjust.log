@@ -1,0 +1,142 @@
+Loading career table: /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/career/career_rapm_1year.csv
+  13,429 rows · 2,654 unique players · seasons 1997–2024
+
+Computing per-pair deltas (player-season → next season)...
+  9,164 delta pairs
+
+Building smoothed league-wide aging curve...
+  aging curve → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/aging_curve.csv
+ age  n_pairs  dRAPM_raw  dRAPM  cumRAPM
+  19       59      1.637  0.966    0.000
+  20      253      1.337  0.823    0.966
+  21      414      0.780  0.686    1.789
+  22      611      0.599  0.552    2.475
+  23      821      0.431  0.423    3.027
+  24      875      0.076  0.297    3.450
+  25      832      0.076  0.175    3.746
+  26      796      0.030  0.056    3.921
+  27      755     -0.134 -0.059    3.978
+  28      679     -0.197 -0.171    3.919
+  29      636     -0.267 -0.280    3.748
+  30      571     -0.346 -0.386    3.468
+  31      482     -0.706 -0.490    3.081
+  32      390     -0.463 -0.591    2.591
+  33      304     -0.744 -0.690    2.000
+  34      233     -0.383 -0.787    1.309
+  35      181     -0.928 -0.882    0.522
+  36      125     -1.089 -0.975   -0.360
+  37       68     -1.187 -1.066   -1.335
+  38       45     -0.256 -1.156   -2.401
+  39       22     -1.766 -1.244   -3.557
+  40        0      0.000 -1.330   -4.801
+
+Applying age adjustment (project every season to age 27)...
+  age-adjusted table → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/age_adjusted_rapm.csv
+
+Computing per-player peak RAPM (projected to age 27)...
+  ref-age peak → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/peak_rapm.csv
+
+Computing per-player peak RAPM (raw, no aging adjustment)...
+  raw peak → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/peak_raw_rapm.csv
+
+Computing career summary (possession-weighted mean RAPM)...
+  career summary → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/career_summary.csv
+
+Top 30 — CAREER WEIGHTED-MEAN RAPM (≥5 qualifying seasons):
+                 Name  N_Seasons  Total_Poss  Career_Wmean_RAPM  Career_Wmean_Off  Career_Wmean_Def
+         LeBron James       21.0    263925.0           8.802615          6.756917         -2.045745
+           Tim Duncan       19.0    212026.0           7.727996          4.046271         -3.681553
+        Kevin Garnett       20.0    200643.0           7.494029          4.258883         -3.235273
+        Stephen Curry       14.0    158249.0           7.444106          5.527031         -1.917091
+        Dirk Nowitzki       21.0    220009.0           7.340437          5.592793         -1.747758
+     Shaquille O'Neal       15.0    142519.0           7.340095          5.273011         -2.066980
+        Manu Ginobili       16.0    126967.0           6.820935          3.752624         -3.068244
+         Jayson Tatum        7.0     85415.0           6.804863          4.562790         -2.242206
+        Kawhi Leonard       11.0    105512.0           6.685345          3.648304         -3.037428
+           Chris Paul       19.0    189621.0           6.545474          4.212370         -2.332965
+         James Harden       15.0    171920.0           6.413291          5.671019         -0.742178
+          Karl Malone        8.0     92944.0           6.348850          5.255040         -1.093684
+          Kobe Bryant       19.0    220365.0           6.241745          5.192008         -1.049762
+         Kevin Durant       16.0    183709.0           6.206383          4.774490         -1.432129
+        John Stockton        7.0     67949.0           6.167530          3.524383         -2.642882
+       Draymond Green       12.0    119740.0           6.145545          2.371769         -3.773815
+          Baron Davis       13.0    117440.0           6.135390          4.245672         -1.889646
+       Damian Lillard       12.0    132974.0           6.123950          5.435904         -0.687763
+           Jason Kidd       17.0    193085.0           6.115049          3.880103         -2.234974
+            Ray Allen       18.0    196500.0           5.895074          5.049581         -0.845385
+         Nikola Jokic        9.0     94836.0           5.846771          4.281653         -1.564860
+      Rasheed Wallace       14.0    146588.0           5.843822          2.782590         -3.060916
+          Joel Embiid        8.0     63872.0           5.842057          2.431312         -3.410579
+          Paul Pierce       18.0    197088.0           5.819397          3.923857         -1.895536
+        Steve Francis        8.0     81671.0           5.814216          4.793244         -1.021165
+          Paul George       13.0    132412.0           5.794070          3.190974         -2.603266
+        Reggie Miller        9.0     99142.0           5.787204          4.516529         -1.270675
+       David Robinson        6.0     55743.0           5.785676          2.133715         -3.651961
+           Steve Nash       17.0    165069.0           5.741148          4.555323         -1.185790
+Giannis Antetokounmpo       11.0    117349.0           5.650617          3.364154         -2.286396
+
+Top 30 — PEAK RAW RAPM (single best season):
+             Name  Peak_Season  Peak_Age  Peak_Raw_RAPM  Peak_Off  Peak_Def  Peak_Poss  Seasons_Played
+    Kevin Garnett         2003      27.0         13.431    10.087    -3.344      13747              20
+      Dwyane Wade         2006      24.0         13.318     9.575    -3.742      14595              16
+    Dirk Nowitzki         2011      33.0         13.231     8.808    -4.424      12594              21
+       Tim Duncan         2002      26.0         13.043     8.471    -4.572      13813              19
+ Shaquille O'Neal         2000      28.0         12.299     9.934    -2.365      16012              15
+     LeBron James         2012      27.0         11.980     8.426    -3.553      12488              21
+      Baron Davis         2002      23.0         11.745     9.377    -2.368      13972              13
+     Vince Carter         2000      23.0         11.397    10.194    -1.203      12618              22
+    Stephen Curry         2015      27.0         11.365     7.669    -3.696      14107              15
+      Paul George         2019      29.0         11.348     6.769    -4.579      12921              14
+   Draymond Green         2016      26.0         11.337     6.494    -4.843      15256              12
+     Jrue Holiday         2019      29.0         11.318     8.155    -3.163      10328              15
+     James Harden         2015      25.0         11.257    10.345    -0.911      14671              15
+    Manu Ginobili         2011      33.0         11.256     7.384    -3.871      10167              16
+   Damian Lillard         2019      28.0         10.921     8.110    -2.810      14260              12
+     Kevin Durant         2014      25.0         10.848     8.960    -1.889      15644              16
+Metta World Peace         2006      26.0         10.837     5.530    -5.307       9096              17
+      Gary Payton         2000      31.0         10.637     8.444    -2.193      14154              11
+ Andrei Kirilenko         2004      23.0         10.616     8.049    -2.568      10543              13
+        Ray Allen         2001      25.0         10.378     8.828    -1.550      14991              18
+    Blake Griffin         2012      23.0         10.289     7.692    -2.597      10244              13
+       Lamar Odom         2009      29.0         10.222     5.046    -5.176      11865              14
+      Paul Pierce         2002      24.0          9.869     7.585    -2.284      15192              19
+       Steve Nash         2007      33.0          9.787     7.954    -1.832      12275              18
+       Chris Paul         2011      26.0          9.665     6.680    -2.985      11524              19
+     Shawn Marion         2001      23.0          9.613     4.681    -4.932      11616              16
+      Tony Parker         2012      30.0          9.557     5.256    -4.301       9296              18
+      Kobe Bryant         2003      24.0          9.445     8.598    -0.847      15089              20
+    Kawhi Leonard         2015      24.0          9.411     4.693    -4.718       8880              12
+  Jermaine O'Neal         2004      25.0          9.340     5.964    -3.376      12312              18
+
+Top 30 — PEAK RAPM (projected to age 27):
+            Name  Peak_RAPM_at_Ref  Peak_Season  Peak_Age  Raw_RAPM_at_Peak  Off_at_ref  Def_at_ref  Seasons_Played
+   John Stockton         16.202797         2001        39             8.668   12.357870   -3.845110               7
+   Dirk Nowitzki         15.208879         2011        33            13.231   10.664806   -4.545122              21
+    LeBron James         14.835797         2024        39             7.301   12.193870   -2.642110              21
+   Manu Ginobili         14.195754         2014        36             9.858    9.621197   -4.573664              16
+  Michael Jordan         13.988553         2003        40             5.210   11.872956   -2.115810               4
+     Dwyane Wade         13.846168         2006        24            13.318    9.892611   -3.952567              16
+      Tim Duncan         13.727553         2016        40             4.949    8.448956   -5.278810              19
+      Steve Nash         13.568808         2011        37             8.256   11.116638   -2.452300              18
+   Kevin Garnett         13.431000         2003        27            13.431   10.087000   -3.344000              20
+     Karl Malone         12.935808         2001        37             7.623   11.347638   -1.587300               8
+    Terry Porter         12.840808         2000        37             7.528    6.976638   -5.864300               6
+     Baron Davis         12.695737         2002        23            11.745    9.999800   -2.695955              13
+   Reggie Miller         12.680797         2005        39             5.146   10.342870   -2.338110               9
+Shaquille O'Neal         12.357834         2000        28            12.299   10.019638   -2.338197              15
+    Vince Carter         12.347737         2000        23            11.397   10.816800   -1.530955              22
+ Arvydas Sabonis         12.098037         2003        38             5.719    8.675988   -3.422205               6
+      Jason Kidd         11.690754         2009        36             7.353    8.085197   -3.605664              17
+     Paul George         11.577756         2019        29            11.348    7.032405   -4.545356              14
+Andrei Kirilenko         11.566737         2004        23            10.616    8.671800   -2.895955              13
+    Jrue Holiday         11.547756         2019        29            11.318    8.418405   -3.129356              15
+     Gary Payton         11.533241         2000        31            10.637    9.331350   -2.201913              11
+    James Harden         11.488272         2015        25            11.257   10.458701   -1.028575              15
+     Kyle Korver         11.466339         2015        34             8.798    8.342776   -3.123628              17
+  Draymond Green         11.393378         2016        26            11.337    6.502612   -4.890768              12
+   Stephen Curry         11.365000         2015        27            11.365    7.669000   -3.696000              15
+   Blake Griffin         11.239737         2012        23            10.289    8.314800   -2.924955              13
+     Sam Perkins         11.222797         2000        39             3.688    7.330870   -3.892110               5
+ Dikembe Mutombo         11.212797         2005        39             3.678    4.592870   -6.621110              13
+    Kevin Durant         11.079272         2014        25            10.848    9.073701   -2.006575              16
+     Bruce Bowen         11.055754         2007        36             6.718    4.503197   -6.552664              13

@@ -1,0 +1,66 @@
+{
+  "aging_curve_used": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/aging_curve.csv",
+  "home_effect": {
+    "coding": "+1 home offense, -1 away offense",
+    "coefficient": 0.01336189809985522,
+    "coefficient_per_100": 1.336189809985522
+  },
+  "includes_playoffs": true,
+  "intercept": 1.133815943360762,
+  "lambdas": {
+    "defense": 4000.0,
+    "home": 5000.0,
+    "offense": 2500.0,
+    "playoff": 5000.0,
+    "rubber_band": 2000.0,
+    "season": 5000.0
+  },
+  "n_columns": 1643,
+  "n_possessions": 766112,
+  "outputs": {
+    "lambda_scores": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/simple_rapm/outputs/simple_rapm_with_playoff_indicator_lambda_scores_2022_2024.csv",
+    "players": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/simple_rapm/outputs/simple_rapm_with_playoff_indicator_players_2022_2024.csv",
+    "raw": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/simple_rapm/outputs/simple_rapm_with_playoff_indicator_coefficients_2022_2024.csv"
+  },
+  "playoff_indicator": {
+    "coding": "1 playoff possession, 0 otherwise",
+    "coefficient": -0.01994809224581926,
+    "coefficient_per_100": -1.9948092245819262
+  },
+  "rubber_band": {
+    "coefficient": -0.028166378666712916,
+    "coefficient_per_100": -2.8166378666712917,
+    "home_col": 1639,
+    "playoff_col": 1640,
+    "rubber_band_clip": 25.0,
+    "rubber_band_col": 1638,
+    "rubber_band_mean": -0.5393049580218036,
+    "rubber_band_std": 10.85336006746103,
+    "season_baseline": 2022,
+    "season_cols": {
+      "2023": 1641,
+      "2024": 1642
+    }
+  },
+  "season_effects": {
+    "season_2023": {
+      "coefficient": 0.017926481146010188,
+      "coefficient_per_100": 1.7926481146010187
+    },
+    "season_2024": {
+      "coefficient": 0.01771397398888693,
+      "coefficient_per_100": 1.771397398888693
+    }
+  },
+  "season_weights": {
+    "2022": 1.0,
+    "2023": 1.0,
+    "2024": 1.0
+  },
+  "seasons": [
+    2022,
+    2023,
+    2024
+  ],
+  "y_mean": 1.133815943360762
+}

@@ -1,0 +1,46 @@
+{
+  "baseline_mae": 1.1294894828183328,
+  "baseline_rmse": 1.1918573010318079,
+  "elapsed_seconds": 32.56859803199768,
+  "lambdas": {
+    "defense": 4000.0,
+    "home": 5000.0,
+    "offense": 2500.0,
+    "playoff": 5000.0,
+    "rubber_band": 2000.0,
+    "season": 5000.0
+  },
+  "mae_improvement_vs_mean": 0.0018456255185259618,
+  "outputs": {
+    "calibration": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/simple_rapm/outputs/simple_rapm_retrodict_train_2021_2023_test_2024_calibration.csv",
+    "predictions": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/simple_rapm/outputs/simple_rapm_retrodict_train_2021_2023_test_2024_predictions.csv"
+  },
+  "playoff_overrides": {
+    "2020": [
+      "2020-08-17",
+      "2020-10-11"
+    ],
+    "2021": [
+      "2021-05-22",
+      "2021-07-20"
+    ]
+  },
+  "rmse_improvement_vs_mean": 0.0011047176783289814,
+  "test_mae": 1.1276438572998069,
+  "test_meta": {
+    "playoff_possessions": 8248,
+    "rubber_band_clip": 25.0,
+    "rubber_band_mean_from_train": -0.5365112478241805,
+    "rubber_band_std_from_train": 10.789075677747602,
+    "unseen_player_entries": 209411
+  },
+  "test_possessions": 245167,
+  "test_rmse": 1.1907525833534789,
+  "test_season": 2024,
+  "train_possessions": 752590,
+  "train_seasons": [
+    2021,
+    2022,
+    2023
+  ]
+}

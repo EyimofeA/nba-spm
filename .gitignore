@@ -1,0 +1,17 @@
+# environments & caches
+venv/
+rapm/venv/
+__pycache__/
+*.pyc
+.claude/
+.DS_Store
+
+# frozen history (contains old secrets) — never push
+archive/
+
+# data & dumps — not redistributable / rebuildable from nba_api
+data/
+rapm/data/
+*.sql
+*.pkl
+*.joblib

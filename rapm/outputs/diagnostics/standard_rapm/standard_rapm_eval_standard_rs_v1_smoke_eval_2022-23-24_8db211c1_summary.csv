@@ -1,0 +1,17 @@
+spec,season_type,prior_mode,method,folds,total_valid,rmse,mae,lambda_off,lambda_def,lambda_meta,lambda_season,dropped_garbage_time,rmse_delta_vs_best
+standard_rs_v1_smoke_eval_eval_playoff_offset,playoff,offset,chronological_retrodiction,1,6776,1.1852908136895048,1.1224345253904722,3000.0,3000.0,300.0,100.0,5492,0.0
+standard_rs_v1_smoke_eval_eval_playoff_dummy,playoff,dummy,chronological_retrodiction,1,6776,1.18545114371453,1.124824514037512,3000.0,3000.0,300.0,100.0,5492,0.00016033002502524596
+standard_rs_v1_smoke_eval_eval_playoff_zero,playoff,zero,chronological_retrodiction,1,6776,1.185877347330408,1.1256288120156588,3000.0,3000.0,300.0,100.0,5492,0.0005865336409032196
+standard_rs_v1_smoke_eval_eval_home_rubberband_season_no_gt,regular,zero,chronological_retrodiction,1,236919,1.191196925721036,1.127437794443577,3000.0,3000.0,300.0,100.0,0,0.00590611203153113
+standard_rs_v1_smoke_eval_eval_home,regular,zero,chronological_retrodiction,1,207104,1.191385177696821,1.1288645494543563,3000.0,3000.0,300.0,100.0,84448,0.006094364007316111
+standard_rs_v1_smoke_eval_eval_home_rubberband,regular,zero,chronological_retrodiction,1,207104,1.1914053546981156,1.128751229698578,3000.0,3000.0,300.0,100.0,84448,0.006114541008610752
+standard_rs_v1_smoke_eval_eval_player_only,regular,zero,chronological_retrodiction,1,207104,1.1914249308491305,1.12895598891572,3000.0,3000.0,300.0,100.0,84448,0.0061341171596256405
+standard_rs_v1_smoke_eval_eval_home_rubberband_season,regular,zero,chronological_retrodiction,1,207104,1.1915705873215554,1.1283525513008172,3000.0,3000.0,300.0,100.0,84448,0.006279773632050567
+standard_rs_v1_smoke_eval_eval_playoff_offset,playoff,offset,game_grouped_cv,3,37515,1.1878326739193514,1.1234459075606067,3000.0,3000.0,300.0,100.0,5492,0.0
+standard_rs_v1_smoke_eval_eval_home_rubberband_season_no_gt,regular,zero,game_grouped_cv,3,723105,1.1879720997014298,1.1246318734769676,3000.0,3000.0,300.0,100.0,0,0.00013942578207837286
+standard_rs_v1_smoke_eval_eval_playoff_dummy,playoff,dummy,game_grouped_cv,3,37515,1.1880118567864526,1.1246427510171433,3000.0,3000.0,300.0,100.0,5492,0.0001791828671011686
+standard_rs_v1_smoke_eval_eval_home_rubberband_season,regular,zero,game_grouped_cv,3,638657,1.188235605999678,1.125214568900063,3000.0,3000.0,300.0,100.0,84448,0.0004029320803264902
+standard_rs_v1_smoke_eval_eval_home_rubberband,regular,zero,game_grouped_cv,3,638657,1.1882529512816464,1.125219684368585,3000.0,3000.0,300.0,100.0,84448,0.00042027736229499624
+standard_rs_v1_smoke_eval_eval_playoff_zero,playoff,zero,game_grouped_cv,3,37515,1.1883383487255446,1.1249757248289092,3000.0,3000.0,300.0,100.0,5492,0.0005056748061931238
+standard_rs_v1_smoke_eval_eval_home,regular,zero,game_grouped_cv,3,638657,1.1883769725408122,1.1254667363359838,3000.0,3000.0,300.0,100.0,84448,0.0005442986214607703
+standard_rs_v1_smoke_eval_eval_player_only,regular,zero,game_grouped_cv,3,638657,1.1884258861558632,1.125563679511338,3000.0,3000.0,300.0,100.0,84448,0.0005932122365117642

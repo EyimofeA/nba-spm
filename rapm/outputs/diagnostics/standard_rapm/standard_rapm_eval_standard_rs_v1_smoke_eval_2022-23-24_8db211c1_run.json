@@ -1,0 +1,16 @@
+{
+  "elapsed_seconds": 61.319425106048584,
+  "include_playoff_prior": true,
+  "paths": {
+    "calibration": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/diagnostics/standard_rapm/standard_rapm_eval_standard_rs_v1_smoke_eval_2022-23-24_8db211c1_calibration.csv",
+    "fold_scores": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/diagnostics/standard_rapm/standard_rapm_eval_standard_rs_v1_smoke_eval_2022-23-24_8db211c1_fold_scores.csv",
+    "summary": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/diagnostics/standard_rapm/standard_rapm_eval_standard_rs_v1_smoke_eval_2022-23-24_8db211c1_summary.csv"
+  },
+  "run_id": "8db211c1",
+  "seasons": [
+    2022,
+    2023,
+    2024
+  ],
+  "spec": "standard_rs_v1_smoke_eval"
+}

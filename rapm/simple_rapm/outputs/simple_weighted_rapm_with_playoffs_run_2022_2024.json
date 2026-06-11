@@ -1,0 +1,23 @@
+{
+  "aging_curve_used": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/aging_curve.csv",
+  "alpha": 3750.0,
+  "includes_playoffs": true,
+  "intercept": 1.1364679105874687,
+  "n_columns": 1638,
+  "n_possessions": 766112,
+  "outputs": {
+    "players": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/simple_rapm/outputs/simple_weighted_rapm_with_playoffs_players_2022_2024.csv",
+    "raw": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/simple_rapm/outputs/simple_weighted_rapm_with_playoffs_coefficients_2022_2024.csv"
+  },
+  "season_weights": {
+    "2022": 0.6,
+    "2023": 0.8,
+    "2024": 1.0
+  },
+  "seasons": [
+    2022,
+    2023,
+    2024
+  ],
+  "y_mean": 1.1364679105874687
+}

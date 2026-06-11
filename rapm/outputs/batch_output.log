@@ -1,0 +1,2433 @@
+============================================================
+HISTORICAL RAPM BATCH RUN
+============================================================
+3-Year Windows: 22 runs
+5-Year Windows: 20 runs
+Full Period: 1 run
+Methods: Dummy + Offset = 2x each
+Total Runs: 86
+============================================================
+
+### ROLLING 3-YEAR WINDOWS ###
+
+
+[1/86] 3yr: [2001, 2002, 2003] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2001-02-03 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 627164 possessions (regular season)
+Selected alpha: 3000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2001-02-03.csv
+Results saved to dump/playoff_rapm_results_2001-02-03_regular_season.csv
+Top 10 Regular Season RAPM:
+                 Name       Off       Def      Rapm
+160     Dirk Nowitzki  6.064369 -1.360171  7.424539
+320     Kevin Garnett  4.988311 -2.394117  7.382428
+496  Shaquille O'Neal  6.272259 -0.959373  7.231633
+529        Tim Duncan  3.038312 -2.810017  5.848329
+294     John Stockton  4.185733 -1.263327  5.449060
+545     Tracy McGrady  4.968999 -0.091389  5.060387
+265        Jason Kidd  2.375437 -2.645394  5.020831
+180    Eduardo Najera  3.362597 -1.469138  4.831735
+563      Vince Carter  3.872646 -0.837003  4.709649
+449         Ray Allen  4.048617 -0.549282  4.597899
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2001, 2002, 2003].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 69887 possessions (playoff)
+Time decay enabled (rate=0.85): {2001: 0.7224999999999999, 2002: 0.85, 2003: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 63464 real + 1040 dummy rows = 64504 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2001-02-03_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def      Rapm
+469        Tim Duncan  2.201298 -3.788627  5.989925
+439  Shaquille O'Neal  4.631476 -1.045375  5.676851
+37        Baron Davis  1.766207 -2.058001  3.824208
+282     Kevin Garnett  2.527315 -1.112690  3.640005
+394         Ray Allen  2.746046 -0.867722  3.613768
+287       Kobe Bryant  2.488665 -0.950860  3.439525
+122    David Robinson  0.970485 -2.418003  3.388489
+144     Dirk Nowitzki  2.805512 -0.316691  3.122203
+256     John Stockton  1.555810 -1.475830  3.031641
+452     Steve Francis  1.816781 -1.133889  2.950671
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2001, 2002, 2003].csv
+Results saved to dump/playoff_rapm_results_2001-02-03_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+469        Tim Duncan  2.201298 -3.788627  5.989925
+439  Shaquille O'Neal  4.631476 -1.045375  5.676851
+37        Baron Davis  1.766207 -2.058001  3.824208
+282     Kevin Garnett  2.527315 -1.112690  3.640005
+394         Ray Allen  2.746046 -0.867722  3.613768
+287       Kobe Bryant  2.488665 -0.950860  3.439525
+122    David Robinson  0.970485 -2.418003  3.388489
+144     Dirk Nowitzki  2.805512 -0.316691  3.122203
+256     John Stockton  1.555810 -1.475830  3.031641
+452     Steve Francis  1.816781 -1.133889  2.950671
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2001, 2002, 2003].csv
+
+[2/86] 3yr: [2001, 2002, 2003] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2001-02-03 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2001-02-03.csv (1178 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 69887 possessions (playoff)
+Time decay enabled (rate=0.85): {2001: 0.7224999999999999, 2002: 0.85, 2003: 1.0}
+Selected alpha: 4000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2001-02-03_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def      Rapm
+439  Shaquille O'Neal  7.999449 -1.214223  9.213672
+469        Tim Duncan  4.358080 -4.638404  8.996484
+282     Kevin Garnett  5.144681 -2.558066  7.702748
+37        Baron Davis  3.405679 -2.986969  6.392648
+394         Ray Allen  5.197943 -1.149651  6.347594
+144     Dirk Nowitzki  5.344860 -0.800281  6.145141
+256     John Stockton  3.613224 -2.164311  5.777534
+452     Steve Francis  3.683927 -1.595546  5.279474
+391   Rasheed Wallace  2.527812 -2.691573  5.219385
+122    David Robinson  2.109314 -3.095559  5.204873
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2001, 2002, 2003].csv
+Results saved to dump/playoff_rapm_results_2001-02-03_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+469        Tim Duncan  1.319768 -1.828387  3.148155
+176     Ervin Johnson  0.680428 -1.366599  2.047026
+292        Lamar Odom  0.922492 -1.097980  2.020472
+37        Baron Davis  1.316500 -0.673742  1.990242
+439  Shaquille O'Neal  1.727189 -0.254850  1.982039
+312     Manu Ginobili -0.145364 -1.930576  1.785212
+394         Ray Allen  1.149326 -0.600370  1.749696
+287       Kobe Bryant  1.023282 -0.622913  1.646195
+218    Jamal Mashburn  0.698846 -0.804288  1.503134
+388         Raja Bell  0.650381 -0.836613  1.486994
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2001, 2002, 2003].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[3/86] 3yr: [2002, 2003, 2004] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2002-03-04 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 629961 possessions (regular season)
+Selected alpha: 2000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2002-03-04.csv
+Results saved to dump/playoff_rapm_results_2002-03-04_regular_season.csv
+Top 10 Regular Season RAPM:
+                 Name       Off       Def       Rapm
+313     Kevin Garnett  6.211065 -4.111173  10.322237
+157     Dirk Nowitzki  8.336258 -0.918122   9.254380
+492  Shaquille O'Neal  5.707894 -2.530858   8.238752
+18   Andrei Kirilenko  4.757010 -2.351746   7.108756
+525        Tim Duncan  3.441930 -3.482519   6.924449
+442   Rasheed Wallace  3.358140 -3.444632   6.802772
+255        Jason Kidd  4.591549 -1.662980   6.254529
+557      Vince Carter  3.830608 -2.275893   6.106500
+425       Paul Pierce  4.167915 -1.508535   5.676450
+174    Eduardo Najera  2.979526 -2.650630   5.630157
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2002, 2003, 2004].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 66079 possessions (playoff)
+Time decay enabled (rate=0.85): {2002: 0.7224999999999999, 2003: 0.85, 2004: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 60288 real + 1008 dummy rows = 61296 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2002-03-04_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def      Rapm
+271     Kevin Garnett  3.348866 -2.505413  5.854279
+428  Shaquille O'Neal  4.066943 -1.482243  5.549186
+454        Tim Duncan  1.826533 -3.685630  5.512163
+383   Rasheed Wallace  1.676106 -2.648175  4.324280
+139     Dirk Nowitzki  3.957482 -0.193771  4.151253
+305     Manu Ginobili  0.656909 -3.233223  3.890132
+219        Jason Kidd  1.853563 -1.932053  3.785615
+34        Baron Davis  1.628415 -1.903792  3.532207
+35        Ben Wallace -0.359033 -3.818304  3.459271
+144     Doug Christie  1.568898 -1.551974  3.120872
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2002, 2003, 2004].csv
+Results saved to dump/playoff_rapm_results_2002-03-04_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+271     Kevin Garnett  3.348866 -2.505413  5.854279
+428  Shaquille O'Neal  4.066943 -1.482243  5.549186
+454        Tim Duncan  1.826533 -3.685630  5.512163
+383   Rasheed Wallace  1.676106 -2.648175  4.324280
+139     Dirk Nowitzki  3.957482 -0.193771  4.151253
+305     Manu Ginobili  0.656909 -3.233223  3.890132
+219        Jason Kidd  1.853563 -1.932053  3.785615
+34        Baron Davis  1.628415 -1.903792  3.532207
+35        Ben Wallace -0.359033 -3.818304  3.459271
+144     Doug Christie  1.568898 -1.551974  3.120872
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2002, 2003, 2004].csv
+
+[4/86] 3yr: [2002, 2003, 2004] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2002-03-04 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2002-03-04.csv (1170 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 66079 possessions (playoff)
+Time decay enabled (rate=0.85): {2002: 0.7224999999999999, 2003: 0.85, 2004: 1.0}
+Selected alpha: 5000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2002-03-04_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def       Rapm
+271     Kevin Garnett  6.397559 -4.585490  10.983049
+428  Shaquille O'Neal  7.030813 -2.405220   9.436033
+454        Tim Duncan  3.768605 -4.736229   8.504834
+139     Dirk Nowitzki  7.539591 -0.776200   8.315792
+383   Rasheed Wallace  3.454949 -4.207751   7.662700
+17   Andrei Kirilenko  4.810668 -1.885652   6.696321
+219        Jason Kidd  4.411943 -2.132337   6.544280
+481      Vince Carter  3.873295 -2.475327   6.348622
+369       Paul Pierce  4.364095 -1.503535   5.867630
+34        Baron Davis  3.237919 -2.627086   5.865005
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2002, 2003, 2004].csv
+Results saved to dump/playoff_rapm_results_2002-03-04_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+305     Manu Ginobili -0.030760 -1.826895  1.796135
+26     Antoine Walker  0.810296 -0.947917  1.758213
+176        Fred Jones  0.603870 -1.057056  1.660926
+454        Tim Duncan  0.326675 -1.253710  1.580385
+34        Baron Davis  0.824679 -0.589986  1.414664
+282        Lamar Odom  0.060602 -1.317915  1.378517
+398      Robert Horry  1.108796 -0.259099  1.367895
+428  Shaquille O'Neal  1.322919  0.125637  1.197281
+35        Ben Wallace -0.198206 -1.366035  1.167829
+461         Tony Delk  0.786833 -0.302480  1.089313
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2002, 2003, 2004].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[5/86] 3yr: [2003, 2004, 2005] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2003-04-05 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 633601 possessions (regular season)
+Selected alpha: 2000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2003-04-05.csv
+Results saved to dump/playoff_rapm_results_2003-04-05_regular_season.csv
+Top 10 Regular Season RAPM:
+                 Name       Off       Def      Rapm
+319     Kevin Garnett  5.681356 -3.527906  9.209262
+540        Tim Duncan  4.222544 -4.817999  9.040543
+511  Shaquille O'Neal  5.611455 -2.084920  7.696374
+165     Dirk Nowitzki  5.532102 -1.622830  7.154932
+439       Paul Pierce  4.569310 -1.899496  6.468806
+260        Jason Kidd  5.078098 -1.329520  6.407618
+23   Andrei Kirilenko  4.264095 -2.073088  6.337183
+265       Jeff Foster  1.563512 -4.553723  6.117235
+460   Rasheed Wallace  2.576146 -3.164767  5.740913
+362     Manu Ginobili  3.720090 -1.953844  5.673934
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2003, 2004, 2005].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 72613 possessions (playoff)
+Time decay enabled (rate=0.85): {2003: 0.7224999999999999, 2004: 0.85, 2005: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 65689 real + 1018 dummy rows = 66707 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2003-04-05_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def      Rapm
+309     Manu Ginobili  2.573296 -3.206744  5.780040
+274     Kevin Garnett  3.072786 -2.357386  5.430172
+461        Tim Duncan  1.871588 -3.453714  5.325301
+435  Shaquille O'Neal  3.053199 -1.607838  4.661037
+37        Baron Davis  2.575131 -1.765661  4.340793
+220        Jason Kidd  1.922698 -1.968878  3.891576
+389   Rasheed Wallace  1.426838 -2.289131  3.715968
+404      Robert Horry  1.641433 -1.801404  3.442837
+138     Dirk Nowitzki  2.781621 -0.601135  3.382756
+440      Shawn Marion  2.023748 -1.256379  3.280127
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2003, 2004, 2005].csv
+Results saved to dump/playoff_rapm_results_2003-04-05_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+309     Manu Ginobili  2.573296 -3.206744  5.780040
+274     Kevin Garnett  3.072786 -2.357386  5.430172
+461        Tim Duncan  1.871588 -3.453714  5.325301
+435  Shaquille O'Neal  3.053199 -1.607838  4.661037
+37        Baron Davis  2.575131 -1.765661  4.340793
+220        Jason Kidd  1.922698 -1.968878  3.891576
+389   Rasheed Wallace  1.426838 -2.289131  3.715968
+404      Robert Horry  1.641433 -1.801404  3.442837
+138     Dirk Nowitzki  2.781621 -0.601135  3.382756
+440      Shawn Marion  2.023748 -1.256379  3.280127
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2003, 2004, 2005].csv
+
+[6/86] 3yr: [2003, 2004, 2005] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2003-04-05 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2003-04-05.csv (1194 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 72613 possessions (playoff)
+Time decay enabled (rate=0.85): {2003: 0.7224999999999999, 2004: 0.85, 2005: 1.0}
+Selected alpha: 2000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2003-04-05_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def       Rapm
+274     Kevin Garnett  6.538737 -4.385228  10.923966
+309     Manu Ginobili  5.113408 -4.722337   9.835745
+461        Tim Duncan  3.860073 -5.373563   9.233637
+37        Baron Davis  5.868206 -2.927835   8.796041
+435  Shaquille O'Neal  5.888792 -2.046870   7.935661
+220        Jason Kidd  4.535191 -2.178096   6.713288
+389   Rasheed Wallace  2.947963 -3.519875   6.467838
+138     Dirk Nowitzki  4.820670 -1.441497   6.262166
+440      Shawn Marion  3.660948 -2.551015   6.211963
+404      Robert Horry  3.414265 -2.784202   6.198468
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2003, 2004, 2005].csv
+Results saved to dump/playoff_rapm_results_2003-04-05_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                Name       Off       Def      Rapm
+309    Manu Ginobili  1.393318 -2.768493  4.161811
+350       Mike James  1.428412 -2.434284  3.862695
+37       Baron Davis  1.715188 -1.633875  3.349062
+238      Joe Johnson  1.143172 -1.770417  2.913589
+404     Robert Horry  3.155853  0.359241  2.796613
+407   Robert Traylor  1.215802 -1.564143  2.779945
+262     Keith Bogans  0.947189 -1.553443  2.500632
+456  Tayshaun Prince  0.639933 -1.841201  2.481135
+230  Jermaine O'Neal  0.649028 -1.793463  2.442491
+497   Walter McCarty  2.557482  0.132625  2.424858
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2003, 2004, 2005].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[7/86] 3yr: [2004, 2005, 2006] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2004-05-06 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 634349 possessions (regular season)
+Selected alpha: 2000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2004-05-06.csv
+Results saved to dump/playoff_rapm_results_2004-05-06_regular_season.csv
+Top 10 Regular Season RAPM:
+                  Name       Off       Def      Rapm
+176      Dirk Nowitzki  6.633637 -0.992957  7.626593
+28    Andrei Kirilenko  4.698855 -2.785353  7.484209
+559         Tim Duncan  2.833463 -4.432394  7.265857
+408  Metta World Peace  2.092483 -4.724292  6.816775
+333      Kevin Garnett  4.400757 -1.857246  6.258003
+280        Jeff Foster  2.077334 -3.826750  5.904085
+472    Rasheed Wallace  3.408507 -2.492967  5.901475
+376      Manu Ginobili  4.934088 -0.904499  5.838587
+548         Steve Nash  7.683897  1.874119  5.809778
+531   Shaquille O'Neal  4.423531 -1.316651  5.740182
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2004, 2005, 2006].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 77753 possessions (playoff)
+Time decay enabled (rate=0.85): {2004: 0.7224999999999999, 2005: 0.85, 2006: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 70195 real + 1044 dummy rows = 71239 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2004-05-06_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                  Name       Off       Def      Rapm
+323      Manu Ginobili  3.771232 -2.160663  5.931896
+467         Steve Nash  5.101824  0.495855  4.605969
+148      Dirk Nowitzki  2.924140 -1.411812  4.335952
+159        Dwyane Wade  2.636757 -1.524747  4.161504
+452   Shaquille O'Neal  2.144854 -1.852270  3.997123
+350  Metta World Peace  1.169264 -2.795800  3.965065
+282      Kevin Garnett  2.259188 -1.687747  3.946935
+476         Tim Duncan  1.710348 -2.109498  3.819845
+423       Robert Horry  1.259828 -2.368471  3.628299
+407    Rasheed Wallace  1.513297 -2.000036  3.513332
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2004, 2005, 2006].csv
+Results saved to dump/playoff_rapm_results_2004-05-06_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+323      Manu Ginobili  3.771232 -2.160663  5.931896
+467         Steve Nash  5.101824  0.495855  4.605969
+148      Dirk Nowitzki  2.924140 -1.411812  4.335952
+159        Dwyane Wade  2.636757 -1.524747  4.161504
+452   Shaquille O'Neal  2.144854 -1.852270  3.997123
+350  Metta World Peace  1.169264 -2.795800  3.965065
+282      Kevin Garnett  2.259188 -1.687747  3.946935
+476         Tim Duncan  1.710348 -2.109498  3.819845
+423       Robert Horry  1.259828 -2.368471  3.628299
+407    Rasheed Wallace  1.513297 -2.000036  3.513332
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2004, 2005, 2006].csv
+
+[8/86] 3yr: [2004, 2005, 2006] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2004-05-06 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2004-05-06.csv (1230 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 77753 possessions (playoff)
+Time decay enabled (rate=0.85): {2004: 0.7224999999999999, 2005: 0.85, 2006: 1.0}
+Selected alpha: 4000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2004-05-06_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                  Name       Off       Def      Rapm
+323      Manu Ginobili  6.533012 -2.191138  8.724151
+148      Dirk Nowitzki  5.501891 -2.146791  7.648682
+350  Metta World Peace  2.552821 -4.949461  7.502282
+19    Andrei Kirilenko  4.870331 -2.458032  7.328362
+282      Kevin Garnett  4.723756 -2.427045  7.150801
+467         Steve Nash  8.407641  1.406698  7.000943
+476         Tim Duncan  3.174341 -3.647375  6.821716
+452   Shaquille O'Neal  4.228879 -2.269117  6.497996
+43         Baron Davis  4.567391 -1.718968  6.286359
+159        Dwyane Wade  4.930674 -1.197731  6.128404
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2004, 2005, 2006].csv
+Results saved to dump/playoff_rapm_results_2004-05-06_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                Name       Off       Def      Rapm
+323    Manu Ginobili  1.598925 -1.286639  2.885564
+242  Jermaine O'Neal  1.392111 -1.255559  2.647670
+159      Dwyane Wade  0.920989 -1.341907  2.262896
+423     Robert Horry  1.791771 -0.206330  1.998101
+137     Derek Fisher  1.111393 -0.830754  1.942147
+31   Anthony Johnson  0.168265 -1.692699  1.860963
+362    Mike Dunleavy  0.986222 -0.835091  1.821314
+262      Josh Howard  0.136390 -1.642024  1.778414
+314     Luke Ridnour  1.114136 -0.659163  1.773299
+320      Malik Allen  0.568990 -1.150467  1.719456
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2004, 2005, 2006].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[9/86] 3yr: [2005, 2006, 2007] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2005-06-07 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 640174 possessions (regular season)
+Selected alpha: 2000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2005-06-07.csv
+Results saved to dump/playoff_rapm_results_2005-06-07_regular_season.csv
+Top 10 Regular Season RAPM:
+              Name       Off       Def      Rapm
+567     Steve Nash  8.862021  0.850665  8.011356
+581     Tim Duncan  4.142222 -3.537104  7.679326
+178  Dirk Nowitzki  6.880174 -0.413024  7.293198
+336  Kevin Garnett  4.034889 -2.526504  6.561393
+358   LeBron James  4.720644 -1.696139  6.416783
+385  Manu Ginobili  4.529917 -1.784209  6.314126
+465    Paul Pierce  6.056244  0.253022  5.803222
+345    Kobe Bryant  6.090003  0.390955  5.699047
+377      Luol Deng  2.635213 -3.036130  5.671343
+546  Shane Battier  1.083959 -4.524742  5.608701
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2005, 2006, 2007].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 82799 possessions (playoff)
+Time decay enabled (rate=0.85): {2005: 0.7224999999999999, 2006: 0.85, 2007: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 74460 real + 1080 dummy rows = 75540 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2005-06-07_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                Name       Off       Def      Rapm
+329    Manu Ginobili  3.292118 -2.376752  5.668870
+483       Steve Nash  5.545196  0.067243  5.477953
+493       Tim Duncan  2.562383 -1.941683  4.504066
+157      Dwyane Wade  3.148699 -1.306912  4.455611
+149    Dirk Nowitzki  3.191398 -0.896970  4.088367
+303     LeBron James  1.777509 -2.263505  4.041014
+45       Baron Davis  3.019767 -0.840765  3.860532
+283    Kevin Garnett  2.176378 -1.294514  3.470892
+470     Shawn Marion  1.743921 -1.720630  3.464550
+490  Tayshaun Prince  0.786298 -2.662982  3.449280
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2005, 2006, 2007].csv
+Results saved to dump/playoff_rapm_results_2005-06-07_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                Name       Off       Def      Rapm
+329    Manu Ginobili  3.292118 -2.376752  5.668870
+483       Steve Nash  5.545196  0.067243  5.477953
+493       Tim Duncan  2.562383 -1.941683  4.504066
+157      Dwyane Wade  3.148699 -1.306912  4.455611
+149    Dirk Nowitzki  3.191398 -0.896970  4.088367
+303     LeBron James  1.777509 -2.263505  4.041014
+45       Baron Davis  3.019767 -0.840765  3.860532
+283    Kevin Garnett  2.176378 -1.294514  3.470892
+470     Shawn Marion  1.743921 -1.720630  3.464550
+490  Tayshaun Prince  0.786298 -2.662982  3.449280
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2005, 2006, 2007].csv
+
+[10/86] 3yr: [2005, 2006, 2007] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2005-06-07 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2005-06-07.csv (1280 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 82799 possessions (playoff)
+Time decay enabled (rate=0.85): {2005: 0.7224999999999999, 2006: 0.85, 2007: 1.0}
+Selected alpha: 4000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2005-06-07_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+              Name       Off       Def      Rapm
+483     Steve Nash  9.378628  0.568874  8.809754
+329  Manu Ginobili  5.708008 -2.865297  8.573305
+493     Tim Duncan  4.649112 -3.053018  7.702131
+303   LeBron James  4.141292 -3.000236  7.141528
+283  Kevin Garnett  4.414210 -2.696714  7.110923
+149  Dirk Nowitzki  5.994866 -1.037259  7.032124
+157    Dwyane Wade  5.901699 -1.013961  6.915660
+45     Baron Davis  5.422409 -1.094291  6.516700
+321      Luol Deng  3.060895 -2.769451  5.830346
+291    Kobe Bryant  5.961231  0.223781  5.737450
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2005, 2006, 2007].csv
+Results saved to dump/playoff_rapm_results_2005-06-07_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+46         Ben Gordon  1.076018 -1.334503  2.410521
+329     Manu Ginobili  1.178091 -1.081088  2.259179
+373       Mikki Moore  0.420629 -1.609049  2.029678
+265       Josh Howard  0.217842 -1.639221  1.857064
+45        Baron Davis  1.072437 -0.756012  1.828449
+39    Antonio Daniels  1.111617 -0.688739  1.800356
+238  Jason Richardson  0.852521 -0.853600  1.706121
+169       Elton Brand  1.098379 -0.566245  1.664624
+318      Luke Ridnour  0.871083 -0.776643  1.647726
+141      Derek Fisher  0.052975 -1.592065  1.645040
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2005, 2006, 2007].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[11/86] 3yr: [2006, 2007, 2008] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2006-07-08 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 649416 possessions (regular season)
+Selected alpha: 2000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2006-07-08.csv
+Results saved to dump/playoff_rapm_results_2006-07-08_regular_season.csv
+Top 10 Regular Season RAPM:
+                  Name       Off       Def      Rapm
+330      Kevin Garnett  4.152377 -5.276087  9.428464
+549         Steve Nash  9.014583  1.072375  7.942208
+338        Kobe Bryant  7.083504 -0.223244  7.306748
+174      Dirk Nowitzki  6.608139 -0.480747  7.088886
+353       LeBron James  5.635763 -1.176040  6.811803
+563         Tim Duncan  3.900082 -2.411406  6.311488
+377      Manu Ginobili  4.259389 -1.918119  6.177508
+457        Paul Pierce  4.514313 -1.305210  5.819524
+104   Chauncey Billups  4.687689 -0.986002  5.673691
+408  Metta World Peace  2.400735 -2.942881  5.343615
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2006, 2007, 2008].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 77021 possessions (playoff)
+Time decay enabled (rate=0.85): {2006: 0.7224999999999999, 2007: 0.85, 2008: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 69321 real + 1074 dummy rows = 70395 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2006-07-08_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                Name       Off       Def      Rapm
+288    Kevin Garnett  2.190402 -3.271290  5.461692
+483       Steve Nash  5.063888 -0.184050  5.247938
+331    Manu Ginobili  2.321947 -2.343676  4.665622
+309     LeBron James  1.988996 -2.657004  4.646000
+493       Tim Duncan  2.035914 -1.859181  3.895095
+296      Kobe Bryant  3.406261 -0.454724  3.860985
+151    Dirk Nowitzki  3.120592 -0.618893  3.739486
+508   Tyson Chandler  2.180119 -1.465287  3.645406
+160      Dwyane Wade  2.954507 -0.646880  3.601386
+405  Peja Stojakovic  2.877806 -0.582208  3.460014
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2006, 2007, 2008].csv
+Results saved to dump/playoff_rapm_results_2006-07-08_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                Name       Off       Def      Rapm
+288    Kevin Garnett  2.190402 -3.271290  5.461692
+483       Steve Nash  5.063888 -0.184050  5.247938
+331    Manu Ginobili  2.321947 -2.343676  4.665622
+309     LeBron James  1.988996 -2.657004  4.646000
+493       Tim Duncan  2.035914 -1.859181  3.895095
+296      Kobe Bryant  3.406261 -0.454724  3.860985
+151    Dirk Nowitzki  3.120592 -0.618893  3.739486
+508   Tyson Chandler  2.180119 -1.465287  3.645406
+160      Dwyane Wade  2.954507 -0.646880  3.601386
+405  Peja Stojakovic  2.877806 -0.582208  3.460014
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2006, 2007, 2008].csv
+
+[12/86] 3yr: [2006, 2007, 2008] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2006-07-08 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2006-07-08.csv (1228 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 77021 possessions (playoff)
+Time decay enabled (rate=0.85): {2006: 0.7224999999999999, 2007: 0.85, 2008: 1.0}
+Selected alpha: 4000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2006-07-08_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                  Name       Off       Def      Rapm
+288      Kevin Garnett  4.065648 -5.765722  9.831369
+483         Steve Nash  9.196032  0.414401  8.781631
+309       LeBron James  4.968427 -3.196438  8.164865
+331      Manu Ginobili  4.507075 -2.928754  7.435829
+296        Kobe Bryant  6.558515 -0.500541  7.059056
+151      Dirk Nowitzki  5.960563 -0.738112  6.698675
+493         Tim Duncan  4.014989 -2.590142  6.605130
+508     Tyson Chandler  3.708026 -2.445349  6.153374
+160        Dwyane Wade  5.987158 -0.157052  6.144210
+358  Metta World Peace  2.930534 -2.810158  5.740692
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2006, 2007, 2008].csv
+Results saved to dump/playoff_rapm_results_2006-07-08_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+180   Fabricio Oberto  1.170027 -1.385961  2.555989
+235  Jason Richardson  1.019774 -1.277367  2.297141
+51         Ben Gordon  1.038476 -1.056603  2.095079
+143      Derek Fisher -0.026884 -1.993537  1.966653
+508    Tyson Chandler  1.046151 -0.887668  1.933819
+376       Mikki Moore  0.132944 -1.546690  1.679635
+409      Quinton Ross  1.373502 -0.126239  1.499742
+108    Corey Maggette  0.960341 -0.537325  1.497666
+514      Vince Carter  0.746291 -0.735440  1.481731
+52        Ben Wallace -0.025554 -1.481680  1.456126
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2006, 2007, 2008].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[13/86] 3yr: [2007, 2008, 2009] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2007-08-09 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 658180 possessions (regular season)
+Selected alpha: 3000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2007-08-09.csv
+Results saved to dump/playoff_rapm_results_2007-08-09_regular_season.csv
+Top 10 Regular Season RAPM:
+                 Name       Off       Def      Rapm
+331     Kevin Garnett  3.593128 -5.482767  9.075896
+355      LeBron James  5.665395 -2.547653  8.213048
+547        Steve Nash  7.877467  0.365356  7.512111
+351        Lamar Odom  2.626253 -2.924525  5.550778
+562        Tim Duncan  3.296963 -2.004956  5.301919
+473     Rashard Lewis  2.854938 -2.296918  5.151856
+177     Dirk Nowitzki  4.680922 -0.445976  5.126898
+100  Chauncey Billups  4.222751 -0.612114  4.834865
+188       Dwyane Wade  4.476229 -0.339021  4.815250
+109        Chris Paul  4.624696 -0.187926  4.812621
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2007, 2008, 2009].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 69944 possessions (playoff)
+Time decay enabled (rate=0.85): {2007: 0.7224999999999999, 2008: 0.85, 2009: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 62411 real + 1070 dummy rows = 63481 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2007-08-09_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def      Rapm
+312      LeBron James  2.574414 -2.967000  5.541414
+290     Kevin Garnett  2.086945 -3.330966  5.417911
+309        Lamar Odom  1.895111 -2.669294  4.564405
+489        Steve Nash  4.156905 -0.214859  4.371764
+90   Chauncey Billups  2.672788 -1.270504  3.943292
+402         Pau Gasol  2.520056 -0.945777  3.465833
+500        Tim Duncan  1.342819 -1.937917  3.280736
+299       Kobe Bryant  2.570398 -0.699449  3.269847
+20   Anderson Varejao  0.189450 -2.943674  3.133123
+334     Manu Ginobili  1.083503 -1.999718  3.083222
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2007, 2008, 2009].csv
+Results saved to dump/playoff_rapm_results_2007-08-09_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+312      LeBron James  2.574414 -2.967000  5.541414
+290     Kevin Garnett  2.086945 -3.330966  5.417911
+309        Lamar Odom  1.895111 -2.669294  4.564405
+489        Steve Nash  4.156905 -0.214859  4.371764
+90   Chauncey Billups  2.672788 -1.270504  3.943292
+402         Pau Gasol  2.520056 -0.945777  3.465833
+500        Tim Duncan  1.342819 -1.937917  3.280736
+299       Kobe Bryant  2.570398 -0.699449  3.269847
+20   Anderson Varejao  0.189450 -2.943674  3.133123
+334     Manu Ginobili  1.083503 -1.999718  3.083222
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2007, 2008, 2009].csv
+
+[14/86] 3yr: [2007, 2008, 2009] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2007-08-09 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2007-08-09.csv (1214 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 69944 possessions (playoff)
+Time decay enabled (rate=0.85): {2007: 0.7224999999999999, 2008: 0.85, 2009: 1.0}
+Selected alpha: 20000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2007-08-09_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def      Rapm
+290     Kevin Garnett  3.587305 -5.608493  9.195798
+312      LeBron James  5.631631 -3.023659  8.655290
+489        Steve Nash  7.849251  0.276838  7.572413
+309        Lamar Odom  2.792060 -3.305766  6.097826
+500        Tim Duncan  3.222066 -2.315446  5.537511
+90   Chauncey Billups  4.439352 -0.853299  5.292651
+422     Rashard Lewis  3.053036 -2.205216  5.258253
+299       Kobe Bryant  4.581121 -0.420335  5.001456
+97         Chris Paul  4.814548 -0.073560  4.888108
+154     Dirk Nowitzki  4.611913 -0.273577  4.885489
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2007, 2008, 2009].csv
+Results saved to dump/playoff_rapm_results_2007-08-09_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+181   Fabricio Oberto  0.293395 -0.301865  0.595260
+239  Jason Richardson  0.288809 -0.275826  0.564635
+309        Lamar Odom  0.165808 -0.381241  0.547049
+142      Delonte West  0.212092 -0.333952  0.546044
+20   Anderson Varejao  0.015427 -0.464112  0.479539
+475      Shawn Marion  0.096783 -0.380922  0.477704
+90   Chauncey Billups  0.216601 -0.241185  0.457786
+402         Pau Gasol  0.100673 -0.351581  0.452254
+312      LeBron James -0.033764 -0.476005  0.442242
+518      Vince Carter  0.110479 -0.322190  0.432669
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2007, 2008, 2009].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[15/86] 3yr: [2008, 2009, 2010] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2008-09-10 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 664988 possessions (regular season)
+Selected alpha: 3000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2008-09-10.csv
+Results saved to dump/playoff_rapm_results_2008-09-10_regular_season.csv
+Top 10 Regular Season RAPM:
+                 Name       Off       Def      Rapm
+347      LeBron James  6.096306 -2.265364  8.361670
+184       Dwyane Wade  6.317503 -0.411896  6.729400
+528        Steve Nash  6.942279  0.366366  6.575913
+326     Kevin Garnett  1.289167 -4.792922  6.082090
+108        Chris Paul  4.776927 -1.043814  5.820741
+183     Dwight Howard  3.742323 -1.797940  5.540263
+344        Lamar Odom  1.634992 -3.559977  5.194969
+462         Ray Allen  3.876968 -0.996175  4.873143
+21   Anderson Varejao  2.565541 -2.159071  4.724611
+102        Chris Bosh  3.694023 -1.020187  4.714210
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2008, 2009, 2010].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 65194 possessions (playoff)
+Time decay enabled (rate=0.85): {2008: 0.7224999999999999, 2009: 0.85, 2010: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 58088 real + 1044 dummy rows = 59132 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2008-09-10_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+              Name       Off       Def      Rapm
+308   LeBron James  2.926342 -2.188661  5.115003
+305     Lamar Odom  1.523445 -2.913501  4.436946
+287  Kevin Garnett  0.843731 -3.404087  4.247818
+473     Steve Nash  4.132668 -0.108434  4.241101
+294    Kobe Bryant  2.711644 -1.120647  3.832291
+160  Dwight Howard  1.753879 -1.850957  3.604836
+161    Dwyane Wade  3.011058 -0.581808  3.592866
+505   Vince Carter  1.626858 -1.688773  3.315631
+413      Ray Allen  1.527791 -1.649185  3.176977
+409  Rashard Lewis  1.033951 -2.107984  3.141936
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2008, 2009, 2010].csv
+Results saved to dump/playoff_rapm_results_2008-09-10_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+              Name       Off       Def      Rapm
+308   LeBron James  2.926342 -2.188661  5.115003
+305     Lamar Odom  1.523445 -2.913501  4.436946
+287  Kevin Garnett  0.843731 -3.404087  4.247818
+473     Steve Nash  4.132668 -0.108434  4.241101
+294    Kobe Bryant  2.711644 -1.120647  3.832291
+160  Dwight Howard  1.753879 -1.850957  3.604836
+161    Dwyane Wade  3.011058 -0.581808  3.592866
+505   Vince Carter  1.626858 -1.688773  3.315631
+413      Ray Allen  1.527791 -1.649185  3.176977
+409  Rashard Lewis  1.033951 -2.107984  3.141936
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2008, 2009, 2010].csv
+
+[16/86] 3yr: [2008, 2009, 2010] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2008-09-10 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2008-09-10.csv (1184 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 65194 possessions (playoff)
+Time decay enabled (rate=0.85): {2008: 0.7224999999999999, 2009: 0.85, 2010: 1.0}
+Selected alpha: 50000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2008-09-10_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def      Rapm
+308      LeBron James  6.066319 -2.350766  8.417085
+161       Dwyane Wade  6.319600 -0.450483  6.770084
+473        Steve Nash  7.063892  0.294267  6.769626
+287     Kevin Garnett  1.278874 -4.942233  6.221107
+96         Chris Paul  4.769699 -1.015540  5.785239
+160     Dwight Howard  3.758866 -1.899847  5.658713
+305        Lamar Odom  1.790559 -3.673381  5.463940
+413         Ray Allen  3.772336 -1.148976  4.921312
+16   Anderson Varejao  2.562797 -2.225392  4.788189
+90         Chris Bosh  3.669300 -1.055796  4.725096
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2008, 2009, 2010].csv
+Results saved to dump/playoff_rapm_results_2008-09-10_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+305         Lamar Odom  0.155567 -0.113404  0.268971
+409      Rashard Lewis  0.137034 -0.115116  0.252150
+225       Jared Dudley  0.146241 -0.091702  0.237943
+235   Jason Richardson  0.186630 -0.047750  0.234381
+294        Kobe Bryant  0.132004 -0.099014  0.231018
+84       Channing Frye  0.143972 -0.078510  0.222482
+192         Grant Hill  0.134455 -0.072452  0.206906
+473         Steve Nash  0.121614 -0.072099  0.193713
+505       Vince Carter  0.068032 -0.123397  0.191429
+14   Amar'e Stoudemire  0.140832 -0.037377  0.178209
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2008, 2009, 2010].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[17/86] 3yr: [2009, 2010, 2011] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2009-10-11 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 668260 possessions (regular season)
+Selected alpha: 3000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2009-10-11.csv
+Results saved to dump/playoff_rapm_results_2009-10-11_regular_season.csv
+Top 10 Regular Season RAPM:
+                  Name       Off       Def      Rapm
+347       LeBron James  5.414413 -3.885904  9.300317
+323      Kevin Garnett  0.913285 -5.464683  6.377968
+100         Chris Paul  4.313452 -1.963587  6.277039
+524         Steve Nash  5.549945 -0.361550  5.911496
+175        Dwyane Wade  5.800831  0.006567  5.794264
+165      Dirk Nowitzki  3.952442 -1.567200  5.519642
+174      Dwight Howard  1.998871 -3.295999  5.294871
+340         Lamar Odom  2.270830 -2.853169  5.123999
+370      Manu Ginobili  3.883187 -1.223416  5.106603
+339  LaMarcus Aldridge  3.027851 -1.887712  4.915562
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2009, 2010, 2011].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 59460 possessions (playoff)
+Time decay enabled (rate=0.85): {2009: 0.7224999999999999, 2010: 0.85, 2011: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 53661 real + 1032 dummy rows = 54693 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2009-10-11_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def      Rapm
+308      LeBron James  2.604638 -2.324329  4.928966
+141     Dirk Nowitzki  2.812742 -1.496580  4.309323
+466        Steve Nash  3.753071 -0.192473  3.945544
+285     Kevin Garnett  0.652256 -3.096940  3.749196
+302        Lamar Odom  1.700364 -2.048179  3.748543
+149     Dwight Howard  0.874767 -2.552401  3.427167
+16   Anderson Varejao  1.903343 -1.377753  3.281096
+411         Ray Allen  1.806713 -1.335131  3.141844
+150       Dwyane Wade  2.282773 -0.662742  2.945515
+407     Rashard Lewis  1.255597 -1.655616  2.911213
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2009, 2010, 2011].csv
+Results saved to dump/playoff_rapm_results_2009-10-11_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+308      LeBron James  2.604638 -2.324329  4.928966
+141     Dirk Nowitzki  2.812742 -1.496580  4.309323
+466        Steve Nash  3.753071 -0.192473  3.945544
+285     Kevin Garnett  0.652256 -3.096940  3.749196
+302        Lamar Odom  1.700364 -2.048179  3.748543
+149     Dwight Howard  0.874767 -2.552401  3.427167
+16   Anderson Varejao  1.903343 -1.377753  3.281096
+411         Ray Allen  1.806713 -1.335131  3.141844
+150       Dwyane Wade  2.282773 -0.662742  2.945515
+407     Rashard Lewis  1.255597 -1.655616  2.911213
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2009, 2010, 2011].csv
+
+[18/86] 3yr: [2009, 2010, 2011] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2009-10-11 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2009-10-11.csv (1186 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 59460 possessions (playoff)
+Time decay enabled (rate=0.85): {2009: 0.7224999999999999, 2010: 0.85, 2011: 1.0}
+Selected alpha: 10000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2009-10-11_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def      Rapm
+308      LeBron James  5.196960 -3.809966  9.006926
+285     Kevin Garnett  1.080718 -5.676819  6.757538
+466        Steve Nash  6.152105 -0.483182  6.635287
+141     Dirk Nowitzki  4.691577 -1.853491  6.545069
+89         Chris Paul  4.239320 -1.702184  5.941504
+302        Lamar Odom  2.728096 -2.965195  5.693291
+149     Dwight Howard  2.076202 -3.614570  5.690772
+150       Dwyane Wade  5.337101 -0.172925  5.510026
+16   Anderson Varejao  3.101631 -1.817037  4.918667
+411         Ray Allen  3.469810 -1.309811  4.779622
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2009, 2010, 2011].csv
+Results saved to dump/playoff_rapm_results_2009-10-11_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+453       Shawn Marion  0.325460 -1.034988  1.360447
+141      Dirk Nowitzki  0.739135 -0.286291  1.025427
+220       Jared Dudley  0.641284 -0.306229  0.947514
+228         Jason Kidd  0.374600 -0.565769  0.940369
+407      Rashard Lewis  0.666237 -0.267266  0.933502
+77       Channing Frye  0.533542 -0.276794  0.810337
+284       Kevin Durant  0.152893 -0.639831  0.792724
+433  Russell Westbrook  0.227037 -0.546694  0.773731
+56     Brendan Haywood  0.620578 -0.123872  0.744450
+402        Rajon Rondo  0.048162 -0.693276  0.741438
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2009, 2010, 2011].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[19/86] 3yr: [2010, 2011, 2012] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2010-11-12 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 607061 possessions (regular season)
+Selected alpha: 3000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2010-11-12.csv
+Results saved to dump/playoff_rapm_results_2010-11-12_regular_season.csv
+Top 10 Regular Season RAPM:
+              Name       Off       Def      Rapm
+366   LeBron James  4.247591 -3.470118  7.717709
+162  Dirk Nowitzki  4.224373 -2.252109  6.476481
+338  Kevin Garnett  2.018101 -4.306004  6.324105
+95      Chris Paul  4.257876 -1.741748  5.999624
+387  Manu Ginobili  4.969802 -0.675222  5.645024
+460   Paul Millsap  3.254654 -2.206379  5.461034
+504  Ryan Anderson  3.320973 -2.109475  5.430448
+181      Ekpe Udoh  1.821526 -3.544333  5.365859
+320     Josh Smith  1.377936 -3.705520  5.083456
+539     Steve Nash  4.803667 -0.201788  5.005455
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2010, 2011, 2012].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 75364 possessions (playoff)
+Time decay enabled (rate=0.85): {2010: 0.7224999999999999, 2011: 0.85, 2012: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 68266 real + 1078 dummy rows = 69344 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2010-11-12_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+              Name       Off       Def      Rapm
+339   LeBron James  2.986317 -2.270007  5.256324
+151  Dirk Nowitzki  3.658244 -1.540928  5.199172
+311  Kevin Garnett  1.393387 -3.287241  4.680628
+499     Tim Duncan  1.191668 -2.604756  3.796424
+160    Dwyane Wade  2.619488 -1.120034  3.739522
+159  Dwight Howard  1.051143 -2.451449  3.502592
+505    Tony Parker  1.659010 -1.698887  3.357897
+229   James Harden  2.845692 -0.488871  3.334564
+487     Steve Nash  3.319100  0.077827  3.241273
+357  Manu Ginobili  2.421680 -0.765006  3.186687
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2010, 2011, 2012].csv
+Results saved to dump/playoff_rapm_results_2010-11-12_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+              Name       Off       Def      Rapm
+339   LeBron James  2.986317 -2.270007  5.256324
+151  Dirk Nowitzki  3.658244 -1.540928  5.199172
+311  Kevin Garnett  1.393387 -3.287241  4.680628
+499     Tim Duncan  1.191668 -2.604756  3.796424
+160    Dwyane Wade  2.619488 -1.120034  3.739522
+159  Dwight Howard  1.051143 -2.451449  3.502592
+505    Tony Parker  1.659010 -1.698887  3.357897
+229   James Harden  2.845692 -0.488871  3.334564
+487     Steve Nash  3.319100  0.077827  3.241273
+357  Manu Ginobili  2.421680 -0.765006  3.186687
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2010, 2011, 2012].csv
+
+[20/86] 3yr: [2010, 2011, 2012] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2010-11-12 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2010-11-12.csv (1210 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 75364 possessions (playoff)
+Time decay enabled (rate=0.85): {2010: 0.7224999999999999, 2011: 0.85, 2012: 1.0}
+Selected alpha: 30000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2010-11-12_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+              Name       Off       Def      Rapm
+339   LeBron James  4.233487 -3.590125  7.823612
+151  Dirk Nowitzki  4.750037 -2.248842  6.998879
+311  Kevin Garnett  2.198310 -4.441638  6.639948
+87      Chris Paul  4.150257 -1.672160  5.822417
+357  Manu Ginobili  4.883467 -0.679918  5.563385
+420   Paul Millsap  3.234723 -2.180516  5.415239
+457  Ryan Anderson  3.262997 -2.078442  5.341439
+170      Ekpe Udoh  1.783243 -3.528696  5.311939
+487     Steve Nash  5.023133 -0.159537  5.182671
+296     Josh Smith  1.459777 -3.499179  4.958956
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2010, 2011, 2012].csv
+Results saved to dump/playoff_rapm_results_2010-11-12_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+              Name       Off       Def      Rapm
+151  Dirk Nowitzki  0.525664  0.003266  0.522398
+118    Danny Green  0.317386 -0.200078  0.517464
+242     Jason Kidd  0.345780 -0.114459  0.460240
+128     David West  0.166824 -0.240427  0.407251
+48      Boris Diaw  0.226506 -0.154220  0.380726
+505    Tony Parker  0.279391 -0.100752  0.380143
+246    Jason Terry  0.449739  0.074816  0.374924
+499     Tim Duncan  0.228020 -0.146749  0.374770
+174   Eric Bledsoe  0.184857 -0.178806  0.363663
+428    Rajon Rondo  0.183533 -0.171426  0.354959
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2010, 2011, 2012].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[21/86] 3yr: [2011, 2012, 2013] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2011-12-13 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 600665 possessions (regular season)
+Selected alpha: 3000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2011-12-13.csv
+Results saved to dump/playoff_rapm_results_2011-12-13_regular_season.csv
+Top 10 Regular Season RAPM:
+              Name       Off       Def      Rapm
+99      Chris Paul  4.911955 -1.179916  6.091870
+166  Dirk Nowitzki  3.815085 -2.253452  6.068537
+354  Kevin Garnett  0.335744 -5.050642  5.386386
+388   LeBron James  2.850517 -2.463638  5.314155
+15    Amir Johnson  3.292113 -1.971045  5.263158
+444    Mike Conley  3.662318 -1.246304  4.908622
+483   Paul Millsap  3.114835 -1.790549  4.905385
+624      Ömer Aşik  1.826605 -2.949271  4.775876
+484    Paul Pierce  2.669855 -1.941699  4.611554
+462  Nick Collison  2.853373 -1.736300  4.589674
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2011, 2012, 2013].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 80408 possessions (playoff)
+Time decay enabled (rate=0.85): {2011: 0.7224999999999999, 2012: 0.85, 2013: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 73236 real + 1118 dummy rows = 74354 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2011-12-13_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+              Name       Off       Def      Rapm
+149  Dirk Nowitzki  3.356713 -1.334160  4.690873
+318  Kevin Garnett  0.136494 -3.963849  4.100344
+512     Tim Duncan  1.326789 -2.618525  3.945314
+349   LeBron James  2.770549 -1.090743  3.861292
+397    Mike Conley  2.077844 -1.612245  3.690089
+518    Tony Parker  1.752027 -1.769181  3.521208
+414  Nick Collison  1.836421 -1.668930  3.505351
+367  Manu Ginobili  2.429032 -1.021168  3.450200
+493  Stephen Curry  2.600060 -0.735035  3.335095
+14    Amir Johnson  1.998528 -1.229428  3.227956
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2011, 2012, 2013].csv
+Results saved to dump/playoff_rapm_results_2011-12-13_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+              Name       Off       Def      Rapm
+149  Dirk Nowitzki  3.356713 -1.334160  4.690873
+318  Kevin Garnett  0.136494 -3.963849  4.100344
+512     Tim Duncan  1.326789 -2.618525  3.945314
+349   LeBron James  2.770549 -1.090743  3.861292
+397    Mike Conley  2.077844 -1.612245  3.690089
+518    Tony Parker  1.752027 -1.769181  3.521208
+414  Nick Collison  1.836421 -1.668930  3.505351
+367  Manu Ginobili  2.429032 -1.021168  3.450200
+493  Stephen Curry  2.600060 -0.735035  3.335095
+14    Amir Johnson  1.998528 -1.229428  3.227956
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2011, 2012, 2013].csv
+
+[22/86] 3yr: [2011, 2012, 2013] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2011-12-13 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2011-12-13.csv (1260 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 80408 possessions (playoff)
+Time decay enabled (rate=0.85): {2011: 0.7224999999999999, 2012: 0.85, 2013: 1.0}
+Selected alpha: 50000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2011-12-13_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+              Name       Off       Def      Rapm
+149  Dirk Nowitzki  4.083327 -2.239231  6.322558
+86      Chris Paul  4.858216 -1.020317  5.878533
+318  Kevin Garnett  0.402369 -5.207344  5.609713
+349   LeBron James  2.952296 -2.460382  5.412678
+14    Amir Johnson  3.351675 -2.006708  5.358383
+397    Mike Conley  3.752015 -1.412277  5.164293
+434   Paul Millsap  3.068349 -1.808645  4.876993
+558      Ömer Aşik  1.753525 -3.015200  4.768725
+414  Nick Collison  2.866705 -1.820162  4.686868
+435    Paul Pierce  2.640346 -1.945380  4.585725
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2011, 2012, 2013].csv
+Results saved to dump/playoff_rapm_results_2011-12-13_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+              Name       Off       Def      Rapm
+369     Marc Gasol  0.053496 -0.259704  0.313200
+51      Boris Diaw  0.155336 -0.128214  0.283549
+449      Ray Allen  0.238546 -0.038849  0.277395
+555  Zach Randolph  0.120825 -0.155058  0.275882
+493  Stephen Curry  0.194201 -0.066441  0.260642
+397    Mike Conley  0.089698 -0.165973  0.255671
+149  Dirk Nowitzki  0.268242  0.014221  0.254021
+174   Eric Bledsoe  0.150626 -0.095499  0.246125
+318  Kevin Garnett  0.066625 -0.156702  0.223326
+443    Rajon Rondo  0.154496 -0.068040  0.222536
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2011, 2012, 2013].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[23/86] 3yr: [2012, 2013, 2014] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2012-13-14 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 600797 possessions (regular season)
+Selected alpha: 3000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2012-13-14.csv
+Results saved to dump/playoff_rapm_results_2012-13-14_regular_season.csv
+Top 10 Regular Season RAPM:
+                 Name       Off       Def      Rapm
+21     Andre Iguodala  1.852951 -4.689832  6.542783
+104        Chris Paul  3.706425 -2.332705  6.039130
+566     Stephen Curry  4.504389 -0.478951  4.983340
+361      Kevin Durant  4.243384 -0.706045  4.949429
+413     Manu Ginobili  3.683615 -1.218079  4.901694
+394      LeBron James  4.384532 -0.465037  4.849569
+91      Channing Frye  4.989097  0.160576  4.828521
+467     Nick Collison  3.475683 -1.179085  4.654768
+16       Amir Johnson  2.523862 -1.879148  4.403010
+482  Patrick Beverley  2.706516 -1.668402  4.374918
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2012, 2013, 2014].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 86937 possessions (playoff)
+Time decay enabled (rate=0.85): {2012: 0.7224999999999999, 2013: 0.85, 2014: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 78572 real + 1172 dummy rows = 79744 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2012-13-14_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                  Name       Off       Def      Rapm
+364       LeBron James  3.466525 -1.151446  4.617971
+380      Manu Ginobili  2.709038 -1.517034  4.226072
+492  Russell Westbrook  2.801076 -1.168315  3.969391
+516      Stephen Curry  3.301870 -0.615207  3.917077
+533         Tim Duncan  1.580005 -2.084876  3.664881
+95          Chris Paul  2.730010 -0.765760  3.495769
+333       Kevin Durant  2.371189 -0.943376  3.314565
+20      Andre Iguodala  0.647628 -2.624036  3.271664
+568       Vince Carter  1.479120 -1.774660  3.253780
+448        Patty Mills  1.671195 -1.343758  3.014953
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2012, 2013, 2014].csv
+Results saved to dump/playoff_rapm_results_2012-13-14_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+364       LeBron James  3.466525 -1.151446  4.617971
+380      Manu Ginobili  2.709038 -1.517034  4.226072
+492  Russell Westbrook  2.801076 -1.168315  3.969391
+516      Stephen Curry  3.301870 -0.615207  3.917077
+533         Tim Duncan  1.580005 -2.084876  3.664881
+95          Chris Paul  2.730010 -0.765760  3.495769
+333       Kevin Durant  2.371189 -0.943376  3.314565
+20      Andre Iguodala  0.647628 -2.624036  3.271664
+568       Vince Carter  1.479120 -1.774660  3.253780
+448        Patty Mills  1.671195 -1.343758  3.014953
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2012, 2013, 2014].csv
+
+[24/86] 3yr: [2012, 2013, 2014] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2012-13-14 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2012-13-14.csv (1294 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 86937 possessions (playoff)
+Time decay enabled (rate=0.85): {2012: 0.7224999999999999, 2013: 0.85, 2014: 1.0}
+Selected alpha: 50000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2012-13-14_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def      Rapm
+20     Andre Iguodala  1.808253 -4.676094  6.484347
+95         Chris Paul  3.748039 -2.196281  5.944320
+516     Stephen Curry  4.717974 -0.533711  5.251685
+380     Manu Ginobili  3.793165 -1.303318  5.096483
+364      LeBron James  4.468719 -0.550997  5.019717
+333      Kevin Durant  4.231215 -0.709148  4.940363
+82      Channing Frye  4.977303  0.131315  4.845988
+432     Nick Collison  3.360021 -1.229823  4.589845
+16       Amir Johnson  2.510404 -1.898366  4.408770
+446  Patrick Beverley  2.725450 -1.642101  4.367551
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2012, 2013, 2014].csv
+Results saved to dump/playoff_rapm_results_2012-13-14_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+55          Boris Diaw  0.190321 -0.090816  0.281137
+217    Harrison Barnes  0.224219 -0.049563  0.273782
+516      Stephen Curry  0.213586 -0.054760  0.268346
+533         Tim Duncan  0.112293 -0.153605  0.265898
+382         Marc Gasol  0.039683 -0.221973  0.261656
+468          Ray Allen  0.218275 -0.031542  0.249817
+492  Russell Westbrook  0.149000 -0.092139  0.241139
+24        Andrew Bogut  0.112170 -0.117059  0.229229
+582      Zach Randolph  0.072305 -0.144106  0.216411
+334      Kevin Garnett  0.019084 -0.192145  0.211229
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2012, 2013, 2014].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[25/86] 3yr: [2013, 2014, 2015] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2013-14-15 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 665863 possessions (regular season)
+Selected alpha: 4000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2013-14-15.csv
+Results saved to dump/playoff_rapm_results_2013-14-15_regular_season.csv
+Top 10 Regular Season RAPM:
+               Name       Off       Def      Rapm
+400    LeBron James  5.383986 -1.152352  6.536338
+98       Chris Paul  3.910788 -2.091396  6.002184
+574   Stephen Curry  4.972273 -0.422395  5.394668
+24   Andre Iguodala  2.293800 -2.934713  5.228513
+365    Kevin Durant  3.793063 -1.204263  4.997325
+355   Kawhi Leonard  1.555539 -3.053239  4.608779
+376   Klay Thompson  3.158296 -1.080645  4.238941
+419   Manu Ginobili  2.095036 -2.024774  4.119811
+385     Kyle Korver  2.698060 -1.225098  3.923158
+142  DeAndre Jordan  4.475708  0.628591  3.847117
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2013, 2014, 2015].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 72097 possessions (playoff)
+Time decay enabled (rate=0.85): {2013: 0.7224999999999999, 2014: 0.85, 2015: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 65147 real + 1124 dummy rows = 66271 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2013-14-15_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                  Name       Off       Def      Rapm
+353       LeBron James  3.626793 -1.233137  4.859930
+496      Stephen Curry  3.076509 -1.341682  4.418191
+91          Chris Paul  2.899302 -1.089758  3.989061
+476  Russell Westbrook  3.182668 -0.557945  3.740613
+152     Draymond Green  1.184291 -2.385682  3.569973
+322       Kevin Durant  1.840584 -1.229227  3.069811
+312      Kawhi Leonard  0.757635 -2.130458  2.888094
+365      Manu Ginobili  1.660053 -1.197842  2.857895
+333      Klay Thompson  1.827394 -0.993549  2.820943
+432        Patty Mills  1.354189 -1.421354  2.775544
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2013, 2014, 2015].csv
+Results saved to dump/playoff_rapm_results_2013-14-15_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+353       LeBron James  3.626793 -1.233137  4.859930
+496      Stephen Curry  3.076509 -1.341682  4.418191
+91          Chris Paul  2.899302 -1.089758  3.989061
+476  Russell Westbrook  3.182668 -0.557945  3.740613
+152     Draymond Green  1.184291 -2.385682  3.569973
+322       Kevin Durant  1.840584 -1.229227  3.069811
+312      Kawhi Leonard  0.757635 -2.130458  2.888094
+365      Manu Ginobili  1.660053 -1.197842  2.857895
+333      Klay Thompson  1.827394 -0.993549  2.820943
+432        Patty Mills  1.354189 -1.421354  2.775544
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2013, 2014, 2015].csv
+
+[26/86] 3yr: [2013, 2014, 2015] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2013-14-15 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2013-14-15.csv (1306 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 72097 possessions (playoff)
+Time decay enabled (rate=0.85): {2013: 0.7224999999999999, 2014: 0.85, 2015: 1.0}
+Selected alpha: 50000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2013-14-15_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+               Name       Off       Def      Rapm
+353    LeBron James  5.491561 -1.240195  6.731756
+91       Chris Paul  3.962920 -2.094233  6.057154
+496   Stephen Curry  5.070617 -0.534415  5.605032
+22   Andre Iguodala  2.315936 -2.854041  5.169977
+322    Kevin Durant  3.769164 -1.244768  5.013932
+312   Kawhi Leonard  1.533542 -3.082439  4.615981
+333   Klay Thompson  3.219388 -1.126524  4.345912
+365   Manu Ginobili  2.176959 -1.976854  4.153813
+152  Draymond Green  1.099580 -2.927330  4.026911
+235    James Harden  4.299322  0.392171  3.907151
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2013, 2014, 2015].csv
+Results saved to dump/playoff_rapm_results_2013-14-15_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+476  Russell Westbrook  0.159116 -0.091751  0.250867
+528       Trevor Ariza  0.102980 -0.138320  0.241300
+205    Harrison Barnes  0.126154 -0.114662  0.240817
+496      Stephen Curry  0.098345 -0.112019  0.210364
+421        Norris Cole  0.139792 -0.067660  0.207453
+223           JR Smith  0.008760 -0.195573  0.204333
+353       LeBron James  0.107574 -0.087843  0.195418
+83      Chris Andersen  0.162588 -0.031615  0.194204
+368      Marcin Gortat  0.084884 -0.099912  0.184795
+394        Mike Conley  0.002432 -0.182091  0.184523
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2013, 2014, 2015].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[27/86] 3yr: [2014, 2015, 2016] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2014-15-16 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 681459 possessions (regular season)
+Selected alpha: 3000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2014-15-16.csv
+Results saved to dump/playoff_rapm_results_2014-15-16_regular_season.csv
+Top 10 Regular Season RAPM:
+                Name       Off       Def      Rapm
+398     LeBron James  5.954992 -1.756306  7.711298
+106       Chris Paul  4.687442 -2.828799  7.516241
+575    Stephen Curry  6.341424 -0.921513  7.262936
+175   Draymond Green  2.785397 -3.979281  6.764678
+356    Kawhi Leonard  2.070640 -4.516018  6.586658
+368     Kevin Durant  4.983879 -1.374499  6.358378
+266     James Harden  4.981988 -0.543554  5.525542
+522      Ricky Rubio  3.507680 -2.015022  5.522702
+492      Patty Mills  2.049157 -3.296733  5.345890
+374  Khris Middleton  2.957749 -2.319327  5.277076
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2014, 2015, 2016].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 66543 possessions (playoff)
+Time decay enabled (rate=0.85): {2014: 0.7224999999999999, 2015: 0.85, 2016: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 59070 real + 1132 dummy rows = 60202 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2014-15-16_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                  Name       Off       Def      Rapm
+351       LeBron James  3.867531 -2.021108  5.888640
+153     Draymond Green  2.047067 -3.353490  5.400557
+93          Chris Paul  2.918762 -2.375171  5.293933
+504      Stephen Curry  3.229998 -1.418251  4.648249
+478  Russell Westbrook  3.466473 -0.637504  4.103977
+325       Kevin Durant  2.408243 -1.659098  4.067341
+433        Patty Mills  1.302694 -2.178284  3.480978
+117        Danny Green  0.835067 -2.506011  3.341078
+316      Kawhi Leonard  1.007038 -2.228040  3.235077
+339         Kyle Lowry  1.723549 -1.507887  3.231437
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2014, 2015, 2016].csv
+Results saved to dump/playoff_rapm_results_2014-15-16_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+351       LeBron James  3.867531 -2.021108  5.888640
+153     Draymond Green  2.047067 -3.353490  5.400557
+93          Chris Paul  2.918762 -2.375171  5.293933
+504      Stephen Curry  3.229998 -1.418251  4.648249
+478  Russell Westbrook  3.466473 -0.637504  4.103977
+325       Kevin Durant  2.408243 -1.659098  4.067341
+433        Patty Mills  1.302694 -2.178284  3.480978
+117        Danny Green  0.835067 -2.506011  3.341078
+316      Kawhi Leonard  1.007038 -2.228040  3.235077
+339         Kyle Lowry  1.723549 -1.507887  3.231437
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2014, 2015, 2016].csv
+
+[28/86] 3yr: [2014, 2015, 2016] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2014-15-16 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2014-15-16.csv (1308 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 66543 possessions (playoff)
+Time decay enabled (rate=0.85): {2014: 0.7224999999999999, 2015: 0.85, 2016: 1.0}
+Selected alpha: 15000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2014-15-16_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                  Name       Off       Def      Rapm
+351       LeBron James  6.428866 -2.151888  8.580754
+93          Chris Paul  4.765694 -3.199823  7.965517
+504      Stephen Curry  6.079945 -1.008889  7.088834
+153     Draymond Green  2.798452 -4.191184  6.989636
+325       Kevin Durant  5.038878 -1.743437  6.782314
+316      Kawhi Leonard  2.105365 -4.316834  6.422200
+232       James Harden  5.321130 -0.511647  5.832777
+463        Ricky Rubio  3.576094 -1.982059  5.558154
+433        Patty Mills  2.182829 -3.320151  5.502980
+478  Russell Westbrook  5.202951  0.058283  5.144669
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2014, 2015, 2016].csv
+Results saved to dump/playoff_rapm_results_2014-15-16_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+220           JR Smith  0.508765 -0.461893  0.970658
+351       LeBron James  0.473875 -0.395581  0.869456
+478  Russell Westbrook  0.533575 -0.286849  0.820424
+533       Trevor Ariza  0.115622 -0.558422  0.674044
+487        Serge Ibaka  0.282319 -0.379721  0.662040
+426    Otto Porter Jr.  0.174039 -0.423380  0.597419
+537   Tristan Thompson  0.217615 -0.377212  0.594827
+342       Kyrie Irving  0.480684 -0.081210  0.561894
+145       Dion Waiters  0.325355 -0.231817  0.557171
+171       Enes Freedom  0.239812 -0.282030  0.521842
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2014, 2015, 2016].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[29/86] 3yr: [2015, 2016, 2017] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2015-16-17 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 691892 possessions (regular season)
+Selected alpha: 3000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2015-16-17.csv
+Results saved to dump/playoff_rapm_results_2015-16-17_regular_season.csv
+Top 10 Regular Season RAPM:
+                  Name       Off       Def      Rapm
+399       LeBron James  6.921966 -1.350437  8.272402
+583      Stephen Curry  7.023040 -0.739904  7.762944
+106         Chris Paul  4.786024 -2.457131  7.243155
+355      Kawhi Leonard  4.783276 -2.234930  7.018206
+177     Draymond Green  2.539861 -4.187727  6.727588
+384         Kyle Lowry  3.950494 -1.850710  5.801204
+367       Kevin Durant  4.075912 -1.556889  5.632801
+478       Nikola Jokic  4.329904 -1.223246  5.553150
+373    Khris Middleton  2.466163 -2.916903  5.383066
+500  Patrick Patterson  3.820298 -1.394766  5.215064
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2015, 2016, 2017].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 60012 possessions (playoff)
+Time decay enabled (rate=0.85): {2015: 0.7224999999999999, 2016: 0.85, 2017: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 52344 real + 1116 dummy rows = 53460 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2015-16-17_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                  Name       Off       Def      Rapm
+339       LeBron James  5.232746 -2.048306  7.281052
+491      Stephen Curry  4.442934 -1.574155  6.017088
+145     Draymond Green  2.077403 -3.911638  5.989041
+313       Kevin Durant  3.232156 -1.674834  4.906990
+304      Kawhi Leonard  3.084534 -1.170685  4.255219
+464  Russell Westbrook  3.284611 -0.940413  4.225024
+88          Chris Paul  2.137961 -1.944680  4.082641
+327         Kyle Lowry  1.801838 -1.944526  3.746364
+314         Kevin Love  2.383692 -0.871396  3.255088
+403       Nikola Jokic  1.984159 -0.991323  2.975483
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2015, 2016, 2017].csv
+Results saved to dump/playoff_rapm_results_2015-16-17_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+339       LeBron James  5.232746 -2.048306  7.281052
+491      Stephen Curry  4.442934 -1.574155  6.017088
+145     Draymond Green  2.077403 -3.911638  5.989041
+313       Kevin Durant  3.232156 -1.674834  4.906990
+304      Kawhi Leonard  3.084534 -1.170685  4.255219
+464  Russell Westbrook  3.284611 -0.940413  4.225024
+88          Chris Paul  2.137961 -1.944680  4.082641
+327         Kyle Lowry  1.801838 -1.944526  3.746364
+314         Kevin Love  2.383692 -0.871396  3.255088
+403       Nikola Jokic  1.984159 -0.991323  2.975483
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2015, 2016, 2017].csv
+
+[30/86] 3yr: [2015, 2016, 2017] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2015-16-17 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2015-16-17.csv (1330 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 60012 possessions (playoff)
+Time decay enabled (rate=0.85): {2015: 0.7224999999999999, 2016: 0.85, 2017: 1.0}
+Selected alpha: 5000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2015-16-17_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                  Name       Off       Def       Rapm
+339       LeBron James  8.541254 -2.683830  11.225084
+491      Stephen Curry  7.449564 -1.119311   8.568875
+145     Draymond Green  3.174811 -5.289104   8.463915
+304      Kawhi Leonard  5.621182 -1.877386   7.498567
+88          Chris Paul  4.358747 -3.010250   7.368996
+313       Kevin Durant  5.134363 -2.133077   7.267440
+464  Russell Westbrook  6.088445 -0.552497   6.640942
+327         Kyle Lowry  3.830094 -2.774462   6.604557
+403       Nikola Jokic  4.220455 -1.666719   5.887174
+228       James Harden  5.254354 -0.100042   5.354396
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2015, 2016, 2017].csv
+Results saved to dump/playoff_rapm_results_2015-16-17_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+339       LeBron James  1.619289 -1.333393  2.952682
+412    Otto Porter Jr.  1.076421 -0.968776  2.045197
+145     Draymond Green  0.634950 -1.101377  1.736326
+313       Kevin Durant  1.058451 -0.576188  1.634639
+464  Russell Westbrook  0.738228 -0.840713  1.578941
+437     Ramon Sessions  0.288561 -1.062711  1.351272
+314         Kevin Love  1.265184 -0.077886  1.343071
+524   Tristan Thompson  0.139759 -0.940097  1.079856
+380        Mike Conley  0.312093 -0.762310  1.074404
+381      Mike Dunleavy  0.287290 -0.767864  1.055154
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2015, 2016, 2017].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[31/86] 3yr: [2016, 2017, 2018] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2016-17-18 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 707106 possessions (regular season)
+Selected alpha: 3000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2016-17-18.csv
+Results saved to dump/playoff_rapm_results_2016-17-18_regular_season.csv
+Top 10 Regular Season RAPM:
+                 Name       Off       Def      Rapm
+621     Stephen Curry  7.898396 -0.663825  8.562220
+113        Chris Paul  4.714408 -2.621029  7.335437
+429      LeBron James  7.237828  0.447924  6.789905
+414        Kyle Lowry  4.490175 -2.171461  6.661636
+521      Nikola Jokic  5.131759 -1.227710  6.359469
+382     Kawhi Leonard  3.458818 -2.550517  6.009335
+586       Rudy Gobert  1.369217 -4.317705  5.686922
+323      Jimmy Butler  1.971475 -3.563640  5.535115
+573  Robert Covington  0.688697 -4.579626  5.268323
+387      Kemba Walker  4.185353 -0.871502  5.056856
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2016, 2017, 2018].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 53039 possessions (playoff)
+Time decay enabled (rate=0.85): {2016: 0.7224999999999999, 2017: 0.85, 2018: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 46044 real + 1026 dummy rows = 47070 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2016-17-18_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+               Name       Off       Def      Rapm
+449   Stephen Curry  4.743140 -1.457966  6.201106
+311    LeBron James  4.911168 -0.719368  5.630536
+142  Draymond Green  1.248121 -3.596260  4.844381
+286    Kevin Durant  3.201827 -1.600808  4.802635
+83       Chris Paul  1.979162 -2.225683  4.204845
+277   Kawhi Leonard  2.520581 -1.631970  4.152551
+300      Kyle Lowry  2.076120 -1.537786  3.613906
+372    Nikola Jokic  2.347891 -0.989304  3.337195
+211    James Harden  2.139177 -1.130052  3.269229
+494  Victor Oladipo  0.371360 -2.678549  3.049909
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2016, 2017, 2018].csv
+Results saved to dump/playoff_rapm_results_2016-17-18_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+               Name       Off       Def      Rapm
+449   Stephen Curry  4.743140 -1.457966  6.201106
+311    LeBron James  4.911168 -0.719368  5.630536
+142  Draymond Green  1.248121 -3.596260  4.844381
+286    Kevin Durant  3.201827 -1.600808  4.802635
+83       Chris Paul  1.979162 -2.225683  4.204845
+277   Kawhi Leonard  2.520581 -1.631970  4.152551
+300      Kyle Lowry  2.076120 -1.537786  3.613906
+372    Nikola Jokic  2.347891 -0.989304  3.337195
+211    James Harden  2.139177 -1.130052  3.269229
+494  Victor Oladipo  0.371360 -2.678549  3.049909
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2016, 2017, 2018].csv
+
+[32/86] 3yr: [2016, 2017, 2018] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2016-17-18 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2016-17-18.csv (1428 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 53039 possessions (playoff)
+Time decay enabled (rate=0.85): {2016: 0.7224999999999999, 2017: 0.85, 2018: 1.0}
+Selected alpha: 5000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2016-17-18_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+               Name       Off       Def      Rapm
+449   Stephen Curry  8.113219 -1.330135  9.443354
+311    LeBron James  8.589720 -0.363889  8.953609
+83       Chris Paul  4.152883 -3.180466  7.333348
+277   Kawhi Leonard  4.587310 -2.545947  7.133257
+300      Kyle Lowry  4.424396 -2.350761  6.775157
+372    Nikola Jokic  5.013522 -1.648530  6.662052
+142  Draymond Green  2.054740 -4.431830  6.486570
+286    Kevin Durant  5.099501 -0.862407  5.961908
+242     Joel Embiid  2.109880 -3.469711  5.579591
+235    Jimmy Butler  2.193409 -3.343058  5.536468
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2016, 2017, 2018].csv
+Results saved to dump/playoff_rapm_results_2016-17-18_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+286      Kevin Durant  1.337648 -1.194932  2.532580
+311      LeBron James  1.351892 -0.811812  2.163705
+304      Kyrie Irving  1.120445 -0.533073  1.653518
+362      Myles Turner  0.462431 -1.153195  1.615626
+142    Draymond Green  0.155879 -1.448597  1.604476
+484  Tristan Thompson  0.573001 -0.902588  1.475589
+237        Joe Ingles  0.618415 -0.847896  1.466311
+463    Thaddeus Young  0.160070 -1.227133  1.387203
+494    Victor Oladipo  0.083774 -1.203551  1.287325
+124    Derrick Favors  1.084919 -0.156146  1.241065
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2016, 2017, 2018].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[33/86] 3yr: [2017, 2018, 2019] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2017-18-19 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 720819 possessions (regular season)
+Selected alpha: 3000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2017-18-19.csv
+Results saved to dump/playoff_rapm_results_2017-18-19_regular_season.csv
+Top 10 Regular Season RAPM:
+              Name       Off       Def      Rapm
+645  Stephen Curry  6.876253 -1.454931  8.331184
+438     Kyle Lowry  4.972631 -1.737220  6.709851
+353    Joel Embiid  2.822452 -3.723510  6.545963
+390   Jrue Holiday  2.799291 -3.122680  5.921971
+551   Nikola Jokic  5.009585 -0.904451  5.914035
+412   Kemba Walker  5.346155 -0.550598  5.896753
+612    Rudy Gobert  1.341138 -4.422046  5.763184
+343   Jimmy Butler  2.551787 -3.074681  5.626469
+113     Chris Paul  3.141746 -2.477341  5.619086
+454   LeBron James  5.258147 -0.302930  5.561078
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2017, 2018, 2019].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 49362 possessions (playoff)
+Time decay enabled (rate=0.85): {2017: 0.7224999999999999, 2018: 0.85, 2019: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 43286 real + 916 dummy rows = 44202 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2017-18-19_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+               Name       Off       Def      Rapm
+394   Stephen Curry  4.505532 -1.372677  5.878209
+216     Joel Embiid  1.505352 -3.778865  5.284218
+249    Kevin Durant  3.328258 -1.457262  4.785520
+261      Kyle Lowry  2.694148 -1.802888  4.497037
+272    LeBron James  3.758692 -0.452817  4.211509
+243   Kawhi Leonard  2.856660 -1.247294  4.103954
+186    James Harden  2.898630 -1.065317  3.963947
+123  Draymond Green  0.863160 -3.016343  3.879502
+208    Jimmy Butler  1.351392 -2.153053  3.504445
+324    Nikola Jokic  2.405781 -1.048398  3.454180
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2017, 2018, 2019].csv
+Results saved to dump/playoff_rapm_results_2017-18-19_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+               Name       Off       Def      Rapm
+394   Stephen Curry  4.505532 -1.372677  5.878209
+216     Joel Embiid  1.505352 -3.778865  5.284218
+249    Kevin Durant  3.328258 -1.457262  4.785520
+261      Kyle Lowry  2.694148 -1.802888  4.497037
+272    LeBron James  3.758692 -0.452817  4.211509
+243   Kawhi Leonard  2.856660 -1.247294  4.103954
+186    James Harden  2.898630 -1.065317  3.963947
+123  Draymond Green  0.863160 -3.016343  3.879502
+208    Jimmy Butler  1.351392 -2.153053  3.504445
+324    Nikola Jokic  2.405781 -1.048398  3.454180
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2017, 2018, 2019].csv
+
+[34/86] 3yr: [2017, 2018, 2019] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2017-18-19 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2017-18-19.csv (1492 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 49362 possessions (playoff)
+Time decay enabled (rate=0.85): {2017: 0.7224999999999999, 2018: 0.85, 2019: 1.0}
+Selected alpha: 7500.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2017-18-19_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+              Name       Off       Def      Rapm
+394  Stephen Curry  7.408020 -1.653222  9.061242
+216    Joel Embiid  3.045342 -4.976603  8.021944
+261     Kyle Lowry  5.055791 -2.126264  7.182054
+272   LeBron James  6.327543 -0.463199  6.790742
+208   Jimmy Butler  2.799635 -3.542920  6.342555
+233   Jrue Holiday  3.017116 -3.235960  6.253076
+324   Nikola Jokic  4.921708 -1.229311  6.151018
+249   Kevin Durant  5.127368 -0.472410  5.599778
+69      Chris Paul  2.764061 -2.777184  5.541245
+186   James Harden  5.381597  0.119390  5.262207
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2017, 2018, 2019].csv
+Results saved to dump/playoff_rapm_results_2017-18-19_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+243      Kawhi Leonard  1.042721 -0.635684  1.678405
+249       Kevin Durant  0.788184 -0.829669  1.617854
+216        Joel Embiid  0.222889 -1.253092  1.475982
+186       James Harden  0.306173 -0.942359  1.248532
+272       LeBron James  1.069396 -0.160269  1.229665
+140     Ersan Ilyasova  0.744607 -0.402748  1.147355
+334        P.J. Tucker  0.100357 -1.038668  1.139025
+123     Draymond Green  0.141074 -0.975700  1.116773
+405       Terry Rozier  0.514435 -0.471114  0.985549
+289  Marcus Morris Sr.  0.429123 -0.525334  0.954456
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2017, 2018, 2019].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[35/86] 3yr: [2018, 2019, 2020] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2018-19-20 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 715084 possessions (regular season)
+Selected alpha: 4000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2018-19-20.csv
+Results saved to dump/playoff_rapm_results_2018-19-20_regular_season.csv
+Top 10 Regular Season RAPM:
+                      Name       Off       Def      Rapm
+474           LeBron James  3.953541 -2.390528  6.344068
+669          Stephen Curry  4.983830 -0.679294  5.663125
+249  Giannis Antetokounmpo  1.461555 -4.072605  5.534160
+603            Paul George  2.575574 -2.909150  5.484724
+366            Joel Embiid  1.495984 -3.565717  5.061701
+357           Jimmy Butler  3.604460 -1.447335  5.051795
+129         Damian Lillard  4.016079 -0.790622  4.806701
+405           Jrue Holiday  2.818876 -1.909165  4.728041
+596          Pascal Siakam  2.343890 -2.335688  4.679578
+341           Jayson Tatum  2.118919 -2.556416  4.675334
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2018, 2019, 2020].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 31695 possessions (playoff)
+Time decay enabled (rate=0.85): {2018: 0.7224999999999999, 2019: 0.85, 2020: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 28017 real + 636 dummy rows = 28653 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2018-19-20_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                      Name       Off       Def      Rapm
+151            Joel Embiid  0.861145 -3.355797  4.216942
+177           Kevin Durant  2.716662 -1.288151  4.004814
+275          Stephen Curry  3.085956 -0.810423  3.896379
+145           Jimmy Butler  2.104093 -1.309427  3.413520
+128           James Harden  2.295982 -1.043541  3.339523
+173          Kawhi Leonard  1.919697 -1.256882  3.176579
+101  Giannis Antetokounmpo  0.847688 -2.283186  3.130874
+137           Jayson Tatum  0.562567 -2.346988  2.909554
+186             Kyle Lowry  1.784821 -1.110196  2.895017
+194           LeBron James  2.103378 -0.706626  2.810004
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2018, 2019, 2020].csv
+Results saved to dump/playoff_rapm_results_2018-19-20_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                      Name       Off       Def      Rapm
+151            Joel Embiid  0.861145 -3.355797  4.216942
+177           Kevin Durant  2.716662 -1.288151  4.004814
+275          Stephen Curry  3.085956 -0.810423  3.896379
+145           Jimmy Butler  2.104093 -1.309427  3.413520
+128           James Harden  2.295982 -1.043541  3.339523
+173          Kawhi Leonard  1.919697 -1.256882  3.176579
+101  Giannis Antetokounmpo  0.847688 -2.283186  3.130874
+137           Jayson Tatum  0.562567 -2.346988  2.909554
+186             Kyle Lowry  1.784821 -1.110196  2.895017
+194           LeBron James  2.103378 -0.706626  2.810004
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2018, 2019, 2020].csv
+
+[36/86] 3yr: [2018, 2019, 2020] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2018-19-20 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2018-19-20.csv (1564 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 31695 possessions (playoff)
+Time decay enabled (rate=0.85): {2018: 0.7224999999999999, 2019: 0.85, 2020: 1.0}
+Selected alpha: 3000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2018-19-20_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                      Name       Off       Def      Rapm
+151            Joel Embiid  2.161949 -5.891067  8.053016
+145           Jimmy Butler  4.481532 -2.359144  6.840677
+275          Stephen Curry  5.714213 -0.995021  6.709234
+194           LeBron James  4.614035 -1.815500  6.429535
+177           Kevin Durant  5.072390 -1.292724  6.365114
+101  Giannis Antetokounmpo  2.022531 -4.132253  6.154784
+128           James Harden  4.714578 -1.098710  5.813288
+137           Jayson Tatum  1.888308 -3.672750  5.561058
+242            Paul George  2.267693 -3.132106  5.399800
+167           Jrue Holiday  3.116163 -2.240919  5.357082
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2018, 2019, 2020].csv
+Results saved to dump/playoff_rapm_results_2018-19-20_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+               Name       Off       Def      Rapm
+151     Joel Embiid  0.665965 -2.325350  2.991315
+177    Kevin Durant  1.027700 -1.348794  2.376493
+234     P.J. Tucker  1.019126 -1.274307  2.293433
+90   Ersan Ilyasova  1.283219 -0.809758  2.092977
+173   Kawhi Leonard  1.206072 -0.734623  1.940695
+128    James Harden  0.784302 -1.115683  1.899984
+77   Draymond Green  0.584003 -1.237347  1.821349
+145    Jimmy Butler  0.877073 -0.911809  1.788882
+98      George Hill  1.577671 -0.164600  1.742271
+179    Kevon Looney  0.841661 -0.886495  1.728156
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2018, 2019, 2020].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[37/86] 3yr: [2019, 2020, 2021] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2019-20-21 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 634208 possessions (regular season)
+Selected alpha: 3000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2019-20-21.csv
+Results saved to dump/playoff_rapm_results_2019-20-21_regular_season.csv
+Top 10 Regular Season RAPM:
+                      Name       Off       Def      Rapm
+457           LeBron James  3.635724 -3.838520  7.474244
+574            Paul George  3.418214 -3.394779  6.812993
+641          Stephen Curry  4.612143 -1.289128  5.901270
+243  Giannis Antetokounmpo  1.981329 -3.900270  5.881599
+420           Kevin Durant  4.468478 -1.281509  5.749987
+610            Rudy Gobert  1.767724 -3.972659  5.740383
+13             Alex Caruso  1.261785 -4.206715  5.468500
+331           Jayson Tatum  2.772215 -2.670993  5.443208
+407          Kawhi Leonard  4.275957 -1.121756  5.397713
+123         Damian Lillard  5.603172  0.365636  5.237536
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2019, 2020, 2021].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 88926 possessions (playoff)
+Time decay enabled (rate=0.85): {2019: 0.7224999999999999, 2020: 0.85, 2021: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 77827 real + 1106 dummy rows = 78933 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2019-20-21_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                      Name       Off       Def      Rapm
+263            Joel Embiid  2.275814 -2.738074  5.013888
+313           Kevin Durant  3.334781 -1.275527  4.610308
+427            Paul George  2.064957 -2.101082  4.166039
+458            Rudy Gobert  1.554217 -2.607252  4.161469
+300          Kawhi Leonard  2.479149 -1.625692  4.104841
+185  Giannis Antetokounmpo  0.473666 -3.469572  3.943239
+481          Stephen Curry  2.727770 -1.169843  3.897613
+92          Damian Lillard  3.757985  0.004876  3.753109
+343           LeBron James  1.543454 -1.969752  3.513205
+99             Danny Green  2.421048 -0.934903  3.355952
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2019, 2020, 2021].csv
+Results saved to dump/playoff_rapm_results_2019-20-21_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                      Name       Off       Def      Rapm
+263            Joel Embiid  2.275814 -2.738074  5.013888
+313           Kevin Durant  3.334781 -1.275527  4.610308
+427            Paul George  2.064957 -2.101082  4.166039
+458            Rudy Gobert  1.554217 -2.607252  4.161469
+300          Kawhi Leonard  2.479149 -1.625692  4.104841
+185  Giannis Antetokounmpo  0.473666 -3.469572  3.943239
+481          Stephen Curry  2.727770 -1.169843  3.897613
+92          Damian Lillard  3.757985  0.004876  3.753109
+343           LeBron James  1.543454 -1.969752  3.513205
+99             Danny Green  2.421048 -0.934903  3.355952
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2019, 2020, 2021].csv
+
+[38/86] 3yr: [2019, 2020, 2021] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2019-20-21 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2019-20-21.csv (1502 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 88926 possessions (playoff)
+Time decay enabled (rate=0.85): {2019: 0.7224999999999999, 2020: 0.85, 2021: 1.0}
+Selected alpha: 50000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2019-20-21_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                      Name       Off       Def      Rapm
+343           LeBron James  3.549332 -3.812429  7.361761
+427            Paul George  3.416825 -3.407417  6.824241
+481          Stephen Curry  4.674263 -1.378875  6.053138
+313           Kevin Durant  4.601134 -1.407436  6.008570
+185  Giannis Antetokounmpo  1.842556 -4.092650  5.935206
+458            Rudy Gobert  1.856392 -3.970401  5.826793
+300          Kawhi Leonard  4.255875 -1.200840  5.456715
+92          Damian Lillard  5.713743  0.315687  5.398056
+263            Joel Embiid  2.280626 -3.092731  5.373357
+10             Alex Caruso  1.124464 -4.215674  5.340138
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2019, 2020, 2021].csv
+Results saved to dump/playoff_rapm_results_2019-20-21_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+               Name       Off       Def      Rapm
+263     Joel Embiid  0.175487 -0.149334  0.324821
+339   Landry Shamet  0.147428 -0.156662  0.304090
+313    Kevin Durant  0.132656 -0.125927  0.258583
+380   Mikal Bridges  0.120334 -0.123028  0.243362
+144  Draymond Green  0.105348 -0.133507  0.238855
+128    Devin Booker  0.142794 -0.093748  0.236542
+37    Blake Griffin  0.170675 -0.065738  0.236413
+417     P.J. Tucker  0.110475 -0.123090  0.233564
+51      Bruce Brown  0.149810 -0.082665  0.232476
+329   Kyle Anderson  0.196191 -0.032724  0.228914
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2019, 2020, 2021].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[39/86] 3yr: [2020, 2021, 2022] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2020-21-22 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 629450 possessions (regular season)
+Selected alpha: 4000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2020-21-22.csv
+Results saved to dump/playoff_rapm_results_2020-21-22_regular_season.csv
+Top 10 Regular Season RAPM:
+                      Name       Off       Def      Rapm
+428          Kawhi Leonard  4.636435 -2.087172  6.723607
+349           Jayson Tatum  3.644237 -2.706613  6.350851
+479           LeBron James  3.881062 -1.921291  5.802352
+669          Stephen Curry  3.994688 -1.741583  5.736271
+576           Nikola Jokic  4.628415 -0.677335  5.305750
+16             Alex Caruso  0.723350 -4.506898  5.230248
+253  Giannis Antetokounmpo  2.745596 -2.330492  5.076088
+372            Joel Embiid  2.142401 -2.597170  4.739571
+634            Rudy Gobert  1.637054 -3.085627  4.722681
+593          Pascal Siakam  3.017466 -1.472192  4.489657
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2020, 2021, 2022].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 90660 possessions (playoff)
+Time decay enabled (rate=0.85): {2020: 0.7224999999999999, 2021: 0.85, 2022: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 79136 real + 1048 dummy rows = 80184 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2020-21-22_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                      Name       Off       Def      Rapm
+179  Giannis Antetokounmpo  0.875880 -3.169659  4.045539
+458          Stephen Curry  2.425598 -1.536127  3.961724
+253            Joel Embiid  1.837630 -1.978491  3.816121
+287          Kawhi Leonard  2.574522 -1.189940  3.764461
+437            Rudy Gobert  1.349368 -2.322914  3.672283
+243           Jayson Tatum  1.837868 -1.512028  3.349896
+300           Kevin Durant  2.537410 -0.643611  3.181021
+409            Paul George  1.515840 -1.634116  3.149955
+141    Dorian Finney-Smith  2.657140 -0.370320  3.027460
+250           Jimmy Butler  1.565309 -1.409976  2.975285
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2020, 2021, 2022].csv
+Results saved to dump/playoff_rapm_results_2020-21-22_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                      Name       Off       Def      Rapm
+179  Giannis Antetokounmpo  0.875880 -3.169659  4.045539
+458          Stephen Curry  2.425598 -1.536127  3.961724
+253            Joel Embiid  1.837630 -1.978491  3.816121
+287          Kawhi Leonard  2.574522 -1.189940  3.764461
+437            Rudy Gobert  1.349368 -2.322914  3.672283
+243           Jayson Tatum  1.837868 -1.512028  3.349896
+300           Kevin Durant  2.537410 -0.643611  3.181021
+409            Paul George  1.515840 -1.634116  3.149955
+141    Dorian Finney-Smith  2.657140 -0.370320  3.027460
+250           Jimmy Butler  1.565309 -1.409976  2.975285
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2020, 2021, 2022].csv
+
+[40/86] 3yr: [2020, 2021, 2022] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2020-21-22 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2020-21-22.csv (1546 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 90660 possessions (playoff)
+Time decay enabled (rate=0.85): {2020: 0.7224999999999999, 2021: 0.85, 2022: 1.0}
+Selected alpha: 10000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2020-21-22_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                      Name       Off       Def      Rapm
+287          Kawhi Leonard  4.711833 -2.121441  6.833273
+458          Stephen Curry  4.449942 -2.016337  6.466280
+243           Jayson Tatum  3.550917 -2.552500  6.103418
+327           LeBron James  3.680409 -2.011102  5.691511
+179  Giannis Antetokounmpo  2.186383 -3.376646  5.563029
+253            Joel Embiid  2.614693 -2.815018  5.429710
+437            Rudy Gobert  1.938516 -3.355024  5.293540
+300           Kevin Durant  3.551162 -1.603092  5.154254
+409            Paul George  2.180463 -2.774433  4.954897
+10             Alex Caruso  0.131372 -4.699484  4.830856
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2020, 2021, 2022].csv
+Results saved to dump/playoff_rapm_results_2020-21-22_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+19      Andrew Wiggins  0.752943 -0.725227  1.478171
+439  Russell Westbrook  0.811345 -0.518863  1.330209
+143     Draymond Green  0.853892 -0.336932  1.190824
+98      Daniel Gafford  0.636655 -0.435002  1.071657
+95      Damian Lillard  0.847622 -0.202117  1.049739
+36       Blake Griffin  0.684290 -0.357916  1.042206
+400        P.J. Tucker  0.358696 -0.680394  1.039090
+387      Nicolas Batum  0.967117 -0.071924  1.039041
+419          Raul Neto  0.661534 -0.337982  0.999516
+51         Bruce Brown  0.599214 -0.313785  0.912999
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2020, 2021, 2022].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[41/86] 3yr: [2021, 2022, 2023] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2021-22-23 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 644946 possessions (regular season)
+Selected alpha: 4000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2021-22-23.csv
+Results saved to dump/playoff_rapm_results_2021-22-23_regular_season.csv
+Top 10 Regular Season RAPM:
+              Name       Off       Def      Rapm
+575   Nikola Jokic  5.902959 -1.270304  7.173263
+377    Joel Embiid  3.648888 -2.669273  6.318161
+409   Jrue Holiday  4.186717 -2.073737  6.260454
+430  Kawhi Leonard  4.720885 -1.327409  6.048294
+676  Stephen Curry  3.906797 -1.377313  5.284110
+450   Kevin Durant  3.157117 -2.075319  5.232437
+358   Jayson Tatum  3.927564 -1.284650  5.212214
+186   Devin Booker  4.526781 -0.097789  4.624571
+604    Paul George  2.267264 -2.332328  4.599593
+19     Alex Caruso  0.204853 -4.267857  4.472709
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2021, 2022, 2023].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 107644 possessions (playoff)
+Time decay enabled (rate=0.85): {2021: 0.7224999999999999, 2022: 0.85, 2023: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 94381 real + 1124 dummy rows = 95505 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2021-22-23_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                      Name       Off       Def      Rapm
+266            Joel Embiid  2.190799 -1.934690  4.125489
+416           Nikola Jokic  3.284065 -0.564704  3.848769
+288           Jrue Holiday  2.149888 -1.457836  3.607724
+304          Kawhi Leonard  2.692212 -0.821750  3.513962
+491          Stephen Curry  2.131060 -1.327224  3.458284
+254           Jayson Tatum  2.342555 -1.058401  3.400956
+187  Giannis Antetokounmpo  0.858085 -2.512178  3.370263
+319           Kevin Durant  2.680192 -0.680251  3.360443
+438            Paul George  1.753633 -1.548019  3.301652
+0             Aaron Gordon  1.923455 -1.269455  3.192910
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2021, 2022, 2023].csv
+Results saved to dump/playoff_rapm_results_2021-22-23_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                      Name       Off       Def      Rapm
+266            Joel Embiid  2.190799 -1.934690  4.125489
+416           Nikola Jokic  3.284065 -0.564704  3.848769
+288           Jrue Holiday  2.149888 -1.457836  3.607724
+304          Kawhi Leonard  2.692212 -0.821750  3.513962
+491          Stephen Curry  2.131060 -1.327224  3.458284
+254           Jayson Tatum  2.342555 -1.058401  3.400956
+187  Giannis Antetokounmpo  0.858085 -2.512178  3.370263
+319           Kevin Durant  2.680192 -0.680251  3.360443
+438            Paul George  1.753633 -1.548019  3.301652
+0             Aaron Gordon  1.923455 -1.269455  3.192910
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2021, 2022, 2023].csv
+
+[42/86] 3yr: [2021, 2022, 2023] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2021-22-23 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2021-22-23.csv (1554 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 107644 possessions (playoff)
+Time decay enabled (rate=0.85): {2021: 0.7224999999999999, 2022: 0.85, 2023: 1.0}
+Selected alpha: 30000.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2021-22-23_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+              Name       Off       Def      Rapm
+416   Nikola Jokic  5.910339 -1.222861  7.133200
+266    Joel Embiid  3.718967 -2.773318  6.492284
+288   Jrue Holiday  4.041657 -2.122228  6.163885
+304  Kawhi Leonard  4.828038 -1.323110  6.151148
+491  Stephen Curry  3.928212 -1.539069  5.467280
+319   Kevin Durant  3.377036 -1.999852  5.376888
+254   Jayson Tatum  3.945806 -1.241434  5.187240
+438    Paul George  2.485430 -2.354164  4.839594
+133  Derrick White  1.868214 -2.620929  4.489143
+135   Devin Booker  4.591073  0.139021  4.452052
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2021, 2022, 2023].csv
+Results saved to dump/playoff_rapm_results_2021-22-23_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                  Name       Off       Def      Rapm
+54         Bruce Brown  0.234259 -0.314548  0.548807
+262       Jimmy Butler  0.191145 -0.329874  0.521019
+378          Max Strus  0.079141 -0.409186  0.488327
+470  Russell Westbrook  0.388592 -0.097734  0.486326
+177       Gabe Vincent  0.047390 -0.399619  0.447009
+99      Damian Lillard  0.324730 -0.098288  0.423017
+20      Andrew Wiggins  0.068589 -0.348612  0.417201
+428        P.J. Tucker  0.098023 -0.294996  0.393019
+419      Norman Powell  0.219877 -0.157841  0.377718
+59         CJ McCollum  0.305820 -0.063541  0.369361
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2021, 2022, 2023].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[43/86] 3yr: [2022, 2023, 2024] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2022-23-24 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2022-23-24.csv (1642 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 43007 possessions (playoff)
+Time decay enabled (rate=0.85): {2022: 0.7224999999999999, 2023: 0.85, 2024: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 37515 real + 1052 dummy rows = 38567 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2022-23-24_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                      Name       Off       Def      Rapm
+386           Nikola Jokic  3.774243 -1.615025  5.389268
+239           Jayson Tatum  2.071510 -1.653971  3.725482
+414            Paul George  2.008637 -1.563537  3.572174
+2             Aaron Gordon  1.865110 -1.682257  3.547368
+322           LeBron James  2.160795 -1.236048  3.396843
+165  Giannis Antetokounmpo  1.618093 -1.680609  3.298702
+459          Stephen Curry  2.037236 -1.196779  3.234015
+252            Joel Embiid  1.419361 -1.683930  3.103291
+274           Jrue Holiday  1.939448 -1.103404  3.042852
+248           Jimmy Butler  1.422695 -1.267447  2.690142
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2022, 2023, 2024].csv
+Results saved to dump/playoff_rapm_results_2022-23-24_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                      Name       Off       Def      Rapm
+386           Nikola Jokic  3.774243 -1.615025  5.389268
+239           Jayson Tatum  2.071510 -1.653971  3.725482
+414            Paul George  2.008637 -1.563537  3.572174
+2             Aaron Gordon  1.865110 -1.682257  3.547368
+322           LeBron James  2.160795 -1.236048  3.396843
+165  Giannis Antetokounmpo  1.618093 -1.680609  3.298702
+459          Stephen Curry  2.037236 -1.196779  3.234015
+252            Joel Embiid  1.419361 -1.683930  3.103291
+274           Jrue Holiday  1.939448 -1.103404  3.042852
+248           Jimmy Butler  1.422695 -1.267447  2.690142
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2022, 2023, 2024].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[44/86] 3yr: [2022, 2023, 2024] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2022-23-24 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2022-23-24.csv (1642 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 43007 possessions (playoff)
+Time decay enabled (rate=0.85): {2022: 0.7224999999999999, 2023: 0.85, 2024: 1.0}
+Selected alpha: 7500.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2022-23-24_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                      Name       Off       Def       Rapm
+386           Nikola Jokic  7.178400 -2.946830  10.125231
+414            Paul George  4.047948 -2.949772   6.997719
+252            Joel Embiid  3.004415 -3.159601   6.164015
+274           Jrue Holiday  4.108252 -1.687676   5.795928
+287          Kawhi Leonard  3.407606 -2.369409   5.777015
+239           Jayson Tatum  4.174051 -1.561497   5.735547
+322           LeBron James  4.467562 -1.238574   5.706136
+300           Kevin Durant  4.106151 -1.440157   5.546308
+165  Giannis Antetokounmpo  3.799441 -1.732992   5.532433
+459          Stephen Curry  4.335030 -1.142391   5.477420
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2022, 2023, 2024].csv
+Results saved to dump/playoff_rapm_results_2022-23-24_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+157      Gabe Vincent  0.584895 -1.126404  1.711299
+2        Aaron Gordon  0.743913 -0.559744  1.303657
+220      Jamal Murray  0.671251 -0.469788  1.141039
+304      Kevon Looney  0.070279 -0.940169  1.010448
+353         Max Strus  0.363113 -0.588785  0.951898
+248      Jimmy Butler  0.392278 -0.521423  0.913701
+117      Delon Wright  0.407234 -0.432190  0.839424
+32        Bam Adebayo  0.337730 -0.345485  0.683215
+53        Bruce Brown  0.202975 -0.479393  0.682369
+417  Payton Pritchard  0.627021 -0.054600  0.681621
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2022, 2023, 2024].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+### ROLLING 5-YEAR WINDOWS ###
+
+
+[45/86] 5yr: [2001, 2002, 2003, 2004, 2005] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2001-02-03-04-05 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 1049722 possessions (regular season)
+Selected alpha: 2000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2001-02-03-04-05.csv
+Results saved to dump/playoff_rapm_results_2001-02-03-04-05_regular_season.csv
+Top 10 Regular Season RAPM:
+                 Name       Off       Def      Rapm
+393     Kevin Garnett  5.729435 -3.458561  9.187996
+657        Tim Duncan  3.788850 -5.117342  8.906192
+619  Shaquille O'Neal  6.527975 -2.136324  8.664300
+199     Dirk Nowitzki  6.402888 -2.067087  8.469974
+26   Andrei Kirilenko  4.822425 -2.971742  7.794167
+536       Paul Pierce  5.421321 -1.929353  7.350674
+558   Rasheed Wallace  2.753045 -4.160732  6.913778
+326        Jason Kidd  4.130565 -2.643930  6.774495
+444     Manu Ginobili  4.022597 -2.162239  6.184835
+624      Shawn Marion  3.318080 -2.637785  5.955865
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2001, 2002, 2003, 2004, 2005].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 119000 possessions (playoff)
+Time decay enabled (rate=0.85): {2001: 0.5220062499999999, 2002: 0.6141249999999999, 2003: 0.7224999999999999, 2004: 0.85, 2005: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 107797 real + 1276 dummy rows = 109073 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2001-02-03-04-05_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def      Rapm
+576        Tim Duncan  1.957394 -4.271868  6.229263
+543  Shaquille O'Neal  4.175617 -2.021193  6.196810
+385     Manu Ginobili  2.642864 -3.167718  5.810582
+343     Kevin Garnett  2.968459 -2.352680  5.321138
+45        Baron Davis  2.854853 -2.096105  4.950959
+486   Rasheed Wallace  1.578655 -2.864783  4.443438
+490         Ray Allen  4.191441 -0.101922  4.293364
+281        Jason Kidd  1.424281 -2.662534  4.086815
+177     Dirk Nowitzki  3.002351 -0.893177  3.895528
+469       Paul Pierce  2.550772 -1.062411  3.613183
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2001, 2002, 2003, 2004, 2005].csv
+Results saved to dump/playoff_rapm_results_2001-02-03-04-05_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+576        Tim Duncan  1.957394 -4.271868  6.229263
+543  Shaquille O'Neal  4.175617 -2.021193  6.196810
+385     Manu Ginobili  2.642864 -3.167718  5.810582
+343     Kevin Garnett  2.968459 -2.352680  5.321138
+45        Baron Davis  2.854853 -2.096105  4.950959
+486   Rasheed Wallace  1.578655 -2.864783  4.443438
+490         Ray Allen  4.191441 -0.101922  4.293364
+281        Jason Kidd  1.424281 -2.662534  4.086815
+177     Dirk Nowitzki  3.002351 -0.893177  3.895528
+469       Paul Pierce  2.550772 -1.062411  3.613183
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2001, 2002, 2003, 2004, 2005].csv
+
+[46/86] 5yr: [2001, 2002, 2003, 2004, 2005] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2001-02-03-04-05 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2001-02-03-04-05.csv (1462 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 119000 possessions (playoff)
+Time decay enabled (rate=0.85): {2001: 0.5220062499999999, 2002: 0.6141249999999999, 2003: 0.7224999999999999, 2004: 0.85, 2005: 1.0}
+Selected alpha: 7500.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2001-02-03-04-05_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def      Rapm
+343     Kevin Garnett  5.856798 -3.819711  9.676510
+543  Shaquille O'Neal  7.007641 -2.598601  9.606242
+576        Tim Duncan  3.784760 -5.566429  9.351188
+177     Dirk Nowitzki  5.853747 -1.974868  7.828615
+385     Manu Ginobili  4.507511 -3.184380  7.691891
+486   Rasheed Wallace  2.990365 -4.551177  7.541542
+23   Andrei Kirilenko  4.786476 -2.724125  7.510601
+469       Paul Pierce  5.524505 -1.855462  7.379967
+45        Baron Davis  4.930115 -2.213155  7.143270
+281        Jason Kidd  3.859357 -3.026061  6.885418
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2001, 2002, 2003, 2004, 2005].csv
+Results saved to dump/playoff_rapm_results_2001-02-03-04-05_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                Name       Off       Def      Rapm
+385    Manu Ginobili  0.484914 -1.022141  1.507055
+490        Ray Allen  1.127184 -0.358686  1.485870
+45       Baron Davis  0.825787 -0.627733  1.453520
+502     Robert Horry  1.692338  0.324511  1.367827
+567  Tayshaun Prince  0.262078 -0.915530  1.177608
+432       Mike James  0.463918 -0.701540  1.165459
+358       Lamar Odom  0.031692 -1.092289  1.123981
+291  Jermaine O'Neal -0.023468 -1.001069  0.977601
+215    Ervin Johnson  0.410741 -0.563841  0.974582
+301      Joe Johnson  0.448646 -0.505300  0.953946
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2001, 2002, 2003, 2004, 2005].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[47/86] 5yr: [2002, 2003, 2004, 2005, 2006] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2002-03-04-05-06 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 1053345 possessions (regular season)
+Selected alpha: 2000.0 (scale=1.0)
+Prior cached to dump/prior_cache_2002-03-04-05-06.csv
+Results saved to dump/playoff_rapm_results_2002-03-04-05-06_regular_season.csv
+Top 10 Regular Season RAPM:
+                  Name       Off       Def      Rapm
+408      Kevin Garnett  5.950675 -3.519901  9.470576
+211      Dirk Nowitzki  7.423060 -1.172267  8.595326
+31    Andrei Kirilenko  5.107120 -2.997605  8.104725
+674         Tim Duncan  3.299608 -4.362275  7.661883
+573    Rasheed Wallace  3.720020 -3.386386  7.106406
+637   Shaquille O'Neal  5.245176 -1.768011  7.013187
+493  Metta World Peace  2.216712 -4.537532  6.754244
+550        Paul Pierce  5.431499 -1.124878  6.556377
+431       LeBron James  4.728700 -1.698235  6.426935
+456      Manu Ginobili  4.552893 -1.447813  6.000706
+Regular season results saved to rapm_results/Regular_Season_Rapm_[2002, 2003, 2004, 2005, 2006].csv
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 123900 possessions (playoff)
+Time decay enabled (rate=0.85): {2002: 0.5220062499999999, 2003: 0.6141249999999999, 2004: 0.7224999999999999, 2005: 0.85, 2006: 1.0}
+Building dummy rows (Off Conf: 3000, Def Conf: 2000)
+Augmented dataset: 112375 real + 1294 dummy rows = 113669 total
+Selected alpha: 3000.0 (Restricted Range for Dummy Method)
+Results saved to dump/playoff_rapm_results_2002-03-04-05-06_playoff_dummy_off3000_def2000.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                 Name       Off       Def      Rapm
+405     Manu Ginobili  3.269483 -3.185237  6.454720
+359     Kevin Garnett  3.174143 -2.480181  5.654324
+589        Tim Duncan  2.108465 -3.224406  5.332871
+559  Shaquille O'Neal  3.078031 -1.775792  4.853823
+576        Steve Nash  5.125441  0.592830  4.532611
+504   Rasheed Wallace  2.027168 -2.479751  4.506919
+53        Baron Davis  2.716192 -1.718459  4.434651
+185     Dirk Nowitzki  3.227605 -1.133346  4.360951
+198       Dwyane Wade  2.524654 -1.446960  3.971614
+293        Jason Kidd  2.401416 -1.496220  3.897636
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2002, 2003, 2004, 2005, 2006].csv
+Results saved to dump/playoff_rapm_results_2002-03-04-05-06_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                 Name       Off       Def      Rapm
+405     Manu Ginobili  3.269483 -3.185237  6.454720
+359     Kevin Garnett  3.174143 -2.480181  5.654324
+589        Tim Duncan  2.108465 -3.224406  5.332871
+559  Shaquille O'Neal  3.078031 -1.775792  4.853823
+576        Steve Nash  5.125441  0.592830  4.532611
+504   Rasheed Wallace  2.027168 -2.479751  4.506919
+53        Baron Davis  2.716192 -1.718459  4.434651
+185     Dirk Nowitzki  3.227605 -1.133346  4.360951
+198       Dwyane Wade  2.524654 -1.446960  3.971614
+293        Jason Kidd  2.401416 -1.496220  3.897636
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2002, 2003, 2004, 2005, 2006].csv
+
+[48/86] 5yr: [2002, 2003, 2004, 2005, 2006] - OFFSET METHOD
+=== 3-Year Playoff RAPM with Prior for 2002-03-04-05-06 ===
+Using OFFSET/RESIDUAL Method with Prior Weight: 1.0
+Time decay ENABLED (0.85 per year)
+Prior loaded from cache: dump/prior_cache_2002-03-04-05-06.csv (1488 coefficients)
+
+--- Step 1: Loaded Regular Season Prior from Cache ---
+
+--- Step 2: Calculating Playoff RAPM with Prior ---
+Loaded 123900 possessions (playoff)
+Time decay enabled (rate=0.85): {2002: 0.5220062499999999, 2003: 0.6141249999999999, 2004: 0.7224999999999999, 2005: 0.85, 2006: 1.0}
+Selected alpha: 7500.0 (scale=1.0)
+Results saved to dump/playoff_rapm_results_2002-03-04-05-06_playoff_offset_wt1.0.csv
+Top 10 Playoff RAPM (with Regular Season Prior):
+                  Name       Off       Def       Rapm
+359      Kevin Garnett  6.096061 -4.020396  10.116457
+185      Dirk Nowitzki  6.506060 -1.609007   8.115067
+589         Tim Duncan  3.661391 -4.421182   8.082573
+405      Manu Ginobili  5.300485 -2.667652   7.968137
+25    Andrei Kirilenko  5.228278 -2.664660   7.892938
+559   Shaquille O'Neal  5.247361 -2.290618   7.537980
+504    Rasheed Wallace  3.699441 -3.717243   7.416685
+53         Baron Davis  5.044200 -1.888267   6.932466
+435  Metta World Peace  2.224299 -4.492408   6.716707
+485        Paul Pierce  5.459895 -1.148601   6.608496
+Playoff results saved to rapm_results/Playoff_Rapm_with_Prior_[2002, 2003, 2004, 2005, 2006].csv
+Results saved to dump/playoff_rapm_results_2002-03-04-05-06_playoff_raw.csv
+Top 10 Raw Playoff RAPM (without Prior):
+                Name       Off       Def      Rapm
+405    Manu Ginobili  0.747592 -1.219839  1.967431
+304  Jermaine O'Neal  0.791022 -0.707709  1.498731
+198      Dwyane Wade  0.372531 -0.927972  1.300503
+41    Antoine Walker  0.137922 -1.132765  1.270687
+332      Josh Howard  0.252692 -0.994506  1.247198
+396     Luke Ridnour  0.692481 -0.422108  1.114589
+37   Anthony Johnson  0.219661 -0.868143  1.087804
+449    Mike Dunleavy  0.599207 -0.476780  1.075987
+53       Baron Davis  0.561280 -0.469288  1.030568
+172     Derek Fisher  0.400304 -0.605150  1.005454
+Raw playoff results saved to rapm_results/Playoff_Rapm_Raw_[2002, 2003, 2004, 2005, 2006].csv
+ERROR: cannot access local variable 'reg_readable' where it is not associated with a value
+
+[49/86] 5yr: [2003, 2004, 2005, 2006, 2007] - DUMMY METHOD
+=== 3-Year Playoff RAPM with Prior for 2003-04-05-06-07 ===
+Using DUMMY GAME Method (Off Conf: 3000, Def Conf: 2000)
+Time decay ENABLED (0.85 per year)
+
+--- Step 1: Calculating Regular Season RAPM (Prior) ---
+Loaded 1062182 possessions (regular season)
+Selected alpha: 2000.0 (scale=1.0)

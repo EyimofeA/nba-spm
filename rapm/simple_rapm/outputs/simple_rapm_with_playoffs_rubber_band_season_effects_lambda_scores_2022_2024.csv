@@ -1,0 +1,2 @@
+lambda_offense,lambda_defense,lambda_rubber_band,lambda_season,cv_rmse,note
+2500.0,4000.0,2000.0,250.0,,fixed lambdas; coordinate search disabled for this experiment

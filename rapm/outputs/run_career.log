@@ -1,0 +1,1434 @@
+
+========================================================================
+[career 1/28] season=1997  elapsed=0s
+========================================================================
+
+=== rapm_core run b8750992 | 1 | seasons (1997,) ===
+Fetching possessions from MySQL...
+  fetched 229,391 possessions in 12.7s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (229391, 889)  nnz = 2,777,794
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.10340  (1s / est 3s)
+    [   2/4]  off=1500 def=4500  rmse=1.10344  (1s / est 3s)
+    [   3/4]  off=2500 def=3000  rmse=1.10340  (2s / est 3s)
+    [   4/4]  off=2500 def=4500  rmse=1.10344  (3s / est 3s)
+
+  best combo: off=2500  def=3000
+  best rmse:  1.10340  (±0.00151 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_1997_career_1997.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_1997.csv  (443 players)
+Top 15:
+              Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def  RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+    Michael Jordan        893 37.91 35-40      7331      7294 6.355 -2.956 9.310       -0.980       -2.581     7.334    -0.375 7.709   1997
+   Alonzo Mourning        297 35.16 35-40      5372      5356 2.914 -5.153 8.067       -0.980       -2.581     3.893    -2.573 6.466   1997
+    Scottie Pippen        937 37.73 35-40      7239      7227 5.369 -2.631 8.001       -0.980       -2.581     6.349    -0.050 6.400   1997
+      Tim Hardaway        896 38.76 35-40      7034      7014 4.676 -3.318 7.994       -0.980       -2.581     5.656    -0.737 6.393   1997
+       Vlade Divac        124 35.06 35-40      5452      5422 3.799 -4.075 7.874       -0.980       -2.581     4.779    -1.494 6.273   1997
+       Karl Malone        252 36.56 35-40      7083      7063 5.636 -2.023 7.659       -0.980       -2.581     6.616     0.558 6.058   1997
+     Patrick Ewing        121 37.01 35-40      6164      6124 2.717 -4.819 7.535       -0.980       -2.581     3.696    -2.238 5.934   1997
+       Gary Payton         56 39.20 35-40      7132      7118 4.498 -2.870 7.368       -0.980       -2.581     5.478    -0.289 5.767   1997
+   Mookie Blaylock        302 39.18 35-40      6313      6288 4.521 -2.710 7.231       -0.980       -2.581     5.501    -0.129 5.630   1997
+     John Stockton        304 35.30 35-40      6593      6599 4.940 -2.130 7.070       -0.980       -2.581     5.920     0.451 5.469   1997
+Christian Laettner        363 38.22 35-40      6340      6336 3.871 -3.194 7.065       -0.980       -2.581     4.851    -0.614 5.464   1997
+     Kevin Garnett        708 38.85 35-40      5848      5837 2.871 -4.072 6.943       -0.980       -2.581     3.851    -1.491 5.342   1997
+         Bo Outlaw        448 26.80 25-30      4222      4224 2.107 -4.687 6.794       -1.481       -2.096     3.588    -2.592 6.180   1997
+       Terry Mills        371 25.30 25-30      3818      3790 3.596 -3.023 6.619       -1.481       -2.096     5.077    -0.927 6.004   1997
+   Hakeem Olajuwon        165 36.55 35-40      6538      6520 4.025 -2.509 6.534       -0.980       -2.581     5.005     0.072 4.933   1997
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (20.9s). run_id=b8750992
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 1997: 443 players
+
+========================================================================
+[career 2/28] season=1998  elapsed=21s
+========================================================================
+
+=== rapm_core run 88871003 | 1 | seasons (1998,) ===
+Fetching possessions from MySQL...
+  fetched 229,185 possessions in 16.1s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (229185, 883)  nnz = 2,773,734
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.07857  (1s / est 3s)
+    [   2/4]  off=1500 def=4500  rmse=1.07860  (2s / est 3s)
+    [   3/4]  off=2500 def=3000  rmse=1.07856  (2s / est 3s)
+    [   4/4]  off=2500 def=4500  rmse=1.07859  (3s / est 3s)
+
+  best combo: off=2500  def=3000
+  best rmse:  1.07856  (±0.00087 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_1998_career_1998.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_1998.csv  (440 players)
+Top 15:
+            Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def  RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+Shaquille O'Neal        406 36.21 35-40      5105      5111 5.591 -2.606 8.197       -0.527       -1.843     6.118    -0.763 6.881   1998
+  Michael Jordan        893 38.81 35-40      7411      7374 6.128 -1.393 7.521       -0.527       -1.843     6.655     0.450 6.206   1998
+     Karl Malone        252 37.43 35-40      7137      7105 6.166 -1.232 7.398       -0.527       -1.843     6.693     0.610 6.083   1998
+   Reggie Miller        397 34.51 30-35      6338      6328 5.432 -1.591 7.023       -1.027       -2.000     6.459     0.409 6.050   1998
+ Alonzo Mourning        297 33.44 30-35      3741      3729 2.726 -3.886 6.611       -1.027       -2.000     3.753    -1.886 5.638   1998
+     Gary Payton         56 38.36 35-40      6594      6594 4.555 -1.942 6.497       -0.527       -1.843     5.082    -0.100 5.182   1998
+ Rasheed Wallace        739 37.58 35-40      5728      5753 3.441 -3.002 6.444       -0.527       -1.843     3.968    -1.160 5.128   1998
+ Detlef Schrempf         96 35.15 35-40      5732      5722 4.793 -1.643 6.436       -0.527       -1.843     5.320     0.200 5.120   1998
+      Tim Duncan       1495 39.09 35-40      6550      6551 4.898 -1.188 6.086       -0.527       -1.843     5.425     0.655 4.770   1998
+ Charles Barkley        787 33.00 30-35      4308      4324 6.504  0.557 5.948       -1.027       -2.000     7.531     2.556 4.975   1998
+      Toni Kukoc        389 30.21 30-35      5280      5249 1.544 -4.313 5.857       -1.027       -2.000     2.571    -2.313 4.884   1998
+      Grant Hill        255 40.70   40+      6043      6029 5.708 -0.127 5.835       -0.056       -0.921     5.764     0.794 4.969   1998
+ Dikembe Mutombo         87 35.55 35-40      5419      5423 1.903 -3.850 5.753       -0.527       -1.843     2.430    -2.007 4.437   1998
+ Mookie Blaylock        302 38.54 35-40      5165      5154 3.157 -2.567 5.725       -0.527       -1.843     3.684    -0.725 4.409   1998
+    Robert Horry        109 30.54 30-35      5000      4997 2.536 -3.074 5.610       -1.027       -2.000     3.563    -1.074 4.637   1998
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (22.7s). run_id=88871003
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 1998: 440 players
+
+========================================================================
+[career 3/28] season=1999  elapsed=44s
+========================================================================
+
+=== rapm_core run 1f093e64 | 1 | seasons (1999,) ===
+Fetching possessions from MySQL...
+  fetched 142,088 possessions in 14.8s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (142088, 883)  nnz = 1,716,593
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.07843  (0s / est 1s)
+    [   2/4]  off=1500 def=4500  rmse=1.07845  (1s / est 1s)
+    [   3/4]  off=2500 def=3000  rmse=1.07845  (1s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.07848  (2s / est 2s)
+
+  best combo: off=1500  def=3000
+  best rmse:  1.07843  (±0.00145 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_1999_career_1999.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_1999.csv  (440 players)
+Top 15:
+            Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def  RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+  David Robinson        764 31.69 30-35      3939      3920 3.921 -3.936 7.857       -1.554       -1.500     5.475    -2.437 7.912   1999
+      Grant Hill        255 36.99 35-40      3667      3636 7.176 -0.603 7.779       -1.040       -1.860     8.216     1.258 6.958   1999
+ Alonzo Mourning        297 38.16 35-40      3452      3437 3.891 -3.859 7.750       -1.040       -1.860     4.931    -1.999 6.930   1999
+      Tim Duncan       1495 39.27 35-40      4985      4964 4.503 -3.078 7.581       -1.040       -1.860     5.543    -1.218 6.761   1999
+      Jason Kidd        467 41.27   40+      4163      4148 6.841 -0.511 7.352       -0.124       -1.278     6.965     0.767 6.198   1999
+   Allen Iverson        947 41.48   40+      4377      4356 6.116 -1.210 7.325       -0.124       -1.278     6.239     0.068 6.171   1999
+     Eddie Jones        224 37.58 35-40      3533      3542 5.104 -2.201 7.304       -1.040       -1.860     6.143    -0.340 6.484   1999
+     Brian Grant        258 31.75 30-35      3605      3602 5.516 -1.772 7.288       -1.554       -1.500     7.070    -0.272 7.342   1999
+     Karl Malone        252 37.38 35-40      4117      4102 5.745 -1.191 6.936       -1.040       -1.860     6.785     0.670 6.116   1999
+Shaquille O'Neal        406 34.75 30-35      3835      3820 6.393  0.052 6.340       -1.554       -1.500     7.947     1.552 6.394   1999
+  Lindsey Hunter        283 35.80 35-40      3440      3434 4.857 -1.471 6.329       -1.040       -1.860     5.897     0.389 5.508   1999
+  Glenn Robinson        299 33.55 30-35      3042      3030 6.184 -0.080 6.264       -1.554       -1.500     7.738     1.420 6.318   1999
+ Rasheed Wallace        739 28.86 25-30      3473      3478 2.697 -3.529 6.226       -2.386       -1.480     5.082    -2.050 7.132   1999
+    Steven Smith        120 36.47 35-40      2989      2989 3.703 -2.481 6.184       -1.040       -1.860     4.743    -0.621 5.363   1999
+ Stephon Marbury        950 38.65 35-40      3663      3652 5.245 -0.872 6.117       -1.040       -1.860     6.285     0.988 5.297   1999
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (20.2s). run_id=1f093e64
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 1999: 440 players
+
+========================================================================
+[career 4/28] season=2000  elapsed=64s
+========================================================================
+
+=== rapm_core run aebf1420 | 1 | seasons (2000,) ===
+Fetching possessions from MySQL...
+  fetched 237,272 possessions in 13.1s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (237272, 881)  nnz = 2,873,438
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.08218  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.08218  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.08219  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.08219  (3s / est 3s)
+
+  best combo: off=1500  def=3000
+  best rmse:  1.08218  (±0.00130 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2000_career_2000.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2000.csv  (439 players)
+Top 15:
+            Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def    Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+Shaquille O'Neal        406 40.07   40+      8021      7991  9.934 -2.365 12.299        1.596       -1.824     8.338    -0.541 8.879   2000
+    Vince Carter       1713 38.15 35-40      6314      6304 10.194 -1.203 11.397       -0.214       -2.070    10.408     0.867 9.541   2000
+     Gary Payton         56 41.76   40+      7090      7064  8.444 -2.193 10.637        1.596       -1.824     6.847    -0.369 7.216   2000
+      Tim Duncan       1495 38.90 35-40      5473      5471  5.177 -4.036  9.214       -0.214       -2.070     5.392    -1.966 7.358   2000
+     Eddie Jones        224 38.91 35-40      5812      5787  4.165 -4.856  9.021       -0.214       -2.070     4.380    -2.786 7.165   2000
+   Rodney Rogers        915 27.86 25-30      4955      4947  4.979 -3.761  8.740       -1.475       -1.900     6.454    -1.861 8.315   2000
+ Rasheed Wallace        739 35.14 35-40      6422      6425  4.719 -3.871  8.590       -0.214       -2.070     4.933    -1.801 6.734   2000
+   Kevin Garnett        708 40.04   40+      6456      6453  6.775 -1.694  8.468        1.596       -1.824     5.178     0.130 5.048   2000
+   Reggie Miller        397 36.93 35-40      7535      7523  6.965 -1.205  8.170       -0.214       -2.070     7.179     0.865 6.314   2000
+   Bryon Russell        935 35.35 35-40      6131      6129  5.965 -2.132  8.098       -0.214       -2.070     6.179    -0.062 6.242   2000
+      Grant Hill        255 37.50 35-40      5701      5675  6.959 -1.120  8.078       -0.214       -2.070     7.173     0.950 6.223   2000
+  Jamal Mashburn        469 37.18 35-40      6079      6051  5.292 -2.675  7.967       -0.214       -2.070     5.507    -0.605 6.111   2000
+       Bo Outlaw        448 28.37 25-30      4623      4656  3.341 -4.606  7.947       -1.475       -1.900     4.816    -2.706 7.522   2000
+   Allen Iverson        947 40.80   40+      6402      6386  7.718 -0.142  7.861        1.596       -1.824     6.122     1.682 4.440   2000
+     Paul Pierce       1718 35.41 35-40      5144      5137  4.780 -2.937  7.717       -0.214       -2.070     4.994    -0.867 5.861   2000
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (21.0s). run_id=aebf1420
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2000: 439 players
+
+========================================================================
+[career 5/28] season=2001  elapsed=86s
+========================================================================
+
+=== rapm_core run bc6c97f3 | 1 | seasons (2001,) ===
+Fetching possessions from MySQL...
+  fetched 231,908 possessions in 16.8s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (231908, 885)  nnz = 2,806,636
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.08327  (1s / est 5s)
+    [   2/4]  off=1500 def=4500  rmse=1.08328  (2s / est 4s)
+    [   3/4]  off=2500 def=3000  rmse=1.08330  (3s / est 4s)
+    [   4/4]  off=2500 def=4500  rmse=1.08331  (4s / est 4s)
+
+  best combo: off=1500  def=3000
+  best rmse:  1.08327  (±0.00134 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2001_career_2001.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2001.csv  (441 players)
+Top 15:
+            Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+      Tim Duncan       1495 38.71 35-40      6918      6911 6.392 -4.815 11.208       -0.262       -2.365     6.654    -2.451 9.105   2001
+Shaquille O'Neal        406 39.48 35-40      6847      6819 9.302 -1.136 10.438       -0.262       -2.365     9.563     1.229 8.335   2001
+       Ray Allen        951 38.18 35-40      7502      7489 8.828 -1.550 10.378       -0.262       -2.365     9.089     0.815 8.275   2001
+    Shawn Marion       1890 36.19 35-40      5815      5801 4.681 -4.932  9.613       -0.262       -2.365     4.943    -2.567 7.510   2001
+   Dirk Nowitzki       1717 38.08 35-40      6785      6758 5.648 -3.861  9.509       -0.262       -2.365     5.909    -1.496 7.406   2001
+   Steve Francis       1883 39.92 35-40      6031      6057 7.569 -1.132  8.701       -0.262       -2.365     7.831     1.233 6.598   2001
+   John Stockton        304 29.21 25-30      4859      4843 5.651 -3.017  8.668       -2.132       -1.663     7.782    -1.354 9.136   2001
+    Vince Carter       1713 39.73 35-40      6615      6605 6.942 -1.719  8.661       -0.262       -2.365     7.203     0.646 6.558   2001
+     Kobe Bryant        977 41.04   40+      6686      6646 5.982 -2.454  8.436       -1.106       -1.813     7.088    -0.641 7.729   2001
+    Derek Fisher        965 35.53 35-40      2475      2466 2.499 -5.656  8.155       -0.262       -2.365     2.761    -3.291 6.052   2001
+ Rasheed Wallace        739 38.23 35-40      5726      5703 4.188 -3.840  8.028       -0.262       -2.365     4.450    -1.475 5.925   2001
+    Andre Miller       1889 34.71 30-35      5389      5371 6.119 -1.730  7.849       -1.702       -1.902     7.821     0.172 7.649   2001
+  Cuttino Mobley       1749 38.05 35-40      5662      5650 6.567 -1.225  7.792       -0.262       -2.365     6.829     1.140 5.689   2001
+     Karl Malone        252 35.69 35-40      5828      5806 6.569 -1.053  7.623       -0.262       -2.365     6.831     1.311 5.520   2001
+     Baron Davis       1884 38.89 35-40      6682      6674 4.396 -3.077  7.473       -0.262       -2.365     4.657    -0.712 5.369   2001
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (44.0s). run_id=bc6c97f3
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2001: 441 players
+
+========================================================================
+[career 6/28] season=2002  elapsed=130s
+========================================================================
+
+=== rapm_core run 3950018c | 1 | seasons (2002,) ===
+Fetching possessions from MySQL...
+  fetched 230,600 possessions in 15.3s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (230600, 883)  nnz = 2,789,847
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.09055  (1s / est 4s)
+    [   2/4]  off=1500 def=4500  rmse=1.09054  (2s / est 4s)
+    [   3/4]  off=2500 def=3000  rmse=1.09055  (3s / est 3s)
+    [   4/4]  off=2500 def=4500  rmse=1.09054  (3s / est 3s)
+
+  best combo: off=1500  def=4500
+  best rmse:  1.09054  (±0.00079 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2002_career_2002.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2002.csv  (440 players)
+Top 15:
+            Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+      Tim Duncan       1495 40.63   40+      6917      6896 8.471 -4.572 13.043        1.171       -2.071     7.300    -2.500 9.800   2002
+     Baron Davis       1884 40.48   40+      6991      6981 9.377 -2.368 11.745        1.171       -2.071     8.206    -0.297 8.503   2002
+Shaquille O'Neal        406 36.13 35-40      6126      6081 6.958 -3.333 10.291       -0.551       -1.549     7.509    -1.784 9.293   2002
+     Paul Pierce       1718 40.23   40+      7615      7577 7.585 -2.284  9.869        1.171       -2.071     6.414    -0.212 6.626   2002
+   Dirk Nowitzki       1717 38.04 35-40      6326      6295 8.678 -0.574  9.251       -0.551       -1.549     9.229     0.975 8.254   2002
+   Allen Iverson        947 43.74   40+      5385      5390 5.241 -3.927  9.168        1.171       -2.071     4.070    -1.855 5.925   2002
+      Jason Kidd        467 37.27 35-40      7491      7473 6.726 -2.328  9.054       -0.551       -1.549     7.277    -0.780 8.057   2002
+Latrell Sprewell         84 41.08   40+      6232      6222 7.585 -1.026  8.611        1.171       -2.071     6.414     1.045 5.369   2002
+   Steve Francis       1883 41.06   40+      4257      4264 6.045 -2.357  8.403        1.171       -2.071     4.874    -0.286 5.160   2002
+   Tracy McGrady       1503 38.27 35-40      5914      5917 6.520 -1.826  8.346       -0.551       -1.549     7.071    -0.277 7.348   2002
+   Kevin Garnett        708 39.15 35-40      6243      6220 6.075 -2.259  8.335       -0.551       -1.549     6.626    -0.711 7.337   2002
+     Kobe Bryant        977 38.31 35-40      7475      7471 6.982 -1.321  8.303       -0.551       -1.549     7.533     0.228 7.305   2002
+     Gary Payton         56 40.21   40+      6527      6515 6.490 -1.443  7.933        1.171       -2.071     5.319     0.629 4.690   2002
+  Cuttino Mobley       1749 42.11   40+      5673      5684 7.825  0.012  7.813        1.171       -2.071     6.654     2.083 4.571   2002
+ Rasheed Wallace        739 37.54 35-40      5752      5727 4.672 -2.879  7.551       -0.551       -1.549     5.223    -1.330 6.554   2002
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (23.9s). run_id=3950018c
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 4500.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2002: 440 players
+
+========================================================================
+[career 7/28] season=2003  elapsed=154s
+========================================================================
+
+=== rapm_core run 445bedb2 | 1 | seasons (2003,) ===
+Fetching possessions from MySQL...
+  fetched 234,543 possessions in 15.1s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (234543, 859)  nnz = 2,838,016
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.08928  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.08930  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.08930  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.08932  (2s / est 2s)
+
+  best combo: off=1500  def=3000
+  best rmse:  1.08928  (±0.00116 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2003_career_2003.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2003.csv  (428 players)
+Top 15:
+            Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def    Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def   VORP Season
+   Kevin Garnett        708 40.51   40+      6888      6859 10.087 -3.344 13.431        0.583       -1.802     9.504    -1.542 11.046   2003
+      Tim Duncan       1495 39.29 35-40      7918      7884  7.057 -4.536 11.593       -1.006       -2.095     8.062    -2.442 10.504   2003
+   Dirk Nowitzki       1717 39.01 35-40      7423      7412  7.901 -2.822 10.722       -1.006       -2.095     8.906    -0.727  9.633   2003
+     Kobe Bryant        977 41.51   40+      7557      7532  8.598 -0.847  9.445        0.583       -1.802     8.015     0.955  7.060   2003
+Shaquille O'Neal        406 37.81 35-40      5837      5817  7.398 -1.806  9.205       -1.006       -2.095     8.404     0.288  8.116   2003
+       Ray Allen        951 37.89 35-40      5325      5326  6.941 -1.782  8.723       -1.006       -2.095     7.947     0.313  7.634   2003
+   Tracy McGrady       1503 39.33 35-40      6349      6347  8.183 -0.229  8.413       -1.006       -2.095     9.189     1.866  7.323   2003
+   Steve Francis       1883 41.01   40+      6156      6141  6.698 -1.693  8.391        0.583       -1.802     6.116     0.109  6.006   2003
+  Michael Finley        714 38.29 35-40      6691      6674  4.461 -2.852  7.313       -1.006       -2.095     5.467    -0.757  6.224   2003
+ Rasheed Wallace        739 36.30 35-40      5467      5450  4.287 -2.995  7.282       -1.006       -2.095     5.292    -0.900  6.193   2003
+  Antoine Walker        952 41.48   40+      6968      6922  6.599 -0.521  7.120        0.583       -1.802     6.016     1.281  4.735   2003
+ Stephon Marbury        950 40.10   40+      6764      6748  5.928 -1.107  7.036        0.583       -1.802     5.346     0.695  4.651   2003
+      Jason Kidd        467 37.36 35-40      7410      7383  3.483 -3.502  6.984       -1.006       -2.095     4.488    -1.407  5.895   2003
+   Doug Christie         57 33.87 30-35      6181      6182  3.741 -3.165  6.906       -0.893       -1.622     4.634    -1.543  6.177   2003
+ Peja Stojakovic        978 34.05 30-35      5889      5892  4.118 -2.347  6.464       -0.893       -1.622     5.011    -0.725  5.736   2003
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (23.4s). run_id=445bedb2
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2003: 428 players
+
+========================================================================
+[career 8/28] season=2004  elapsed=178s
+========================================================================
+
+=== rapm_core run 30681f49 | 1 | seasons (2004,) ===
+Fetching possessions from MySQL...
+  fetched 230,897 possessions in 14.7s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (230897, 887)  nnz = 2,790,696
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.08821  (1s / est 3s)
+    [   2/4]  off=1500 def=4500  rmse=1.08823  (1s / est 3s)
+    [   3/4]  off=2500 def=3000  rmse=1.08825  (2s / est 3s)
+    [   4/4]  off=2500 def=4500  rmse=1.08826  (2s / est 2s)
+
+  best combo: off=1500  def=3000
+  best rmse:  1.08821  (±0.00101 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2004_career_2004.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2004.csv  (442 players)
+Top 15:
+             Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+    Dirk Nowitzki       1717 37.92 35-40      6124      6103 9.043 -1.887 10.931       -0.222       -2.321     9.266     0.434 8.831   2004
+    Kevin Garnett        708 39.45 35-40      7511      7478 7.454 -3.471 10.925       -0.222       -2.321     7.676    -1.150 8.826   2004
+ Andrei Kirilenko       1905 37.26 35-40      5281      5262 8.049 -2.568 10.616       -0.222       -2.321     8.271    -0.247 8.517   2004
+ Shaquille O'Neal        406 36.80 35-40      6393      6347 7.318 -2.918 10.236       -0.222       -2.321     7.540    -0.596 8.137   2004
+       Tim Duncan       1495 36.59 35-40      5415      5396 3.697 -5.646  9.343       -0.222       -2.321     3.919    -3.325 7.244   2004
+  Jermaine O'Neal        979 35.76 35-40      6166      6146 5.964 -3.376  9.340       -0.222       -2.321     6.186    -1.054 7.241   2004
+      Brad Miller       1802 36.48 35-40      5838      5854 5.355 -3.922  9.277       -0.222       -2.321     5.577    -1.601 7.178   2004
+       Jason Kidd        467 36.78 35-40      5575      5567 4.650 -4.365  9.015       -0.222       -2.321     4.872    -2.044 6.916   2004
+    Hedo Turkoglu       2045 26.00 25-30      4355      4383 4.069 -4.335  8.405       -2.278       -2.010     6.347    -2.326 8.673   2004
+        Ray Allen        951 38.51 35-40      4017      4023 7.228 -1.160  8.388       -0.222       -2.321     7.450     1.161 6.289   2004
+      Sam Cassell        208 35.16 35-40      6273      6219 5.557 -2.756  8.313       -0.222       -2.321     5.779    -0.435 6.214   2004
+Metta World Peace       1897 37.20 35-40      6032      6016 4.572 -3.719  8.291       -0.222       -2.321     4.794    -1.398 6.192   2004
+  Rasheed Wallace        739 35.20 35-40      5769      5743 3.766 -4.522  8.289       -0.222       -2.321     3.989    -2.201 6.190   2004
+     Vince Carter       1713 38.17 35-40      5047      5035 5.239 -2.922  8.162       -0.222       -2.321     5.462    -0.601 6.063   2004
+      Baron Davis       1884 40.10   40+      5500      5469 5.867 -1.842  7.709       -0.032       -1.324     5.899    -0.517 6.416   2004
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (34.0s). run_id=30681f49
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2004: 442 players
+
+========================================================================
+[career 9/28] season=2005  elapsed=212s
+========================================================================
+
+=== rapm_core run d79a671c | 1 | seasons (2005,) ===
+Fetching possessions from MySQL...
+  fetched 240,774 possessions in 13.5s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (240774, 931)  nnz = 2,918,469
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.09593  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.09594  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.09597  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.09598  (2s / est 2s)
+
+  best combo: off=1500  def=3000
+  best rmse:  1.09593  (±0.00100 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2005_career_2005.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2005.csv  (464 players)
+Top 15:
+            Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def  RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def   VORP Season
+      Tim Duncan       1495 33.41 30-35      5597      5566 4.661 -5.304 9.965       -1.304       -2.015     5.964    -3.290  9.254   2005
+   Manu Ginobili       1938 29.74 25-30      5491      5469 6.041 -3.899 9.940       -2.383       -2.079     8.423    -1.820 10.244   2005
+      Jason Kidd        467 37.12 35-40      4939      4926 6.633 -2.156 8.790       -0.716       -1.641     7.349    -0.515  7.864   2005
+     Paul Pierce       1718 36.14 35-40      6264      6258 6.396 -1.529 7.925       -0.716       -1.641     7.111     0.112  6.999   2005
+   Dirk Nowitzki       1717 38.82 35-40      6972      6931 5.987 -1.920 7.906       -0.716       -1.641     6.702    -0.278  6.981   2005
+   Shane Battier       2203 31.48 30-35      4907      4914 3.828 -4.042 7.871       -1.304       -2.015     5.132    -2.027  7.160   2005
+     Elton Brand       1882 37.09 35-40      5588      5548 6.376 -1.278 7.654       -0.716       -1.641     7.091     0.363  6.728   2005
+ Stephon Marbury        950 40.18   40+      6266      6247 9.178  1.559 7.620       -0.338       -0.850     9.516     2.408  7.108   2005
+   Rashard Lewis       1740 38.06 35-40      5568      5545 5.868 -1.697 7.565       -0.716       -1.641     6.584    -0.056  6.640   2005
+      Steve Nash        959 34.25 30-35      6348      6335 6.263 -1.278 7.540       -1.304       -2.015     7.566     0.737  6.830   2005
+    Shawn Marion       1890 38.81 35-40      7580      7575 5.419 -1.878 7.298       -0.716       -1.641     6.135    -0.237  6.372   2005
+   Tracy McGrady       1503 40.91   40+      6468      6452 7.240  0.189 7.051       -0.338       -0.850     7.578     1.039  6.539   2005
+   Kevin Garnett        708 38.06 35-40      5877      5840 6.100 -0.941 7.041       -0.716       -1.641     6.816     0.701  6.115   2005
+Andrei Kirilenko       1905 33.00 30-35      2488      2481 3.659 -3.380 7.039       -1.304       -2.015     4.962    -1.365  6.328   2005
+     Baron Davis       1884 34.39 30-35      2996      2996 5.837 -1.070 6.907       -1.304       -2.015     7.141     0.945  6.197   2005
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (19.7s). run_id=d79a671c
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2005: 464 players
+
+========================================================================
+[career 10/28] season=2006  elapsed=232s
+========================================================================
+
+=== rapm_core run 361e45bd | 1 | seasons (2006,) ===
+Fetching possessions from MySQL...
+  fetched 240,431 possessions in 11.4s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (240431, 919)  nnz = 2,913,812
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.09921  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.09922  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.09927  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.09928  (2s / est 2s)
+
+  best combo: off=1500  def=3000
+  best rmse:  1.09921  (±0.00130 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2006_career_2006.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2006.csv  (458 players)
+Top 15:
+             Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def   VORP Season
+      Dwyane Wade       2548 38.57 35-40      7319      7276 9.575 -3.742 13.318       -0.003       -2.352     9.579    -1.390 10.969   2006
+    Dirk Nowitzki       1717 38.14 35-40      7457      7406 8.654 -2.589 11.243       -0.003       -2.352     8.657    -0.237  8.894   2006
+Metta World Peace       1897 39.41 35-40      4550      4546 5.530 -5.307 10.837       -0.003       -2.352     5.534    -2.955  8.488   2006
+     LeBron James       2544 42.54   40+      7363      7339 9.259 -0.678  9.936       -0.569       -1.331     9.828     0.653  9.174   2006
+       Steve Nash        959 35.39 35-40      7017      7006 6.734 -2.783  9.517       -0.003       -2.352     6.737    -0.431  7.168   2006
+      Kobe Bryant        977 40.96   40+      6844      6828 9.486  0.082  9.404       -0.569       -1.331    10.055     1.413  8.642   2006
+        Ray Allen        951 38.75 35-40      5758      5748 9.620  0.423  9.197       -0.003       -2.352     9.624     2.776  6.848   2006
+ Andrei Kirilenko       1905 37.74 35-40      4720      4718 5.698 -3.331  9.029       -0.003       -2.352     5.701    -0.979  6.680   2006
+    Kevin Garnett        708 38.91 35-40      5451      5439 5.476 -3.537  9.013       -0.003       -2.352     5.479    -1.185  6.664   2006
+       Boris Diaw       2564 35.48 35-40      7234      7238 5.493 -3.421  8.914       -0.003       -2.352     5.496    -1.069  6.565   2006
+     Andre Miller       1889 35.82 35-40      6004      5999 6.398 -2.081  8.479       -0.003       -2.352     6.401     0.271  6.131   2006
+    Tracy McGrady       1503 37.13 35-40      3213      3217 5.524 -2.835  8.359       -0.003       -2.352     5.527    -0.483  6.010   2006
+    Manu Ginobili       1938 27.89 25-30      4157      4159 5.426 -2.795  8.221       -2.303       -1.817     7.729    -0.978  8.707   2006
+ Jason Richardson       2202 38.36 35-40      5632      5606 6.599 -1.543  8.142       -0.003       -2.352     6.602     0.809  5.793   2006
+     Vince Carter       1713 36.78 35-40      6329      6299 4.108 -4.023  8.131       -0.003       -2.352     4.112    -1.671  5.783   2006
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (17.8s). run_id=361e45bd
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2006: 458 players
+
+========================================================================
+[career 11/28] season=2007  elapsed=249s
+========================================================================
+
+=== rapm_core run e47e3972 | 1 | seasons (2007,) ===
+Fetching possessions from MySQL...
+  fetched 241,768 possessions in 11.7s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (241768, 919)  nnz = 2,926,194
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.10627  (1s / est 4s)
+    [   2/4]  off=1500 def=4500  rmse=1.10628  (2s / est 3s)
+    [   3/4]  off=2500 def=3000  rmse=1.10627  (2s / est 3s)
+    [   4/4]  off=2500 def=4500  rmse=1.10629  (3s / est 3s)
+
+  best combo: off=1500  def=3000
+  best rmse:  1.10627  (±0.00075 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2007_career_2007.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2007.csv  (458 players)
+Top 15:
+            Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+    LeBron James       2544 40.90   40+      7580      7536 6.747 -3.747 10.494       -0.404       -2.022     7.151    -1.725 8.876   2007
+      Steve Nash        959 35.30 35-40      6138      6137 7.954 -1.832  9.787       -0.606       -1.743     8.561    -0.090 8.650   2007
+      Tim Duncan       1495 34.07 30-35      6416      6393 5.841 -3.761  9.602       -1.613       -1.683     7.454    -2.078 9.532   2007
+   Kevin Garnett        708 39.41 35-40      5580      5560 6.134 -3.064  9.198       -0.606       -1.743     6.740    -1.321 8.061   2007
+   Dirk Nowitzki       1717 36.16 35-40      5731      5705 7.647 -1.472  9.119       -0.606       -1.743     8.253     0.270 7.982   2007
+     Baron Davis       1884 35.25 35-40      5470      5447 5.880 -3.068  8.948       -0.606       -1.743     6.486    -1.325 7.812   2007
+   Manu Ginobili       1938 27.47 25-30      5066      5066 4.842 -4.029  8.870       -2.088       -1.783     6.930    -2.245 9.175   2007
+     Kobe Bryant        977 40.78   40+      6490      6467 6.933 -1.328  8.261       -0.404       -2.022     7.337     0.694 6.643   2007
+  Gilbert Arenas       2240 39.75 35-40      5870      5850 7.401 -0.478  7.880       -0.606       -1.743     8.008     1.264 6.743   2007
+    Rafer Alston       1747 37.08 35-40      6349      6338 4.054 -3.637  7.691       -0.606       -1.743     4.661    -1.894 6.555   2007
+Chauncey Billups       1497 36.19 35-40      5746      5690 5.678 -1.917  7.594       -0.606       -1.743     6.284    -0.174 6.458   2007
+     Jason Terry       1891 35.14 35-40      5729      5713 6.425 -1.130  7.555       -0.606       -1.743     7.031     0.613 6.418   2007
+  Anthony Parker       1515 33.39 30-35      5138      5135 4.762 -2.726  7.488       -1.613       -1.683     6.375    -1.043 7.418   2007
+       Luol Deng       2736 37.46 35-40      6749      6740 3.825 -3.467  7.292       -0.606       -1.743     4.431    -1.724 6.156   2007
+     Paul Pierce       1718 37.02 35-40      3329      3324 5.672 -1.249  6.921       -0.606       -1.743     6.278     0.494 5.784   2007
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (19.0s). run_id=e47e3972
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2007: 458 players
+
+========================================================================
+[career 12/28] season=2008  elapsed=269s
+========================================================================
+
+=== rapm_core run 92756996 | 1 | seasons (2008,) ===
+Fetching possessions from MySQL...
+  fetched 244,238 possessions in 13.2s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (244238, 905)  nnz = 2,954,259
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.10938  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.10940  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.10940  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.10942  (2s / est 2s)
+
+  best combo: off=1500  def=3000
+  best rmse:  1.10938  (±0.00116 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2008_career_2008.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2008.csv  (451 players)
+Top 15:
+         Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+ LeBron James       2544 40.36   40+      6704      6680 9.835 -0.822 10.657        2.174       -1.052     7.661     0.230 7.431   2008
+Kevin Garnett        708 32.79 30-35      6180      6157 3.540 -6.177  9.717       -1.770       -2.180     5.310    -3.997 9.307   2008
+  Paul Pierce       1718 35.92 35-40      7252      7224 6.625 -2.986  9.611       -0.932       -1.874     7.558    -1.112 8.670   2008
+Manu Ginobili       1938 31.07 30-35      5428      5412 4.928 -4.280  9.208       -1.770       -2.180     6.698    -2.100 8.798   2008
+Dirk Nowitzki       1717 35.96 35-40      5637      5605 6.877 -2.185  9.062       -0.932       -1.874     7.809    -0.311 8.121   2008
+Allen Iverson        947 41.75   40+      7420      7405 8.700 -0.029  8.729        2.174       -1.052     6.526     1.023 5.503   2008
+  Kobe Bryant        977 38.93 35-40      8066      8054 7.052 -1.606  8.658       -0.932       -1.874     7.984     0.268 7.717   2008
+   Steve Nash        959 34.32 30-35      5947      5941 7.136 -1.436  8.572       -1.770       -2.180     8.906     0.744 8.162   2008
+   Chris Bosh       2547 36.19 35-40      4854      4861 5.324 -2.829  8.153       -0.932       -1.874     6.256    -0.955 7.211   2008
+  Joe Johnson       2207 40.77   40+      6820      6776 7.823 -0.046  7.869        2.174       -1.052     5.649     1.006 4.643   2008
+Mike Dunleavy       2399 36.01 35-40      6038      6049 5.674 -1.793  7.467       -0.932       -1.874     6.606     0.081 6.525   2008
+Dwight Howard       2730 37.66 35-40      6849      6814 5.571 -1.382  6.954       -0.932       -1.874     6.504     0.491 6.012   2008
+   Chris Paul     101108 37.57 35-40      6579      6557 6.416 -0.381  6.797       -0.932       -1.874     7.348     1.493 5.855   2008
+ Devin Harris       2734 31.60 30-35      3888      3868 5.311 -1.408  6.719       -1.770       -2.180     7.080     0.772 6.309   2008
+   Tim Duncan       1495 33.98 30-35      6104      6089 3.331 -3.348  6.679       -1.770       -2.180     5.101    -1.168 6.269   2008
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (19.8s). run_id=92756996
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2008: 451 players
+
+========================================================================
+[career 13/28] season=2009  elapsed=289s
+========================================================================
+
+=== rapm_core run a38eb065 | 1 | seasons (2009,) ===
+Fetching possessions from MySQL...
+  fetched 242,118 possessions in 11.1s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (242118, 893)  nnz = 2,926,979
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.11376  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.11376  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.11375  (1s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.11376  (2s / est 2s)
+
+  best combo: off=2500  def=3000
+  best rmse:  1.11375  (±0.00064 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2009_career_2009.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2009.csv  (445 players)
+Top 15:
+             Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+     LeBron James       2544 37.70 35-40      6738      6703 6.162 -4.247 10.409       -0.775       -2.235     6.937    -2.012 8.949   2009
+       Lamar Odom       1885 29.69 25-30      5931      5934 5.046 -5.176 10.222       -1.475       -1.844     6.521    -3.333 9.854   2009
+       Chris Paul     101108 38.49 35-40      5929      5931 5.420 -2.987  8.407       -0.775       -2.235     6.195    -0.752 6.947   2009
+        Ray Allen        951 36.40 35-40      6351      6314 4.943 -3.176  8.119       -0.775       -2.235     5.718    -0.941 6.659   2009
+      Dwyane Wade       2548 38.58 35-40      6287      6250 5.521 -2.402  7.923       -0.775       -2.235     6.296    -0.167 6.463   2009
+    Rashard Lewis       1740 36.19 35-40      7291      7294 4.245 -3.397  7.643       -0.775       -2.235     5.020    -1.162 6.182   2009
+      Kobe Bryant        977 36.10 35-40      7608      7596 5.578 -1.925  7.503       -0.775       -2.235     6.353     0.310 6.042   2009
+       Jason Kidd        467 35.63 35-40      6291      6277 4.156 -3.197  7.353       -0.775       -2.235     4.931    -0.962 5.893   2009
+      Brandon Roy     200750 37.22 35-40      5658      5632 5.147 -1.727  6.874       -0.775       -2.235     5.923     0.509 5.414   2009
+    Kevin Garnett        708 31.08 30-35      3304      3281 1.043 -5.738  6.781       -1.279       -2.094     2.322    -3.645 5.967   2009
+         Yao Ming       2397 33.62 30-35      5401      5373 3.168 -3.367  6.535       -1.279       -2.094     4.447    -1.273 5.721   2009
+Metta World Peace       1897 35.53 35-40      5466      5440 2.245 -4.262  6.508       -0.775       -2.235     3.020    -2.027 5.047   2009
+    Hedo Turkoglu       2045 36.56 35-40      7064      7057 3.371 -2.906  6.277       -0.775       -2.235     4.146    -0.670 4.816   2009
+    Danny Granger     101122 36.18 35-40      4888      4881 5.154 -0.905  6.059       -0.775       -2.235     5.929     1.330 4.599   2009
+  Carmelo Anthony       2546 34.50 30-35      5706      5677 4.195 -1.833  6.028       -1.279       -2.094     5.474     0.261 5.213   2009
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (17.1s). run_id=a38eb065
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2009: 445 players
+
+========================================================================
+[career 14/28] season=2010  elapsed=306s
+========================================================================
+
+=== rapm_core run aa847c8d | 1 | seasons (2010,) ===
+Fetching possessions from MySQL...
+  fetched 243,826 possessions in 11.1s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (243826, 885)  nnz = 2,946,140
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.11151  (0s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.11150  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.11148  (1s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.11147  (2s / est 2s)
+
+  best combo: off=2500  def=4500
+  best rmse:  1.11147  (±0.00152 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2010_career_2010.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2010.csv  (441 players)
+Top 15:
+            Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def  RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+    LeBron James       2544 39.02 35-40      6531      6522 7.415 -2.058 9.473       -0.654       -1.384     8.069    -0.674 8.742   2010
+     Dwyane Wade       2548 36.27 35-40      5695      5690 7.407 -1.330 8.737       -0.654       -1.384     8.061     0.054 8.006   2010
+    Kevin Durant     201142 39.50 35-40      6763      6774 5.541 -2.591 8.132       -0.654       -1.384     6.195    -1.207 7.402   2010
+       Ray Allen        951 35.24 35-40      7092      7060 4.826 -1.994 6.820       -0.654       -1.384     5.479    -0.610 6.089   2010
+  Deron Williams     101114 36.86 35-40      6282      6278 5.392 -1.183 6.574       -0.654       -1.384     6.045     0.202 5.843   2010
+Anderson Varejao       2760 28.50 25-30      4534      4524 3.814 -2.714 6.528       -1.708       -1.419     5.522    -1.295 6.817   2010
+   Dwight Howard       2730 34.67 30-35      6300      6258 4.110 -2.402 6.511       -1.208       -1.650     5.317    -0.752 6.069   2010
+     Kobe Bryant        977 38.84 35-40      7182      7159 4.081 -2.179 6.260       -0.654       -1.384     4.734    -0.795 5.529   2010
+    Vince Carter       1713 30.81 30-35      5271      5245 2.203 -3.694 5.897       -1.208       -1.650     3.411    -2.044 5.455   2010
+    Andre Miller       1889 30.48 30-35      4892      4890 3.285 -2.177 5.462       -1.208       -1.650     4.493    -0.527 5.020   2010
+      Steve Nash        959 32.84 30-35      6379      6352 4.655 -0.647 5.303       -1.208       -1.650     5.863     1.002 4.861   2010
+  Chris Andersen       2365 22.30 20-25      3587      3610 2.633 -2.413 5.046       -1.917       -1.236     4.550    -1.177 5.727   2010
+      Al Horford     201143 35.12 35-40      5928      5892 3.596 -1.444 5.041       -0.654       -1.384     4.250    -0.060 4.310   2010
+     Matt Barnes       2440 25.89 25-30      4605      4595 3.425 -1.488 4.914       -1.708       -1.419     5.133    -0.069 5.203   2010
+   Manu Ginobili       1938 28.66 25-30      4831      4822 3.492 -1.268 4.759       -1.708       -1.419     5.200     0.151 5.048   2010
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (17.0s). run_id=aa847c8d
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 4500.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2010: 441 players
+
+========================================================================
+[career 15/28] season=2011  elapsed=323s
+========================================================================
+
+=== rapm_core run 4dd44908 | 1 | seasons (2011,) ===
+Fetching possessions from MySQL...
+  fetched 241,776 possessions in 10.2s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (241776, 907)  nnz = 2,918,981
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.11148  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.11151  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.11149  (1s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.11151  (2s / est 2s)
+
+  best combo: off=1500  def=3000
+  best rmse:  1.11148  (±0.00073 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2011_career_2011.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2011.csv  (452 players)
+Top 15:
+         Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def   VORP Season
+Dirk Nowitzki       1717 34.30 30-35      6323      6271 8.808 -4.424 13.231       -1.387       -2.198    10.195    -2.226 12.421   2011
+Manu Ginobili       1938 30.32 30-35      5075      5092 7.384 -3.871 11.256       -1.387       -2.198     8.772    -1.673 10.445   2011
+   Chris Paul     101108 36.00 35-40      5766      5758 6.680 -2.985  9.665       -0.630       -2.280     7.310    -0.705  8.015   2011
+ LeBron James       2544 38.77 35-40      7463      7446 5.792 -3.435  9.227       -0.630       -2.280     6.422    -1.156  7.578   2011
+  Dwyane Wade       2548 37.15 35-40      6862      6832 7.479 -1.732  9.211       -0.630       -2.280     8.109     0.547  7.562   2011
+Dwight Howard       2730 37.63 35-40      6017      5970 4.559 -4.347  8.906       -0.630       -2.280     5.189    -2.067  7.256   2011
+    Pau Gasol       2200 37.04 35-40      6378      6371 5.855 -2.892  8.747       -0.630       -2.280     6.485    -0.612  7.097   2011
+Kevin Garnett        708 31.26 30-35      4786      4762 2.227 -6.153  8.380       -1.387       -2.198     3.615    -3.955  7.569   2011
+    Luol Deng       2736 39.12 35-40      7277      7246 4.293 -4.074  8.367       -0.630       -2.280     4.923    -1.795  6.717   2011
+   Steve Nash        959 33.29 30-35      4846      4801 6.338 -1.918  8.256       -1.387       -2.198     7.725     0.280  7.445   2011
+   Chris Bosh       2547 36.30 35-40      6778      6750 3.964 -4.187  8.152       -0.630       -2.280     4.594    -1.908  6.502   2011
+  Mike Conley     201144 35.45 35-40      6351      6347 5.997 -2.008  8.005       -0.630       -2.280     6.628     0.272  6.356   2011
+ Derrick Rose     201565 37.36 35-40      6876      6836 5.734 -2.214  7.948       -0.630       -2.280     6.364     0.066  6.299   2011
+  Paul Pierce       1718 34.68 30-35      5871      5847 4.206 -3.742  7.948       -1.387       -2.198     5.593    -1.544  7.137   2011
+ Kevin Durant     201142 38.94 35-40      7235      7200 6.171 -1.645  7.816       -0.630       -2.280     6.802     0.635  6.167   2011
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (16.5s). run_id=4dd44908
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2011: 452 players
+
+========================================================================
+[career 16/28] season=2012  elapsed=339s
+========================================================================
+
+=== rapm_core run 1c69b831 | 1 | seasons (2012,) ===
+Fetching possessions from MySQL...
+  fetched 196,823 possessions in 10.2s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (196823, 959)  nnz = 2,376,907
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.10811  (0s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.10815  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.10818  (1s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.10821  (2s / est 2s)
+
+  best combo: off=1500  def=3000
+  best rmse:  1.10811  (±0.00106 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2012_career_2012.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2012.csv  (478 players)
+Top 15:
+             Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+     LeBron James       2544 37.52 35-40      6252      6236 8.426 -3.553 11.980       -0.449       -2.529     8.875    -1.025 9.900   2012
+    Blake Griffin     201933 36.24 35-40      5131      5113 7.692 -2.597 10.289       -0.449       -2.529     8.141    -0.068 8.209   2012
+      Tony Parker       2225 32.05 30-35      4662      4634 5.256 -4.301  9.557       -1.172       -1.791     6.429    -2.510 8.938   2012
+     James Harden     201935 31.39 30-35      4963      4943 9.173 -0.237  9.410       -1.172       -1.791    10.345     1.554 8.791   2012
+Russell Westbrook     201566 35.32 35-40      6029      6013 6.114 -2.556  8.671       -0.449       -2.529     6.563    -0.028 6.591   2012
+       Chris Paul     101108 36.34 35-40      4816      4788 6.086 -2.546  8.632       -0.449       -2.529     6.535    -0.018 6.553   2012
+    Kevin Garnett        708 31.07 30-35      4823      4794 4.294 -4.301  8.594       -1.172       -1.791     5.466    -2.509 7.975   2012
+     Derrick Rose     201565 35.24 35-40      2664      2646 4.476 -3.740  8.216       -0.449       -2.529     4.926    -1.211 6.137   2012
+    Dirk Nowitzki       1717 33.53 30-35      4211      4184 5.944 -2.247  8.191       -1.172       -1.791     7.116    -0.456 7.572   2012
+    Danny Granger     101122 33.26 30-35      4657      4629 4.728 -3.445  8.173       -1.172       -1.791     5.900    -1.654 7.554   2012
+       Kevin Love     201567 39.01 35-40      4167      4156 6.499 -1.499  7.997       -0.449       -2.529     6.948     1.030 5.918   2012
+    Ryan Anderson     201583 32.19 30-35      3971      3936 6.485 -1.511  7.996       -1.172       -1.791     7.657     0.281 7.377   2012
+        Luol Deng       2736 39.43 35-40      4369      4360 3.235 -4.290  7.525       -0.449       -2.529     3.685    -1.762 5.446   2012
+       Josh Smith       2746 35.28 35-40      4687      4677 4.289 -3.183  7.472       -0.449       -2.529     4.738    -0.655 5.393   2012
+       Marc Gasol     201188 36.47 35-40      4937      4916 3.257 -4.211  7.468       -0.449       -2.529     3.706    -1.683 5.388   2012
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (15.5s). run_id=1c69b831
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2012: 478 players
+
+========================================================================
+[career 17/28] season=2013  elapsed=355s
+========================================================================
+
+=== rapm_core run 896617e5 | 1 | seasons (2013,) ===
+Fetching possessions from MySQL...
+  fetched 242,474 possessions in 10.7s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (242474, 945)  nnz = 2,934,960
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.11964  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.11964  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.11964  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.11964  (2s / est 2s)
+
+  best combo: off=2500  def=4500
+  best rmse:  1.11964  (±0.00088 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2013_career_2013.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2013.csv  (471 players)
+Top 15:
+             Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def  RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+     LeBron James       2544 37.86 35-40      7158      7119 5.628 -1.217 6.845       -1.238       -1.320     6.866     0.104 6.762   2013
+      Mike Conley     201144 34.46 30-35      6109      6068 3.170 -3.644 6.814       -0.876       -1.727     4.046    -1.918 5.963   2013
+       Chris Paul     101108 33.36 30-35      4838      4817 5.313 -1.258 6.571       -0.876       -1.727     6.189     0.469 5.720   2013
+     Amir Johnson     101161 28.70 25-30      4325      4323 4.089 -2.321 6.410       -1.483       -1.555     5.572    -0.767 6.339   2013
+        Ömer Aşik     201600 30.05 30-35      5312      5328 2.866 -3.486 6.351       -0.876       -1.727     3.741    -1.759 5.501   2013
+Russell Westbrook     201566 34.89 30-35      5740      5720 3.832 -2.297 6.128       -0.876       -1.727     4.708    -0.570 5.278   2013
+     Vince Carter       1713 25.84 25-30      4071      4014 3.783 -2.335 6.117       -1.483       -1.555     5.266    -0.780 6.046   2013
+      Tony Parker       2225 32.94 30-35      5559      5549 3.161 -2.851 6.012       -0.876       -1.727     4.037    -1.124 5.161   2013
+     Kevin Durant     201142 38.50 35-40      6990      6964 4.632 -1.221 5.853       -1.238       -1.320     5.871     0.100 5.771   2013
+      Paul Pierce       1718 33.44 30-35      5289      5260 3.724 -2.091 5.814       -0.876       -1.727     4.599    -0.364 4.964   2013
+      George Hill     201588 34.47 30-35      6081      6082 2.642 -3.114 5.755       -0.876       -1.727     3.517    -1.387 4.905   2013
+       Tim Duncan       1495 30.12 30-35      5332      5292 2.494 -3.172 5.666       -0.876       -1.727     3.370    -1.446 4.815   2013
+   Raymond Felton     101109 34.01 30-35      5141      5109 4.514 -1.124 5.638       -0.876       -1.727     5.390     0.603 4.788   2013
+ Danilo Gallinari     201568 32.52 30-35      4502      4493 3.463 -1.980 5.444       -0.876       -1.727     4.339    -0.254 4.593   2013
+Metta World Peace       1897 33.73 30-35      5103      5111 3.305 -2.136 5.442       -0.876       -1.727     4.181    -0.410 4.591   2013
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (17.4s). run_id=896617e5
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 4500.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2013: 471 players
+
+========================================================================
+[career 18/28] season=2014  elapsed=372s
+========================================================================
+
+=== rapm_core run 17a57906 | 1 | seasons (2014,) ===
+Fetching possessions from MySQL...
+  fetched 248,437 possessions in 11.4s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (248437, 967)  nnz = 3,005,442
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.12677  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.12678  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.12679  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.12679  (2s / est 2s)
+
+  best combo: off=1500  def=3000
+  best rmse:  1.12677  (±0.00142 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2014_career_2014.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2014.csv  (482 players)
+Top 15:
+           Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def   VORP Season
+   Kevin Durant     201142 38.54 35-40      7832      7812 8.960 -1.889 10.848       -0.031       -2.170     8.990     0.281  8.709   2014
+   LeBron James       2544 37.69 35-40      6888      6876 8.619 -1.462 10.080       -0.031       -2.170     8.650     0.708  7.941   2014
+  Manu Ginobili       1938 22.80 20-25      4277      4285 5.692 -4.165  9.858       -2.278       -2.133     7.971    -2.032 10.003   2014
+   James Harden     201935 38.05 35-40      6058      6021 7.274 -1.939  9.214       -0.031       -2.170     7.305     0.231  7.075   2014
+     Chris Paul     101108 35.02 35-40      5341      5315 4.366 -4.816  9.182       -0.031       -2.170     4.397    -2.646  7.043   2014
+  Stephen Curry     201939 36.49 35-40      6328      6295 7.556 -1.346  8.903       -0.031       -2.170     7.587     0.823  6.764   2014
+   Goran Dragic     201609 35.11 35-40      5313      5310 7.089 -1.745  8.834       -0.031       -2.170     7.120     0.425  6.695   2014
+      Ty Lawson     201951 35.83 35-40      4584      4582 7.115 -1.540  8.655       -0.031       -2.170     7.146     0.630  6.516   2014
+ Deron Williams     101114 32.18 30-35      4711      4695 6.003 -2.500  8.503       -1.470       -1.954     7.473    -0.547  8.020   2014
+    Serge Ibaka     201586 32.91 30-35      6401      6362 4.577 -3.215  7.792       -1.470       -1.954     6.047    -1.261  7.309   2014
+   Kemba Walker     202689 35.81 35-40      5223      5246 3.827 -3.828  7.655       -0.031       -2.170     3.858    -1.658  5.516   2014
+ Andre Iguodala       2738 32.38 30-35      4556      4532 3.069 -4.503  7.573       -1.470       -1.954     4.540    -2.550  7.089   2014
+     Kyle Lowry     200768 36.23 35-40      5993      5964 5.290 -2.281  7.571       -0.031       -2.170     5.321    -0.111  5.432   2014
+Carmelo Anthony       2546 38.72 35-40      5591      5547 6.131 -1.094  7.224       -0.031       -2.170     6.162     1.076  5.085   2014
+    Ricky Rubio     201937 32.17 30-35      5374      5366 4.994 -2.109  7.103       -1.470       -1.954     6.465    -0.155  6.620   2014
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (18.2s). run_id=17a57906
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2014: 482 players
+
+========================================================================
+[career 19/28] season=2015  elapsed=391s
+========================================================================
+
+=== rapm_core run 0f348318 | 1 | seasons (2015,) ===
+Fetching possessions from MySQL...
+  fetched 247,049 possessions in 12.1s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (247049, 987)  nnz = 2,987,215
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.12979  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.12983  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.12982  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.12985  (2s / est 2s)
+
+  best combo: off=1500  def=3000
+  best rmse:  1.12979  (±0.00014 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2015_career_2015.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2015.csv  (492 players)
+Top 15:
+             Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def    Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def   VORP Season
+    Stephen Curry     201939 32.66 30-35      7069      7038  7.669 -3.696 11.365       -1.287       -2.223     8.956    -1.473 10.429   2015
+     James Harden     201935 36.80 35-40      7337      7334 10.345 -0.911 11.257       -0.402       -1.890    10.747     0.979  9.768   2015
+     LeBron James       2544 36.14 35-40      6343      6341  6.814 -3.221 10.034       -0.402       -1.890     7.216    -1.331  8.546   2015
+    Kawhi Leonard     202695 31.76 30-35      4441      4439  4.693 -4.718  9.411       -1.287       -2.223     5.980    -2.495  8.475   2015
+    Anthony Davis     203076 36.10 35-40      5039      5029  6.010 -3.143  9.153       -0.402       -1.890     6.412    -1.253  7.665   2015
+   Draymond Green     203110 31.52 30-35      6672      6660  3.609 -5.361  8.970       -1.287       -2.223     4.896    -3.138  8.034   2015
+      Kyle Korver       2594 32.24 30-35      5815      5741  5.876 -2.922  8.798       -1.287       -2.223     7.163    -0.699  7.862   2015
+  Khris Middleton     203114 30.10 30-35      5035      5020  4.045 -4.730  8.776       -1.287       -2.223     5.332    -2.507  7.840   2015
+      Danny Green     201980 28.54 25-30      4812      4825  5.975 -2.628  8.603       -2.065       -2.014     8.040    -0.614  8.653   2015
+Russell Westbrook     201566 34.36 30-35      4659      4642  7.833 -0.751  8.585       -1.287       -2.223     9.121     1.472  7.649   2015
+      Serge Ibaka     201586 33.06 30-35      4134      4146  3.993 -3.836  7.829       -1.287       -2.223     5.280    -1.613  6.893   2015
+       Chris Paul     101108 34.84 30-35      6537      6529  5.738 -2.078  7.816       -1.287       -2.223     7.025     0.145  6.880   2015
+    Klay Thompson     202691 31.88 30-35      6519      6521  5.708 -1.989  7.697       -1.287       -2.223     6.995     0.234  6.761   2015
+   DeAndre Jordan     201599 34.39 30-35      6472      6513  5.686 -1.996  7.682       -1.287       -2.223     6.973     0.226  6.746   2015
+        Luol Deng       2736 33.62 30-35      4595      4576  6.818 -0.764  7.582       -1.287       -2.223     8.105     1.459  6.646   2015
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (18.7s). run_id=0f348318
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2015: 492 players
+
+========================================================================
+[career 20/28] season=2016  elapsed=410s
+========================================================================
+
+=== rapm_core run 0f1ed522 | 1 | seasons (2016,) ===
+Fetching possessions from MySQL...
+  fetched 252,516 possessions in 10.4s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (252516, 959)  nnz = 3,049,910
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.13700  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.13701  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.13697  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.13699  (2s / est 2s)
+
+  best combo: off=2500  def=3000
+  best rmse:  1.13697  (±0.00119 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2016_career_2016.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2016.csv  (478 players)
+Top 15:
+                    Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def   VORP Season
+          Draymond Green     203110 34.67 30-35      7634      7622 6.494 -4.843 11.337       -0.840       -1.909     7.333    -2.934 10.267   2016
+            LeBron James       2544 35.64 35-40      6795      6764 7.454 -3.678 11.132       -0.015       -1.829     7.469    -1.849  9.318   2016
+            Kevin Durant     201142 35.80 35-40      6683      6655 6.117 -2.131  8.247       -0.015       -1.829     6.132    -0.302  6.434   2016
+           Stephen Curry     201939 34.18 30-35      6928      6905 5.844 -2.291  8.135       -0.840       -1.909     6.683    -0.382  7.065   2016
+              Kyle Lowry     200768 37.03 35-40      6892      6862 6.653 -1.244  7.897       -0.015       -1.829     6.669     0.585  6.084   2016
+              Chris Paul     101108 32.71 30-35      5077      5064 5.305 -2.470  7.776       -0.840       -1.909     6.145    -0.561  6.706   2016
+           Kawhi Leonard     202695 33.05 30-35      5320      5299 3.599 -4.160  7.759       -0.840       -1.909     4.438    -2.251  6.689   2016
+       Russell Westbrook     201566 34.37 30-35      6921      6922 5.659 -1.114  6.772       -0.840       -1.909     6.498     0.795  5.703   2016
+             Paul George     202331 34.80 30-35      6214      6210 3.361 -2.814  6.174       -0.840       -1.909     4.200    -0.905  5.105   2016
+             Kyle Korver       2594 30.01 30-35      5488      5407 2.402 -3.325  5.727       -0.840       -1.909     3.242    -1.416  4.658   2016
+         Khris Middleton     203114 36.10 35-40      5619      5600 3.884 -1.818  5.702       -0.015       -1.829     3.899     0.010  3.889   2016
+            Kemba Walker     202689 35.62 35-40      6173      6164 4.660 -0.862  5.522       -0.015       -1.829     4.676     0.967  3.709   2016
+              Kevin Love     201567 31.49 30-35      5800      5790 3.986 -1.384  5.370       -0.840       -1.909     4.825     0.525  4.301   2016
+Kentavious Caldwell-Pope     203484 36.69 35-40      5801      5771 3.209 -2.095  5.304       -0.015       -1.829     3.225    -0.266  3.491   2016
+          DeAndre Jordan     201599 33.74 30-35      5540      5563 3.737 -1.480  5.216       -0.840       -1.909     4.576     0.429  4.147   2016
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (42.3s). run_id=0f1ed522
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2016: 478 players
+
+========================================================================
+[career 21/28] season=2017  elapsed=452s
+========================================================================
+
+=== rapm_core run a76d9a36 | 1 | seasons (2017,) ===
+Fetching possessions from MySQL...
+  fetched 252,339 possessions in 12.4s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (252339, 975)  nnz = 3,045,735
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.15474  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.15474  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.15474  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.15474  (2s / est 2s)
+
+  best combo: off=2500  def=4500
+  best rmse:  1.15474  (±0.00116 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2017_career_2017.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2017.csv  (486 players)
+Top 15:
+             Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+    Stephen Curry     201939 33.40 30-35      6917      6877 8.243 -2.473 10.715       -0.835       -1.928     9.078    -0.544 9.622   2017
+     LeBron James       2544 37.76 35-40      7039      7024 9.154 -1.495 10.649       -0.643       -1.550     9.798     0.055 9.743   2017
+    Kawhi Leonard     202695 33.44 30-35      5589      5566 7.238 -1.739  8.976       -0.835       -1.928     8.073     0.190 7.883   2017
+       Kyle Lowry     200768 37.40 35-40      4972      4972 5.322 -2.016  7.337       -0.643       -1.550     5.965    -0.466 6.431   2017
+       Chris Paul     101108 31.49 30-35      4311      4285 3.655 -3.486  7.141       -0.835       -1.928     4.490    -1.558 6.048   2017
+Russell Westbrook     201566 34.59 30-35      6156      6153 5.325 -1.476  6.801       -0.835       -1.928     6.161     0.453 5.708   2017
+   Draymond Green     203110 32.51 30-35      6433      6425 2.226 -4.571  6.797       -0.835       -1.928     3.061    -2.643 5.704   2017
+      Rudy Gobert     203497 33.87 30-35      5670      5653 2.880 -3.848  6.728       -0.835       -1.928     3.716    -1.920 5.635   2017
+    Klay Thompson     202691 33.96 30-35      6739      6722 3.929 -2.751  6.680       -0.835       -1.928     4.764    -0.823 5.587   2017
+     Kevin Durant     201142 33.39 30-35      5466      5446 4.759 -1.871  6.629       -0.835       -1.928     5.594     0.058 5.536   2017
+      Mike Conley     201144 33.22 30-35      4760      4741 4.733 -1.854  6.587       -0.835       -1.928     5.568     0.075 5.494   2017
+      Jae Crowder     203109 32.44 30-35      5857      5865 3.440 -2.960  6.400       -0.835       -1.928     4.275    -1.032 5.307   2017
+     Jimmy Butler     202710 36.96 35-40      6043      6016 3.727 -2.574  6.301       -0.643       -1.550     4.370    -1.024 5.394   2017
+   DeAndre Jordan     201599 31.73 30-35      5608      5607 3.651 -2.595  6.246       -0.835       -1.928     4.486    -0.667 5.153   2017
+       Kevin Love     201567 31.41 30-35      4911      4890 2.759 -3.419  6.179       -0.835       -1.928     3.594    -1.491 5.086   2017
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (19.5s). run_id=a76d9a36
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 4500.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2017: 486 players
+
+========================================================================
+[career 22/28] season=2018  elapsed=472s
+========================================================================
+
+=== rapm_core run 061995e9 | 1 | seasons (2018,) ===
+Fetching possessions from MySQL...
+  fetched 255,290 possessions in 12.7s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (255290, 1085)  nnz = 3,079,134
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.16724  (1s / est 4s)
+    [   2/4]  off=1500 def=4500  rmse=1.16726  (2s / est 4s)
+    [   3/4]  off=2500 def=3000  rmse=1.16721  (3s / est 4s)
+    [   4/4]  off=2500 def=4500  rmse=1.16722  (4s / est 4s)
+
+  best combo: off=2500  def=3000
+  best rmse:  1.16721  (±0.00115 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2018_career_2018.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2018.csv  (541 players)
+Top 15:
+                 Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def  RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+        Stephen Curry     201939 31.98 30-35      4638      4609 6.141 -2.645 8.786       -0.720       -2.193     6.861    -0.452 7.313   2018
+       Damian Lillard     203081 36.57 35-40      5761      5743 5.584 -2.815 8.399        0.137       -2.490     5.447    -0.324 5.771   2018
+         James Harden     201935 35.43 35-40      6380      6369 6.336 -1.814 8.150        0.137       -2.490     6.199     0.677 5.523   2018
+         Jimmy Butler     202710 36.68 35-40      4524      4505 3.850 -4.168 8.018        0.137       -2.490     3.713    -1.678 5.390   2018
+     Robert Covington     203496 31.64 30-35      5827      5809 3.170 -4.675 7.845       -0.720       -2.193     3.890    -2.482 6.372   2018
+           Chris Paul     101108 31.84 30-35      4743      4737 4.758 -2.999 7.757       -0.720       -2.193     5.478    -0.806 6.285   2018
+       Victor Oladipo     203506 34.03 30-35      5627      5613 2.870 -4.434 7.304       -0.720       -2.193     3.590    -2.241 5.831   2018
+         LeBron James       2544 36.90 35-40      7926      7920 8.089  0.790 7.300        0.137       -2.490     7.952     3.280 4.672   2018
+    LaMarcus Aldridge     200746 33.45 30-35      5224      5222 4.330 -2.954 7.284       -0.720       -2.193     5.050    -0.760 5.811   2018
+      Otto Porter Jr.     203490 31.58 30-35      5177      5154 4.010 -3.191 7.201       -0.720       -2.193     4.730    -0.998 5.728   2018
+          Joel Embiid     203954 30.35 30-35      4473      4425 2.433 -4.464 6.897       -0.720       -2.193     3.153    -2.271 5.424   2018
+    Russell Westbrook     201566 36.42 35-40      6394      6394 4.777 -2.107 6.884        0.137       -2.490     4.640     0.383 4.257   2018
+Giannis Antetokounmpo     203507 36.75 35-40      6061      6045 3.593 -3.206 6.799        0.137       -2.490     3.456    -0.716 4.172   2018
+         Jrue Holiday     201950 36.13 35-40      6783      6768 3.477 -3.277 6.753        0.137       -2.490     3.340    -0.786 4.126   2018
+          Eric Gordon     201569 31.22 30-35      5512      5493 4.580 -2.131 6.712       -0.720       -2.193     5.301     0.062 5.239   2018
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (21.2s). run_id=061995e9
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2018: 541 players
+
+========================================================================
+[career 23/28] season=2019  elapsed=493s
+========================================================================
+
+=== rapm_core run bd984332 | 1 | seasons (2019,) ===
+Fetching possessions from MySQL...
+  fetched 262,552 possessions in 14.3s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (262552, 1063)  nnz = 3,166,665
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.17281  (1s / est 3s)
+    [   2/4]  off=1500 def=4500  rmse=1.17280  (1s / est 3s)
+    [   3/4]  off=2500 def=3000  rmse=1.17278  (2s / est 3s)
+    [   4/4]  off=2500 def=4500  rmse=1.17277  (3s / est 3s)
+
+  best combo: off=2500  def=4500
+  best rmse:  1.17277  (±0.00188 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2019_career_2019.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2019.csv  (530 players)
+Top 15:
+                 Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def   RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+          Paul George     202331 36.90 35-40      6464      6457 6.769 -4.579 11.348        1.845       -2.335     4.924    -2.244 7.168   2019
+         Jrue Holiday     201950 35.85 35-40      5165      5163 8.155 -3.163 11.318        1.845       -2.335     6.310    -0.828 7.137   2019
+       Damian Lillard     203081 35.47 35-40      7146      7114 8.110 -2.810 10.921        1.845       -2.335     6.265    -0.475 6.740   2019
+         James Harden     201935 36.75 35-40      6608      6589 8.857 -1.657 10.514        1.845       -2.335     7.012     0.678 6.333   2019
+        Stephen Curry     201939 33.79 30-35      6718      6687 6.331 -3.063  9.394       -0.884       -1.828     7.215    -1.235 8.450   2019
+         LeBron James       2544 35.23 35-40      4154      4134 5.761 -3.164  8.925        1.845       -2.335     3.915    -0.829 4.745   2019
+         Kevin Durant     201142 34.64 30-35      6622      6605 5.954 -2.087  8.041       -0.884       -1.828     6.838    -0.259 7.097   2019
+          Joel Embiid     203954 33.66 30-35      5214      5207 4.240 -3.671  7.911       -0.884       -1.828     5.124    -1.843 6.967   2019
+         Bradley Beal     203078 36.92 35-40      6354      6324 7.452 -0.284  7.735        1.845       -2.335     5.606     2.051 3.555   2019
+Giannis Antetokounmpo     203507 32.75 30-35      6151      6134 3.769 -3.614  7.383       -0.884       -1.828     4.653    -1.787 6.440   2019
+           Kyle Lowry     200768 34.05 30-35      6350      6332 4.514 -2.848  7.362       -0.884       -1.828     5.398    -1.020 6.418   2019
+         Devin Booker    1626164 35.03 35-40      4681      4660 6.317 -0.606  6.923        1.845       -2.335     4.472     1.729 2.743   2019
+    Russell Westbrook     201566 36.02 35-40      6049      6042 5.268 -1.278  6.546        1.845       -2.335     3.422     1.057 2.365   2019
+          Danny Green     201980 27.69 25-30      5885      5883 4.176 -2.197  6.372       -1.626       -1.359     5.802    -0.837 6.639   2019
+         Nikola Jokic     203999 31.29 30-35      6108      6044 3.914 -2.311  6.225       -0.884       -1.828     4.798    -0.483 5.282   2019
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (21.4s). run_id=bd984332
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 4500.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2019: 530 players
+
+========================================================================
+[career 24/28] season=2020  elapsed=515s
+========================================================================
+
+=== rapm_core run 1b1e0868 | 1 | seasons (2020,) ===
+Fetching possessions from MySQL...
+  fetched 228,937 possessions in 13.2s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (228937, 1063)  nnz = 2,763,426
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.18555  (1s / est 3s)
+    [   2/4]  off=1500 def=4500  rmse=1.18556  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.18552  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.18553  (2s / est 2s)
+
+  best combo: off=2500  def=3000
+  best rmse:  1.18552  (±0.00038 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2020_career_2020.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2020.csv  (530 players)
+Top 15:
+                 Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def  RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+         LeBron James       2544 34.57 30-35      6352      6353 4.274 -4.326 8.600       -1.078       -1.975     5.352    -2.351 7.704   2020
+Giannis Antetokounmpo     203507 30.43 30-35      4834      4776 3.165 -4.870 8.035       -1.078       -1.975     4.243    -2.895 7.139   2020
+        Kawhi Leonard     202695 32.42 30-35      4850      4834 3.946 -3.759 7.705       -1.078       -1.975     5.024    -1.784 6.809   2020
+         Jayson Tatum    1628369 34.32 30-35      5996      5973 3.816 -3.580 7.396       -1.078       -1.975     4.894    -1.605 6.500   2020
+         James Harden     201935 36.51 35-40      6147      6140 3.844 -2.339 6.183       -0.725       -2.091     4.569    -0.248 4.817   2020
+        Pascal Siakam    1627783 35.17 35-40      5265      5263 2.487 -3.490 5.977       -0.725       -2.091     3.212    -1.399 4.611   2020
+      Duncan Robinson    1629130 29.67 25-30      5582      5581 4.528 -1.352 5.881       -1.287       -1.673     5.815     0.321 5.495   2020
+      Khris Middleton     203114 29.88 25-30      4765      4745 3.179 -2.301 5.479       -1.287       -1.673     4.465    -0.628 5.093   2020
+           Chris Paul     101108 31.54 30-35      5056      5013 4.267 -1.194 5.462       -1.078       -1.975     5.346     0.781 4.565   2020
+         Jamal Murray    1627750 32.26 30-35      5239      5213 3.156 -1.668 4.824       -1.078       -1.975     4.234     0.306 3.928   2020
+         Jimmy Butler     202710 33.78 30-35      5541      5478 3.122 -1.570 4.692       -1.078       -1.975     4.200     0.404 3.796   2020
+         Devin Booker    1626164 35.88 35-40      5284      5279 6.116  1.457 4.659       -0.725       -2.091     6.841     3.548 3.293   2020
+   Kristaps Porzingis     204001 31.82 30-35      3953      3939 2.757 -1.852 4.609       -1.078       -1.975     3.835     0.123 3.713   2020
+         Goran Dragic     201609 28.18 25-30      4499      4459 2.700 -1.866 4.566       -1.287       -1.673     3.987    -0.194 4.180   2020
+      Dennis Schroder     203471 30.75 30-35      4593      4577 0.871 -3.480 4.350       -1.078       -1.975     1.949    -1.505 3.454   2020
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (20.7s). run_id=1b1e0868
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2020: 530 players
+
+========================================================================
+[career 25/28] season=2021  elapsed=535s
+========================================================================
+
+=== rapm_core run 2ae112e4 | 1 | seasons (2021,) ===
+Fetching possessions from MySQL...
+  fetched 231,645 possessions in 12.9s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (231645, 1083)  nnz = 2,796,102
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.19095  (0s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.19094  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.19095  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.19094  (2s / est 2s)
+
+  best combo: off=1500  def=4500
+  best rmse:  1.19094  (±0.00126 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2021_career_2021.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2021.csv  (540 players)
+Top 15:
+               Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def  RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+      Kawhi Leonard     202695 34.09 30-35      4404      4400 6.388 -2.846 9.234       -1.547       -1.753     7.935    -1.093 9.028   2021
+        Paul George     202331 33.72 30-35      5179      5148 5.310 -3.690 9.000       -1.547       -1.753     6.856    -1.938 8.794   2021
+       LeBron James       2544 33.42 30-35      3547      3542 4.909 -3.554 8.463       -1.547       -1.753     6.456    -1.801 8.257   2021
+        Rudy Gobert     203497 30.80 30-35      5264      5268 3.756 -4.462 8.218       -1.547       -1.753     5.303    -2.709 8.012   2021
+        Luka Doncic    1629029 34.28 30-35      5079      5071 7.020 -1.014 8.034       -1.547       -1.753     8.567     0.739 7.828   2021
+        Joel Embiid     203954 31.08 30-35      3994      3985 4.806 -3.031 7.837       -1.547       -1.753     6.353    -1.279 7.632   2021
+     Draymond Green     203110 31.46 30-35      4423      4414 5.318 -2.499 7.818       -1.547       -1.753     6.865    -0.747 7.612   2021
+       Jrue Holiday     201950 32.32 30-35      5867      5862 4.279 -3.274 7.553       -1.547       -1.753     5.826    -1.521 7.347   2021
+ Karl-Anthony Towns    1626157 33.78 30-35      3512      3502 5.483 -1.917 7.400       -1.547       -1.753     7.030    -0.164 7.195   2021
+Dorian Finney-Smith    1627827 32.01 30-35      4322      4319 5.172 -1.833 7.005       -1.547       -1.753     6.719    -0.081 6.800   2021
+       Kevin Durant     201142 33.05 30-35      3384      3388 4.264 -2.721 6.985       -1.547       -1.753     5.811    -0.968 6.779   2021
+       Bradley Beal     203078 35.78 35-40      5200      5168 8.300  1.374 6.926       -1.279       -1.286     9.579     2.661 6.919   2021
+       Kyrie Irving     202681 34.93 30-35      4570      4558 5.438 -1.318 6.756       -1.547       -1.753     6.985     0.434 6.550   2021
+       Jayson Tatum    1628369 35.78 35-40      5063      5042 6.384 -0.223 6.607       -1.279       -1.286     7.663     1.064 6.599   2021
+          Ja Morant    1629630 32.59 30-35      4859      4846 5.915 -0.650 6.565       -1.547       -1.753     7.462     1.102 6.360   2021
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (19.6s). run_id=2ae112e4
+  chosen lambdas: {'lam_off': 1500.0, 'lam_def': 4500.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2021: 540 players
+
+========================================================================
+[career 26/28] season=2022  elapsed=555s
+========================================================================
+
+=== rapm_core run e651ba10 | 1 | seasons (2022,) ===
+Fetching possessions from MySQL...
+  fetched 259,528 possessions in 13.1s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (259528, 1215)  nnz = 3,132,111
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.18861  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.18862  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.18859  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.18860  (2s / est 2s)
+
+  best combo: off=2500  def=3000
+  best rmse:  1.18859  (±0.00058 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2022_career_2022.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2022.csv  (606 players)
+Top 15:
+                 Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def  RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+        Stephen Curry     201939 34.55 30-35      6133      6114 5.385 -2.993 8.379       -1.327       -2.107     6.712    -0.886 7.598   2022
+         Jayson Tatum    1628369 35.93 35-40      7350      7363 5.577 -2.689 8.266       -1.151       -1.973     6.728    -0.717 7.445   2022
+         Kevin Durant     201142 37.23 35-40      4682      4689 4.983 -2.397 7.380       -1.151       -1.973     6.134    -0.424 6.559   2022
+         Nikola Jokic     203999 33.45 30-35      5398      5379 4.409 -2.704 7.113       -1.327       -2.107     5.736    -0.597 6.333   2022
+         Jrue Holiday     201950 32.95 30-35      5514      5491 6.125 -0.868 6.994       -1.327       -2.107     7.452     1.239 6.213   2022
+       Darius Garland    1629636 35.73 35-40      5044      4997 4.842 -1.854 6.696       -1.151       -1.973     5.993     0.119 5.874   2022
+Giannis Antetokounmpo     203507 32.90 30-35      5587      5563 4.201 -2.483 6.684       -1.327       -2.107     5.528    -0.376 5.903   2022
+          Joel Embiid     203954 33.77 30-35      5285      5269 3.079 -3.131 6.211       -1.327       -2.107     4.406    -1.024 5.430   2022
+        Mikal Bridges    1628969 34.81 30-35      6868      6878 5.280 -0.777 6.057       -1.327       -2.107     6.607     1.331 5.277   2022
+         Kyrie Irving     202681 37.64 35-40      2682      2678 4.650 -1.380 6.030       -1.151       -1.973     5.801     0.593 5.208   2022
+         Desmond Bane    1630217 29.82 25-30      5588      5529 3.111 -2.261 5.371       -1.791       -2.199     4.902    -0.062 4.964   2022
+  Dorian Finney-Smith    1627827 33.05 30-35      6447      6466 4.512 -0.727 5.239       -1.327       -2.107     5.839     1.381 4.458   2022
+    Immanuel Quickley    1630193 23.11 20-25      3546      3538 2.660 -2.519 5.179       -2.060       -1.844     4.720    -0.675 5.395   2022
+         Jimmy Butler     202710 33.87 30-35      5042      4992 2.946 -2.152 5.098       -1.327       -2.107     4.272    -0.045 4.318   2022
+         Jaylen Brown    1627759 33.64 30-35      6228      6220 1.890 -3.149 5.039       -1.327       -2.107     3.217    -1.042 4.259   2022
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (17.8s). run_id=e651ba10
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2022: 606 players
+
+========================================================================
+[career 27/28] season=2023  elapsed=573s
+========================================================================
+
+=== rapm_core run 5d62ae28 | 1 | seasons (2023,) ===
+Fetching possessions from MySQL...
+  fetched 261,417 possessions in 11.9s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (261417, 1085)  nnz = 3,153,988
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.18578  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.18577  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.18576  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.18575  (2s / est 2s)
+
+  best combo: off=2500  def=4500
+  best rmse:  1.18575  (±0.00132 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2023_career_2023.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2023.csv  (541 players)
+Top 15:
+                   Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def  RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+           Nikola Jokic     203999 33.67 30-35      6372      6316 5.555 -1.713 7.269       -1.371       -1.687     6.926    -0.026 6.952   2023
+           Jrue Holiday     201950 32.58 30-35      4992      4965 4.087 -2.913 6.999       -1.371       -1.687     5.457    -1.225 6.683   2023
+           Jayson Tatum    1628369 36.92 35-40      7105      7099 5.556 -0.755 6.311       -0.357       -1.132     5.913     0.378 5.535   2023
+           Aaron Gordon     203932 30.22 30-35      5634      5634 3.387 -2.906 6.292       -1.371       -1.687     4.757    -1.218 5.976   2023
+          Kawhi Leonard     202695 33.61 30-35      3688      3669 3.383 -2.820 6.203       -1.371       -1.687     4.754    -1.133 5.887   2023
+           LeBron James       2544 35.53 35-40      5404      5397 4.541 -1.595 6.136       -0.357       -1.132     4.898    -0.463 5.361   2023
+           Devin Booker    1626164 34.63 30-35      4697      4690 5.421 -0.712 6.133       -1.371       -1.687     6.792     0.975 5.816   2023
+Shai Gilgeous-Alexander    1628983 35.53 35-40      5260      5239 4.874 -0.928 5.802       -0.357       -1.132     5.231     0.204 5.027   2023
+              Josh Hart    1628404 32.29 30-35      5655      5653 3.397 -2.350 5.747       -1.371       -1.687     4.768    -0.662 5.430   2023
+          Derrick White    1628401 28.28 25-30      5895      5907 2.748 -2.954 5.702       -1.653       -1.550     4.400    -1.404 5.804   2023
+           Kevin Durant     201142 35.57 35-40      4373      4351 4.266 -1.416 5.681       -0.357       -1.132     4.623    -0.283 4.906   2023
+           Desmond Bane    1630217 31.75 30-35      4331      4325 3.147 -2.520 5.667       -1.371       -1.687     4.517    -0.833 5.351   2023
+           Kyrie Irving     202681 37.34 35-40      4518      4511 4.579 -0.717 5.296       -0.357       -1.132     4.936     0.415 4.521   2023
+  Giannis Antetokounmpo     203507 32.12 30-35      4473      4449 3.186 -2.039 5.225       -1.371       -1.687     4.557    -0.352 4.908   2023
+            Joel Embiid     203954 34.61 30-35      5182      5165 1.949 -3.187 5.136       -1.371       -1.687     3.319    -1.500 4.819   2023
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (16.9s). run_id=5d62ae28
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 4500.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2023: 541 players
+
+========================================================================
+[career 28/28] season=2024  elapsed=590s
+========================================================================
+
+=== rapm_core run 392751cf | 1 | seasons (2024,) ===
+Fetching possessions from MySQL...
+  fetched 245,167 possessions in 10.7s
+Building game metadata (playoff + B2B)...
+Building design matrix...
+  X shape = (245167, 1147)  nnz = 2,950,228
+
+Exhaustive per-block lambda grid search...
+  grid combos: 4   folds: 3   total fits: 12
+  off grid: [1500.0, 2500.0]
+  def grid: [3000.0, 4500.0]
+  fixed meta lambdas: home=500.0, rb=250.0, playoff=250.0, b2b=500.0, coach=2000.0
+    [   1/4]  off=1500 def=3000  rmse=1.19039  (1s / est 2s)
+    [   2/4]  off=1500 def=4500  rmse=1.19040  (1s / est 2s)
+    [   3/4]  off=2500 def=3000  rmse=1.19037  (2s / est 2s)
+    [   4/4]  off=2500 def=4500  rmse=1.19039  (2s / est 2s)
+
+  best combo: off=2500  def=3000
+  best rmse:  1.19037  (±0.00197 across folds)
+
+Loading MPG lookup and computing tier-based replacement levels...
+Refitting at chosen alpha toward replacement levels (pass 2)...
+Raw coefficients → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/rapm_core_1_2024_career_2024.csv
+Human-readable → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2024.csv  (572 players)
+Top 15:
+                   Name  PLAYER_ID   MPG  Tier  Poss_Off  Poss_Def   Off    Def  RAPM  Replace_Off  Replace_Def  VORP_Off  VORP_Def  VORP Season
+            Luka Doncic    1629029 37.49 35-40      5542      5555 6.665 -1.812 8.477        0.474       -2.080     6.191     0.268 5.923   2024
+          Jalen Brunson    1628973 35.41 35-40      5529      5483 7.154 -1.222 8.376        0.474       -2.080     6.681     0.858 5.823   2024
+         Damian Lillard     203081 35.32 35-40      5384      5372 4.987 -2.942 7.929        0.474       -2.080     4.513    -0.862 5.375   2024
+          Fred VanVleet    1627832 36.77 35-40      5452      5437 5.487 -2.410 7.897        0.474       -2.080     5.013    -0.330 5.343   2024
+       Donovan Mitchell    1628378 35.32 35-40      4052      4031 3.815 -3.946 7.761        0.474       -2.080     3.341    -1.866 5.207   2024
+Shai Gilgeous-Alexander    1628983 34.04 30-35      5370      5351 4.326 -3.198 7.524       -1.437       -2.134     5.763    -1.064 6.827   2024
+            Paul George     202331 33.81 30-35      5120      5101 5.289 -2.064 7.352       -1.437       -2.134     6.726     0.071 6.655   2024
+  Giannis Antetokounmpo     203507 35.17 35-40      5321      5325 6.296 -1.024 7.320        0.474       -2.080     5.822     1.056 4.766   2024
+           LeBron James       2544 35.26 35-40      5443      5436 5.487 -1.814 7.301        0.474       -2.080     5.013     0.266 4.747   2024
+        Anthony Edwards    1630162 35.07 35-40      5661      5636 4.824 -2.476 7.300        0.474       -2.080     4.350    -0.396 4.746   2024
+           Jayson Tatum    1628369 35.75 35-40      5412      5398 5.301 -1.985 7.286        0.474       -2.080     4.828     0.095 4.732   2024
+           Nikola Jokic     203999 34.64 30-35      5648      5595 4.788 -2.305 7.093       -1.437       -2.134     6.224    -0.171 6.395   2024
+             OG Anunoby    1628384 34.04 30-35      3514      3498 1.138 -5.588 6.726       -1.437       -2.134     2.575    -3.454 6.029   2024
+          Derrick White    1628401 32.62 30-35      4918      4919 3.679 -2.979 6.658       -1.437       -2.134     5.116    -0.845 5.961   2024
+           De'Aaron Fox    1628368 35.93 35-40      5667      5658 4.266 -2.137 6.403        0.474       -2.080     3.792    -0.057 3.849   2024
+Appended to /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/Combined_Rapm_core.csv
+
+Done (15.3s). run_id=392751cf
+  chosen lambdas: {'lam_off': 2500.0, 'lam_def': 3000.0, 'lam_home': 500.0, 'lam_rb': 250.0, 'lam_playoff': 250.0, 'lam_b2b': 500.0, 'lam_coach': 2000.0}
+  season 2024: 572 players
+
+
+Career table → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/career/career_rapm_1year.csv
+  rows: 13,429   unique players: 2,654
+  seasons covered: [1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
+  meta → /Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/career/career_rapm_1year_meta.json

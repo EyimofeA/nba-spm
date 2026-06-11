@@ -1,0 +1,37 @@
+{
+  "design_meta": {
+    "garbage_time": true,
+    "rubberband_mean": -0.41346137284958906,
+    "rubberband_scale": 8.360858995603058,
+    "season_type": "regular"
+  },
+  "dropped_garbage_time": 84448,
+  "elapsed_seconds": 1.5506699085235596,
+  "intercept": 1.1355218842038841,
+  "kept_possessions": 638657,
+  "lambda_profile": {
+    "lambda_def": 3000.0,
+    "lambda_meta": 300.0,
+    "lambda_off": 3000.0,
+    "lambda_season": 100.0
+  },
+  "mae_in_sample": 1.1239535674407741,
+  "n_columns": 1578,
+  "paths": {
+    "lambda_scores": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/diagnostics/standard_rapm/standard_rapm_standard_rs_v1_smoke_suite_regular_prior_regular_2022-23-24_zero_bcddbf9b_lambda_scores.csv",
+    "meta": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/standard_rapm_standard_rs_v1_smoke_suite_regular_prior_regular_2022-23-24_zero_bcddbf9b_meta.csv",
+    "players": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/standard_rapm_standard_rs_v1_smoke_suite_regular_prior_regular_2022-23-24_zero_bcddbf9b_players.csv",
+    "raw_coefficients": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/standard_rapm_standard_rs_v1_smoke_suite_regular_prior_regular_2022-23-24_zero_bcddbf9b_coefficients.csv"
+  },
+  "prior_mode": "zero",
+  "residual_mean": -0.0016798965651113136,
+  "rmse_in_sample": 1.1870178494593686,
+  "run_id": "bcddbf9b",
+  "season_type": "regular",
+  "seasons": [
+    2022,
+    2023,
+    2024
+  ],
+  "spec": "standard_rs_v1_smoke_suite_regular_prior"
+}

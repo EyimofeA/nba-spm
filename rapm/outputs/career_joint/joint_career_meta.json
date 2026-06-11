@@ -1,0 +1,61 @@
+{
+  "seasons": [
+    1997,
+    1998,
+    1999,
+    2000,
+    2001,
+    2002,
+    2003,
+    2004,
+    2005,
+    2006,
+    2007,
+    2008,
+    2009,
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "n_possessions": 6644989,
+  "n_player_seasons": 13429,
+  "n_columns": 26888,
+  "n_smoothness_rows": 20742,
+  "y_mean": 1.0624783577519843,
+  "rubber_band": {
+    "clip": 25.0,
+    "mean": -0.5156363689992565,
+    "std": 10.079541730488577
+  },
+  "lambdas": {
+    "offense": 2500.0,
+    "defense": 4000.0,
+    "rubber_band": 2000.0,
+    "home": 5000.0,
+    "playoff": 5000.0,
+    "season": 5000.0,
+    "smooth_off": 3000.0,
+    "smooth_def": 3000.0
+  },
+  "aging_curve": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/aging_curve.csv",
+  "ref_age": 27,
+  "elapsed_seconds": 334.28714179992676,
+  "outputs": {
+    "player_seasons": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/career_joint/joint_career_player_seasons.csv",
+    "summary": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/career_joint/joint_career_summary.csv",
+    "peak_3yr": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/career_joint/joint_career_peak_3yr.csv",
+    "context": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/career_joint/joint_career_context.csv"
+  }
+}

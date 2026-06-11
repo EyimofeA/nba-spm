@@ -1,0 +1,51 @@
+# TODO — handoff note (Mofe, 2026-06-11)
+
+Read [`critique_2026-06-11.md`](./critique_2026-06-11.md) before
+touching the SPM/prior pipeline. This file exists because sessions opened in this
+workspace won't see the soccer project's memory; the full context lives in
+`../soccer rapm/docs/ROADMAP.md` (shared roadmap, cross-sport lessons, creative
+directions) and the critique above.
+
+## Fix order (from the critique)
+
+1. **Kill the circular prior** — `train_spm.py` predicts in-sample on its own
+   training windows and `apply_prior.py` blends those back into the same RAPM.
+   Priors for window T must be walk-forward (trained on windows ending ≤ T−1) or at
+   minimum out-of-fold. This invalidates the current `Posterior_Rapm` product until
+   fixed.
+2. **Defensive sign audit** — the def sign flips 3× across
+   `train_spm.py → generate_priors.py → build_prior_dict`. Write ONE conventions doc
+   (signs, units, /100 scaling, ID scheme) and an anchor unit test: a known elite
+   defender's prior must enter the ridge points-reducing, and
+   corr(prior_def, raw_RAPM_def) > 0 on high-minute players.
+3. **Tune the blend** — `PRIOR_WEIGHT = 1000` in `apply_prior.py` is hardcoded and
+   never validated; use `standard_errors()` from `standard_rapm.py` for per-player
+   inverse-variance weights and tune overall strength on `evaluate_rapm_models.py`
+   retrodiction.
+4. **Fix `generate_priors.py` train/inference mismatch** — window-averaged features
+   at train vs single-season at inference through the same scaler; missing values
+   filled with raw 0 *before* scaling (becomes an extreme value, not neutral).
+   Single shared feature-construction module for train + inference.
+5. **Migrate old scripts onto the `standard_rapm.py` core** — `rapm_with_prior.py`
+   has `RidgeCV([4000])` (fake CV), a playoff date filter that breaks on the 2020
+   COVID season, duplicated loops, and a hardcoded DB password (move to env var,
+   rotate). `train_spm.py` defines `models_config`/`optimize_target` twice — delete
+   the dead first copy before someone edits it.
+6. **Data quality report** — dedup possessions on natural keys, ≥95% of player-
+   minutes matched to IDs per season, reconcile team minutes vs 5×48×games.
+
+## Keep (don't regress)
+
+`standard_rapm.py` + `evaluate_rapm_models.py` are the good generation: ablation
+specs, game-grouped CV + chronological retrodiction, calibration bins, garbage-time
+filter, prior modes as config, log-scale λ search. All new work runs through that
+evaluator — no change ships without a scorecard comparison.
+
+## Housekeeping
+
+- This workspace is **not a git repo**. `git init` before any serious iteration,
+  and never commit the DB password (fix item 5 first).
+- Long-term goal (user): best NBA + soccer models, personal and public. Creative
+  directions ranked in `../soccer rapm/docs/ROADMAP.md` — matchup-RAPM (public
+  who-guarded-whom data), portability score, counterfactual lineup engine,
+  state-split component WAR, uncertainty tiers on published ratings.

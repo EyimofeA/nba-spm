@@ -1,0 +1,7 @@
+{
+  "run_id": "c825fd59",
+  "cond_error": "ARPACK error -1: No convergence (16411 iterations, 0/1 eigenvectors converged)",
+  "sigma_max": NaN,
+  "sigma_min": NaN,
+  "condition_number": NaN
+}

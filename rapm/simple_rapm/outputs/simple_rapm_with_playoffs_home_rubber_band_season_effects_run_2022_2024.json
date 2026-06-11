@@ -1,0 +1,59 @@
+{
+  "aging_curve_used": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/aging/aging_curve.csv",
+  "home_effect": {
+    "coding": "+1 home offense, -1 away offense",
+    "coefficient": 0.013448683008622536,
+    "coefficient_per_100": 1.3448683008622537
+  },
+  "includes_playoffs": true,
+  "intercept": 1.133815943360762,
+  "lambdas": {
+    "defense": 4000.0,
+    "home": 250.0,
+    "offense": 2500.0,
+    "rubber_band": 2000.0,
+    "season": 250.0
+  },
+  "n_columns": 1642,
+  "n_possessions": 766112,
+  "outputs": {
+    "lambda_scores": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/simple_rapm/outputs/simple_rapm_with_playoffs_home_rubber_band_season_effects_lambda_scores_2022_2024.csv",
+    "players": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/simple_rapm/outputs/simple_rapm_with_playoffs_home_rubber_band_season_effects_players_2022_2024.csv",
+    "raw": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/simple_rapm/outputs/simple_rapm_with_playoffs_home_rubber_band_season_effects_coefficients_2022_2024.csv"
+  },
+  "rubber_band": {
+    "coefficient": -0.02817260828026659,
+    "coefficient_per_100": -2.817260828026659,
+    "home_col": 1639,
+    "rubber_band_clip": 25.0,
+    "rubber_band_col": 1638,
+    "rubber_band_mean": -0.5393049580218036,
+    "rubber_band_std": 10.85336006746103,
+    "season_baseline": 2022,
+    "season_cols": {
+      "2023": 1640,
+      "2024": 1641
+    }
+  },
+  "season_effects": {
+    "season_2023": {
+      "coefficient": 0.019751437109599153,
+      "coefficient_per_100": 1.9751437109599153
+    },
+    "season_2024": {
+      "coefficient": 0.02050814156029579,
+      "coefficient_per_100": 2.050814156029579
+    }
+  },
+  "season_weights": {
+    "2022": 1.0,
+    "2023": 1.0,
+    "2024": 1.0
+  },
+  "seasons": [
+    2022,
+    2023,
+    2024
+  ],
+  "y_mean": 1.133815943360762
+}

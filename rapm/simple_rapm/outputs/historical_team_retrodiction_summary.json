@@ -1,0 +1,37 @@
+{
+  "elapsed_seconds": 560.664146900177,
+  "first_train_season": 1997,
+  "fixed_lambdas": {
+    "defense": 4000.0,
+    "home": 5000.0,
+    "offense": 2500.0,
+    "playoff": 5000.0,
+    "rubber_band": 2000.0,
+    "season": 5000.0
+  },
+  "include_playoffs": true,
+  "last_target_season": 2025,
+  "models": [
+    {
+      "name": "simple",
+      "use_home": false,
+      "use_playoff": false,
+      "use_rubber_band": false,
+      "use_season_effects": false
+    },
+    {
+      "name": "complex",
+      "use_home": true,
+      "use_playoff": true,
+      "use_rubber_band": true,
+      "use_season_effects": true
+    }
+  ],
+  "outputs": {
+    "by_season": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/simple_rapm/outputs/historical_team_retrodiction_by_season.csv",
+    "predictions": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/simple_rapm/outputs/historical_team_retrodiction_predictions.csv",
+    "summary": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/simple_rapm/outputs/historical_team_retrodiction_summary.csv"
+  },
+  "season_weights": "uniform",
+  "window": 3
+}

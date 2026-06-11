@@ -1,0 +1,456 @@
+{
+  "seasons": [
+    1997,
+    1998,
+    1999,
+    2000,
+    2001,
+    2002,
+    2003,
+    2004,
+    2005,
+    2006,
+    2007,
+    2008,
+    2009,
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "runs": [
+    {
+      "season": 1997,
+      "run_id": "b8750992",
+      "best_lambdas": {
+        "lam_off": 2500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_1997.csv",
+      "n_players": 443
+    },
+    {
+      "season": 1998,
+      "run_id": "88871003",
+      "best_lambdas": {
+        "lam_off": 2500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_1998.csv",
+      "n_players": 440
+    },
+    {
+      "season": 1999,
+      "run_id": "1f093e64",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_1999.csv",
+      "n_players": 440
+    },
+    {
+      "season": 2000,
+      "run_id": "aebf1420",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2000.csv",
+      "n_players": 439
+    },
+    {
+      "season": 2001,
+      "run_id": "bc6c97f3",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2001.csv",
+      "n_players": 441
+    },
+    {
+      "season": 2002,
+      "run_id": "3950018c",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 4500.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2002.csv",
+      "n_players": 440
+    },
+    {
+      "season": 2003,
+      "run_id": "445bedb2",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2003.csv",
+      "n_players": 428
+    },
+    {
+      "season": 2004,
+      "run_id": "30681f49",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2004.csv",
+      "n_players": 442
+    },
+    {
+      "season": 2005,
+      "run_id": "d79a671c",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2005.csv",
+      "n_players": 464
+    },
+    {
+      "season": 2006,
+      "run_id": "361e45bd",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2006.csv",
+      "n_players": 458
+    },
+    {
+      "season": 2007,
+      "run_id": "e47e3972",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2007.csv",
+      "n_players": 458
+    },
+    {
+      "season": 2008,
+      "run_id": "92756996",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2008.csv",
+      "n_players": 451
+    },
+    {
+      "season": 2009,
+      "run_id": "a38eb065",
+      "best_lambdas": {
+        "lam_off": 2500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2009.csv",
+      "n_players": 445
+    },
+    {
+      "season": 2010,
+      "run_id": "aa847c8d",
+      "best_lambdas": {
+        "lam_off": 2500.0,
+        "lam_def": 4500.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2010.csv",
+      "n_players": 441
+    },
+    {
+      "season": 2011,
+      "run_id": "4dd44908",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2011.csv",
+      "n_players": 452
+    },
+    {
+      "season": 2012,
+      "run_id": "1c69b831",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2012.csv",
+      "n_players": 478
+    },
+    {
+      "season": 2013,
+      "run_id": "896617e5",
+      "best_lambdas": {
+        "lam_off": 2500.0,
+        "lam_def": 4500.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2013.csv",
+      "n_players": 471
+    },
+    {
+      "season": 2014,
+      "run_id": "17a57906",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2014.csv",
+      "n_players": 482
+    },
+    {
+      "season": 2015,
+      "run_id": "0f348318",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2015.csv",
+      "n_players": 492
+    },
+    {
+      "season": 2016,
+      "run_id": "0f1ed522",
+      "best_lambdas": {
+        "lam_off": 2500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2016.csv",
+      "n_players": 478
+    },
+    {
+      "season": 2017,
+      "run_id": "a76d9a36",
+      "best_lambdas": {
+        "lam_off": 2500.0,
+        "lam_def": 4500.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2017.csv",
+      "n_players": 486
+    },
+    {
+      "season": 2018,
+      "run_id": "061995e9",
+      "best_lambdas": {
+        "lam_off": 2500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2018.csv",
+      "n_players": 541
+    },
+    {
+      "season": 2019,
+      "run_id": "bd984332",
+      "best_lambdas": {
+        "lam_off": 2500.0,
+        "lam_def": 4500.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2019.csv",
+      "n_players": 530
+    },
+    {
+      "season": 2020,
+      "run_id": "1b1e0868",
+      "best_lambdas": {
+        "lam_off": 2500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2020.csv",
+      "n_players": 530
+    },
+    {
+      "season": 2021,
+      "run_id": "2ae112e4",
+      "best_lambdas": {
+        "lam_off": 1500.0,
+        "lam_def": 4500.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2021.csv",
+      "n_players": 540
+    },
+    {
+      "season": 2022,
+      "run_id": "e651ba10",
+      "best_lambdas": {
+        "lam_off": 2500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2022.csv",
+      "n_players": 606
+    },
+    {
+      "season": 2023,
+      "run_id": "5d62ae28",
+      "best_lambdas": {
+        "lam_off": 2500.0,
+        "lam_def": 4500.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2023.csv",
+      "n_players": 541
+    },
+    {
+      "season": 2024,
+      "run_id": "392751cf",
+      "best_lambdas": {
+        "lam_off": 2500.0,
+        "lam_def": 3000.0,
+        "lam_home": 500.0,
+        "lam_rb": 250.0,
+        "lam_playoff": 250.0,
+        "lam_b2b": 500.0,
+        "lam_coach": 2000.0
+      },
+      "result_path": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/Core_Rapm_1_2024.csv",
+      "n_players": 572
+    }
+  ],
+  "n_rows": 13429,
+  "n_players": 2654
+}

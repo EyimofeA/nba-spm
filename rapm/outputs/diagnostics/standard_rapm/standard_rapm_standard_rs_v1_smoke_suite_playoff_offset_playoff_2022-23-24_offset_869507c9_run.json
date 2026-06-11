@@ -1,0 +1,37 @@
+{
+  "design_meta": {
+    "garbage_time": true,
+    "rubberband_mean": -0.40863654538184724,
+    "rubberband_scale": 8.21030972046521,
+    "season_type": "playoff"
+  },
+  "dropped_garbage_time": 5492,
+  "elapsed_seconds": 0.07245516777038574,
+  "intercept": 1.1229108356657338,
+  "kept_possessions": 37515,
+  "lambda_profile": {
+    "lambda_def": 3000.0,
+    "lambda_meta": 300.0,
+    "lambda_off": 3000.0,
+    "lambda_season": 100.0
+  },
+  "mae_in_sample": 1.1211813219356657,
+  "n_columns": 940,
+  "paths": {
+    "lambda_scores": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/diagnostics/standard_rapm/standard_rapm_standard_rs_v1_smoke_suite_playoff_offset_playoff_2022-23-24_offset_869507c9_lambda_scores.csv",
+    "meta": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/standard_rapm_standard_rs_v1_smoke_suite_playoff_offset_playoff_2022-23-24_offset_869507c9_meta.csv",
+    "players": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/rapm_results/standard_rapm_standard_rs_v1_smoke_suite_playoff_offset_playoff_2022-23-24_offset_869507c9_players.csv",
+    "raw_coefficients": "/Users/eadebayo/Documents/Projects/Sports Analytics/New SPM/rapm/outputs/dump/standard_rapm_standard_rs_v1_smoke_suite_playoff_offset_playoff_2022-23-24_offset_869507c9_coefficients.csv"
+  },
+  "prior_mode": "offset",
+  "residual_mean": -0.0010347729179005093,
+  "rmse_in_sample": 1.1853886550662107,
+  "run_id": "869507c9",
+  "season_type": "playoff",
+  "seasons": [
+    2022,
+    2023,
+    2024
+  ],
+  "spec": "standard_rs_v1_smoke_suite_playoff_offset"
+}

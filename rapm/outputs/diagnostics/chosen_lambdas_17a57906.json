@@ -1,0 +1,17 @@
+{
+  "search_mode": "grid",
+  "alpha_chosen": NaN,
+  "best_lambdas": {
+    "lam_off": 1500.0,
+    "lam_def": 3000.0,
+    "lam_home": 500.0,
+    "lam_rb": 250.0,
+    "lam_playoff": 250.0,
+    "lam_b2b": 500.0,
+    "lam_coach": 2000.0
+  },
+  "seasons": [
+    2014
+  ],
+  "window_label": "1"
+}
