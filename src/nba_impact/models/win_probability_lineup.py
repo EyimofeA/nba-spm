@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import uuid
+from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -127,6 +128,63 @@ def make_lineup_features(states: pd.DataFrame) -> pd.DataFrame:
     return features
 
 
+def build_pregame_team_context(
+    games: pd.DataFrame,
+    *,
+    update_weight: float = 0.10,
+    offseason_retention: float = 0.75,
+) -> pd.DataFrame:
+    """Calculate rolling margin and rest before each date, then batch-update results."""
+    ordered = games.sort_values(["season_start", "game_date", "game_id"], kind="stable")
+    margin_rating: defaultdict[int, float] = defaultdict(float)
+    last_game: dict[int, pd.Timestamp] = {}
+    active_season: int | None = None
+    rows = []
+    for (season_start, game_date), date_games in ordered.groupby(
+        ["season_start", "game_date"], sort=True
+    ):
+        season_start = int(season_start)
+        game_date = pd.Timestamp(game_date)
+        if active_season is not None and season_start != active_season:
+            for team_id in margin_rating:
+                margin_rating[team_id] *= offseason_retention
+        active_season = season_start
+        for game in date_games.itertuples(index=False):
+            home_id, away_id = int(game.home_team_id), int(game.away_team_id)
+            home_rest = min((game_date - last_game[home_id]).days, 7) if home_id in last_game else 7
+            away_rest = min((game_date - last_game[away_id]).days, 7) if away_id in last_game else 7
+            rows.append(
+                {
+                    "game_id": str(game.game_id),
+                    "pregame_rolling_margin_diff": margin_rating[home_id] - margin_rating[away_id],
+                    "pregame_rest_advantage_days": home_rest - away_rest,
+                }
+            )
+        for game in date_games.itertuples(index=False):
+            home_id, away_id = int(game.home_team_id), int(game.away_team_id)
+            margin = float(game.home_margin)
+            margin_rating[home_id] = (1.0 - update_weight) * margin_rating[home_id] + update_weight * margin
+            margin_rating[away_id] = (1.0 - update_weight) * margin_rating[away_id] - update_weight * margin
+            last_game[home_id] = game_date
+            last_game[away_id] = game_date
+    return pd.DataFrame(rows)
+
+
+def make_team_context_features(states: pd.DataFrame) -> pd.DataFrame:
+    features = make_lineup_features(states)
+    regulation_remaining = pd.to_numeric(states["regulation_seconds_remaining"], errors="raise")
+    period_remaining = pd.to_numeric(states["seconds_remaining_period"], errors="raise")
+    effective_remaining = np.where(states["is_overtime"].astype(bool), period_remaining, regulation_remaining)
+    remaining_scale = np.sqrt(np.maximum(effective_remaining, 0.0) / 2880.0)
+    margin = pd.to_numeric(states["pregame_rolling_margin_diff"], errors="raise").astype(float)
+    rest = pd.to_numeric(states["pregame_rest_advantage_days"], errors="raise").astype(float)
+    features["pregame_rolling_margin_diff"] = margin
+    features["pregame_rolling_margin_remaining"] = margin * remaining_scale
+    features["pregame_rest_advantage_days"] = rest
+    features["pregame_rest_remaining"] = rest * remaining_scale
+    return features
+
+
 def _paired_bootstrap(
     predictions: pd.DataFrame,
     baseline_column: str,
@@ -189,6 +247,7 @@ def run_win_probability_lineup_ablation(
     strengths = build_starter_strength(player_games, prior_ratings)
     games = pd.read_parquet(game_dim_path)
     elo = build_pregame_elo(games)
+    team_context = build_pregame_team_context(games)
     event_columns = [
         "event_id", "game_id", "season_label", "actionId", "period",
         "seconds_remaining_period", "regulation_seconds_remaining", "seconds_elapsed_game",
@@ -202,6 +261,8 @@ def run_win_probability_lineup_ablation(
         strengths[["game_id", "pregame_starter_net_diff", "starter_rating_coverage"]],
         on="game_id",
         validate="many_to_one",
+    ).merge(
+        team_context, on="game_id", validate="many_to_one"
     )
     train = states.loc[states["season_label"].eq(train_season) & ~states["is_terminal_event"]].copy()
     test = states.loc[states["season_label"].eq(test_season) & ~states["is_terminal_event"]].copy()
@@ -210,19 +271,33 @@ def run_win_probability_lineup_ablation(
     models = {
         "elo": _fit(make_elo_features(train), y_train),
         "elo_plus_starters": _fit(make_lineup_features(train), y_train),
+        "elo_plus_starters_team_context": _fit(make_team_context_features(train), y_train),
     }
     test["probability_elo"] = models["elo"].predict_proba(make_elo_features(test))[:, 1]
     test["probability_elo_plus_starters"] = models["elo_plus_starters"].predict_proba(
         make_lineup_features(test)
     )[:, 1]
+    test["probability_elo_plus_starters_team_context"] = models[
+        "elo_plus_starters_team_context"
+    ].predict_proba(make_team_context_features(test))[:, 1]
     variants = {
         "elo": _metrics(y_test, test["probability_elo"].to_numpy()),
         "elo_plus_starters": _metrics(y_test, test["probability_elo_plus_starters"].to_numpy()),
+        "elo_plus_starters_team_context": _metrics(
+            y_test, test["probability_elo_plus_starters_team_context"].to_numpy()
+        ),
     }
     paired = _paired_bootstrap(
         test,
         "probability_elo",
         "probability_elo_plus_starters",
+        repetitions=bootstrap_repetitions,
+        seed=seed,
+    )
+    context_paired = _paired_bootstrap(
+        test,
+        "probability_elo_plus_starters",
+        "probability_elo_plus_starters_team_context",
         repetitions=bootstrap_repetitions,
         seed=seed,
     )
@@ -254,6 +329,8 @@ def run_win_probability_lineup_ablation(
         strengths[["game_id", "pregame_starter_net_diff", "starter_rating_coverage"]],
         on="game_id",
         validate="many_to_one",
+    ).merge(
+        team_context, on="game_id", validate="many_to_one"
     )
     espn = _load_espn_plays(espn_index_path, test_season)
     external, external_coverage = match_espn_to_local_states(espn, test_events)
@@ -262,6 +339,9 @@ def run_win_probability_lineup_ablation(
     external["probability_elo_plus_starters"] = models["elo_plus_starters"].predict_proba(
         make_lineup_features(external)
     )[:, 1]
+    external["probability_elo_plus_starters_team_context"] = models[
+        "elo_plus_starters_team_context"
+    ].predict_proba(make_team_context_features(external))[:, 1]
     external_start = _checkpoint_rows(external, CHECKPOINTS["game_start"])
     external_outcome = external_start["home_win"].astype(int).to_numpy()
     external_metrics = {
@@ -269,6 +349,10 @@ def run_win_probability_lineup_ablation(
         "elo": _metrics(external_outcome, external_start["probability_elo"].to_numpy()),
         "elo_plus_starters": _metrics(
             external_outcome, external_start["probability_elo_plus_starters"].to_numpy()
+        ),
+        "elo_plus_starters_team_context": _metrics(
+            external_outcome,
+            external_start["probability_elo_plus_starters_team_context"].to_numpy(),
         ),
     }
     external_paired = {
@@ -286,15 +370,30 @@ def run_win_probability_lineup_ablation(
             repetitions=bootstrap_repetitions,
             seed=seed,
         ),
+        "team_context_vs_starters": _paired_bootstrap(
+            external_start,
+            "probability_elo_plus_starters",
+            "probability_elo_plus_starters_team_context",
+            repetitions=bootstrap_repetitions,
+            seed=seed,
+        ),
+        "team_context_vs_espn": _paired_bootstrap(
+            external_start,
+            "espn_home_win_probability",
+            "probability_elo_plus_starters_team_context",
+            repetitions=bootstrap_repetitions,
+            seed=seed,
+        ),
     }
 
-    run_id = f"wp_lineup_ablation_v1_{uuid.uuid4().hex[:10]}"
+    run_id = f"wp_pregame_ablation_v2_{uuid.uuid4().hex[:10]}"
     output = Path(artifact_root) / "models" / "win_probability_lineup" / run_id
     output.mkdir(parents=True, exist_ok=False)
     for name, model in models.items():
         joblib.dump(model, output / f"{name}.joblib")
     prior_ratings.to_parquet(output / "prior_ratings.parquet", index=False)
     strengths.to_parquet(output / "pregame_starter_strength.parquet", index=False)
+    team_context.to_parquet(output / "pregame_team_context.parquet", index=False)
     test.to_parquet(output / "test_predictions.parquet", index=False)
     external_start.to_parquet(output / "espn_game_start_predictions.parquet", index=False)
     coverage_by_season = (
@@ -305,9 +404,9 @@ def run_win_probability_lineup_ablation(
     )
     run = {
         "run_id": run_id,
-        "model_family": "win_probability_logistic_prior_starter_rapm_ablation",
+        "model_family": "win_probability_logistic_pregame_context_ablation",
         "estimand": "tipoff_and_in_game_home_win_probability_with_official_starters",
-        "status": "research_candidate_inconclusive_single_outer_fold",
+        "status": "research_candidate_single_outer_fold",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "config": {
             "train_season_label": train_season,
@@ -315,6 +414,12 @@ def run_win_probability_lineup_ablation(
             "rating_windows": {"2024-25": [2022, 2023, 2024], "2025-26": [2023, 2024, 2025]},
             "starter_definition": "official_boxscore_starters_known_at_tipoff",
             "missing_player_rating": 0.0,
+            "team_context": {
+                "rolling_margin_update_weight": 0.10,
+                "offseason_retention": 0.75,
+                "rest_cap_days": 7,
+                "same_date_results_update_after_all_pregame_features": True,
+            },
             "interval_seconds": interval_seconds,
             "bootstrap_repetitions": bootstrap_repetitions,
             "seed": seed,
@@ -340,6 +445,7 @@ def run_win_probability_lineup_ablation(
             "test_games": int(test["game_id"].nunique()),
             "variants": variants,
             "paired_game_bootstrap": paired,
+            "team_context_paired_game_bootstrap": context_paired,
             "checkpoints": checkpoints,
             "espn_game_start": external_metrics,
             "espn_game_start_paired": external_paired,

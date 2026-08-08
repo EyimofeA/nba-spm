@@ -159,6 +159,11 @@ The first leakage-safe starter challenger is `wp_lineup_ablation_v1_7570ad01c9`.
 Prior-season starter RAPM slightly improves tipoff Brier (0.21181 → 0.21057),
 but its paired interval crosses zero and it remains materially behind ESPN
 (0.20210). Keep it as a documented null/inconclusive result, not production.
+Rolling margin plus rest is the stronger challenger: run
+`wp_pregame_ablation_v2_522e1a36f2` reaches 0.20592 tipoff Brier and 0.14731
+overall Brier. Its paired improvement over starters survives the one-season
+bootstrap, while its ESPN tipoff difference does not. It is a research challenger,
+not production, until an additional chronological outer season confirms it.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

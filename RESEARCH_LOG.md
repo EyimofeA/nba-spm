@@ -524,3 +524,28 @@ games cover only four of ten starters.
 but one outer season and incomplete rookie/new-player coverage are insufficient.
 The next pregame challenger should use expected rotation minutes, rookie/translation
 priors, injuries/availability, and rest, while keeping ESPN as an external benchmark.
+
+## 2026-08-08 — Rolling team context closes most of the ESPN tipoff gap
+
+**Question:** Does a strictly time-safe rolling margin and rest signal add value
+beyond Elo and frozen prior-season starter RAPM?
+
+**What we did:** Added exponentially updated team point differential (10% update
+weight, 75% offseason retention) plus rest advantage capped at seven days. Features
+for every game on a date are computed before any result from that date updates the
+ratings. The candidate retains Elo and prior-season starter RAPM and uses the same
+2024–25 train / 2025–26 outer test split and whole-game bootstrap.
+
+**Result:** Run `wp_pregame_ablation_v2_522e1a36f2` lowers overall Brier from
+0.14922 for Elo plus starters to 0.14731. The paired mean game-level delta is
+-0.00195, 98.56% of draws favor the context model, and the 95% interval
+[-0.00373, -0.00020] excludes zero. At tipoff it improves Brier from 0.21057 to
+0.20592 and AUC from 0.7226 to 0.7348; all 5,000 paired draws favor context over
+starter RAPM. ESPN remains directionally better at 0.20210, but the paired
+local-minus-ESPN interval [-0.00063, 0.00839] crosses zero.
+
+**Verdict:** Promote rolling team context as the next research challenger, not as
+production. It closes about 61% of the original Elo-to-ESPN tipoff Brier gap, but
+only one outer season exists and the fixed smoothing choices have not been tested
+across folds. Next acquire an earlier event season, freeze a small smoothing grid,
+and require multi-season improvement before promotion.

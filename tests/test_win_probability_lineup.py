@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import pandas as pd
 
-from nba_impact.models.win_probability_lineup import build_starter_strength, make_lineup_features
+from nba_impact.models.win_probability_lineup import (
+    build_pregame_team_context,
+    build_starter_strength,
+    make_lineup_features,
+)
 
 
 def test_starter_strength_uses_only_prior_season_ratings_and_centered_missing_value() -> None:
@@ -36,7 +40,7 @@ def test_starter_strength_uses_only_prior_season_ratings_and_centered_missing_va
     assert strength["pregame_starter_net_diff"] == 1.5
 
 
-def test_lineup_strength_decays_out_of_in_game_probability() -> None:
+def test_lineup_strength_remaining_interaction_reaches_zero() -> None:
     states = pd.DataFrame(
         {
             "home_score_diff_after": [0.0, 0.0],
@@ -51,3 +55,20 @@ def test_lineup_strength_decays_out_of_in_game_probability() -> None:
     features = make_lineup_features(states)
     assert features.loc[0, "pregame_starter_remaining"] == 5.0
     assert features.loc[1, "pregame_starter_remaining"] == 0.0
+
+
+def test_team_context_updates_only_after_the_full_date() -> None:
+    games = pd.DataFrame(
+        {
+            "game_id": ["g1", "g2", "g3"],
+            "season_start": [2024, 2024, 2024],
+            "game_date": pd.to_datetime(["2025-01-01", "2025-01-01", "2025-01-02"]),
+            "home_team_id": [1, 3, 1],
+            "away_team_id": [2, 4, 2],
+            "home_margin": [10, -5, 0],
+        }
+    )
+    context = build_pregame_team_context(games).set_index("game_id")
+    assert context.loc["g1", "pregame_rolling_margin_diff"] == 0.0
+    assert context.loc["g2", "pregame_rolling_margin_diff"] == 0.0
+    assert context.loc["g3", "pregame_rolling_margin_diff"] == 2.0

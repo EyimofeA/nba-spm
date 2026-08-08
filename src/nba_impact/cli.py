@@ -476,6 +476,9 @@ def command_compare_wp_lineup_strength(args: argparse.Namespace) -> int:
                 "run_id": run["run_id"],
                 "variants": metrics["variants"],
                 "paired_game_bootstrap": metrics["paired_game_bootstrap"],
+                "team_context_paired_game_bootstrap": metrics[
+                    "team_context_paired_game_bootstrap"
+                ],
                 "espn_game_start": metrics["espn_game_start"],
                 "espn_game_start_paired": metrics["espn_game_start_paired"],
                 "starter_rating_coverage": metrics["starter_rating_coverage"],
