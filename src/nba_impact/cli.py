@@ -19,6 +19,7 @@ from nba_impact.models.rapm import (
     run_regularization_comparison,
     run_walk_forward_comparison,
 )
+from nba_impact.models.win_probability import run_win_probability
 from nba_impact.paths import (
     ARTIFACT_ROOT,
     BRONZE_ROOT,
@@ -37,6 +38,13 @@ def _season_list(value: str) -> tuple[int, ...]:
     if not seasons:
         raise argparse.ArgumentTypeError("provide at least one comma-separated season")
     return seasons
+
+
+def _text_list(value: str) -> tuple[str, ...]:
+    items = tuple(item.strip() for item in value.split(",") if item.strip())
+    if not items:
+        raise argparse.ArgumentTypeError("provide at least one comma-separated value")
+    return items
 
 
 def command_audit(args: argparse.Namespace) -> int:
@@ -227,6 +235,22 @@ def command_walk_forward_rapm(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_fit_win_probability(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_win_probability(
+        args.event_states,
+        train_season_labels=args.train_seasons,
+        test_season_labels=args.test_seasons,
+        artifact_root=args.artifact_root,
+        interval_seconds=args.interval_seconds,
+    )
+    run["dataset_snapshot_id"] = args.snapshot_id
+    write_json_atomic(run, Path(run["artifact_path"]) / "run.json")
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="nba-impact")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -318,6 +342,18 @@ def build_parser() -> argparse.ArgumentParser:
     walk.add_argument("--game-types", default="regular")
     walk.add_argument("--no-home", action="store_true")
     walk.set_defaults(func=command_walk_forward_rapm)
+
+    win_probability = subparsers.add_parser(
+        "fit-win-probability", help="Fit the chronological state-only win-probability baseline."
+    )
+    win_probability.add_argument("--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet")
+    win_probability.add_argument("--train-seasons", type=_text_list, default=("2024-25",))
+    win_probability.add_argument("--test-seasons", type=_text_list, default=("2025-26",))
+    win_probability.add_argument("--interval-seconds", type=int, default=30)
+    win_probability.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    win_probability.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    win_probability.add_argument("--snapshot-id")
+    win_probability.set_defaults(func=command_fit_win_probability)
     return parser
 
 

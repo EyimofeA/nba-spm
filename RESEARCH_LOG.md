@@ -357,3 +357,39 @@ Canonical tables must use `season_start`, `season_end`, or `season_label` explic
 
 **Next:** Within-game score-state normalization, then lineup stints and possessions
 with final-score and player-minute reconciliation.
+
+## 2026-08-08 — Reconciled event states and chronological win probability v0
+
+**Question:** Can the current event archive support a trustworthy score-state layer
+and a first leakage-safe live win-probability baseline?
+
+**What we did:** Normalized NBA Stats V3 actions using `actionId` feed order, parsed
+clocks, created regulation/overtime time state, reconstructed pre/post scores,
+joined canonical games, and added terminal reconciliation. Sampled one state per 30
+seconds plus exact opening and terminal states. Fit a fixed logistic state model on
+2024–25 and evaluated once on untouched 2025–26 data.
+
+**Data result:** 1,313,486 actions across 2,629 games pass all critical gates: no
+duplicate event IDs, missing games, invalid clocks, time-order reversals, terminal
+score mismatches, or nonzero terminal clocks. Scores reconstructed from made field
+goals and made free throws match all 2,629 final scores exactly. Sparse upstream
+score snapshots disagree on 53 correction rows, and `actionNumber` backtracks on
+11,980 rows; therefore `actionId` is chronology and `actionNumber` is metadata.
+
+**Model result:** Test set contains 1,315 games and about 129K uniformly sampled
+states. Overall Brier is 0.1622, log loss 0.4769, AUC 0.8367, calibration slope 1.04,
+and Brier skill versus the constant training home-win rate is 34.4%. Checkpoint
+Brier improves from 0.247 at game start to 0.169 at halftime, 0.124 at the start of
+the fourth, 0.088 with six minutes left, 0.057 with two minutes left, and 0.045 with
+one minute left. Game-start AUC is correctly 0.5 because v0 has no pregame-strength
+inputs.
+
+**Interpretation:** This is a calibrated state baseline, not a finished win model.
+The clean next ablations are pregame team/player strength, possession indicator,
+timeouts/bonus, and availability—each added one at a time against the same test
+contract. Final states are set deterministically from the completed score.
+
+**Dead ends / cautions:** Sorting by `actionNumber` creates thousands of clock
+reversals because the feed retroactively renumbers corrected actions. Forward-filling
+the source score snapshots also creates false score decreases. Both approaches are
+rejected.

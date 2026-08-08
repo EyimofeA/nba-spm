@@ -34,6 +34,7 @@ nba-impact ingest --manifest configs/ingest/nba_data_archive_bootstrap.json
 nba-impact ingest --manifest configs/ingest/gabriel_site_data_recent.json
 nba-impact audit-events
 nba-impact build-game-dim
+nba-impact build-event-states
 nba-impact audit-possessions --seasons 2022,2023,2024,2025
 nba-impact fit-rapm --seasons 2021,2022,2023,2024 \
   --snapshot-id legacy_possessions_58ee15becffc55e1
@@ -42,6 +43,7 @@ nba-impact compare-rapm --seasons 2021,2022,2023,2024 \
 nba-impact walk-forward-rapm --test-seasons 2021,2022,2023,2024 \
   --train-window 3 --lambda-pairs 3000:3000,2000:4500,1000:1000 \
   --snapshot-id legacy_possessions_58ee15becffc55e1
+nba-impact fit-win-probability --snapshot-id event_states_d79ccaddf7f88c87
 python3 -m pytest -q
 ```
 
@@ -65,8 +67,8 @@ Model-claim thresholds and the number of required folds are defined in
 
 ## Next build order
 
-1. Extend the completed canonical game dimension into score states, stints, and
-   possessions; reconcile every game to team/player minutes.
+1. Extend the completed score-state layer into lineup stints and possessions;
+   reconcile every game to team/player minutes.
 2. Add expanding chronological RAPM folds, decay, garbage-time weighting as a
    training-only variant, and game-cluster uncertainty.
 3. Build a state-only calibrated win-probability baseline, then Net Points-style
@@ -75,3 +77,5 @@ Model-claim thresholds and the number of required folds are defined in
    RAPM target and folds pass.
 5. Serve versioned artifacts through an API; build the website after metric contracts
    and data freshness indicators are stable.
+
+The longer horizon and phase gates live in `LONG_TERM_GOALS.md`.
