@@ -246,6 +246,9 @@ decomposition.
 Use `statistical_features_v1_940f99ed54` instead of the legacy feature panel for
 new comparisons. It pools counts across each three-season window and calculates
 percentages from their natural attempts or touches.
+Run `statistical_model_comparison_v1_dd31e7957d` promotes histogram GBM for the
+offensive challenger only. Keep ridge for defense: histogram GBM loses defensive
+RMSE in all three outer folds. Elastic net is rejected.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

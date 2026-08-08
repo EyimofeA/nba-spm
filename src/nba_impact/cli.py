@@ -30,6 +30,9 @@ from nba_impact.models.rapm import (
 )
 from nba_impact.models.rapm_lineup_policy import run_rapm_lineup_policy_comparison
 from nba_impact.models.statistical_impact import run_statistical_impact_baseline
+from nba_impact.models.statistical_model_comparison import (
+    run_statistical_model_comparison,
+)
 from nba_impact.models.inpredictable_benchmark import (
     run_inpredictable_surface_benchmark,
 )
@@ -451,6 +454,18 @@ def command_build_statistical_features(args: argparse.Namespace) -> int:
         artifact_root=args.artifact_root,
         window_ends=args.window_ends,
     )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_compare_statistical_models(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_statistical_model_comparison(
+        args.features,
+        args.targets,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
     return 0
 
@@ -1029,6 +1044,22 @@ def build_parser() -> argparse.ArgumentParser:
     statistical_impact.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     statistical_impact.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     statistical_impact.set_defaults(func=command_fit_statistical_impact)
+
+    statistical_models = subparsers.add_parser(
+        "compare-statistical-models",
+        help="Compare ridge, elastic net, and histogram GBM on purged folds.",
+    )
+    statistical_models.add_argument("--features", type=Path, required=True)
+    statistical_models.add_argument(
+        "--targets",
+        type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    statistical_models.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    statistical_models.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    statistical_models.set_defaults(func=command_compare_statistical_models)
 
     compare = subparsers.add_parser(
         "compare-rapm",

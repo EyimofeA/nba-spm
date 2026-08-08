@@ -116,7 +116,7 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Compare ridge, elastic net, and a bounded histogram gradient booster on the
-validated `statistical_features_v1_940f99ed54` panel. Keep the same rows, purged
-folds, targets, weights, and inner-only tuning. Compare the user's feature set
-against this baseline after it has the same player-window contract.
+Test direct nonlinear net RAPM against the component model selected by
+`statistical_model_comparison_v1_dd31e7957d`: histogram GBM offense plus ridge
+defense. Keep the same purged folds and inner-only tuning. Then run feature-family
+ablations and compare the user's feature set under the same player-window contract.

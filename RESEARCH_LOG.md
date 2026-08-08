@@ -953,3 +953,29 @@ metric lift is small.
 **Verdict:** Promote the rebuilt table as the feature baseline. Do not claim a
 large accuracy win. Use it for the fixed ridge/elastic-net/tree comparison and
 for the user's future feature challenge.
+
+## 2026-08-09 — First statistical model-family comparison
+
+**Question:** Do elastic net or a small nonlinear tree model beat ridge on the
+validated 97-feature table?
+
+**What we did:** Run `statistical_model_comparison_v1_dd31e7957d` compares
+ridge, elastic net, and histogram gradient boosting on identical player-windows,
+three-year offensive and defensive normal RAPM targets, possession reliability
+weights, and 2022–2024 purged outer folds. Hyperparameters are selected only in
+each fold's inner chronological validation window. The histogram models use at
+most 15 leaves; this is not a neural model.
+
+**Result:** Histogram GBM improves component-summed net RMSE in all three folds
+by 0.0412, 0.0327, and 0.0263. Mean net RMSE is 1.3259 versus 1.3593 for ridge;
+correlation is 0.5169 versus 0.4265. The gain is offensive: histogram offense
+beats ridge in all three folds, with mean RMSE 0.9349 versus 0.9725 and
+correlation 0.5448 versus 0.4699. Histogram defense loses RMSE in all three folds
+(0.9083 versus 0.9028) despite higher correlation. Elastic net has mean net RMSE
+1.3804 and beats ridge in only one fold.
+
+**Verdict:** Promote histogram GBM as the offensive challenger. Keep ridge as
+the defensive baseline. Reject elastic net. The mixed histogram-offense plus
+ridge-defense model is the next component candidate; compare it with direct
+nonlinear net prediction before any production choice. Three chronological fold
+wins are initial evidence, not proof across every NBA era.

@@ -74,11 +74,16 @@ def _fit(
 
 
 def _metrics(actual: np.ndarray, prediction: np.ndarray, weight: np.ndarray) -> dict:
+    correlation = (
+        float(np.corrcoef(actual, prediction)[0, 1])
+        if np.std(actual) > 0 and np.std(prediction) > 0
+        else float("nan")
+    )
     return {
         "weighted_rmse": float(
             mean_squared_error(actual, prediction, sample_weight=weight) ** 0.5
         ),
-        "correlation": float(np.corrcoef(actual, prediction)[0, 1]),
+        "correlation": correlation,
     }
 
 
