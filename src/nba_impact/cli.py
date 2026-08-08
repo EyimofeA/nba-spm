@@ -11,7 +11,9 @@ from nba_impact.data.download import run_ingest_manifest
 from nba_impact.data.event_quality import build_event_snapshot
 from nba_impact.data.event_state import build_event_states
 from nba_impact.data.game_dim import build_game_dimension
+from nba_impact.data.lineups import build_lineup_stints
 from nba_impact.data.manifest import build_possession_snapshot, write_json_atomic
+from nba_impact.data.player_game import build_player_games
 from nba_impact.models.rapm import (
     RapmConfig,
     load_legacy_possessions,
@@ -139,6 +141,66 @@ def command_build_event_states(args: argparse.Namespace) -> int:
                 "issues": snapshot["issues"],
                 "warnings": snapshot["warnings"],
                 "path": snapshot["path"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_player_games(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_player_games(
+        args.box,
+        args.espn,
+        args.game_dim,
+        args.output,
+        args.manifest_dir,
+    )
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "rows": snapshot["row_count"],
+                "games": snapshot["game_count"],
+                "espn_games": snapshot["espn_game_count"],
+                "issues": snapshot["issues"],
+                "path": snapshot["path"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_lineups(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_lineup_stints(
+        args.root,
+        args.player_games,
+        args.game_dim,
+        args.output,
+        args.quality_output,
+        args.manifest_dir,
+        minute_tolerance_seconds=args.minute_tolerance_seconds,
+        max_quarantine_fraction=args.max_quarantine_fraction,
+    )
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "stints": snapshot["row_count"],
+                "passed_games": snapshot["passed_game_count"],
+                "quarantined_games": snapshot["quarantined_game_count"],
+                "quarantine_fraction": snapshot["quarantine_fraction"],
+                "source_counts": snapshot["source_counts"],
+                "issues": snapshot["issues"],
+                "path": snapshot["path"],
+                "quality_path": snapshot["quality_path"],
             },
             indent=2,
         )
@@ -289,6 +351,41 @@ def build_parser() -> argparse.ArgumentParser:
     event_states.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
     event_states.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     event_states.set_defaults(func=command_build_event_states)
+
+    player_games = subparsers.add_parser(
+        "build-player-games", help="Build canonical player-game boxes and exact starter seeds."
+    )
+    player_games.add_argument(
+        "--box",
+        type=Path,
+        default=BRONZE_ROOT / "llimllib_nba_data" / "player_game_logs.parquet",
+    )
+    player_games.add_argument(
+        "--espn",
+        type=Path,
+        default=BRONZE_ROOT / "llimllib_nba_data" / "espn" / "player_box.parquet",
+    )
+    player_games.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    player_games.add_argument("--output", type=Path, default=SILVER_ROOT / "player_games.parquet")
+    player_games.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    player_games.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    player_games.set_defaults(func=command_build_player_games)
+
+    lineups = subparsers.add_parser(
+        "build-lineups", help="Reconstruct and minute-reconcile current five-player lineup stints."
+    )
+    lineups.add_argument("--root", type=Path, default=BRONZE_ROOT / "nba_data_archive")
+    lineups.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
+    lineups.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    lineups.add_argument("--output", type=Path, default=SILVER_ROOT / "lineup_stints.parquet")
+    lineups.add_argument(
+        "--quality-output", type=Path, default=SILVER_ROOT / "lineup_game_quality.parquet"
+    )
+    lineups.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    lineups.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    lineups.add_argument("--minute-tolerance-seconds", type=float, default=5.0)
+    lineups.add_argument("--max-quarantine-fraction", type=float, default=0.005)
+    lineups.set_defaults(func=command_build_lineups)
 
     rapm = subparsers.add_parser("fit-rapm", help="Fit the independent zero-prior RAPM baseline.")
     rapm.add_argument("--seasons", type=_season_list, required=True)

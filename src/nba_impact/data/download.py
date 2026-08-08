@@ -101,6 +101,14 @@ def _validate_file(path: Path, task: DownloadTask) -> dict:
 )
 def _download_once(session: requests.Session, task: DownloadTask, destination: Path) -> dict:
     partial = destination.with_suffix(destination.suffix + ".partial")
+    if partial.exists():
+        try:
+            validation = _validate_file(partial, task)
+        except Exception:
+            pass
+        else:
+            partial.replace(destination)
+            return validation
     existing = partial.stat().st_size if partial.exists() else 0
     headers = {"User-Agent": "nba-impact-lab/0.1 (+research; resumable downloader)"}
     if existing:

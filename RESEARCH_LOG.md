@@ -393,3 +393,33 @@ contract. Final states are set deterministically from the completed score.
 reversals because the feed retroactively renumbers corrected actions. Forward-filling
 the source score snapshots also creates false score decreases. Both approaches are
 rejected.
+
+## 2026-08-08 — Current starter seeds and five-player lineup stints
+
+**Question:** Can 2024–25 and 2025–26 lineups be reconstructed accurately enough
+to unblock current RAPM without relying on the stale legacy possession cache?
+
+**What we did:** Added a pinned, resumable ingest for CDN NBA event partitions and
+the `llimllib/nba_data` NBA/ESPN mirrors. NBA player-game positions supply starter
+seeds; ESPN player boxes add independent starter checks plus Net Points and WPA
+benchmarks. Reconstructed substitution stints, inferred omitted between-period
+lineups in the late-playoff V3 fallback, and reconciled every player's stint seconds
+against official box minutes.
+
+**Result:** The canonical player-game table contains 69,517 rows and all 2,629
+games. Every team-game has exactly five starters, team minutes reconcile, and the
+2,627 ESPN-overlap games have zero starter disagreements. The lineup table contains
+81,893 validated stints covering 2,622 games (99.73%). Seven games (0.27%) are
+quarantined for feed/substitution or minute-reconciliation anomalies. Emitted rows
+have zero duplicate stint IDs, nonpositive durations, invalid five-player sides, or
+home/away player overlap. The five-second player-minute tolerance and 0.5% maximum
+quarantine budget are explicit pipeline parameters.
+
+**Source/legal note:** `cdechoch/nba-data-archive` declares Apache-2.0. The
+`llimllib/nba_data` repository declares no license, so its NBA/ESPN-derived fields
+are research-only and must not be redistributed until rights are clarified. ESPN
+Net Points/WPA are benchmarks, not labels to copy into our own metric.
+
+**Next:** Convert validated stints plus event states into possession outcomes, then
+fit a current zero-prior RAPM baseline. Keep the seven quarantined games excluded
+until a second source or a provably minute-consistent repair resolves them.
