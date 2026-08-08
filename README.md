@@ -38,7 +38,9 @@ uv run python -m nba_impact.cli compare-wp-stage1
 uv run python -m nba_impact.cli compare-wp-mlp
 uv run python -m nba_impact.cli compare-rapm-lineups
 uv run python -m nba_impact.cli tune-normal-rapm
-uv run python -m nba_impact.cli fit-statistical-impact
+uv run python -m nba_impact.cli build-statistical-features
+uv run python -m nba_impact.cli fit-statistical-impact \
+  --features artifacts/features/statistical_impact/<run-id>/features.parquet
 ```
 
 The three-season canonical data rebuild is also resumable:

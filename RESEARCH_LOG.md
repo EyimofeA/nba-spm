@@ -925,3 +925,31 @@ fold.
 predictions for net. The direct target gives no practical gain and cannot explain
 the offense/defense split. Reconsider a direct net target only for a nonlinear
 model, a different loss, or a different feature set.
+
+## 2026-08-08 — Natural-denominator statistical feature rebuild
+
+**Question:** Does replacing the legacy minute-weighted feature panel with
+pooled counts and natural attempt/touch denominators change the ridge baseline?
+
+**What we did:** Run `statistical_features_v1_940f99ed54` builds 97 box,
+tracking, shot-zone, creation, turnover, and rebound features for 6,689
+player-windows ending 2016–2024. It excludes age, minutes, games, position, and
+experience. Possessions remain reliability weights only. The builder collapses
+four duplicate source rows that agree on the declared feature contract. It
+rejects conflicting feature rows, duplicate output keys, and invalid bounded
+ratios. Rebound-chance conversion was removed because total rebounds and
+tracking chances do not have consistent coverage.
+
+Run `statistical_impact_v2_5224a3b4a6` evaluates the rebuilt table on the same
+three purged outer folds as the legacy baseline.
+
+**Result:** Independent advanced net RMSE is 1.3578 with correlation 0.4212,
+versus 1.3594 and 0.4160 on the legacy panel. It beats box-only RMSE in all three
+folds by 0.0202, 0.0517, and 0.0518. The on/off-assisted model remains much
+stronger at RMSE 1.1157 and correlation 0.5583, but it is not an independent
+statistical prior. The clean rebuild is a correctness improvement; its aggregate
+metric lift is small.
+
+**Verdict:** Promote the rebuilt table as the feature baseline. Do not claim a
+large accuracy win. Use it for the fixed ridge/elastic-net/tree comparison and
+for the user's future feature challenge.

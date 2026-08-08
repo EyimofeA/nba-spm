@@ -268,6 +268,8 @@ def run_statistical_impact_baseline(
         "status": "research_baseline",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "config": {
+            "features_path": str(Path(features_path).resolve()),
+            "targets_path": str(Path(targets_path).resolve()),
             "target_window_seasons": target_window_seasons,
             "input_window_seasons": 3,
             "first_complete_tracking_window": first_complete_tracking_window,
@@ -294,7 +296,7 @@ def run_statistical_impact_baseline(
         "models": final_models,
         "caveats": [
             "The historical feature panel ends in 2024 and is not a current-season inference table.",
-            "The existing panel minute-weights percentage and average features across seasons; rebuild those features with natural denominators before production.",
+            "Percentage and average inputs are production-eligible only when their feature manifest confirms pooled natural denominators; the legacy spm_features_windows panel does not.",
             "OnOffRtg and OnDefRtg appear only in the explicitly non-independent challenger.",
             "No uncertainty estimates are produced in this version.",
         ],

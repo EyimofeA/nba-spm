@@ -18,6 +18,7 @@ from nba_impact.data.manifest import build_possession_snapshot, write_json_atomi
 from nba_impact.data.official_boxscore import ingest_official_boxscores
 from nba_impact.data.player_game import build_player_games
 from nba_impact.data.possessions import build_possessions
+from nba_impact.data.statistical_features import build_statistical_feature_windows
 from nba_impact.models.rapm import (
     RapmConfig,
     load_current_possessions,
@@ -439,6 +440,17 @@ def command_fit_statistical_impact(args: argparse.Namespace) -> int:
         artifact_root=args.artifact_root,
     )
     register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_statistical_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_statistical_feature_windows(
+        args.source_dir,
+        artifact_root=args.artifact_root,
+        window_ends=args.window_ends,
+    )
     print(json.dumps(run, indent=2))
     return 0
 
@@ -980,6 +992,23 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     normal_rapm.set_defaults(func=command_tune_normal_rapm)
+
+    statistical_features = subparsers.add_parser(
+        "build-statistical-features",
+        help="Build pooled three-season box and tracking features.",
+    )
+    statistical_features.add_argument(
+        "--source-dir",
+        type=Path,
+        default=Path("data/raw/playersheets/year_totals"),
+    )
+    statistical_features.add_argument(
+        "--window-ends",
+        type=_season_list,
+        default=tuple(range(2016, 2025)),
+    )
+    statistical_features.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    statistical_features.set_defaults(func=command_build_statistical_features)
 
     statistical_impact = subparsers.add_parser(
         "fit-statistical-impact",

@@ -90,4 +90,5 @@ now would break reproducibility links.
 - Current RAPM start lineup: `rapm_v0_d38f08740e`
 - Current RAPM terminal lineup: `rapm_v0_ec1f17c82a`
 - Normal RAPM tuning: `normal_rapm_v1_85e0cc8e27`
-- Statistical impact ridge: `statistical_impact_v2_48f6ad776f`
+- Statistical features: `statistical_features_v1_940f99ed54`
+- Statistical impact ridge: `statistical_impact_v2_5224a3b4a6`

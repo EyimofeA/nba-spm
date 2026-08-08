@@ -116,6 +116,7 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Rebuild percentage and average inputs with natural denominators instead of the
-legacy panel's minute-weighted means. Then compare the user's features with the
-box, advanced, and advanced-plus-on/off ridge baselines on the same purged folds.
+Compare ridge, elastic net, and a bounded histogram gradient booster on the
+validated `statistical_features_v1_940f99ed54` panel. Keep the same rows, purged
+folds, targets, weights, and inner-only tuning. Compare the user's feature set
+against this baseline after it has the same player-window contract.

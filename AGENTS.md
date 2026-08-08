@@ -243,6 +243,9 @@ For statistical impact ridge, fit offense and defense as separate three-season
 targets and add them for net. Run `statistical_impact_v2_48f6ad776f` shows that
 a direct net target gives the same advanced-feature result and loses the useful
 decomposition.
+Use `statistical_features_v1_940f99ed54` instead of the legacy feature panel for
+new comparisons. It pools counts across each three-season window and calculates
+percentages from their natural attempts or touches.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`
