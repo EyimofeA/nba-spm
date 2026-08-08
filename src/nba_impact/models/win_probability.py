@@ -1,8 +1,6 @@
 """Leakage-safe state-only NBA win-probability baseline."""
 from __future__ import annotations
 
-import json
-import math
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path

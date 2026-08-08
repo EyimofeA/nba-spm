@@ -9,6 +9,7 @@ description = "Versioned NBA data ingestion and player-impact research tooling."
 requires-python = ">=3.11"
 dependencies = [
   "duckdb>=1.5",
+  "joblib>=1.3",
   "nba_api>=1.11",
   "numpy>=1.26",
   "pandas>=2.1",
@@ -35,4 +36,3 @@ include = ["nba_impact*"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
-
