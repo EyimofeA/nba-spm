@@ -827,3 +827,32 @@ clock/state fields and cannot evaluate this estimand.
 explicit playoff calibration caveat. Do not fit a playoff-only model from this
 sample, continue local neural training, or claim a pre-2023 backtest. Move active
 work to RAPM and the all-in-one impact model.
+
+## 2026-08-08 — Fractional lineup attribution wins the two-fold RAPM check
+
+**Question:** Which lineup should receive credit when a substitution occurs
+inside a possession: the start lineup, the terminal lineup, or fractional
+exposure across every lineup segment?
+
+**What we did:** Run `rapm_lineup_policy_v2_911d8bfce1` fits the same zero-prior
+ridge specification for all three policies. It uses 743,946 identical regular-
+season possessions and two one-season-train chronological folds: 2023–24 to
+2024–25 and 2024–25 to 2025–26. It resamples whole games 5,000 times. Fractional
+weights use elapsed-time share, with action-count share only when the clock does
+not move. The policy does not use the possession outcome.
+
+**Result:** On the first fold, RMSE is 15.0107 for start, 15.0541 for terminal,
+and 15.0101 for fractional. Fractional versus start is a tie: squared-error
+delta -0.016, 95% interval [-1.028, 1.021]. Fractional beats terminal by -1.321,
+[-2.196, -0.443]. On the second fold, RMSE is 15.7975, 15.7326, and 15.7232.
+Fractional beats start by -2.342, [-3.306, -1.393], and is unresolved versus
+terminal at -0.294, [-1.107, 0.519]. Across 2,454 disjoint test games,
+fractional beats start by -1.180, [-1.876, -0.487], and terminal by -0.807,
+[-1.426, -0.208].
+
+**Verdict:** Freeze fractional exposure as the working current-RAPM attribution
+policy. Keep start and terminal as mandatory sensitivity outputs. This is a
+small, project-specific engineering decision. It is not a published standard.
+The current evidence has only two outer folds, and one fractional-versus-start
+fold is effectively tied. Select ridge penalties next without using 2025–26 for
+model selection.

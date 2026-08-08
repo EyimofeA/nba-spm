@@ -8,8 +8,10 @@ short project queue. `../modeling/PLAYBOOK.md` gives the validation rules.
 - Canonical rich possessions cover 2023–24 through 2025–26.
 - Legacy possessions cover 1997–2024 but are stale and use a smaller schema.
 - Current zero-prior RAPM is a baseline, not the final rating.
-- Start-lineup attribution is rejected on one outer fold.
-- Terminal lineup is the provisional simple policy.
+- Two chronological outer folds now compare identical start, terminal, and
+  fractional possession rows.
+- Fractional exposure is the frozen working policy for current RAPM. Start and
+  terminal remain mandatory sensitivity outputs.
 - Fractional exposure is a project-created sensitivity analysis, not a published
   standard. Commit `db4cb02` introduced it on 2026-08-08.
 - Existing SPM/all-in-one outputs are stale and contain known processed-data and
@@ -17,12 +19,16 @@ short project queue. `../modeling/PLAYBOOK.md` gives the validation rules.
 
 ## Phase 1 — Freeze current RAPM
 
-1. Generalize the lineup-policy comparison to explicit train/test seasons.
-2. Compare terminal and fractional policies on:
+1. ~~Generalize the lineup-policy comparison to explicit train/test seasons.~~
+2. ~~Compare terminal and fractional policies on:~~
    - train 2023–24 → test 2024–25;
    - train 2024–25 → test 2025–26.
-3. Use identical regular-season possessions and whole-game bootstrap intervals.
-4. Keep terminal unless fractional shows a reliable repeated gain.
+3. ~~Use identical regular-season possessions and whole-game bootstrap intervals.~~
+4. ~~Freeze the working lineup policy.~~ Fractional had the best RMSE in both
+   folds. Its pooled squared-error gain was 1.18 versus start and 0.81 versus
+   terminal; both 95% whole-game intervals excluded zero. The first fold was
+   effectively tied versus start, so this is a small engineering decision rather
+   than a broad production claim.
 5. Select offensive, defensive, and home-court ridge penalties using only older
    training seasons. Do not tune on 2025–26.
 6. Refit the frozen specification and publish player offense, defense, net,
@@ -103,6 +109,6 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Generalize `rapm_lineup_policy_v1` to both chronological folds. Confirm terminal
-versus fractional attribution. Do not start the all-in-one model until the RAPM
-label and lineup policy are frozen.
+Select offensive, defensive, and home-court penalties inside older data. Use
+2025–26 once as untouched confirmation. Do not start the statistical all-in-one
+prior until the zero-prior RAPM specification is frozen.

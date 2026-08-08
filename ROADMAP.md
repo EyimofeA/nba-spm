@@ -20,24 +20,27 @@ dead ends. Updated 2026-08-08. See `docs/README.md` for the document index,
   remains the production model.
 - WP is frozen as good-enough infrastructure. Regular-season evidence is strong;
   playoff calibration remains a documented small-sample caveat.
+- Fractional within-possession lineup exposure is the frozen working RAPM policy.
+  It beat start and terminal attribution in the pooled two-fold comparison, but
+  remains an approximation and requires both sensitivity outputs.
 - Current RAPM is a two-season baseline, not the final all-in-one.
 - The old 1997–2024 RAPM archive remains valuable but is stale after 2024.
 
 ## Active next task
 
-Return to player impact. Confirm terminal versus fractional lineup attribution on
-both current chronological folds, then tune RAPM penalties without using the
-2025–26 outer season for model selection. WP neural work is paused; do not train
-neural models on the local Mac.
+Tune RAPM penalties on older seasons, then use 2025–26 once as the untouched
+confirmation. Use fractional lineup exposure for the working model. Keep start
+and terminal sensitivity outputs. WP neural work is paused; do not train neural
+models on the local Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
 
 ## Ordered queue
 
-1. **RAPM:** terminal lineup is the simple current baseline; fractional segment
-   exposure is the research challenger. Confirm both across additional seasons,
-   then tune penalties with nested chronological folds.
+1. **RAPM:** fractional segment exposure is the frozen working policy. Tune
+   penalties with nested chronological folds, then publish start and terminal
+   sensitivity variants beside it.
 2. **All-in-one:** build independent box/tracking/playtype priors for offense and
    defense, then stack only improvements that pass next-season prediction gates.
 3. **Dynamic impact:** create annual time-decayed/player-state trajectories and
@@ -82,6 +85,6 @@ now would break reproducibility links.
   `wp_possession_start_v2_0a5d626234`
 - WP nonlinear parity: `wp_stage1_v1_7e6c77d51a`
 - WP five-seed MLP parity: `wp_mlp_v1_7a7825bf09`
-- RAPM lineup policy: `rapm_lineup_policy_v1_23149bbb29`
+- RAPM lineup policy: `rapm_lineup_policy_v2_911d8bfce1`
 - Current RAPM start lineup: `rapm_v0_d38f08740e`
 - Current RAPM terminal lineup: `rapm_v0_ec1f17c82a`

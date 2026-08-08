@@ -233,11 +233,14 @@ Possession/control must enter WP only at causal possession starts. Run
 late-game accuracy in both outer folds on the starter-free baseline. Each run
 reconstructs score from completed prior possessions; raw CDN possession tags on
 arbitrary action rows remain forbidden because they can reveal rebound/control
-outcomes. For current
-RAPM, run `rapm_lineup_policy_v1_23149bbb29` rejects
-start-lineup attribution. Use terminal lineup as the provisional simple policy;
-keep fractional segment exposure as a research challenger because its small
-numerical advantage over terminal is not statistically resolved in one fold.
+outcomes. For current RAPM, run `rapm_lineup_policy_v2_911d8bfce1` compares
+743,946 identical possessions across two chronological outer folds. Fractional
+exposure has the best RMSE in both folds. Its pooled whole-game squared-error
+delta is -1.18 versus start and -0.81 versus terminal; both 95% intervals exclude
+zero. Use fractional exposure as the frozen working policy. Always publish start
+and terminal sensitivity outputs. The first fold is nearly tied versus start,
+and fractional timing remains approximate. Do not describe this policy as a
+universal RAPM standard or a deployable forecast.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`
