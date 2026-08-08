@@ -239,6 +239,10 @@ assignment and zero-prior ridge penalties 3000/3000/300. Run
 on untouched 2025–26 confirmation. Fractional attribution is research-only even
 though `rapm_lineup_policy_v2_911d8bfce1` found a small pooled gain. Do not make
 it part of the active model unless later evidence changes the decision.
+For statistical impact ridge, fit offense and defense as separate three-season
+targets and add them for net. Run `statistical_impact_v2_48f6ad776f` shows that
+a direct net target gives the same advanced-feature result and loses the useful
+decomposition.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

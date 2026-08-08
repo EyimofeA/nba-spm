@@ -65,5 +65,6 @@ def test_statistical_impact_uses_purged_chronological_folds(tmp_path) -> None:
     assert run["status"] == "research_baseline"
     assert set(folds["test_window_end"]) == {2022, 2023, 2024}
     assert set(folds["train_max_window_end"]) == {2019, 2020, 2021}
-    assert len(run["metrics"]["summary"]) == 9
+    assert len(run["metrics"]["summary"]) == 12
     assert (output / "model_advanced_offense.joblib").exists()
+    assert (output / "model_advanced_net_direct.joblib").exists()

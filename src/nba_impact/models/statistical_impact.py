@@ -139,6 +139,7 @@ def run_statistical_impact_baseline(
     target_columns = {
         "offense": "target_offense",
         "defense": "target_defense",
+        "net_direct": "target_net",
     }
     for test_end in test_window_ends:
         train_max = test_end - target_window_seasons
@@ -207,20 +208,22 @@ def run_statistical_impact_baseline(
 
             offense_prediction = fold_predictions[f"prediction_{feature_set}_offense"]
             defense_prediction = fold_predictions[f"prediction_{feature_set}_defense"]
-            fold_predictions[f"prediction_{feature_set}_net"] = (
+            fold_predictions[f"prediction_{feature_set}_net_from_components"] = (
                 offense_prediction + defense_prediction
             )
             metric_rows.append(
                 {
                     "test_window_end": test_end,
                     "feature_set": feature_set,
-                    "target": "net",
+                    "target": "net_from_components",
                     "alpha": np.nan,
                     "train_max_window_end": train_max,
                     "test_players": int(len(test)),
                     **_metrics(
                         test["target_net"].to_numpy(),
-                        fold_predictions[f"prediction_{feature_set}_net"].to_numpy(),
+                        fold_predictions[
+                            f"prediction_{feature_set}_net_from_components"
+                        ].to_numpy(),
                         test["sample_weight"].to_numpy(),
                     ),
                 }
@@ -239,7 +242,7 @@ def run_statistical_impact_baseline(
         .sort_values(["target", "mean_weighted_rmse"], kind="stable")
     )
 
-    run_id = f"statistical_impact_v1_{uuid.uuid4().hex[:10]}"
+    run_id = f"statistical_impact_v2_{uuid.uuid4().hex[:10]}"
     output = Path(artifact_root) / "models" / "statistical_impact" / run_id
     output.mkdir(parents=True, exist_ok=False)
     predictions.to_parquet(output / "fold_predictions.parquet", index=False)
@@ -261,7 +264,7 @@ def run_statistical_impact_baseline(
     run = {
         "run_id": run_id,
         "model_family": "statistical_impact_ridge",
-        "estimand": "three_season_normal_rapm_offense_and_defense",
+        "estimand": "three_season_normal_rapm_offense_defense_and_direct_net",
         "status": "research_baseline",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "config": {
@@ -276,6 +279,7 @@ def run_statistical_impact_baseline(
             },
             "forbidden_primary_features": sorted(FORBIDDEN_PRIMARY_FEATURES),
             "sample_weight": "sqrt(min(Poss_Off, Poss_Def)); not an input feature",
+            "net_variants": ["direct_target", "sum_of_offense_and_defense"],
             "source_hashes": {
                 "features": sha256_file(features_path),
                 "targets": sha256_file(targets_path),

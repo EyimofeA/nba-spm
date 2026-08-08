@@ -902,3 +902,26 @@ on/off-assisted model as a distinct, stronger impact-assisted challenger; do not
 mislabel it as an independent statistical prior. Before further model comparison,
 rebuild percentages and average tracking fields with natural attempt or touch
 denominators because the inherited panel minute-weights those fields.
+
+## 2026-08-08 — Direct net target adds no value to the ridge baseline
+
+**Question:** Should the statistical model predict net RAPM directly, or predict
+offensive and defensive RAPM separately and add them?
+
+**What we did:** Run `statistical_impact_v2_48f6ad776f` adds a direct three-year
+net RAPM target to the same purged chronological folds, feature sets, reliability
+weights, preprocessing, and ridge alpha search used by the component models.
+
+**Result:** On the advanced features, direct net and summed components have the
+same mean weighted RMSE to floating-point precision: 1.3593836544. Their mean
+correlations are also the same: 0.4159608624. The on/off-assisted variants are
+also identical: RMSE 1.1161642634 and correlation 0.5629409007. This is expected
+because a ridge solution is linear in its target when the design, weights,
+preprocessing, and penalty are the same. The box-only variants differ by 0.00085
+RMSE because their independently selected penalties are not identical in every
+fold.
+
+**Verdict:** Use separate offensive and defensive ridge models, then add their
+predictions for net. The direct target gives no practical gain and cannot explain
+the offense/defense split. Reconsider a direct net target only for a nonlinear
+model, a different loss, or a different feature set.

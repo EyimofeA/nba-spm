@@ -73,6 +73,11 @@ elastic net. Compare bounded tree models only after the linear baseline passes.
 Use purged chronological player-window evaluation and possession-based reliability
 weights. Do not use minutes or games as input columns.
 
+For the linear ridge baseline, fit offense and defense separately and add the
+predictions for net impact. Run `statistical_impact_v2_48f6ad776f` found no
+measurable advantage from fitting net RAPM directly on the advanced feature sets.
+The separate models preserve the requested offense/defense decomposition.
+
 ## Phase 4 — Create the all-in-one rating
 
 1. Evaluate the statistical prior by itself.
