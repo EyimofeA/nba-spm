@@ -14,6 +14,7 @@ from nba_impact.data.espn_win_probability import ingest_espn_win_probability
 from nba_impact.data.game_dim import build_game_dimension
 from nba_impact.data.lineups import build_lineup_stints
 from nba_impact.data.manifest import build_possession_snapshot, write_json_atomic
+from nba_impact.data.official_boxscore import ingest_official_boxscores
 from nba_impact.data.player_game import build_player_games
 from nba_impact.data.possessions import build_possessions
 from nba_impact.models.rapm import (
@@ -36,6 +37,7 @@ from nba_impact.paths import (
     BRONZE_ROOT,
     LEGACY_POSSESSION_CACHE,
     MANIFEST_ROOT,
+    OFFICIAL_BOXSCORE_ROOT,
     PLAYER_NAMES,
     REGISTRY_PATH,
     SILVER_ROOT,
@@ -169,6 +171,7 @@ def command_build_player_games(args: argparse.Namespace) -> int:
         args.game_dim,
         args.output,
         args.manifest_dir,
+        official_box_dir=args.official_box_dir,
     )
     register_snapshot(args.registry, snapshot)
     print(
@@ -181,6 +184,34 @@ def command_build_player_games(args: argparse.Namespace) -> int:
                 "espn_games": snapshot["espn_game_count"],
                 "issues": snapshot["issues"],
                 "path": snapshot["path"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_ingest_official_boxscores(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    quality = pd.read_parquet(args.quality)
+    failed = quality.loc[~quality["passed"]].copy()
+    if args.seasons:
+        failed = failed.loc[failed["season_label"].isin(args.seasons)]
+    snapshot = ingest_official_boxscores(
+        failed["game_id"].astype(str).tolist(),
+        args.output_root,
+        args.manifest_dir,
+        max_attempts=args.max_attempts,
+        minimum_delay_seconds=args.minimum_delay_seconds,
+    )
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "requested_games": snapshot["requested_game_count"],
+                "downloaded_games": snapshot["downloaded_game_count"],
             },
             indent=2,
         )
@@ -610,8 +641,24 @@ def build_parser() -> argparse.ArgumentParser:
     player_games.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
     player_games.add_argument("--output", type=Path, default=SILVER_ROOT / "player_games.parquet")
     player_games.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    player_games.add_argument("--official-box-dir", type=Path, default=OFFICIAL_BOXSCORE_ROOT)
     player_games.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     player_games.set_defaults(func=command_build_player_games)
+
+    official_boxes = subparsers.add_parser(
+        "ingest-official-boxscores",
+        help="Repair quarantined player-game boxes from NBA Stats V3.",
+    )
+    official_boxes.add_argument(
+        "--quality", type=Path, default=SILVER_ROOT / "lineup_game_quality.parquet"
+    )
+    official_boxes.add_argument("--seasons", type=_text_list, default=())
+    official_boxes.add_argument("--output-root", type=Path, default=OFFICIAL_BOXSCORE_ROOT)
+    official_boxes.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    official_boxes.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    official_boxes.add_argument("--max-attempts", type=int, default=20)
+    official_boxes.add_argument("--minimum-delay-seconds", type=float, default=0.6)
+    official_boxes.set_defaults(func=command_ingest_official_boxscores)
 
     lineups = subparsers.add_parser(
         "build-lineups", help="Reconstruct and minute-reconcile current five-player lineup stints."

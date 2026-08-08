@@ -143,12 +143,16 @@ pinned source manifests
   → artifacts/models + artifacts/registry/nba_impact.duckdb
 ```
 
-Current validated scope is 2024–25 and 2025–26. `lineup_stints.parquet` emits
-only minute-reconciled games; quarantined games remain visible in
+Current validated scope is 2023–24 through 2025–26. `lineup_stints.parquet`
+emits only minute-reconciled games; quarantined games remain visible in
 `lineup_game_quality.parquet`. Current RAPM must use `possessions.parquet` plus
 the ordinal `possession_lineup_segments.parquet`; a clock-only lineup join is
 not safe at same-clock substitutions. ESPN Net Points/WPA mirrors are research
 benchmarks only because the upstream repository declares no license.
+The 2023–24 player-game layer uses provenance-marked ESPN fallback rows where
+the primary NBA box cache is absent. Quarantined games are repaired only through
+immutable official BoxScoreTraditionalV3 JSON; never relax lineup minute gates
+to hide incomplete boxes.
 
 Win-probability research must use chronological seasons and post-action states.
 External comparisons use the resumable `ingest-espn-win-probability` command,

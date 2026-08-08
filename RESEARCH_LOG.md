@@ -656,3 +656,37 @@ density/value model follow only after the core comparison. Candidates receive
 identical states, two chronological outer folds, whole-game bootstrap, calibration
 gates, and five fixed seeds for optimizer noise. A seed is not an independent run.
 Production remains the smallest model that clears both folds.
+
+## 2026-08-08 — 2023–24 rich-event backfill clears the canonical gates
+
+**Question:** Can the earlier season support an independent WP fold without
+weakening lineup or score-conservation validation?
+
+**What we did:** Downloaded the pinned ten-file 2023–24 event batch (86.96 MB)
+with checksums and resumability. Added the missing CDN schema contract, supported
+the older V3 schema without `shotValue`, and derived action scores from sparse
+scoreboard snapshots. The historical NBA box cache contained 15,261 exact
+duplicate rows and almost no 2023–24 coverage, so exact duplicates were removed
+and ESPN starters/minutes were used as explicitly marked research fallbacks.
+The first lineup rebuild quarantined 63 games. We downloaded official
+BoxScoreTraditionalV3 JSON for the 56 affected 2023–24 games, then rebuilt every
+silver table. Possession scoring was changed from broad V3 action-number
+replacement to CDN `orderNumber` score deltas with V3 repair only when an
+official terminal-score gap proved the CDN row wrong.
+
+**Result:** Game dimension and event states pass for 3,941 games and 1,950,498
+actions. Player-games cover all 3,941 games with no duplicate keys or missing
+boxes. Lineups pass 3,931 games; ten remain transparently quarantined (0.254%,
+below the 0.5% budget). Possessions pass for 3,907 games: 787,579 possessions and
+946,768 lineup segments, with zero score mismatches, negative/implausible point
+rows, duplicate IDs, or segment-conservation failures. Only two one-point CDN
+score gaps were repaired from clock-and-period-aligned V3 free throws.
+
+**Dead ends:** Treating `actionNumber` as a trustworthy scoring replacement.
+Although 83.1% of CDN rows aligned with V3 on action number, clock, and period,
+broad replacement created 37 final-score failures. `orderNumber` plus the CDN
+scoreboard is the canonical path; V3 is a narrow validator/repair source.
+
+**Verdict:** The data constraint for the second WP fold is removed. Run the
+frozen 2023–24 → 2024–25 comparison next; do not tune architectures against the
+existing 2025–26 test season.

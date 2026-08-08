@@ -56,8 +56,9 @@ The average fitted home-possession swing is 2.04 percentage points overall,
 11.57 points when the margin is at most three in the last two minutes, and 19.67
 points when tied inside ten seconds. In the close-last-two-minute subset, Brier
 improves from 0.17122 to 0.16719. This closely matches Inpredictable's qualitative
-late-game behavior, but it remains a one-fold research candidate until 2023–24 is
-ingested and used as an independent outer fold.
+late-game behavior, but it remains a one-fold research candidate. The 2023–24
+canonical data is now available; the independent 2023–24 → 2024–25 fold has not
+yet been run.
 
 ## Inpredictable reference-surface validation
 
@@ -105,7 +106,7 @@ feature set and training procedure are proprietary.
   runs and scores each start only from completed prior possessions.
 - Terminal-state scoring: excluded because probabilities are mechanically 0/1.
 - GBM/neural/RL models: ordered in `WP_ARCHITECTURES.md` and deferred until the
-  2023–24 fold is available. Complexity before repeated chronological validation
+  second chronological fold is scored. Complexity before repeated validation
   is low-value.
 - Starter RAPM alone: retained as a logged negative/inconclusive result.
 

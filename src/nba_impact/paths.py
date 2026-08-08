@@ -13,6 +13,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_ROOT = Path(os.environ.get("NBA_IMPACT_DATA_ROOT", PROJECT_ROOT / "data" / "lake"))
 BRONZE_ROOT = DATA_ROOT / "bronze"
+OFFICIAL_BOXSCORE_ROOT = BRONZE_ROOT / "nba_stats_boxscores"
 SILVER_ROOT = DATA_ROOT / "silver"
 MANIFEST_ROOT = DATA_ROOT / "manifests"
 ARTIFACT_ROOT = Path(os.environ.get("NBA_IMPACT_ARTIFACT_ROOT", PROJECT_ROOT / "artifacts"))

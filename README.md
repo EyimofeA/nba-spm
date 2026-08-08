@@ -37,6 +37,22 @@ uv run python -m nba_impact.cli compare-wp-possession
 uv run python -m nba_impact.cli compare-rapm-lineups
 ```
 
+The three-season canonical data rebuild is also resumable:
+
+```bash
+uv run python -m nba_impact.cli ingest \
+  --manifest configs/ingest/nba_data_archive_2023.json
+uv run python -m nba_impact.cli build-game-dim
+uv run python -m nba_impact.cli build-event-states
+uv run python -m nba_impact.cli build-player-games
+uv run python -m nba_impact.cli build-lineups
+# Only when lineup QA identifies bad historical boxes:
+uv run python -m nba_impact.cli ingest-official-boxscores --seasons 2023-24
+uv run python -m nba_impact.cli build-player-games
+uv run python -m nba_impact.cli build-lineups
+uv run python -m nba_impact.cli build-possessions
+```
+
 ### Regenerate the SPM prior
 
 ```bash

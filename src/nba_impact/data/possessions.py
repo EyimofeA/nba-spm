@@ -66,7 +66,7 @@ def _add_elapsed_seconds(actions: pd.DataFrame) -> pd.DataFrame:
 def reconcile_action_points(
     actions: pd.DataFrame, event_states: pd.DataFrame
 ) -> tuple[pd.DataFrame, dict[str, int | float]]:
-    """Use V3 points only when action number, period, and clock all align."""
+    """Use ordered CDN scores, repairing only proven terminal gaps from V3."""
     ordered = actions.sort_values(["game_id", "orderNumber"], kind="stable").copy()
     for side in ("home", "away"):
         score_column = f"score{side.title()}"
@@ -84,20 +84,39 @@ def reconcile_action_points(
     )
     ordered = ordered.merge(v3, on=["game_id", "actionNumber"], how="left", validate="one_to_one")
     aligned = ordered["v3_period"].eq(ordered["period"]) & ordered["v3_clock"].eq(ordered["clock"])
-    corrected = aligned & (
-        ordered["cdn_home_points"].ne(ordered["v3_home_points"])
-        | ordered["cdn_away_points"].ne(ordered["v3_away_points"])
-    )
+    corrected = pd.Series(False, index=ordered.index)
+    unresolved_games: set[str] = set()
+    terminal = ordered.groupby("game_id", sort=False).tail(1).set_index("game_id")
     for side in ("home", "away"):
-        ordered[f"{side}_points_added"] = ordered[f"cdn_{side}_points"].where(
-            ~aligned, ordered[f"v3_{side}_points"]
+        cdn_points = ordered[f"cdn_{side}_points"]
+        v3_points = ordered[f"v3_{side}_points"]
+        candidate_delta = (v3_points - cdn_points).where(aligned, 0.0)
+        positive_candidates = candidate_delta.where(candidate_delta.gt(0), 0.0)
+        candidate_total = positive_candidates.groupby(ordered["game_id"], sort=False).sum()
+        terminal_gap = (
+            pd.to_numeric(terminal[side + "_score"], errors="raise")
+            - pd.to_numeric(terminal["score" + side.title()], errors="raise")
         )
+        approved_games = {
+            str(game_id)
+            for game_id, gap in terminal_gap.items()
+            if gap > 0 and candidate_total.get(game_id, 0.0) == gap
+        }
+        unresolved_games.update(
+            str(game_id)
+            for game_id, gap in terminal_gap.items()
+            if gap != 0 and str(game_id) not in approved_games
+        )
+        repair = aligned & positive_candidates.gt(0) & ordered["game_id"].isin(approved_games)
+        ordered[f"{side}_points_added"] = cdn_points.where(~repair, v3_points)
+        corrected |= repair
     ordered["points_added"] = ordered["home_points_added"] + ordered["away_points_added"]
     stats: dict[str, int | float] = {
         "cdn_rows": int(len(ordered)),
         "v3_aligned_rows": int(aligned.sum()),
         "v3_alignment_rate": float(aligned.mean()),
         "score_rows_corrected_by_v3": int(corrected.sum()),
+        "unresolved_terminal_score_gap_games": int(len(unresolved_games)),
     }
     return ordered, stats
 

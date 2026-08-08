@@ -13,6 +13,20 @@ from .manifest import sha256_file
 
 
 SOURCE_CONTRACTS = {
+    "cdnnba": {
+        "game": "gameId",
+        "key": ("gameId", "orderNumber"),
+        "required": (
+            "gameId",
+            "orderNumber",
+            "actionNumber",
+            "period",
+            "clock",
+            "possession",
+            "_season",
+            "_season_type",
+        ),
+    },
     "nbastatsv3": {
         "game": "gameId",
         "key": ("gameId", "actionId"),

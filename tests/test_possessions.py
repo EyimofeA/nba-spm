@@ -16,6 +16,7 @@ def test_v3_score_correction_requires_clock_and_period_alignment() -> None:
             "game_id": ["g", "g"], "orderNumber": [20, 10], "actionNumber": [2, 1],
             "period": [1, 1], "clock": ["PT11M00.00S", "PT12M00.00S"],
             "scoreHome": [1, 0], "scoreAway": [0, 0],
+            "home_score": [2, 2], "away_score": [0, 0],
         }
     )
     v3 = pd.DataFrame(
@@ -27,6 +28,29 @@ def test_v3_score_correction_requires_clock_and_period_alignment() -> None:
     result, stats = reconcile_action_points(actions, v3)
     assert result.sort_values("orderNumber")["home_points_added"].tolist() == [0.0, 2.0]
     assert stats["score_rows_corrected_by_v3"] == 1
+
+
+def test_v3_does_not_replace_cdn_points_when_final_score_already_matches() -> None:
+    actions = pd.DataFrame(
+        {
+            "game_id": ["g", "g"], "orderNumber": [10, 20], "actionNumber": [1, 2],
+            "period": [1, 1], "clock": ["PT12M00.00S", "PT11M00.00S"],
+            "scoreHome": [0, 1], "scoreAway": [0, 0],
+            "home_score": [1, 1], "away_score": [0, 0],
+        }
+    )
+    v3 = pd.DataFrame(
+        {
+            "game_id": ["g"], "actionNumber": [2], "period": [1],
+            "clock": ["PT11M00.00S"], "home_points_added": [2.0],
+            "away_points_added": [0.0],
+        }
+    )
+
+    result, stats = reconcile_action_points(actions, v3)
+
+    assert result["home_points_added"].tolist() == [0, 1]
+    assert stats["score_rows_corrected_by_v3"] == 0
 
 
 def test_collapse_orders_by_order_number_and_keeps_retained_ball_points() -> None:

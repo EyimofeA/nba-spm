@@ -75,7 +75,7 @@ different inputs than from architecture.
 ## Evaluation contract
 
 - Use identical prediction states and labels across candidates.
-- Chronological folds after 2023-24 ingest:
+- Chronological folds on the now-available three-season silver data:
   - train/tune within 2023-24, test 2024-25;
   - freeze choices, train through 2024-25, test 2025-26.
 - Report Brier, log loss, AUC, calibration intercept/slope, and reliability bins.

@@ -8,6 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pyarrow.parquet as pq
 
 from .game_dim import canonical_game_id
 from .manifest import sha256_file, write_json_atomic
@@ -26,28 +27,34 @@ def _partition(path: Path) -> tuple[int, str]:
 
 def _normalize_partition(path: Path, game_dim: pd.DataFrame) -> pd.DataFrame:
     season_start, season_type = _partition(path)
+    required_columns = [
+        "gameId",
+        "actionId",
+        "actionNumber",
+        "clock",
+        "period",
+        "teamId",
+        "teamTricode",
+        "personId",
+        "playerName",
+        "location",
+        "description",
+        "actionType",
+        "subType",
+        "scoreHome",
+        "scoreAway",
+        "isFieldGoal",
+    ]
+    available_columns = set(pq.ParquetFile(path).schema_arrow.names)
+    selected_columns = [*required_columns]
+    if "shotValue" in available_columns:
+        selected_columns.append("shotValue")
     frame = pd.read_parquet(
         path,
-        columns=[
-            "gameId",
-            "actionId",
-            "actionNumber",
-            "clock",
-            "period",
-            "teamId",
-            "teamTricode",
-            "personId",
-            "playerName",
-            "location",
-            "description",
-            "actionType",
-            "subType",
-            "scoreHome",
-            "scoreAway",
-            "shotValue",
-            "isFieldGoal",
-        ],
+        columns=selected_columns,
     )
+    if "shotValue" not in frame:
+        frame["shotValue"] = np.nan
     frame["game_id"] = frame["gameId"].map(canonical_game_id)
     frame = frame.sort_values(["game_id", "actionId"], kind="stable").reset_index(drop=True)
     frame["seconds_remaining_period"] = parse_clock_seconds(frame["clock"])
@@ -66,23 +73,16 @@ def _normalize_partition(path: Path, game_dim: pd.DataFrame) -> pd.DataFrame:
 
     frame["source_score_home"] = pd.to_numeric(frame["scoreHome"], errors="coerce")
     frame["source_score_away"] = pd.to_numeric(frame["scoreAway"], errors="coerce")
-    source_score_present = frame["source_score_home"].notna() & frame["source_score_away"].notna()
-    made_field_goal = frame["actionType"].eq("Made Shot")
-    made_free_throw = frame["actionType"].eq("Free Throw") & source_score_present
-    event_points = np.where(
-        made_field_goal,
-        pd.to_numeric(frame["shotValue"], errors="coerce").fillna(0.0),
-        np.where(made_free_throw, 1.0, 0.0),
-    )
-    frame["home_points_added"] = np.where(frame["location"].eq("h"), event_points, 0.0)
-    frame["away_points_added"] = np.where(frame["location"].eq("v"), event_points, 0.0)
-    frame["home_score_after"] = frame.groupby("game_id", sort=False)["home_points_added"].cumsum()
-    frame["away_score_after"] = frame.groupby("game_id", sort=False)["away_points_added"].cumsum()
-    frame["home_score_before"] = frame["home_score_after"] - frame["home_points_added"]
-    frame["away_score_before"] = frame["away_score_after"] - frame["away_points_added"]
-    frame["points_added"] = frame["home_points_added"] + frame["away_points_added"]
-    frame["home_score_diff_after"] = frame["home_score_after"] - frame["away_score_after"]
-    frame["home_score_diff_before"] = frame["home_score_before"] - frame["away_score_before"]
+    # V3 score snapshots are sparse but authoritative.  Deriving deltas from the
+    # forward-filled scoreboard works across schema vintages that omit shotValue
+    # and preserves official-score corrections made on replay/admin actions.
+    for side in ("home", "away"):
+        source = frame[f"source_score_{side}"]
+        score_after = source.groupby(frame["game_id"], sort=False).ffill().fillna(0.0)
+        score_before = score_after.groupby(frame["game_id"], sort=False).shift().fillna(0.0)
+        frame[f"{side}_score_after"] = score_after
+        frame[f"{side}_score_before"] = score_before
+        frame[f"{side}_points_added"] = score_after - score_before
     frame["is_overtime"] = period > 4
     frame["event_team_side"] = frame["location"].where(frame["location"].isin(["h", "v"]))
     frame["event_id"] = frame["game_id"] + ":" + frame["actionId"].astype(str)
@@ -100,10 +100,27 @@ def _normalize_partition(path: Path, game_dim: pd.DataFrame) -> pd.DataFrame:
             "game_date",
             "home_team_id",
             "away_team_id",
+            "home_score",
+            "away_score",
             "home_win",
         ],
     ]
     frame = frame.merge(dimension, on="game_id", how="left", validate="many_to_one")
+    # Period-end source rows can contain stale scoreboard snapshots.  At the one
+    # terminal state only, the validated game dimension is authoritative.
+    terminal = frame["is_terminal_event"]
+    frame.loc[terminal, "home_score_after"] = frame.loc[terminal, "home_score"]
+    frame.loc[terminal, "away_score_after"] = frame.loc[terminal, "away_score"]
+    frame.loc[terminal, "home_points_added"] = (
+        frame.loc[terminal, "home_score_after"] - frame.loc[terminal, "home_score_before"]
+    )
+    frame.loc[terminal, "away_points_added"] = (
+        frame.loc[terminal, "away_score_after"] - frame.loc[terminal, "away_score_before"]
+    )
+    frame["points_added"] = frame["home_points_added"] + frame["away_points_added"]
+    frame["home_score_diff_after"] = frame["home_score_after"] - frame["away_score_after"]
+    frame["home_score_diff_before"] = frame["home_score_before"] - frame["away_score_before"]
+    frame = frame.drop(columns=["home_score", "away_score"])
     return frame
 
 

@@ -5,7 +5,10 @@ dead ends; `WIN_PROBABILITY.md` contains the WP model card. Updated 2026-08-08.
 
 ## Current position
 
-- Current events, player-games, lineups, possessions, RAPM, and WP pipelines run.
+- Three-season events, player-games, lineups, and possessions now run from
+  2023–24 through 2025–26.
+- Lineups pass 3,931/3,941 games (99.75%); canonical possessions cover 3,907
+  games with zero score or point-domain failures.
 - ESPN WP benchmark covers 1,313 matched 2025–26 games.
 - WP's score/time surface agrees closely with Inpredictable.
 - Current RAPM is a two-season baseline, not the final all-in-one.
@@ -13,33 +16,32 @@ dead ends; `WIN_PROBABILITY.md` contains the WP model card. Updated 2026-08-08.
 
 ## Active next task
 
-The pinned 2023–24 rich-event batch is ready (10 files, 86.96 MB). Launch it
-when the laptop is on AC, then rebuild silver tables and run the second WP fold.
-Do not tune further against 2025–26 alone.
+Run the frozen second WP fold: train on 2023–24 and test on 2024–25 using the
+same rows, features, calibration, and whole-game bootstrap as the existing
+2024–25 → 2025–26 fold. Confirm rolling pregame context and causal possession
+control before starting the nonlinear model ladder.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
 
 ## Ordered queue
 
-1. **Data:** ingest 2023–24 event PBP, game dimension, player-games, and lineups;
-   run the existing completeness and chronology gates.
-2. **WP:** causal possession-start control passes one outer fold; confirm it and
+1. **WP:** causal possession-start control passes one outer fold; confirm it and
    rolling team context on at least one additional outer season before promotion.
    Then run the frozen GAM/GBM → MLP → TCN → GRU → transformer ladder in
    `WP_ARCHITECTURES.md`; do not tune architectures on 2025–26.
-3. **RAPM:** terminal lineup is the simple current baseline; fractional segment
+2. **RAPM:** terminal lineup is the simple current baseline; fractional segment
    exposure is the research challenger. Confirm both across additional seasons,
    then tune penalties with nested chronological folds.
-4. **All-in-one:** build independent box/tracking/playtype priors for offense and
+3. **All-in-one:** build independent box/tracking/playtype priors for offense and
    defense, then stack only improvements that pass next-season prediction gates.
-5. **Dynamic impact:** create annual time-decayed/player-state trajectories and
+4. **Dynamic impact:** create annual time-decayed/player-state trajectories and
    peak 1/3/5-year views in the style of NBA RAPM peaks.
-6. **WP-RAPM / credit:** value possession-start-to-end WP change only after the WP
+5. **WP-RAPM / credit:** value possession-start-to-end WP change only after the WP
    and lineup assignment are validated; compare Net Points and TD/Shapley ideas.
-7. **Product:** stable DuckDB/API contract first, then a restrained player explorer.
+6. **Product:** stable DuckDB/API contract first, then a restrained player explorer.
    Do not rebuild the deleted UI before metric contracts are frozen.
-8. **Later data:** injuries/availability, contracts, salaries, draft, roster stints,
+7. **Later data:** injuries/availability, contracts, salaries, draft, roster stints,
    travel, and historical team schedules.
 
 ## Research rules
@@ -60,6 +62,11 @@ now would break reproducibility links.
 
 ## Recent verified runs
 
+- Game dimension: `game_dim_6e716feac7a2d6d6` (3,941 games)
+- Event states: `event_states_e8a4cfbe25220240` (1,950,498 actions)
+- Player-games: `player_games_03660947f91f97e3` (all 3,941 games)
+- Lineups: `lineup_stints_7518759ccb7f181c` (3,931 passed games)
+- Possessions: `possessions_769070fb3b70f511` (3,907 games)
 - ESPN benchmark: `wp_espn_benchmark_v1_ca79cde82d`
 - WP pregame challenger: `wp_pregame_ablation_v2_522e1a36f2`
 - Inpredictable surface: `wp_inpredictable_surface_v1_56696b0386`

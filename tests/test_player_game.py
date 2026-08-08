@@ -43,14 +43,17 @@ def test_build_player_games_uses_positions_as_starters(tmp_path) -> None:
                 }
             )
     box = pd.DataFrame(rows)
+    box = pd.concat([box, box.iloc[[0]]], ignore_index=True)
     espn = pd.DataFrame(
         {
             "game_id": ["0022500001"] * 10,
             "player_id": [row["personId"] for row in rows],
             "team": ["HOM"] * 5 + ["AWY"] * 5,
             "home": [1] * 5 + [0] * 5,
+            "name": [f"Player {index % 5}" for index in range(10)],
             "starter": [1] * 10,
             "played": [1] * 10,
+            "minutes_played": ["48:00"] * 10,
             "dAvgPos": [1.0] * 10,
             "oNetPts": [0.0] * 10,
             "dNetPts": [0.0] * 10,
@@ -77,3 +80,4 @@ def test_build_player_games_uses_positions_as_starters(tmp_path) -> None:
     assert result["starter"].sum() == 10
     assert set(result["team_side"]) == {"home", "away"}
     assert result["espn_available"].all()
+    assert snapshot["issues"]["exact_box_source_rows_dropped"] == 1

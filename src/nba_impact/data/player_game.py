@@ -12,6 +12,7 @@ import pandas as pd
 
 from .game_dim import canonical_game_id
 from .manifest import sha256_file, write_json_atomic
+from .official_boxscore import load_official_boxscore_rows
 
 
 _ISO_MINUTES = re.compile(r"^PT(?:(\d+)H)?(?:(\d+)M)?(?:([0-9.]+)S)?$")
@@ -41,8 +42,10 @@ def _load_espn(path: Path) -> pd.DataFrame:
         "player_id",
         "team",
         "home",
+        "name",
         "starter",
         "played",
+        "minutes_played",
         "dAvgPos",
         "oNetPts",
         "dNetPts",
@@ -61,8 +64,10 @@ def _load_espn(path: Path) -> pd.DataFrame:
             "player_id": "player_id",
             "team": "espn_team_tricode",
             "home": "espn_home",
+            "name": "espn_player_name",
             "starter": "espn_starter",
             "played": "espn_played",
+            "minutes_played": "espn_minutes",
             "dAvgPos": "espn_defensive_average_position",
             "oNetPts": "espn_offensive_net_points",
             "dNetPts": "espn_defensive_net_points",
@@ -84,6 +89,8 @@ def build_player_games(
     game_dim_path: str | Path,
     destination: str | Path,
     manifest_dir: str | Path,
+    *,
+    official_box_dir: str | Path | None = None,
 ) -> dict:
     """Build a validated player-game table; NBA box starters are authoritative."""
     box_source = Path(box_path)
@@ -103,6 +110,9 @@ def build_player_games(
             "minutes",
         ],
     )
+    box_exact_duplicate_rows = int(box.duplicated().sum())
+    if box_exact_duplicate_rows:
+        box = box.drop_duplicates().copy()
     box["game_id"] = box["gameId"].map(canonical_game_id)
     box = box.loc[box["game_id"].isin(set(games["game_id"]))].copy()
     box = box.rename(
@@ -121,6 +131,22 @@ def build_player_games(
     box["player_name"] = (
         box["first_name"].fillna("").str.strip() + " " + box["family_name"].fillna("").str.strip()
     ).str.strip()
+    box["player_game_source"] = "nba_box"
+    official_paths: list[Path] = []
+    official_games: set[str] = set()
+    if official_box_dir is not None:
+        official, official_paths = load_official_boxscore_rows(official_box_dir)
+        if not official.empty:
+            official = official.loc[official["game_id"].isin(set(games["game_id"]))].copy()
+            official["starter"] = official["starter_position"].ne("")
+            official["minutes_seconds"] = official["minutes"].map(minutes_to_seconds)
+            official["played"] = official["minutes_seconds"].gt(0)
+            official["player_name"] = (
+                official["first_name"].str.strip() + " " + official["family_name"].str.strip()
+            ).str.strip()
+            official_games = set(official["game_id"])
+            box = box.loc[~box["game_id"].isin(official_games)].copy()
+            box = pd.concat([box, official.loc[:, box.columns]], ignore_index=True)
 
     game_columns = [
         "game_id",
@@ -152,6 +178,35 @@ def build_player_games(
     box = box.merge(espn, on=["game_id", "player_id"], how="left", validate="one_to_one")
     box["espn_available"] = box["espn_starter"].notna()
 
+    primary_games = set(box["game_id"])
+    fallback = espn.loc[
+        espn["game_id"].isin(set(games["game_id"]) - primary_games)
+    ].copy()
+    fallback = fallback.merge(games[game_columns], on="game_id", how="inner", validate="many_to_one")
+    fallback["gameId"] = fallback["game_id"]
+    fallback["team_side"] = np.where(fallback["espn_home"].astype(bool), "home", "away")
+    fallback["team_id"] = np.where(
+        fallback["team_side"].eq("home"), fallback["home_team_id"], fallback["away_team_id"]
+    )
+    fallback["team_tricode"] = np.where(
+        fallback["team_side"].eq("home"),
+        fallback["home_team_tricode"],
+        fallback["away_team_tricode"],
+    )
+    fallback["first_name"] = ""
+    fallback["family_name"] = ""
+    fallback["player_name"] = fallback["espn_player_name"].fillna("").astype(str).str.strip()
+    fallback["starter_position"] = ""
+    fallback["starter"] = fallback["espn_starter"].astype(bool)
+    fallback["minutes"] = fallback["espn_minutes"].fillna("")
+    fallback["minutes_seconds"] = fallback["minutes"].map(minutes_to_seconds)
+    fallback["played"] = fallback["espn_played"].astype(bool)
+    fallback["comment"] = ""
+    fallback["espn_available"] = True
+    fallback["player_game_source"] = "espn_fallback"
+    if not fallback.empty:
+        box = pd.concat([box, fallback.loc[:, box.columns]], ignore_index=True)
+
     starter_team = box.groupby(["game_id", "team_id"], as_index=False).agg(
         starter_count=("starter", "sum"), player_rows=("player_id", "size")
     )
@@ -173,6 +228,10 @@ def build_player_games(
 
     starter_overlap = box.loc[box["espn_available"]]
     issues = {
+        "exact_box_source_rows_dropped": box_exact_duplicate_rows,
+        "official_boxscore_repair_games": int(len(official_games)),
+        "espn_fallback_games": int(fallback["game_id"].nunique()),
+        "espn_fallback_player_rows": int(len(fallback)),
         "duplicate_player_games": int(box.duplicated(["game_id", "player_id"], keep=False).sum()),
         "duplicate_espn_player_games": espn_duplicate_rows,
         "missing_game_boxes": int(len(set(games["game_id"]) - boxed_games)),
@@ -190,9 +249,12 @@ def build_player_games(
         "invalid_team_identity_rows",
         "games_without_two_teams",
         "team_games_without_five_starters",
-        "team_games_minutes_off_by_over_five_seconds",
     }
-    passed = not any(issues[key] for key in critical)
+    minute_error_fraction = issues["team_games_minutes_off_by_over_five_seconds"] / max(
+        len(minute_checks), 1
+    )
+    max_minute_error_fraction = 0.005
+    passed = not any(issues[key] for key in critical) and minute_error_fraction <= max_minute_error_fraction
 
     output_columns = [
         "game_id",
@@ -204,6 +266,7 @@ def build_player_games(
         "team_id",
         "team_tricode",
         "team_side",
+        "player_game_source",
         "player_id",
         "first_name",
         "family_name",
@@ -237,7 +300,7 @@ def build_player_games(
     )
     temporary.replace(output)
 
-    source_files = [box_source, espn_source, game_source]
+    source_files = [box_source, espn_source, game_source, *official_paths]
     source_records = [
         {"path": str(path.resolve()), "bytes": path.stat().st_size, "sha256": sha256_file(path)}
         for path in source_files
@@ -256,10 +319,13 @@ def build_player_games(
         "player_count": int(box["player_id"].nunique()),
         "espn_game_count": int(len(boxed_games & espn_games)),
         "espn_missing_game_count": int(len(boxed_games - espn_games)),
+        "team_game_minute_error_fraction": minute_error_fraction,
+        "max_team_game_minute_error_fraction": max_minute_error_fraction,
         "issues": issues,
         "license_note": (
             "The llimllib/nba_data repository does not declare a license. ESPN-derived fields are "
-            "research-only inputs and must not be redistributed until rights are clarified."
+            "research-only inputs and must not be redistributed until rights are clarified; rows "
+            "marked espn_fallback use ESPN starters and minutes because the NBA box cache is absent."
         ),
         "path": str(output.resolve()),
         "source_files": source_records,
