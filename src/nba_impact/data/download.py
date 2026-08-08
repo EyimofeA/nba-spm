@@ -1,6 +1,7 @@
 """Manifest-driven, resumable HTTP ingestion with atomic Parquet validation."""
 from __future__ import annotations
 
+import csv
 import json
 import os
 import time
@@ -24,6 +25,7 @@ class DownloadTask:
     license: str
     season: int | None = None
     season_type: str | None = None
+    source_revision: str | None = None
     expected_min_rows: int = 1
     required_columns: tuple[str, ...] = ()
 
@@ -55,6 +57,42 @@ def _validate_parquet(path: Path, task: DownloadTask) -> dict:
     return {"rows": rows, "columns": columns, "row_groups": parquet.num_row_groups}
 
 
+def _validate_csv(path: Path, task: DownloadTask) -> dict:
+    rows = 0
+    malformed_rows = 0
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.reader(handle)
+        try:
+            columns = next(reader)
+        except StopIteration as exc:
+            raise ValueError(f"{task.name}: CSV is empty") from exc
+        if not columns or any(not column.strip() for column in columns):
+            raise ValueError(f"{task.name}: CSV header contains empty column names")
+        width = len(columns)
+        for row in reader:
+            if not row:
+                continue
+            rows += 1
+            malformed_rows += int(len(row) != width)
+    if rows < task.expected_min_rows:
+        raise ValueError(f"{task.name}: expected at least {task.expected_min_rows} rows, found {rows}")
+    missing = sorted(set(task.required_columns) - set(columns))
+    if missing:
+        raise ValueError(f"{task.name}: missing required columns {missing}")
+    if malformed_rows:
+        raise ValueError(f"{task.name}: {malformed_rows} CSV rows do not match the header width")
+    return {"rows": rows, "columns": columns, "row_groups": None}
+
+
+def _validate_file(path: Path, task: DownloadTask) -> dict:
+    suffix = Path(task.destination).suffix.lower()
+    if suffix == ".parquet":
+        return _validate_parquet(path, task)
+    if suffix == ".csv":
+        return _validate_csv(path, task)
+    raise ValueError(f"{task.name}: unsupported destination format {suffix!r}")
+
+
 @retry(
     retry=retry_if_exception_type((requests.RequestException, TransientDownloadError)),
     wait=wait_exponential_jitter(initial=1, max=30),
@@ -81,7 +119,7 @@ def _download_once(session: requests.Session, task: DownloadTask, destination: P
                     handle.write(chunk)
             handle.flush()
             os.fsync(handle.fileno())
-    validation = _validate_parquet(partial, task)
+    validation = _validate_file(partial, task)
     partial.replace(destination)
     return validation
 
@@ -97,7 +135,7 @@ def ingest_task(
     destination.parent.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
     if destination.exists():
-        validation = _validate_parquet(destination, task)
+        validation = _validate_file(destination, task)
         status = "verified_existing"
     else:
         validation = _download_once(session or requests.Session(), task, destination)
@@ -148,4 +186,3 @@ def run_ingest_manifest(manifest_path: str | Path, *, root: str | Path) -> dict:
     if failures:
         raise RuntimeError(f"{len(failures)} download task(s) failed; see {summary_path}")
     return summary
-

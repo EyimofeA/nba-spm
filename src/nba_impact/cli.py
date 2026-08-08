@@ -15,6 +15,7 @@ from nba_impact.models.rapm import (
     load_legacy_possessions,
     run_rapm,
     run_regularization_comparison,
+    run_walk_forward_comparison,
 )
 from nba_impact.paths import (
     ARTIFACT_ROOT,
@@ -151,6 +152,36 @@ def command_compare_rapm(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_walk_forward_rapm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    test_seasons = tuple(args.test_seasons)
+    season_start = min(test_seasons) - args.train_window
+    seasons = tuple(range(season_start, max(test_seasons) + 1))
+    game_types = tuple(item.strip() for item in args.game_types.split(",") if item.strip())
+    frame = load_legacy_possessions(args.cache_dir, seasons, game_types=game_types)
+    config = RapmConfig(
+        seasons=seasons,
+        lambda_home=args.lambda_home,
+        include_home=not args.no_home,
+        game_types=game_types,
+    )
+    run = run_walk_forward_comparison(
+        frame,
+        config,
+        args.lambda_pairs,
+        test_seasons,
+        train_window=args.train_window,
+        artifact_root=args.artifact_root,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        seed=args.seed,
+    )
+    run["dataset_snapshot_id"] = args.snapshot_id
+    write_json_atomic(run, Path(run["artifact_path"]) / "run.json")
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="nba-impact")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -204,6 +235,27 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("--game-types", default="regular")
     compare.add_argument("--no-home", action="store_true")
     compare.set_defaults(func=command_compare_rapm)
+
+    walk = subparsers.add_parser(
+        "walk-forward-rapm", help="Compare RAPM candidates across chronological outer seasons."
+    )
+    walk.add_argument("--test-seasons", type=_season_list, required=True)
+    walk.add_argument("--train-window", type=int, default=3)
+    walk.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    walk.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    walk.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    walk.add_argument("--snapshot-id")
+    walk.add_argument(
+        "--lambda-pairs",
+        type=_lambda_pairs,
+        default=_lambda_pairs("3000:3000,2000:4500,1000:1000"),
+    )
+    walk.add_argument("--lambda-home", type=float, default=300.0)
+    walk.add_argument("--bootstrap-repetitions", type=int, default=2000)
+    walk.add_argument("--seed", type=int, default=7)
+    walk.add_argument("--game-types", default="regular")
+    walk.add_argument("--no-home", action="store_true")
+    walk.set_defaults(func=command_walk_forward_rapm)
     return parser
 
 

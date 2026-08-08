@@ -172,6 +172,39 @@ def _game_margin_metrics(
     test_mask: np.ndarray,
     train_mask: np.ndarray,
 ) -> dict:
+    games = _game_margin_frame(design, beta, intercept, test_mask, train_mask)
+    error = games["actual_margin"] - games["predicted_margin"]
+    correlation = float(games[["actual_margin", "predicted_margin"]].corr().iloc[0, 1])
+    predicted_variance = float(np.var(games["predicted_margin"], ddof=0))
+    calibration_slope = (
+        float(np.cov(games["actual_margin"], games["predicted_margin"], ddof=0)[0, 1] / predicted_variance)
+        if predicted_variance > 0
+        else float("nan")
+    )
+    calibration_intercept = float(
+        games["actual_margin"].mean() - calibration_slope * games["predicted_margin"].mean()
+    )
+    return {
+        "games": int(len(games)),
+        "margin_rmse": float(math.sqrt(np.mean(error**2))),
+        "margin_mae": float(np.mean(np.abs(error))),
+        "margin_correlation": correlation,
+        "actual_margin_sd": float(games["actual_margin"].std(ddof=0)),
+        "predicted_margin_sd": float(games["predicted_margin"].std(ddof=0)),
+        "calibration_intercept": calibration_intercept,
+        "calibration_slope": calibration_slope,
+        "known_player_rate": float(games.attrs["known_player_rate"]),
+        "games_with_unknown_players": int((games["unknown_player_slots"] > 0).sum()),
+    }
+
+
+def _game_margin_frame(
+    design: RapmDesign,
+    beta: np.ndarray,
+    intercept: float,
+    test_mask: np.ndarray,
+    train_mask: np.ndarray,
+) -> pd.DataFrame:
     prediction = np.asarray(design.X[test_mask] @ beta).ravel() + intercept
     sign = np.where(design.home_offense[test_mask], 1.0, -1.0)
     test_rows = np.flatnonzero(test_mask)
@@ -196,29 +229,8 @@ def _game_margin_metrics(
         predicted_margin=("predicted", "sum"),
         unknown_player_slots=("unknown_slots", "sum"),
     )
-    error = games["actual_margin"] - games["predicted_margin"]
-    correlation = float(games[["actual_margin", "predicted_margin"]].corr().iloc[0, 1])
-    predicted_variance = float(np.var(games["predicted_margin"], ddof=0))
-    calibration_slope = (
-        float(np.cov(games["actual_margin"], games["predicted_margin"], ddof=0)[0, 1] / predicted_variance)
-        if predicted_variance > 0
-        else float("nan")
-    )
-    calibration_intercept = float(
-        games["actual_margin"].mean() - calibration_slope * games["predicted_margin"].mean()
-    )
-    return {
-        "games": int(len(games)),
-        "margin_rmse": float(math.sqrt(np.mean(error**2))),
-        "margin_mae": float(np.mean(np.abs(error))),
-        "margin_correlation": correlation,
-        "actual_margin_sd": float(games["actual_margin"].std(ddof=0)),
-        "predicted_margin_sd": float(games["predicted_margin"].std(ddof=0)),
-        "calibration_intercept": calibration_intercept,
-        "calibration_slope": calibration_slope,
-        "known_player_rate": float(known_players.mean()),
-        "games_with_unknown_players": int((games["unknown_player_slots"] > 0).sum()),
-    }
+    games.attrs["known_player_rate"] = float(known_players.mean())
+    return games
 
 
 def ratings_table(
@@ -327,6 +339,185 @@ def run_regularization_comparison(
         "status": "research_diagnostic_unverified",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "config": {**asdict(config), "lambda_pairs": [list(pair) for pair in lambda_pairs]},
+        "metrics": metrics,
+        "artifact_path": str(output.resolve()),
+    }
+    write_json_atomic(run, output / "run.json")
+    return run
+
+
+def _paired_season_game_bootstrap(
+    error_table: pd.DataFrame,
+    candidate: str,
+    baseline: str,
+    *,
+    repetitions: int,
+    seed: int,
+) -> float:
+    candidate_rows = error_table.loc[error_table["candidate"] == candidate]
+    baseline_rows = error_table.loc[error_table["candidate"] == baseline]
+    paired = candidate_rows.merge(
+        baseline_rows,
+        on=["test_season", "game_id"],
+        suffixes=("_candidate", "_baseline"),
+        validate="one_to_one",
+    )
+    paired["loss_delta"] = paired["squared_error_candidate"] - paired["squared_error_baseline"]
+    rng = np.random.default_rng(seed)
+    seasons = sorted(paired["test_season"].unique())
+    draws = np.empty(repetitions, dtype=np.float64)
+    season_values = {
+        season: paired.loc[paired["test_season"] == season, "loss_delta"].to_numpy()
+        for season in seasons
+    }
+    for repetition in range(repetitions):
+        sampled = [rng.choice(values, size=len(values), replace=True) for values in season_values.values()]
+        draws[repetition] = np.concatenate(sampled).mean()
+    return float(np.mean(draws < 0.0))
+
+
+def run_walk_forward_comparison(
+    frame: pd.DataFrame,
+    config: RapmConfig,
+    lambda_pairs: tuple[tuple[float, float], ...],
+    test_seasons: tuple[int, ...],
+    *,
+    train_window: int,
+    artifact_root: str | Path,
+    bootstrap_repetitions: int = 2000,
+    seed: int = 7,
+) -> dict:
+    """Evaluate fixed candidates across independent chronological outer folds."""
+    if train_window < 1:
+        raise ValueError("train_window must be positive")
+    if not lambda_pairs:
+        raise ValueError("provide at least one candidate; the first is the baseline")
+    design = build_design(frame, include_home=config.include_home)
+    available = set(int(value) for value in np.unique(design.seasons))
+    fold_rows: list[dict] = []
+    game_error_rows: list[dict] = []
+    candidate_names = [f"off{off:g}_def{defense:g}" for off, defense in lambda_pairs]
+
+    for test_season in test_seasons:
+        train_seasons = tuple(range(test_season - train_window, test_season))
+        missing = sorted(set((*train_seasons, test_season)) - available)
+        if missing:
+            raise ValueError(f"Fold ending {test_season} is missing seasons {missing}")
+        train_mask = np.isin(design.seasons, train_seasons)
+        test_mask = design.seasons == test_season
+        for candidate_name, (lambda_off, lambda_def) in zip(candidate_names, lambda_pairs):
+            candidate = RapmConfig(
+                seasons=train_seasons,
+                lambda_off=float(lambda_off),
+                lambda_def=float(lambda_def),
+                lambda_home=config.lambda_home,
+                include_home=config.include_home,
+                game_types=config.game_types,
+                data_scope=config.data_scope,
+            )
+            beta, intercept = fit_coefficients(design, candidate, train_mask)
+            metrics = _game_margin_metrics(design, beta, intercept, test_mask, train_mask)
+            fold_rows.append(
+                {
+                    "candidate": candidate_name,
+                    "lambda_off": float(lambda_off),
+                    "lambda_def": float(lambda_def),
+                    "train_start": train_seasons[0],
+                    "train_end": train_seasons[-1],
+                    "test_season": test_season,
+                    **metrics,
+                }
+            )
+            games = _game_margin_frame(design, beta, intercept, test_mask, train_mask)
+            games["squared_error"] = (games["actual_margin"] - games["predicted_margin"]) ** 2
+            for row in games[["game_id", "squared_error"]].itertuples(index=False):
+                game_error_rows.append(
+                    {
+                        "candidate": candidate_name,
+                        "test_season": test_season,
+                        "game_id": row.game_id,
+                        "squared_error": float(row.squared_error),
+                    }
+                )
+
+    folds = pd.DataFrame(fold_rows)
+    errors = pd.DataFrame(game_error_rows)
+    baseline = candidate_names[0]
+    baseline_folds = folds.loc[folds["candidate"] == baseline, ["test_season", "margin_rmse"]].rename(
+        columns={"margin_rmse": "baseline_rmse"}
+    )
+    summary_rows: list[dict] = []
+    for index, candidate_name in enumerate(candidate_names):
+        candidate_folds = folds.loc[folds["candidate"] == candidate_name].merge(
+            baseline_folds, on="test_season", validate="one_to_one"
+        )
+        mean_rmse = float(candidate_folds["margin_rmse"].mean())
+        baseline_mean = float(candidate_folds["baseline_rmse"].mean())
+        fold_wins = int((candidate_folds["margin_rmse"] < candidate_folds["baseline_rmse"]).sum())
+        probability = (
+            0.5
+            if candidate_name == baseline
+            else _paired_season_game_bootstrap(
+                errors,
+                candidate_name,
+                baseline,
+                repetitions=bootstrap_repetitions,
+                seed=seed + index,
+            )
+        )
+        relative_improvement = (baseline_mean - mean_rmse) / baseline_mean if baseline_mean else 0.0
+        if candidate_name == baseline:
+            evidence_status = "baseline"
+        elif len(test_seasons) < 3:
+            evidence_status = "insufficient_folds"
+        elif probability >= 0.95 and fold_wins >= math.ceil(0.7 * len(test_seasons)) and relative_improvement >= 0.01:
+            evidence_status = "candidate_requires_untouched_confirmation"
+        elif probability >= 0.90 and fold_wins >= math.ceil(0.5 * len(test_seasons)):
+            evidence_status = "promising_research_challenger"
+        else:
+            evidence_status = "improvement_not_demonstrated"
+        summary_rows.append(
+            {
+                "candidate": candidate_name,
+                "folds": len(test_seasons),
+                "mean_margin_rmse": mean_rmse,
+                "mean_margin_correlation": float(candidate_folds["margin_correlation"].mean()),
+                "fold_wins_vs_baseline": fold_wins,
+                "relative_rmse_improvement": relative_improvement,
+                "bootstrap_probability_better": probability,
+                "evidence_status": evidence_status,
+            }
+        )
+
+    summary = pd.DataFrame(summary_rows).sort_values("mean_margin_rmse")
+    run_id = f"rapm_walk_forward_{uuid.uuid4().hex[:10]}"
+    output = Path(artifact_root) / "models" / "rapm_walk_forward" / run_id
+    output.mkdir(parents=True, exist_ok=False)
+    folds.to_parquet(output / "fold_results.parquet", index=False)
+    summary.to_parquet(output / "summary.parquet", index=False)
+    metrics = {
+        "evaluation": "multi_fold_lineup_conditioned_retrodiction",
+        "train_window": train_window,
+        "test_seasons": list(test_seasons),
+        "baseline": baseline,
+        "bootstrap_repetitions": bootstrap_repetitions,
+        "summary": summary.to_dict(orient="records"),
+        "warning": "Observed future lineups are used. Promotion still requires an untouched confirmation season.",
+    }
+    run = {
+        "run_id": run_id,
+        "model_family": "zero_prior_rapm_walk_forward_comparison",
+        "estimand": "lineup_adjusted_descriptive_points_per_100",
+        "status": "research_evidence_unverified",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "config": {
+            **asdict(config),
+            "lambda_pairs": [list(pair) for pair in lambda_pairs],
+            "test_seasons": list(test_seasons),
+            "train_window": train_window,
+            "bootstrap_repetitions": bootstrap_repetitions,
+            "seed": seed,
+        },
         "metrics": metrics,
         "artifact_path": str(output.resolve()),
     }

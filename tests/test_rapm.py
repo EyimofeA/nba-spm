@@ -9,6 +9,7 @@ from nba_impact.models.rapm import (
     fit_coefficients,
     ratings_table,
     run_regularization_comparison,
+    run_walk_forward_comparison,
 )
 
 
@@ -106,3 +107,35 @@ def test_regularization_comparison_is_diagnostic(tmp_path) -> None:
     assert run["status"] == "research_diagnostic_unverified"
     assert run["metrics"]["candidate_count"] == 2
     assert (tmp_path / "models" / "rapm_comparisons" / run["run_id"] / "results.parquet").exists()
+
+
+def test_walk_forward_requires_multiple_folds_for_evidence(tmp_path) -> None:
+    rows = []
+    for season in (2021, 2022, 2023, 2024):
+        for game in range(2):
+            for i in range(20):
+                rows.append(
+                    {
+                        "home_poss": bool(i % 2),
+                        "pts": float((i + game + season) % 4),
+                        **{f"a{j + 1}": j + 1 for j in range(5)},
+                        **{f"h{j + 1}": j + 6 for j in range(5)},
+                        "season": season,
+                        "date": f"{season - 1}-11-01",
+                        "period": 1,
+                        "num": i + 1,
+                        "gameid": f"002{season}{game}",
+                    }
+                )
+    run = run_walk_forward_comparison(
+        pd.DataFrame(rows),
+        RapmConfig(seasons=(2021, 2022, 2023, 2024)),
+        ((10.0, 10.0), (20.0, 30.0)),
+        (2024,),
+        train_window=3,
+        artifact_root=tmp_path,
+        bootstrap_repetitions=20,
+    )
+    statuses = {item["candidate"]: item["evidence_status"] for item in run["metrics"]["summary"]}
+    assert statuses["off10_def10"] == "baseline"
+    assert statuses["off20_def30"] == "insufficient_folds"

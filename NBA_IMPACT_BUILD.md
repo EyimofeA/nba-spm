@@ -29,11 +29,15 @@ Owned paths:
 ```bash
 python3 -m pip install --user -e .
 nba-impact ingest --manifest configs/ingest/nba_data_archive_bootstrap.json
+nba-impact ingest --manifest configs/ingest/gabriel_site_data_recent.json
 nba-impact audit-events
 nba-impact audit-possessions --seasons 2022,2023,2024,2025
 nba-impact fit-rapm --seasons 2021,2022,2023,2024 \
   --snapshot-id legacy_possessions_58ee15becffc55e1
 nba-impact compare-rapm --seasons 2021,2022,2023,2024 \
+  --snapshot-id legacy_possessions_58ee15becffc55e1
+nba-impact walk-forward-rapm --test-seasons 2021,2022,2023,2024 \
+  --train-window 3 --lambda-pairs 3000:3000,2000:4500,1000:1000 \
   --snapshot-id legacy_possessions_58ee15becffc55e1
 python3 -m pytest -q
 ```
@@ -53,6 +57,8 @@ partition is missing one game, so those snapshots currently fail by design.
 The RAPM convention is points per 100 possessions. Positive offense is better;
 positive defense means points prevented. Both blocks are centered on the
 possession-weighted average player, with an exactly compensating intercept shift.
+Model-claim thresholds and the number of required folds are defined in
+`MODEL_EVIDENCE_POLICY.md`.
 
 ## Next build order
 
@@ -66,4 +72,3 @@ possession-weighted average player, with an exactly compensating intercept shift
    RAPM target and folds pass.
 5. Serve versioned artifacts through an API; build the website after metric contracts
    and data freshness indicators are stable.
-

@@ -292,3 +292,42 @@ garbage-time experiments, win probability, Net Points, and WP-RAPM.
 chronological season is a diagnostic, not hyperparameter selection. Do not mix the
 source-native matchup-detail table with the legacy lineup possession table despite
 their similar names.
+
+## 2026-08-08 — Gabriel mirror refresh and four-fold RAPM evidence gate
+
+**Question:** Can Gabriel's live data mirror patch recent aggregate coverage, and
+how many model runs are enough to say a three-year RAPM idea is better?
+
+**What we did:** Inspected `gabriel1200/site_Data` at pinned commit
+`bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd` (2026-07-05). Extended the safe
+downloader to validate CSV schemas and widths. Downloaded 20 pinned assets with
+atomic writes, hashes, row counts, source revision, and upstream-license status.
+Implemented a multi-fold three-year-to-next-year RAPM evaluator with paired
+within-season game bootstraps and explicit evidence labels.
+
+**Data result:** The refresh adds complete-ID aggregate playtype (2014–2026),
+tracking (2014–2026), player shooting (2014–2026), shot zones (2001–2026), hustle
+(2018–2026), passing (2014–2026), and the LEBRON identity panel (2010–2026).
+The DFG master remains 91% null on player ID and is not safe as an ID-keyed
+canonical table. Contract assets include 389 salary rows, 389 option rows, 328 cap
+holds, 11 dead-money rows, and cap tables; they are raw inputs without stable NBA
+player IDs. The upstream repository declares no license, so the manifest records
+`not-declared-by-upstream` rather than assuming reuse rights.
+
+**Model result:** Four outer folds used 3-year training windows and test seasons
+2021–2024. Baseline `off=3000/def=3000` mean margin RMSE was 13.893. Asymmetric
+`off=2000/def=4500` reached 13.883: a 0.08% improvement, 2/4 fold wins, and 87.35%
+paired-bootstrap probability of lower loss. This does not clear the research gate.
+`1000/1000` was 1.12% worse on RMSE and won 0/4 folds.
+
+**Answer on run count:** RAPM is deterministic, so repeated seeds on the same split
+add no evidence. One baseline-vs-idea screen needs at least four chronological
+outer folds (eight fits total). A publishable claim should use six to eight folds
+plus paired uncertainty and one untouched confirmation season. Stochastic models
+add at least three seeds per fold.
+
+**Dead ends / cautions:** Do not run Gabriel's scraper scripts unchanged in
+production: many are hard-coded to one year or season type, overwrite CSVs directly,
+and lack timeouts, retries, atomic writes, and schema gates. Treat the repository as
+a useful pinned mirror and endpoint notebook until each source is independently
+wrapped.
