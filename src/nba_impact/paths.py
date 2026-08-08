@@ -13,6 +13,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_ROOT = Path(os.environ.get("NBA_IMPACT_DATA_ROOT", PROJECT_ROOT / "data" / "lake"))
 BRONZE_ROOT = DATA_ROOT / "bronze"
+SILVER_ROOT = DATA_ROOT / "silver"
 MANIFEST_ROOT = DATA_ROOT / "manifests"
 ARTIFACT_ROOT = Path(os.environ.get("NBA_IMPACT_ARTIFACT_ROOT", PROJECT_ROOT / "artifacts"))
 REGISTRY_PATH = Path(
@@ -23,6 +24,5 @@ PLAYER_NAMES = PROJECT_ROOT / "rapm" / "data" / "all_names.csv"
 
 
 def ensure_owned_dirs() -> None:
-    for path in (DATA_ROOT, BRONZE_ROOT, MANIFEST_ROOT, ARTIFACT_ROOT, REGISTRY_PATH.parent):
+    for path in (DATA_ROOT, BRONZE_ROOT, SILVER_ROOT, MANIFEST_ROOT, ARTIFACT_ROOT, REGISTRY_PATH.parent):
         path.mkdir(parents=True, exist_ok=True)
-

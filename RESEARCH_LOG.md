@@ -331,3 +331,29 @@ production: many are hard-coded to one year or season type, overwrite CSVs direc
 and lack timeouts, retries, atomic writes, and schema gates. Treat the repository as
 a useful pinned mirror and endpoint notebook until each source is independently
 wrapped.
+
+## 2026-08-08 — Canonical game dimension exposes season-label mismatch
+
+**Question:** Can the new event sources share one reliable game identity for win
+probability, Net Points, current RAPM, and playoff analysis?
+
+**What we did:** Built a silver `game_dim` from NBA Stats V3 events, shot detail,
+PBPStats, and matchup detail. Added explicit source-season, start-year, end-year,
+season-label, phase, date provenance, home/away IDs, final scores, overtime,
+source-coverage flags, content-addressed lineage, and registry integration.
+
+**Result:** 2,629 unique games across 2024–25 and 2025–26: 2,460 regular-season and
+169 playoff games. All games have dates, final scores, and two consistent teams.
+There are zero duplicate game IDs, duplicate V3 action IDs, source-date conflicts,
+team-code conflicts, or matchup team-ID conflicts. Shot detail supplies 2,545 games,
+PBPStats supplies 1,314, and matchup detail supplies 2,544; their complementary
+coverage yields a complete game dimension. Play-in games are absent from the archive
+and are stated as out of scope.
+
+**Critical semantic finding:** `nba-data-archive/season=2024` means the season
+starting in 2024 (2024–25), while legacy `matchups_2024.parquet` means the season
+ending in 2024 (2023–24). Any join on the integer `season` alone is off by one year.
+Canonical tables must use `season_start`, `season_end`, or `season_label` explicitly.
+
+**Next:** Within-game score-state normalization, then lineup stints and possessions
+with final-score and player-minute reconciliation.

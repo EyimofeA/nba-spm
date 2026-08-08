@@ -9,6 +9,7 @@ import pandas as pd
 
 from nba_impact.data.download import run_ingest_manifest
 from nba_impact.data.event_quality import build_event_snapshot
+from nba_impact.data.game_dim import build_game_dimension
 from nba_impact.data.manifest import build_possession_snapshot, write_json_atomic
 from nba_impact.models.rapm import (
     RapmConfig,
@@ -24,6 +25,7 @@ from nba_impact.paths import (
     MANIFEST_ROOT,
     PLAYER_NAMES,
     REGISTRY_PATH,
+    SILVER_ROOT,
     ensure_owned_dirs,
 )
 from nba_impact.registry import register_model_run, register_snapshot
@@ -90,6 +92,27 @@ def command_audit_events(args: argparse.Namespace) -> int:
                 f"  reconcile {item['season']} {item['season_type']} {item['source']}: "
                 f"missing={item['missing_games']} extra={item['extra_games']}"
             )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_game_dim(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_game_dimension(args.root, args.output, args.manifest_dir)
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "rows": snapshot["row_count"],
+                "season_labels": snapshot["season_labels"],
+                "coverage": snapshot["source_coverage"],
+                "issues": snapshot["issues"],
+                "path": snapshot["path"],
+            },
+            indent=2,
+        )
+    )
     return 0 if snapshot["passed"] else 2
 
 
@@ -203,6 +226,13 @@ def build_parser() -> argparse.ArgumentParser:
     event_audit.add_argument("--output", type=Path)
     event_audit.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     event_audit.set_defaults(func=command_audit_events)
+
+    game_dim = subparsers.add_parser("build-game-dim", help="Build the canonical silver game dimension.")
+    game_dim.add_argument("--root", type=Path, default=BRONZE_ROOT / "nba_data_archive")
+    game_dim.add_argument("--output", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    game_dim.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    game_dim.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    game_dim.set_defaults(func=command_build_game_dim)
 
     rapm = subparsers.add_parser("fit-rapm", help="Fit the independent zero-prior RAPM baseline.")
     rapm.add_argument("--seasons", type=_season_list, required=True)

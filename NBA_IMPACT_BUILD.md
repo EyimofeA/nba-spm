@@ -9,6 +9,8 @@ for reference, but they are not imported as evidence or production dependencies.
 source-native Parquet ──> immutable bronze + checksum sidecars
                               │
                               └──> source contracts + cross-source game reconciliation
+                                             │
+                                             └──> canonical silver game_dim
 
 legacy 17-column possessions ──> structural quarantine ──> independent zero-prior RAPM
                                                                │
@@ -31,6 +33,7 @@ python3 -m pip install --user -e .
 nba-impact ingest --manifest configs/ingest/nba_data_archive_bootstrap.json
 nba-impact ingest --manifest configs/ingest/gabriel_site_data_recent.json
 nba-impact audit-events
+nba-impact build-game-dim
 nba-impact audit-possessions --seasons 2022,2023,2024,2025
 nba-impact fit-rapm --seasons 2021,2022,2023,2024 \
   --snapshot-id legacy_possessions_58ee15becffc55e1
@@ -62,8 +65,8 @@ Model-claim thresholds and the number of required folds are defined in
 
 ## Next build order
 
-1. Convert V3 events into canonical games, score states, stints, and possessions;
-   reconcile every game to final scores and team/player minutes.
+1. Extend the completed canonical game dimension into score states, stints, and
+   possessions; reconcile every game to team/player minutes.
 2. Add expanding chronological RAPM folds, decay, garbage-time weighting as a
    training-only variant, and game-cluster uncertainty.
 3. Build a state-only calibrated win-probability baseline, then Net Points-style
