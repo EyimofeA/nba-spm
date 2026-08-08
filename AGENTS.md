@@ -169,6 +169,15 @@ overall Brier. Its paired improvement over starters survives the one-season
 bootstrap, while its ESPN tipoff difference does not. It is a research challenger,
 not production, until an additional chronological outer season confirms it.
 
+Possession/control must enter WP only at causal possession starts. Run
+`wp_possession_start_v1_9af34729ef` reconstructs the score from completed prior
+possessions and improves held-out close-game accuracy; raw CDN possession tags on
+arbitrary action rows remain forbidden because they can reveal rebound/control
+outcomes. For current RAPM, run `rapm_lineup_policy_v1_23149bbb29` rejects
+start-lineup attribution. Use terminal lineup as the provisional simple policy;
+keep fractional segment exposure as a research challenger because its small
+numerical advantage over terminal is not statistically resolved in one fold.
+
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`
 entry point from `pyproject.toml` in an equivalently locked environment.
