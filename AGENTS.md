@@ -15,6 +15,12 @@ gates, read `WP_ARCHITECTURES.md`. Treat the older untracked `PROJECT.md` and
 
 - Lead with the outcome and next action. Be concise, direct, and candid; clearly
   separate verified facts, inferences, and unresolved uncertainty.
+- Use an ASD-STE100-inspired technical style for instructions, reports, and user
+  explanations. Use short active sentences, one main idea per sentence, one term
+  for one concept, and consistent NBA/model terminology. Define uncommon terms.
+  Keep mathematical names and domain terms when they improve accuracy. Do not
+  claim formal ASD-STE100 compliance unless the text is checked against the
+  official standard and dictionary.
 - Use the Visualize skill when a chart, diagram, simulator, or interface view
   materially improves an explanation. Do not add decorative visuals.
 - Ground research in authoritative, current sources and link important evidence.
@@ -32,6 +38,29 @@ gates, read `WP_ARCHITECTURES.md`. Treat the older untracked `PROJECT.md` and
   when one exists. Preserve unrelated work and avoid destructive, production,
   or external actions beyond the granted scope.
 - Report meaningful blockers, outcomes, and evidence without noisy narration.
+
+## Model-building discipline
+
+Use Karpathy's neural-network recipe as an engineering and debugging checklist,
+not as the scientific evaluation design:
+
+1. Inspect raw examples, labels, joins, missingness, duplicates, and outliers
+   before model code.
+2. Establish the full data-to-metric path and a simple baseline first.
+3. For trainable nonlinear models, verify initial loss, overfit a tiny batch, and
+   inspect the exact tensor or table that enters the model.
+4. Add one feature family or complexity change at a time. State the expected
+   effect before the run.
+5. Record train and validation curves, fixed seeds, convergence state, data and
+   code hashes, and the complete configuration.
+6. Tune only inside the training period. Keep chronological outer seasons frozen.
+7. Compare identical rows. Resample whole games. Report calibration, uncertainty,
+   important subgroups, and null results.
+8. Prefer more valid data and a smaller model before ensembles or architecture
+   escalation. Use cloud compute for neural training; do not train it on this Mac.
+
+Source: Andrej Karpathy, "A Recipe for Training Neural Networks":
+https://karpathy.github.io/2019/04/25/recipe/
 
 ---
 
