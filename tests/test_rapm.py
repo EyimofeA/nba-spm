@@ -9,6 +9,7 @@ from nba_impact.models.rapm import (
     fit_coefficients,
     load_current_possessions,
     ratings_table,
+    run_nested_normal_rapm_tuning,
     run_regularization_comparison,
     run_walk_forward_comparison,
 )
@@ -17,16 +18,23 @@ from nba_impact.models.rapm import (
 def test_current_adapter_makes_lineup_policy_explicit(tmp_path) -> None:
     possessions = pd.DataFrame(
         {
-            "possession_id": ["g:001"], "game_id": ["g"], "possession_number": [1],
-            "season_end": [2026], "season_type": ["regular"], "game_date": pd.to_datetime(["2026-01-01"]),
-            "period": [1], "offense_is_home": [True], "points": [2.0],
+            "possession_id": ["g:001"],
+            "game_id": ["g"],
+            "possession_number": [1],
+            "season_end": [2026],
+            "season_type": ["regular"],
+            "game_date": pd.to_datetime(["2026-01-01"]),
+            "period": [1],
+            "offense_is_home": [True],
+            "points": [2.0],
         }
     )
     segment_rows = []
     for number, offset in ((1, 0), (2, 20)):
         segment_rows.append(
             {
-                "possession_id": "g:001", "segment_number": number,
+                "possession_id": "g:001",
+                "segment_number": number,
                 **{f"home_player_{i}": i + offset for i in range(1, 6)},
                 **{f"away_player_{i}": i + 10 + offset for i in range(1, 6)},
             }
@@ -35,8 +43,12 @@ def test_current_adapter_makes_lineup_policy_explicit(tmp_path) -> None:
     segment_path = tmp_path / "segments.parquet"
     possessions.to_parquet(possession_path, index=False)
     pd.DataFrame(segment_rows).to_parquet(segment_path, index=False)
-    start = load_current_possessions(possession_path, segment_path, lineup_policy="start")
-    terminal = load_current_possessions(possession_path, segment_path, lineup_policy="terminal")
+    start = load_current_possessions(
+        possession_path, segment_path, lineup_policy="start"
+    )
+    terminal = load_current_possessions(
+        possession_path, segment_path, lineup_policy="terminal"
+    )
     assert start.loc[0, "h1"] == 1
     assert terminal.loc[0, "h1"] == 21
     assert start.loc[0, "home_poss"] == 1
@@ -56,8 +68,10 @@ def test_synthetic_offense_and_defense_signs() -> None:
         home_poss = bool(possession % 2)
         offense = home if home_poss else away
         defense = away if home_poss else home
-        mean = 1.05 + sum(offense_skill[int(p)] for p in offense) - sum(
-            defense_skill[int(p)] for p in defense
+        mean = (
+            1.05
+            + sum(offense_skill[int(p)] for p in offense)
+            - sum(defense_skill[int(p)] for p in defense)
         )
         points = max(0.0, mean + rng.normal(0.0, 0.2))
         rows.append(
@@ -74,7 +88,9 @@ def test_synthetic_offense_and_defense_signs() -> None:
             }
         )
     design = build_design(pd.DataFrame(rows))
-    config = RapmConfig(seasons=(2024,), lambda_off=1.0, lambda_def=1.0, lambda_home=1.0)
+    config = RapmConfig(
+        seasons=(2024,), lambda_off=1.0, lambda_def=1.0, lambda_home=1.0
+    )
     beta, _ = fit_coefficients(design, config)
     ratings = ratings_table(design, beta).set_index("player_id")
     assert ratings.loc[1, "offense_per_100"] > 0
@@ -104,8 +120,14 @@ def test_centering_preserves_predictions_and_sets_weighted_average_to_zero() -> 
         RapmConfig(seasons=(2024,), lambda_off=10.0, lambda_def=20.0, lambda_home=5.0),
     )
     ratings = ratings_table(design, beta)
-    assert abs(np.average(ratings["offense_per_100"], weights=ratings["off_possessions"])) < 1e-10
-    assert abs(np.average(ratings["defense_per_100"], weights=ratings["def_possessions"])) < 1e-10
+    assert (
+        abs(np.average(ratings["offense_per_100"], weights=ratings["off_possessions"]))
+        < 1e-10
+    )
+    assert (
+        abs(np.average(ratings["defense_per_100"], weights=ratings["def_possessions"]))
+        < 1e-10
+    )
     assert np.isfinite(np.asarray(design.X @ beta).ravel() + intercept).all()
 
 
@@ -135,7 +157,9 @@ def test_regularization_comparison_is_diagnostic(tmp_path) -> None:
     )
     assert run["status"] == "research_diagnostic_unverified"
     assert run["metrics"]["candidate_count"] == 2
-    assert (tmp_path / "models" / "rapm_comparisons" / run["run_id"] / "results.parquet").exists()
+    assert (
+        tmp_path / "models" / "rapm_comparisons" / run["run_id"] / "results.parquet"
+    ).exists()
 
 
 def test_walk_forward_requires_multiple_folds_for_evidence(tmp_path) -> None:
@@ -165,6 +189,52 @@ def test_walk_forward_requires_multiple_folds_for_evidence(tmp_path) -> None:
         artifact_root=tmp_path,
         bootstrap_repetitions=20,
     )
-    statuses = {item["candidate"]: item["evidence_status"] for item in run["metrics"]["summary"]}
+    statuses = {
+        item["candidate"]: item["evidence_status"] for item in run["metrics"]["summary"]
+    }
     assert statuses["off10_def10"] == "baseline"
     assert statuses["off20_def30"] == "insufficient_folds"
+
+
+def test_nested_normal_rapm_selects_then_confirms(tmp_path) -> None:
+    rows = []
+    for season in (2024, 2025, 2026):
+        for game in range(3):
+            for possession in range(24):
+                rows.append(
+                    {
+                        "home_poss": bool(possession % 2),
+                        "pts": float((possession + game + season) % 4),
+                        **{f"a{index + 1}": index + 1 for index in range(5)},
+                        **{f"h{index + 1}": index + 6 for index in range(5)},
+                        "season": season,
+                        "date": f"{season - 1}-11-01",
+                        "period": 1,
+                        "num": possession + 1,
+                        "gameid": f"002{season}{game}",
+                    }
+                )
+    run = run_nested_normal_rapm_tuning(
+        pd.DataFrame(rows),
+        RapmConfig(
+            seasons=(2024, 2025, 2026),
+            lambda_off=10.0,
+            lambda_def=10.0,
+            lambda_home=5.0,
+        ),
+        ((10.0, 10.0, 5.0), (20.0, 30.0, 10.0)),
+        selection_train_seasons=(2024,),
+        selection_test_season=2025,
+        confirmation_train_seasons=(2024, 2025),
+        confirmation_test_season=2026,
+        artifact_root=tmp_path,
+    )
+    output = tmp_path / "models" / "normal_rapm" / run["run_id"]
+    ratings = pd.read_parquet(output / "ratings.parquet")
+    assert run["status"] in {
+        "selected_penalties_confirmed_once",
+        "selection_challenger_rejected_on_confirmation",
+    }
+    assert run["metrics"]["selection_candidates"] == 2
+    assert run["metrics"]["confirmation"]["default"]["games"] == 3
+    assert "uncertainty_status" not in ratings.columns

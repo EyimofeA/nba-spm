@@ -20,29 +20,30 @@ dead ends. Updated 2026-08-08. See `docs/README.md` for the document index,
   remains the production model.
 - WP is frozen as good-enough infrastructure. Regular-season evidence is strong;
   playoff calibration remains a documented small-sample caveat.
-- Fractional within-possession lineup exposure is the frozen working RAPM policy.
-  It beat start and terminal attribution in the pooled two-fold comparison, but
-  remains an approximation and requires both sensitivity outputs.
-- Current RAPM is a two-season baseline, not the final all-in-one.
+- Normal RAPM uses the simple terminal lineup assignment. Fractional exposure is
+  parked as a research sensitivity despite its small pooled gain.
+- Normal RAPM keeps penalties 3000/3000/300. A 4500/4500/1000 selection winner
+  lost on the untouched 2025–26 confirmation season.
+- The first three-year statistical ridge baseline now compares box, advanced,
+  and advanced-plus-on/off feature sets across three purged chronological folds.
 - The old 1997–2024 RAPM archive remains valuable but is stale after 2024.
 
 ## Active next task
 
-Tune RAPM penalties on older seasons, then use 2025–26 once as the untouched
-confirmation. Use fractional lineup exposure for the working model. Keep start
-and terminal sensitivity outputs. WP neural work is paused; do not train neural
-models on the local Mac.
+Rebuild three-year advanced inputs with natural attempt/touch denominators, then
+compare the user's feature set against the frozen box and advanced ridge
+baselines. Keep on/off as a separately labeled impact-assisted model. WP neural
+work is paused; do not train neural models on the local Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
 
 ## Ordered queue
 
-1. **RAPM:** fractional segment exposure is the frozen working policy. Tune
-   penalties with nested chronological folds, then publish start and terminal
-   sensitivity variants beside it.
-2. **All-in-one:** build independent box/tracking/playtype priors for offense and
-   defense, then stack only improvements that pass next-season prediction gates.
+1. **RAPM:** normal RAPM is the terminal-lineup, zero-prior ridge with penalties
+   3000/3000/300. Keep fractional attribution research-only.
+2. **All-in-one:** improve and compare box/tracking/playtype feature groups for
+   offense and defense. Keep independent and on/off-assisted variants distinct.
 3. **Dynamic impact:** create annual time-decayed/player-state trajectories and
    peak 1/3/5-year views in the style of NBA RAPM peaks.
 4. **WP-RAPM / credit:** value possession-start-to-end WP change only after the WP
@@ -88,3 +89,5 @@ now would break reproducibility links.
 - RAPM lineup policy: `rapm_lineup_policy_v2_911d8bfce1`
 - Current RAPM start lineup: `rapm_v0_d38f08740e`
 - Current RAPM terminal lineup: `rapm_v0_ec1f17c82a`
+- Normal RAPM tuning: `normal_rapm_v1_85e0cc8e27`
+- Statistical impact ridge: `statistical_impact_v1_6dff345dc2`

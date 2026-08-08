@@ -856,3 +856,49 @@ small, project-specific engineering decision. It is not a published standard.
 The current evidence has only two outer folds, and one fractional-versus-start
 fold is effectively tied. Select ridge penalties next without using 2025–26 for
 model selection.
+
+## 2026-08-08 — Normal RAPM keeps the original ridge penalties
+
+**Question:** Do new offensive, defensive, and home penalties improve normal
+RAPM outside the season used to select them?
+
+**What we did:** Run `normal_rapm_v1_85e0cc8e27` compares 20 predeclared penalty
+triples on 2023–24 to 2024–25 game-margin retrodiction. It then evaluates the
+selection winner once on 2025–26 after fitting 2023–24 and 2024–25. The run uses
+terminal lineup assignment, 743,946 possessions, 3,681 games, and no uncertainty
+estimation.
+
+**Result:** Selection chose 4500/4500/1000 with RMSE 15.05339, only 0.00067
+better than 3000/3000/300. On untouched confirmation, the original penalties win:
+RMSE 15.47320 versus 15.50980, correlation 0.3344 versus 0.3230, and MAE 12.1970
+versus 12.2262.
+
+**Verdict:** Reject the selected challenger. Normal RAPM remains zero-prior ridge
+with offensive/defensive/home penalties 3000/3000/300. Park fractional lineup
+attribution as research-only by user direction.
+
+## 2026-08-08 — First three-year statistical impact baseline
+
+**Question:** Do the available advanced features and on/off add predictive signal
+beyond box rates for three-year normal RAPM?
+
+**What we did:** Run `statistical_impact_v1_6dff345dc2` joins 6,513 player-window
+rows from 2016–2024 to separate offensive and positive-is-good defensive RAPM
+targets. It compares ridge models using box rates, 49 allowed advanced features,
+and the same advanced panel plus OnOffRtg/OnDefRtg. Age, experience, height,
+position, minutes, games, and possession counts are not predictive features.
+Square-root possession counts weight noisy labels. Test windows end in 2022,
+2023, and 2024; a two-window purge prevents three-year target overlap.
+
+**Result:** Advanced features improve net weighted RMSE over box rates in all
+three folds by 0.0342, 0.0466, and 0.0410. Mean net RMSE is 1.3594 versus 1.4000.
+Adding on/off improves every fold again by 0.2815, 0.2276, and 0.2206; mean net
+RMSE is 1.1162 and correlation is 0.5629. The independent advanced model has
+mean offensive/defensive correlations 0.4341/0.3092. The on/off-assisted model
+has 0.5242/0.4800.
+
+**Verdict:** Keep the advanced ridge model as the independent baseline. Keep the
+on/off-assisted model as a distinct, stronger impact-assisted challenger; do not
+mislabel it as an independent statistical prior. Before further model comparison,
+rebuild percentages and average tracking fields with natural attempt or touch
+denominators because the inherited panel minute-weights those fields.

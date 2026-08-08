@@ -22,11 +22,13 @@ from nba_impact.models.rapm import (
     RapmConfig,
     load_current_possessions,
     load_legacy_possessions,
+    run_nested_normal_rapm_tuning,
     run_rapm,
     run_regularization_comparison,
     run_walk_forward_comparison,
 )
 from nba_impact.models.rapm_lineup_policy import run_rapm_lineup_policy_comparison
+from nba_impact.models.statistical_impact import run_statistical_impact_baseline
 from nba_impact.models.inpredictable_benchmark import (
     run_inpredictable_surface_benchmark,
 )
@@ -40,7 +42,9 @@ from nba_impact.models.win_probability_mlp import run_win_probability_mlp_compar
 from nba_impact.models.win_probability_possession import (
     run_win_probability_possession_ablation,
 )
-from nba_impact.models.win_probability_stage1 import run_win_probability_stage1_comparison
+from nba_impact.models.win_probability_stage1 import (
+    run_win_probability_stage1_comparison,
+)
 from nba_impact.paths import (
     ARTIFACT_ROOT,
     BRONZE_ROOT,
@@ -385,6 +389,60 @@ def _lambda_pairs(value: str) -> tuple[tuple[float, float], ...]:
     return tuple(pairs)
 
 
+def _penalty_triples(value: str) -> tuple[tuple[float, float, float], ...]:
+    triples: list[tuple[float, float, float]] = []
+    try:
+        for item in value.split(","):
+            offense, defense, home = item.strip().split(":", maxsplit=2)
+            triples.append((float(offense), float(defense), float(home)))
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            "use comma-separated offense:defense:home triples"
+        ) from exc
+    if not triples or any(min(triple) <= 0 for triple in triples):
+        raise argparse.ArgumentTypeError("penalty triples must be positive")
+    return tuple(triples)
+
+
+def command_tune_normal_rapm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    frame = load_current_possessions(
+        args.possessions,
+        args.segments,
+        lineup_policy="terminal",
+        game_types=("regular",),
+    )
+    seasons = (2024, 2025, 2026)
+    frame = frame.loc[frame["season"].isin(seasons)].copy()
+    names = pd.read_csv(args.names) if Path(args.names).exists() else None
+    run = run_nested_normal_rapm_tuning(
+        frame,
+        RapmConfig(seasons=seasons, data_scope="current_cdn_normal_rapm"),
+        args.penalty_candidates,
+        selection_train_seasons=(2024,),
+        selection_test_season=2025,
+        confirmation_train_seasons=(2024, 2025),
+        confirmation_test_season=2026,
+        artifact_root=args.artifact_root,
+        names=names,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_fit_statistical_impact(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_statistical_impact_baseline(
+        args.features,
+        args.targets,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
 def command_compare_rapm(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     seasons = tuple(args.seasons)
@@ -638,7 +696,9 @@ def command_compare_wp_stage1(args: argparse.Namespace) -> int:
             {
                 "run_id": run["run_id"],
                 "folds": run["metrics"]["folds"],
-                "pooled_paired_vs_logistic": run["metrics"]["pooled_paired_vs_logistic"],
+                "pooled_paired_vs_logistic": run["metrics"][
+                    "pooled_paired_vs_logistic"
+                ],
                 "artifact_path": run["artifact_path"],
             },
             indent=2,
@@ -891,6 +951,56 @@ def build_parser() -> argparse.ArgumentParser:
     current_rapm.add_argument("--no-home", action="store_true")
     current_rapm.set_defaults(func=command_fit_current_rapm)
 
+    normal_rapm = subparsers.add_parser(
+        "tune-normal-rapm",
+        help="Select normal RAPM penalties on 2024-25 and confirm on 2025-26.",
+    )
+    normal_rapm.add_argument(
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    normal_rapm.add_argument(
+        "--segments",
+        type=Path,
+        default=SILVER_ROOT / "possession_lineup_segments.parquet",
+    )
+    normal_rapm.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    normal_rapm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    normal_rapm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    normal_rapm.add_argument(
+        "--penalty-candidates",
+        type=_penalty_triples,
+        default=_penalty_triples(
+            "1000:1000:100,1000:1000:300,1000:1000:1000,"
+            "2000:2000:100,2000:2000:300,2000:2000:1000,"
+            "3000:3000:100,3000:3000:300,3000:3000:1000,"
+            "4500:4500:100,4500:4500:300,4500:4500:1000,"
+            "6000:6000:100,6000:6000:300,6000:6000:1000,"
+            "1000:3000:300,2000:4500:300,3000:6000:300,"
+            "4500:2000:300,6000:3000:300"
+        ),
+    )
+    normal_rapm.set_defaults(func=command_tune_normal_rapm)
+
+    statistical_impact = subparsers.add_parser(
+        "fit-statistical-impact",
+        help="Fit the first purged three-season normal-RAPM statistical baseline.",
+    )
+    statistical_impact.add_argument(
+        "--features",
+        type=Path,
+        default=Path("rapm/data/spm_features_windows.parquet"),
+    )
+    statistical_impact.add_argument(
+        "--targets",
+        type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    statistical_impact.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    statistical_impact.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    statistical_impact.set_defaults(func=command_fit_statistical_impact)
+
     compare = subparsers.add_parser(
         "compare-rapm",
         help="Compare fixed RAPM penalties on one chronological diagnostic fold.",
@@ -1079,7 +1189,9 @@ def build_parser() -> argparse.ArgumentParser:
     wp_stage1.add_argument(
         "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
     )
-    wp_stage1.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    wp_stage1.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
     wp_stage1.add_argument("--interval-seconds", type=int, default=30)
     wp_stage1.add_argument("--bootstrap-repetitions", type=int, default=5000)
     wp_stage1.add_argument("--seed", type=int, default=7)
@@ -1094,7 +1206,9 @@ def build_parser() -> argparse.ArgumentParser:
     wp_mlp.add_argument(
         "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
     )
-    wp_mlp.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    wp_mlp.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
     wp_mlp.add_argument("--interval-seconds", type=int, default=30)
     wp_mlp.add_argument("--bootstrap-repetitions", type=int, default=5000)
     wp_mlp.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)

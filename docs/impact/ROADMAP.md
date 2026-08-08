@@ -8,10 +8,8 @@ short project queue. `../modeling/PLAYBOOK.md` gives the validation rules.
 - Canonical rich possessions cover 2023–24 through 2025–26.
 - Legacy possessions cover 1997–2024 but are stale and use a smaller schema.
 - Current zero-prior RAPM is a baseline, not the final rating.
-- Two chronological outer folds now compare identical start, terminal, and
-  fractional possession rows.
-- Fractional exposure is the frozen working policy for current RAPM. Start and
-  terminal remain mandatory sensitivity outputs.
+- Normal RAPM uses terminal-lineup assignment. Fractional exposure remains a
+  research sensitivity and is not part of the active production path.
 - Fractional exposure is a project-created sensitivity analysis, not a published
   standard. Commit `db4cb02` introduced it on 2026-08-08.
 - Existing SPM/all-in-one outputs are stale and contain known processed-data and
@@ -24,15 +22,16 @@ short project queue. `../modeling/PLAYBOOK.md` gives the validation rules.
    - train 2023–24 → test 2024–25;
    - train 2024–25 → test 2025–26.
 3. ~~Use identical regular-season possessions and whole-game bootstrap intervals.~~
-4. ~~Freeze the working lineup policy.~~ Fractional had the best RMSE in both
+4. ~~Compare lineup assignment.~~ Fractional had the best RMSE in both
    folds. Its pooled squared-error gain was 1.18 versus start and 0.81 versus
    terminal; both 95% whole-game intervals excluded zero. The first fold was
    effectively tied versus start, so this is a small engineering decision rather
-   than a broad production claim.
-5. Select offensive, defensive, and home-court ridge penalties using only older
-   training seasons. Do not tune on 2025–26.
-6. Refit the frozen specification and publish player offense, defense, net,
-   possessions, standard errors or bootstrap intervals, and model provenance.
+   than a broad production claim. The active normal RAPM still uses the simpler
+   terminal assignment.
+5. ~~Select ridge penalties inside older data and confirm once on 2025–26.~~ The
+   selected 4500/4500/1000 candidate lost to 3000/3000/300 on confirmation.
+6. ~~Refit the frozen specification and publish offense, defense, net,
+   possessions, and provenance.~~ Uncertainty is deferred by user direction.
 
 Production target: a simple current regular-season RAPM. Playoff RAPM remains a
 separate low-sample product.
@@ -53,23 +52,26 @@ with every rating.
 
 ## Phase 3 — Build independent statistical priors
 
-Create time-safe player-season features:
+Create time-safe player-window features. The primary model excludes age,
+experience, height, listed position, minutes, and games. Possession and attempt
+counts can supply reliability weights but cannot enter as predictive features.
 
-- core box score and age;
+Candidate feature families include:
+
+- core box rates;
 - shooting zones and efficiency;
 - tracking and hustle where available;
 - playtype and role features where available;
-- prior seasons and career history;
-- availability only when the prediction contract permits it.
+- learned behavioral role features rather than listed positions.
 
 Create separate era models because tracking/playtype coverage begins much later
 than box-score coverage. Exclude target-derived on/off, plus-minus, and team-rating
-features.
+features. Evaluate on/off in a separately labeled impact-assisted challenger.
 
 Predict next-window offensive and defensive RAPM separately. Start with ridge or
 elastic net. Compare bounded tree models only after the linear baseline passes.
-Use minute-weighted chronological player-season evaluation and player-clustered
-uncertainty.
+Use purged chronological player-window evaluation and possession-based reliability
+weights. Do not use minutes or games as input columns.
 
 ## Phase 4 — Create the all-in-one rating
 
@@ -109,6 +111,6 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Select offensive, defensive, and home-court penalties inside older data. Use
-2025–26 once as untouched confirmation. Do not start the statistical all-in-one
-prior until the zero-prior RAPM specification is frozen.
+Rebuild percentage and average inputs with natural denominators instead of the
+legacy panel's minute-weighted means. Then compare the user's features with the
+box, advanced, and advanced-plus-on/off ridge baselines on the same purged folds.

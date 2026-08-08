@@ -4,6 +4,7 @@ This is intentionally smaller than the legacy research engine. It fits one
 transparent ridge model and labels its present data scope as unclassified; it does
 not inherit date-based playoff rules, priors, garbage-time logic, or prior results.
 """
+
 from __future__ import annotations
 
 import math
@@ -63,14 +64,22 @@ def load_legacy_possessions(
         frame = pd.read_parquet(path)
         report = audit_possession_frame(frame, path=str(path), expected_season=season)
         if any(issue.code == "empty_partition" for issue in report.issues):
-            raise ValueError(f"Possession quality gate failed for {season}: empty_partition=1")
+            raise ValueError(
+                f"Possession quality gate failed for {season}: empty_partition=1"
+            )
         valid, rejected, counts = quarantine_invalid_games(frame)
         if not rejected.empty:
             quarantine_counts[str(season)] = counts
-        clean_report = audit_possession_frame(valid, path=str(path), expected_season=season)
+        clean_report = audit_possession_frame(
+            valid, path=str(path), expected_season=season
+        )
         if not clean_report.passed:
-            failures = "; ".join(f"{issue.code}={issue.count}" for issue in clean_report.issues)
-            raise ValueError(f"Possession quality gate failed after quarantine for {season}: {failures}")
+            failures = "; ".join(
+                f"{issue.code}={issue.count}" for issue in clean_report.issues
+            )
+            raise ValueError(
+                f"Possession quality gate failed after quarantine for {season}: {failures}"
+            )
         normalized = normalize_legacy_possessions(valid)
         frames.append(normalized.loc[normalized["game_type"].isin(game_types)])
     if not frames:
@@ -100,7 +109,9 @@ def load_current_possessions(
     possessions = pd.read_parquet(possessions_path)
     possessions = possessions.loc[possessions["season_type"].isin(game_types)].copy()
     segments = pd.read_parquet(segments_path)
-    segments = segments.loc[segments["possession_id"].isin(possessions["possession_id"])].copy()
+    segments = segments.loc[
+        segments["possession_id"].isin(possessions["possession_id"])
+    ].copy()
     segments = segments.sort_values(["possession_id", "segment_number"], kind="stable")
     selected = (
         segments.groupby("possession_id", as_index=False, sort=False).head(1)
@@ -119,7 +130,10 @@ def load_current_possessions(
         {
             "home_poss": frame["offense_is_home"].astype(int),
             "pts": frame["points"].astype(float),
-            **{column: frame[column].astype("int64") for column in (*AWAY_PLAYER_COLUMNS, *HOME_PLAYER_COLUMNS)},
+            **{
+                column: frame[column].astype("int64")
+                for column in (*AWAY_PLAYER_COLUMNS, *HOME_PLAYER_COLUMNS)
+            },
             "season": frame["season_end"].astype(int),
             "date": frame["game_date"],
             "period": frame["period"].astype(int),
@@ -128,15 +142,24 @@ def load_current_possessions(
         }
     )
     output.attrs["lineup_policy"] = lineup_policy
-    output.attrs["source_paths"] = [str(Path(possessions_path).resolve()), str(Path(segments_path).resolve())]
+    output.attrs["source_paths"] = [
+        str(Path(possessions_path).resolve()),
+        str(Path(segments_path).resolve()),
+    ]
     return output
 
 
 def build_design(frame: pd.DataFrame, include_home: bool = True) -> RapmDesign:
-    away_players = frame.loc[:, AWAY_PLAYER_COLUMNS].to_numpy(dtype=np.int64, copy=False)
-    home_players = frame.loc[:, HOME_PLAYER_COLUMNS].to_numpy(dtype=np.int64, copy=False)
+    away_players = frame.loc[:, AWAY_PLAYER_COLUMNS].to_numpy(
+        dtype=np.int64, copy=False
+    )
+    home_players = frame.loc[:, HOME_PLAYER_COLUMNS].to_numpy(
+        dtype=np.int64, copy=False
+    )
     home_offense = frame["home_poss"].to_numpy(dtype=bool, copy=False)
-    player_values = np.unique(np.concatenate([away_players.ravel(), home_players.ravel()]))
+    player_values = np.unique(
+        np.concatenate([away_players.ravel(), home_players.ravel()])
+    )
     players = np.asarray(sorted(int(value) for value in player_values), dtype=np.int64)
     n_rows = len(frame)
     n_players = len(players)
@@ -149,7 +172,10 @@ def build_design(frame: pd.DataFrame, include_home: bool = True) -> RapmDesign:
     row_base = np.repeat(np.arange(n_rows, dtype=np.int64), 5)
     row_parts = [row_base, row_base]
     column_parts = [offense_indices.ravel(), n_players + defense_indices.ravel()]
-    value_parts = [np.ones(n_rows * 5, dtype=np.float64), np.ones(n_rows * 5, dtype=np.float64)]
+    value_parts = [
+        np.ones(n_rows * 5, dtype=np.float64),
+        np.ones(n_rows * 5, dtype=np.float64),
+    ]
     if include_home:
         row_parts.append(np.arange(n_rows, dtype=np.int64))
         column_parts.append(np.full(n_rows, 2 * n_players, dtype=np.int64))
@@ -159,7 +185,10 @@ def build_design(frame: pd.DataFrame, include_home: bool = True) -> RapmDesign:
     def_counts = np.bincount(defense_indices.ravel(), minlength=n_players)
 
     matrix = csr_matrix(
-        (np.concatenate(value_parts), (np.concatenate(row_parts), np.concatenate(column_parts))),
+        (
+            np.concatenate(value_parts),
+            (np.concatenate(row_parts), np.concatenate(column_parts)),
+        ),
         shape=(n_rows, n_columns),
         dtype=np.float64,
     )
@@ -231,12 +260,16 @@ def _game_margin_metrics(
     correlation = float(games[["actual_margin", "predicted_margin"]].corr().iloc[0, 1])
     predicted_variance = float(np.var(games["predicted_margin"], ddof=0))
     calibration_slope = (
-        float(np.cov(games["actual_margin"], games["predicted_margin"], ddof=0)[0, 1] / predicted_variance)
+        float(
+            np.cov(games["actual_margin"], games["predicted_margin"], ddof=0)[0, 1]
+            / predicted_variance
+        )
         if predicted_variance > 0
         else float("nan")
     )
     calibration_intercept = float(
-        games["actual_margin"].mean() - calibration_slope * games["predicted_margin"].mean()
+        games["actual_margin"].mean()
+        - calibration_slope * games["predicted_margin"].mean()
     )
     return {
         "games": int(len(games)),
@@ -263,12 +296,18 @@ def _game_margin_frame(
     sign = np.where(design.home_offense[test_mask], 1.0, -1.0)
     test_rows = np.flatnonzero(test_mask)
     n_players = len(design.players)
-    train_player_counts = np.asarray(design.X[train_mask, : 2 * n_players].sum(axis=0)).ravel()
-    known_players = (train_player_counts[:n_players] + train_player_counts[n_players:]) > 0
+    train_player_counts = np.asarray(
+        design.X[train_mask, : 2 * n_players].sum(axis=0)
+    ).ravel()
+    known_players = (
+        train_player_counts[:n_players] + train_player_counts[n_players:]
+    ) > 0
     test_player_columns = design.X[test_mask, : 2 * n_players].indices % n_players
     # Every possession has ten player entries; aggregate unknown slots by row.
     unknown_entries = (~known_players[test_player_columns]).astype(np.int8)
-    unknown_by_row = np.add.reduceat(unknown_entries, design.X[test_mask, : 2 * n_players].indptr[:-1])
+    unknown_by_row = np.add.reduceat(
+        unknown_entries, design.X[test_mask, : 2 * n_players].indptr[:-1]
+    )
     game_frame = pd.DataFrame(
         {
             "row": test_rows,
@@ -311,8 +350,12 @@ def ratings_table(
         lookup = names[["PLAYER_ID", "PLAYER_NAME"]].rename(
             columns={"PLAYER_ID": "player_id", "PLAYER_NAME": "player_name"}
         )
-        lookup["player_id"] = pd.to_numeric(lookup["player_id"], errors="coerce").astype("Int64")
-        table = table.merge(lookup.dropna(subset=["player_id"]), on="player_id", how="left")
+        lookup["player_id"] = pd.to_numeric(
+            lookup["player_id"], errors="coerce"
+        ).astype("Int64")
+        table = table.merge(
+            lookup.dropna(subset=["player_id"]), on="player_id", how="left"
+        )
     return table.sort_values("net_per_100", ascending=False).reset_index(drop=True)
 
 
@@ -351,7 +394,9 @@ def run_regularization_comparison(
     train_mask = design.seasons < latest
     test_mask = design.seasons == latest
     if not train_mask.any() or not test_mask.any():
-        raise ValueError("Comparison requires at least one training season and one holdout season.")
+        raise ValueError(
+            "Comparison requires at least one training season and one holdout season."
+        )
 
     rows: list[dict] = []
     for lambda_off, lambda_def in lambda_pairs:
@@ -376,7 +421,9 @@ def run_regularization_comparison(
     run_id = f"rapm_compare_{uuid.uuid4().hex[:10]}"
     output = Path(artifact_root) / "models" / "rapm_comparisons" / run_id
     output.mkdir(parents=True, exist_ok=False)
-    results = pd.DataFrame(rows).sort_values(["margin_rmse", "lambda_off", "lambda_def"])
+    results = pd.DataFrame(rows).sort_values(
+        ["margin_rmse", "lambda_off", "lambda_def"]
+    )
     results.to_parquet(output / "results.parquet", index=False)
     metrics = {
         "evaluation": "single_fold_lineup_conditioned_retrodiction",
@@ -392,8 +439,205 @@ def run_regularization_comparison(
         "estimand": "lineup_adjusted_descriptive_points_per_100",
         "status": "research_diagnostic_unverified",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "config": {**asdict(config), "lambda_pairs": [list(pair) for pair in lambda_pairs]},
+        "config": {
+            **asdict(config),
+            "lambda_pairs": [list(pair) for pair in lambda_pairs],
+        },
         "metrics": metrics,
+        "artifact_path": str(output.resolve()),
+    }
+    write_json_atomic(run, output / "run.json")
+    return run
+
+
+def run_nested_normal_rapm_tuning(
+    frame: pd.DataFrame,
+    config: RapmConfig,
+    penalty_candidates: tuple[tuple[float, float, float], ...],
+    *,
+    selection_train_seasons: tuple[int, ...],
+    selection_test_season: int,
+    confirmation_train_seasons: tuple[int, ...],
+    confirmation_test_season: int,
+    artifact_root: str | Path,
+    names: pd.DataFrame | None = None,
+) -> dict:
+    """Select penalties on old data and evaluate once on a later season."""
+    if not penalty_candidates:
+        raise ValueError("At least one penalty candidate is required.")
+    if any(min(candidate) <= 0 for candidate in penalty_candidates):
+        raise ValueError("All penalty candidates must be positive.")
+    if max(selection_train_seasons) >= selection_test_season:
+        raise ValueError(
+            "Selection training seasons must precede the selection test season."
+        )
+    if max(confirmation_train_seasons) >= confirmation_test_season:
+        raise ValueError(
+            "Confirmation training seasons must precede the confirmation test season."
+        )
+    if selection_test_season >= confirmation_test_season:
+        raise ValueError("The confirmation season must follow the selection season.")
+
+    design = build_design(frame, include_home=config.include_home)
+    available = set(int(value) for value in np.unique(design.seasons))
+    required = set(
+        (
+            *selection_train_seasons,
+            selection_test_season,
+            *confirmation_train_seasons,
+            confirmation_test_season,
+        )
+    )
+    if missing := sorted(required - available):
+        raise ValueError(f"Normal RAPM tuning is missing seasons {missing}.")
+
+    selection_train = np.isin(design.seasons, selection_train_seasons)
+    selection_test = design.seasons == selection_test_season
+    selection_rows: list[dict] = []
+    for lambda_off, lambda_def, lambda_home in penalty_candidates:
+        candidate = RapmConfig(
+            seasons=config.seasons,
+            lambda_off=float(lambda_off),
+            lambda_def=float(lambda_def),
+            lambda_home=float(lambda_home),
+            include_home=config.include_home,
+            game_types=config.game_types,
+            data_scope=config.data_scope,
+        )
+        beta, intercept = fit_coefficients(design, candidate, selection_train)
+        selection_rows.append(
+            {
+                "lambda_off": float(lambda_off),
+                "lambda_def": float(lambda_def),
+                "lambda_home": float(lambda_home),
+                **_game_margin_metrics(
+                    design, beta, intercept, selection_test, selection_train
+                ),
+            }
+        )
+    selection = pd.DataFrame(selection_rows).sort_values(
+        ["margin_rmse", "lambda_off", "lambda_def", "lambda_home"], kind="stable"
+    )
+    winner = selection.iloc[0]
+    selection_winner = RapmConfig(
+        seasons=config.seasons,
+        lambda_off=float(winner["lambda_off"]),
+        lambda_def=float(winner["lambda_def"]),
+        lambda_home=float(winner["lambda_home"]),
+        include_home=config.include_home,
+        game_types=config.game_types,
+        data_scope=config.data_scope,
+    )
+
+    confirmation_train = np.isin(design.seasons, confirmation_train_seasons)
+    confirmation_test = design.seasons == confirmation_test_season
+    winner_beta, winner_intercept = fit_coefficients(
+        design, selection_winner, confirmation_train
+    )
+    winner_confirmation = _game_margin_metrics(
+        design,
+        winner_beta,
+        winner_intercept,
+        confirmation_test,
+        confirmation_train,
+    )
+    winner_predictions = _game_margin_frame(
+        design,
+        winner_beta,
+        winner_intercept,
+        confirmation_test,
+        confirmation_train,
+    )
+    winner_predictions["candidate"] = "selection_winner"
+
+    default_beta, default_intercept = fit_coefficients(
+        design, config, confirmation_train
+    )
+    default_confirmation = _game_margin_metrics(
+        design,
+        default_beta,
+        default_intercept,
+        confirmation_test,
+        confirmation_train,
+    )
+    default_predictions = _game_margin_frame(
+        design,
+        default_beta,
+        default_intercept,
+        confirmation_test,
+        confirmation_train,
+    )
+    default_predictions["candidate"] = "default"
+    winner_is_default = (
+        selection_winner.lambda_off == config.lambda_off
+        and selection_winner.lambda_def == config.lambda_def
+        and selection_winner.lambda_home == config.lambda_home
+    )
+    selected_penalties_confirmed = winner_is_default or (
+        winner_confirmation["margin_rmse"] < default_confirmation["margin_rmse"]
+    )
+    final_config = selection_winner if selected_penalties_confirmed else config
+
+    final_beta, final_intercept = fit_coefficients(design, final_config)
+    ratings = ratings_table(design, final_beta, names=names).drop(
+        columns=["uncertainty_status"]
+    )
+    run_id = f"normal_rapm_v1_{uuid.uuid4().hex[:10]}"
+    output = Path(artifact_root) / "models" / "normal_rapm" / run_id
+    output.mkdir(parents=True, exist_ok=False)
+    selection.to_parquet(output / "penalty_selection.parquet", index=False)
+    pd.concat([default_predictions, winner_predictions], ignore_index=True).to_parquet(
+        output / "confirmation_game_predictions.parquet", index=False
+    )
+    ratings.to_parquet(output / "ratings.parquet", index=False)
+    run = {
+        "run_id": run_id,
+        "model_family": "normal_rapm",
+        "estimand": "lineup_adjusted_descriptive_points_per_100",
+        "status": (
+            "selected_penalties_confirmed_once"
+            if selected_penalties_confirmed
+            else "selection_challenger_rejected_on_confirmation"
+        ),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "config": {
+            **asdict(final_config),
+            "default_penalties": {
+                "lambda_off": config.lambda_off,
+                "lambda_def": config.lambda_def,
+                "lambda_home": config.lambda_home,
+            },
+            "selection_winner_penalties": {
+                "lambda_off": selection_winner.lambda_off,
+                "lambda_def": selection_winner.lambda_def,
+                "lambda_home": selection_winner.lambda_home,
+            },
+            "selection_train_seasons": list(selection_train_seasons),
+            "selection_test_season": selection_test_season,
+            "confirmation_train_seasons": list(confirmation_train_seasons),
+            "confirmation_test_season": confirmation_test_season,
+            "penalty_candidates": [list(candidate) for candidate in penalty_candidates],
+            "source_code_sha256": sha256_file(Path(__file__)),
+        },
+        "metrics": {
+            "rows": int(len(frame)),
+            "games": int(frame["gameid"].nunique()),
+            "players": int(len(design.players)),
+            "selection_candidates": int(len(selection)),
+            "selection_best": selection.iloc[0].to_dict(),
+            "confirmation": {
+                "default": default_confirmation,
+                "selection_winner": winner_confirmation,
+                "selected_penalties_confirmed": selected_penalties_confirmed,
+            },
+            "final_intercept_points_per_possession": final_intercept,
+            "uncertainty": "not_requested",
+        },
+        "caveats": [
+            "Penalty selection uses one historical season and can overfit that season.",
+            "Confirmation uses observed lineups and is retrodiction, not a pregame forecast.",
+            "No uncertainty estimates are produced in this version.",
+        ],
         "artifact_path": str(output.resolve()),
     }
     write_json_atomic(run, output / "run.json")
@@ -416,7 +660,9 @@ def _paired_season_game_bootstrap(
         suffixes=("_candidate", "_baseline"),
         validate="one_to_one",
     )
-    paired["loss_delta"] = paired["squared_error_candidate"] - paired["squared_error_baseline"]
+    paired["loss_delta"] = (
+        paired["squared_error_candidate"] - paired["squared_error_baseline"]
+    )
     rng = np.random.default_rng(seed)
     seasons = sorted(paired["test_season"].unique())
     draws = np.empty(repetitions, dtype=np.float64)
@@ -425,7 +671,10 @@ def _paired_season_game_bootstrap(
         for season in seasons
     }
     for repetition in range(repetitions):
-        sampled = [rng.choice(values, size=len(values), replace=True) for values in season_values.values()]
+        sampled = [
+            rng.choice(values, size=len(values), replace=True)
+            for values in season_values.values()
+        ]
         draws[repetition] = np.concatenate(sampled).mean()
     return float(np.mean(draws < 0.0))
 
@@ -459,7 +708,9 @@ def run_walk_forward_comparison(
             raise ValueError(f"Fold ending {test_season} is missing seasons {missing}")
         train_mask = np.isin(design.seasons, train_seasons)
         test_mask = design.seasons == test_season
-        for candidate_name, (lambda_off, lambda_def) in zip(candidate_names, lambda_pairs):
+        for candidate_name, (lambda_off, lambda_def) in zip(
+            candidate_names, lambda_pairs
+        ):
             candidate = RapmConfig(
                 seasons=train_seasons,
                 lambda_off=float(lambda_off),
@@ -470,7 +721,9 @@ def run_walk_forward_comparison(
                 data_scope=config.data_scope,
             )
             beta, intercept = fit_coefficients(design, candidate, train_mask)
-            metrics = _game_margin_metrics(design, beta, intercept, test_mask, train_mask)
+            metrics = _game_margin_metrics(
+                design, beta, intercept, test_mask, train_mask
+            )
             fold_rows.append(
                 {
                     "candidate": candidate_name,
@@ -483,7 +736,9 @@ def run_walk_forward_comparison(
                 }
             )
             games = _game_margin_frame(design, beta, intercept, test_mask, train_mask)
-            games["squared_error"] = (games["actual_margin"] - games["predicted_margin"]) ** 2
+            games["squared_error"] = (
+                games["actual_margin"] - games["predicted_margin"]
+            ) ** 2
             for row in games[["game_id", "squared_error"]].itertuples(index=False):
                 game_error_rows.append(
                     {
@@ -497,9 +752,9 @@ def run_walk_forward_comparison(
     folds = pd.DataFrame(fold_rows)
     errors = pd.DataFrame(game_error_rows)
     baseline = candidate_names[0]
-    baseline_folds = folds.loc[folds["candidate"] == baseline, ["test_season", "margin_rmse"]].rename(
-        columns={"margin_rmse": "baseline_rmse"}
-    )
+    baseline_folds = folds.loc[
+        folds["candidate"] == baseline, ["test_season", "margin_rmse"]
+    ].rename(columns={"margin_rmse": "baseline_rmse"})
     summary_rows: list[dict] = []
     for index, candidate_name in enumerate(candidate_names):
         candidate_folds = folds.loc[folds["candidate"] == candidate_name].merge(
@@ -507,7 +762,9 @@ def run_walk_forward_comparison(
         )
         mean_rmse = float(candidate_folds["margin_rmse"].mean())
         baseline_mean = float(candidate_folds["baseline_rmse"].mean())
-        fold_wins = int((candidate_folds["margin_rmse"] < candidate_folds["baseline_rmse"]).sum())
+        fold_wins = int(
+            (candidate_folds["margin_rmse"] < candidate_folds["baseline_rmse"]).sum()
+        )
         probability = (
             0.5
             if candidate_name == baseline
@@ -519,12 +776,18 @@ def run_walk_forward_comparison(
                 seed=seed + index,
             )
         )
-        relative_improvement = (baseline_mean - mean_rmse) / baseline_mean if baseline_mean else 0.0
+        relative_improvement = (
+            (baseline_mean - mean_rmse) / baseline_mean if baseline_mean else 0.0
+        )
         if candidate_name == baseline:
             evidence_status = "baseline"
         elif len(test_seasons) < 3:
             evidence_status = "insufficient_folds"
-        elif probability >= 0.95 and fold_wins >= math.ceil(0.7 * len(test_seasons)) and relative_improvement >= 0.01:
+        elif (
+            probability >= 0.95
+            and fold_wins >= math.ceil(0.7 * len(test_seasons))
+            and relative_improvement >= 0.01
+        ):
             evidence_status = "candidate_requires_untouched_confirmation"
         elif probability >= 0.90 and fold_wins >= math.ceil(0.5 * len(test_seasons)):
             evidence_status = "promising_research_challenger"
@@ -535,7 +798,9 @@ def run_walk_forward_comparison(
                 "candidate": candidate_name,
                 "folds": len(test_seasons),
                 "mean_margin_rmse": mean_rmse,
-                "mean_margin_correlation": float(candidate_folds["margin_correlation"].mean()),
+                "mean_margin_correlation": float(
+                    candidate_folds["margin_correlation"].mean()
+                ),
                 "fold_wins_vs_baseline": fold_wins,
                 "relative_rmse_improvement": relative_improvement,
                 "bootstrap_probability_better": probability,
@@ -595,12 +860,19 @@ def run_rapm(
         "players": int(len(design.players)),
         "intercept_points_per_possession": intercept,
         "in_sample_rmse": float(
-            np.sqrt(np.mean((design.y - (np.asarray(design.X @ beta).ravel() + intercept)) ** 2))
+            np.sqrt(
+                np.mean(
+                    (design.y - (np.asarray(design.X @ beta).ravel() + intercept)) ** 2
+                )
+            )
         ),
         "quarantine_counts": frame.attrs.get("quarantine_counts", {}),
         "retrodiction": lineup_conditioned_retrodiction(design, config),
     }
-    config_payload = {**asdict(config), "source_code_sha256": sha256_file(Path(__file__))}
+    config_payload = {
+        **asdict(config),
+        "source_code_sha256": sha256_file(Path(__file__)),
+    }
     run_id = f"rapm_v0_{uuid.uuid4().hex[:10]}"
     output = Path(artifact_root) / "models" / "rapm" / run_id
     output.mkdir(parents=True, exist_ok=False)
