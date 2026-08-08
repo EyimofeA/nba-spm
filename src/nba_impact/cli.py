@@ -9,6 +9,7 @@ import pandas as pd
 
 from nba_impact.data.download import run_ingest_manifest
 from nba_impact.data.event_quality import build_event_snapshot
+from nba_impact.data.event_state import build_event_states
 from nba_impact.data.game_dim import build_game_dimension
 from nba_impact.data.manifest import build_possession_snapshot, write_json_atomic
 from nba_impact.models.rapm import (
@@ -108,6 +109,27 @@ def command_build_game_dim(args: argparse.Namespace) -> int:
                 "season_labels": snapshot["season_labels"],
                 "coverage": snapshot["source_coverage"],
                 "issues": snapshot["issues"],
+                "path": snapshot["path"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_event_states(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_event_states(args.root, args.game_dim, args.output, args.manifest_dir)
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "rows": snapshot["row_count"],
+                "games": snapshot["game_count"],
+                "issues": snapshot["issues"],
+                "warnings": snapshot["warnings"],
                 "path": snapshot["path"],
             },
             indent=2,
@@ -233,6 +255,16 @@ def build_parser() -> argparse.ArgumentParser:
     game_dim.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
     game_dim.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     game_dim.set_defaults(func=command_build_game_dim)
+
+    event_states = subparsers.add_parser(
+        "build-event-states", help="Build canonical post-action score states from V3 events."
+    )
+    event_states.add_argument("--root", type=Path, default=BRONZE_ROOT / "nba_data_archive")
+    event_states.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    event_states.add_argument("--output", type=Path, default=SILVER_ROOT / "event_states.parquet")
+    event_states.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    event_states.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    event_states.set_defaults(func=command_build_event_states)
 
     rapm = subparsers.add_parser("fit-rapm", help="Fit the independent zero-prior RAPM baseline.")
     rapm.add_argument("--seasons", type=_season_list, required=True)
