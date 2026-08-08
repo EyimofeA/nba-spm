@@ -10,6 +10,7 @@ import pandas as pd
 from nba_impact.data.download import run_ingest_manifest
 from nba_impact.data.event_quality import build_event_snapshot
 from nba_impact.data.event_state import build_event_states
+from nba_impact.data.espn_win_probability import ingest_espn_win_probability
 from nba_impact.data.game_dim import build_game_dimension
 from nba_impact.data.lineups import build_lineup_stints
 from nba_impact.data.manifest import build_possession_snapshot, write_json_atomic
@@ -25,6 +26,7 @@ from nba_impact.models.rapm import (
 )
 from nba_impact.models.win_probability import run_win_probability
 from nba_impact.models.win_probability_ablation import run_win_probability_elo_ablation
+from nba_impact.models.win_probability_benchmark import run_espn_win_probability_benchmark
 from nba_impact.paths import (
     ARTIFACT_ROOT,
     BRONZE_ROOT,
@@ -406,6 +408,50 @@ def command_compare_win_probability(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_ingest_espn_win_probability(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = ingest_espn_win_probability(
+        args.game_dim,
+        season_labels=args.seasons,
+        raw_root=args.raw_root,
+        index_output=args.output,
+        manifest_dir=args.manifest_dir,
+        max_workers=args.max_workers,
+    )
+    register_snapshot(args.registry, snapshot)
+    print(json.dumps(snapshot, indent=2))
+    return 0 if snapshot["games_ready"] == snapshot["games_expected"] else 2
+
+
+def command_benchmark_win_probability(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_espn_win_probability_benchmark(
+        args.event_states,
+        args.game_dim,
+        args.espn_index,
+        args.model_run,
+        artifact_root=args.artifact_root,
+        clock_tolerance_seconds=args.clock_tolerance_seconds,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        seed=args.seed,
+    )
+    register_model_run(args.registry, run)
+    print(
+        json.dumps(
+            {
+                "run_id": run["run_id"],
+                "coverage": run["coverage"],
+                "metrics": run["metrics"],
+                "paired_game_bootstrap": run["paired_game_bootstrap"],
+                "checkpoints": run["checkpoints"],
+                "artifact_path": run["artifact_path"],
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="nba-impact")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -596,6 +642,40 @@ def build_parser() -> argparse.ArgumentParser:
     wp_compare.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     wp_compare.add_argument("--snapshot-id")
     wp_compare.set_defaults(func=command_compare_win_probability)
+
+    espn_ingest = subparsers.add_parser(
+        "ingest-espn-win-probability",
+        help="Cache ESPN play-level win probabilities for canonical games.",
+    )
+    espn_ingest.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    espn_ingest.add_argument("--seasons", type=_text_list, default=("2025-26",))
+    espn_ingest.add_argument(
+        "--raw-root", type=Path, default=BRONZE_ROOT / "espn_win_probability"
+    )
+    espn_ingest.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "espn_win_probability_index.parquet"
+    )
+    espn_ingest.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    espn_ingest.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    espn_ingest.add_argument("--max-workers", type=int, default=4)
+    espn_ingest.set_defaults(func=command_ingest_espn_win_probability)
+
+    wp_benchmark = subparsers.add_parser(
+        "benchmark-win-probability",
+        help="Compare the local WP model with ESPN on identical matched play states.",
+    )
+    wp_benchmark.add_argument("--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet")
+    wp_benchmark.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    wp_benchmark.add_argument(
+        "--espn-index", type=Path, default=SILVER_ROOT / "espn_win_probability_index.parquet"
+    )
+    wp_benchmark.add_argument("--model-run", type=Path, required=True)
+    wp_benchmark.add_argument("--clock-tolerance-seconds", type=float, default=1.0)
+    wp_benchmark.add_argument("--bootstrap-repetitions", type=int, default=5000)
+    wp_benchmark.add_argument("--seed", type=int, default=7)
+    wp_benchmark.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    wp_benchmark.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    wp_benchmark.set_defaults(func=command_benchmark_win_probability)
     return parser
 
 

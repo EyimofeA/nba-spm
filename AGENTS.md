@@ -16,12 +16,11 @@ or pipeline shifts.
 - Preserve the user's original goal and constraints. Complete authorized work
   end to end and verify the observable result before claiming success.
 - Ask only when a decision is materially ambiguous, risky, or needs approval.
-- Proactively delegate bounded research, implementation, and validation when
-  two or more workstreams can proceed independently. Default to two or three
-  concurrent workstreams, give each one a non-overlapping scope, and keep
-  critical-path integration with the primary agent. Synthesize and verify every
-  result; do not spawn agents for tiny sequential steps or as a substitute for
-  a clear design.
+- Subagents are optional and cost-aware. Use them only when independent work
+  materially reduces wall time or adds a real verification path; default to
+  local execution for small or sequential work. Never exceed four concurrent
+  threads, give delegated work non-overlapping scopes, and keep critical-path
+  integration with the primary agent. Synthesize and verify every result.
 - Keep changes focused and simple. Avoid unrelated edits, unnecessary
   abstractions, and low-signal tests.
 - Test observable behavior and validate user-facing work in the real interface
@@ -146,8 +145,20 @@ the ordinal `possession_lineup_segments.parquet`; a clock-only lineup join is
 not safe at same-clock substitutions. ESPN Net Points/WPA mirrors are research
 benchmarks only because the upstream repository declares no license.
 
-Run from the repository root with `PYTHONPATH=src python3 -m nba_impact.cli …`
-or install the `nba-impact` entry point from `pyproject.toml`.
+Win-probability research must use chronological seasons and post-action states.
+External comparisons use the resumable `ingest-espn-win-probability` command,
+then `benchmark-win-probability`, which scores ESPN and the local model only on
+the same game/period/score/clock states and reports join coverage plus a paired
+game bootstrap. Do not compare headline metrics from unmatched state samples.
+The verified 2025–26 benchmark is `wp_espn_benchmark_v1_ca79cde82d`: 631,380
+matched nonterminal plays across 1,313 games, 99.26% raw play-match coverage.
+ESPN Brier is 0.14759 versus 0.14883 locally; the equal-game bootstrap interval
+crosses zero. ESPN's clear advantage is at game start, so improve pregame team
+and expected-lineup strength before adding more in-game complexity.
+
+Run from the repository root with `uv run python -m nba_impact.cli …` so saved
+scikit-learn artifacts use the locked runtime, or install the `nba-impact`
+entry point from `pyproject.toml` in an equivalently locked environment.
 
 ---
 

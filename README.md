@@ -7,6 +7,8 @@ NBA player-impact modeling workspace. Three sub-projects live side by side:
 - **RAPM** (`rapm/`) — ridge regression on play-by-play possessions, with
   optional SPM priors and playoff / meta-column variants.
 - **zTS** (`zts/`) — playtype-adjusted relative True Shooting.
+- **NBA Impact** (`src/nba_impact/`) — canonical current events, lineups,
+  possessions, RAPM, and win-probability research with external benchmarks.
 
 See [`AGENTS.md`](./AGENTS.md) for the full layout, data flow, and rules.
 Sub-projects have their own charters in [`rapm/AGENTS.md`](./rapm/AGENTS.md)
@@ -18,6 +20,15 @@ Python 3.11+ is assumed.
 
 ```bash
 pip install -r requirements.txt
+```
+
+The clean package can also be installed with `pip install -e .`. Its current
+WP benchmark is resumable and compares identical play states:
+
+```bash
+uv run python -m nba_impact.cli ingest-espn-win-probability --seasons 2025-26
+uv run python -m nba_impact.cli benchmark-win-probability \
+  --model-run artifacts/models/win_probability_ablation/<run-id>
 ```
 
 ### Regenerate the SPM prior
