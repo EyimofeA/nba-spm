@@ -379,7 +379,7 @@ def build_possessions(
     segment_output.parent.mkdir(parents=True, exist_ok=True)
     possession_tmp = possession_output.with_suffix(possession_output.suffix + ".partial")
     segment_tmp = segment_output.with_suffix(segment_output.suffix + ".partial")
-    possessions.drop(columns=["home_points", "away_points"]).to_parquet(possession_tmp, index=False)
+    possessions.to_parquet(possession_tmp, index=False)
     segments.to_parquet(segment_tmp, index=False)
     possession_tmp.replace(possession_output)
     segment_tmp.replace(segment_output)

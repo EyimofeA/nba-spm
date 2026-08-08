@@ -29,6 +29,7 @@ from nba_impact.models.win_probability import run_win_probability
 from nba_impact.models.win_probability_ablation import run_win_probability_elo_ablation
 from nba_impact.models.win_probability_benchmark import run_espn_win_probability_benchmark
 from nba_impact.models.win_probability_lineup import run_win_probability_lineup_ablation
+from nba_impact.models.win_probability_possession import run_win_probability_possession_ablation
 from nba_impact.paths import (
     ARTIFACT_ROOT,
     BRONZE_ROOT,
@@ -506,6 +507,35 @@ def command_benchmark_inpredictable(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_compare_wp_possession(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_win_probability_possession_ablation(
+        args.possessions,
+        args.segments,
+        args.game_dim,
+        args.player_games,
+        args.legacy_cache,
+        artifact_root=args.artifact_root,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        seed=args.seed,
+    )
+    register_model_run(args.registry, run)
+    print(
+        json.dumps(
+            {
+                "run_id": run["run_id"],
+                "variants": run["metrics"]["variants"],
+                "paired_game_bootstrap": run["metrics"]["paired_game_bootstrap"],
+                "close_last_2m_margin_le_3": run["metrics"]["close_last_2m_margin_le_3"],
+                "possession_effects": run["metrics"]["possession_effects"],
+                "artifact_path": run["artifact_path"],
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="nba-impact")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -755,6 +785,23 @@ def build_parser() -> argparse.ArgumentParser:
     wp_lineup.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     wp_lineup.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     wp_lineup.set_defaults(func=command_compare_wp_lineup_strength)
+
+    wp_possession = subparsers.add_parser(
+        "compare-wp-possession",
+        help="Compare pregame-context WP with leakage-safe possession-start control.",
+    )
+    wp_possession.add_argument("--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet")
+    wp_possession.add_argument(
+        "--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet"
+    )
+    wp_possession.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    wp_possession.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
+    wp_possession.add_argument("--legacy-cache", type=Path, default=LEGACY_POSSESSION_CACHE)
+    wp_possession.add_argument("--bootstrap-repetitions", type=int, default=5000)
+    wp_possession.add_argument("--seed", type=int, default=7)
+    wp_possession.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    wp_possession.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    wp_possession.set_defaults(func=command_compare_wp_possession)
 
     inp = subparsers.add_parser(
         "benchmark-inpredictable",

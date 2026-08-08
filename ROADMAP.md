@@ -21,8 +21,8 @@ Do not tune further against 2025–26 alone.
 
 1. **Data:** ingest 2023–24 event PBP, game dimension, player-games, and lineups;
    run the existing completeness and chronology gates.
-2. **WP:** build causal possession-start states and add possession as an ablation;
-   confirm rolling team context across at least two outer seasons.
+2. **WP:** causal possession-start control passes one outer fold; confirm it and
+   rolling team context on at least one additional outer season before promotion.
 3. **RAPM:** run current start/terminal/segment policies across repeated seasons;
    freeze a simple production specification and keep research variants separate.
 4. **All-in-one:** build independent box/tracking/playtype priors for offense and
@@ -57,5 +57,6 @@ now would break reproducibility links.
 - ESPN benchmark: `wp_espn_benchmark_v1_ca79cde82d`
 - WP pregame challenger: `wp_pregame_ablation_v2_522e1a36f2`
 - Inpredictable surface: `wp_inpredictable_surface_v1_56696b0386`
+- Possession-start WP: `wp_possession_start_v1_9af34729ef`
 - Current RAPM start lineup: `rapm_v0_d38f08740e`
 - Current RAPM terminal lineup: `rapm_v0_ec1f17c82a`

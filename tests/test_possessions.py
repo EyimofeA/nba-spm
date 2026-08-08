@@ -47,6 +47,8 @@ def test_collapse_orders_by_order_number_and_keeps_retained_ball_points() -> Non
     )
     possessions, segments = collapse_cdn_possessions(frame)
     assert possessions["points"].tolist() == [7.0, 2.0]
+    assert possessions["home_points"].tolist() == [7.0, 0.0]
+    assert possessions["away_points"].tolist() == [0.0, 2.0]
     assert possessions["start_action_number"].tolist() == [99, 1]
     assert segments["points"].sum() == 9.0
 

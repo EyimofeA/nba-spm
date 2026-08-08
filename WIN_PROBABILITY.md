@@ -20,6 +20,7 @@ and paired whole-game bootstraps. This remains one outer fold.
 | Elo | pregame Elo difference, Elo × sqrt(time fraction) | same-date games batch-update afterward |
 | Starter strength | sum of frozen prior-season RAPM for each official starting five; home minus away | 2024–25 uses ratings through 2023–24; 2025–26 through 2024–25 |
 | Team context | exponentially updated point-differential difference, rest-day advantage, and time interactions | computed before any result from the date; rest capped at seven days |
+| Possession start | home or away control, control / sqrt(time + 1), control × elapsed fraction | score uses only completed prior possessions; the current possession outcome is excluded |
 
 Unrated starters receive the centered RAPM mean of zero. Actual minutes, final
 box statistics, current-game results, and future availability are not features.
@@ -41,6 +42,20 @@ The rolling-context improvement over starter RAPM has a whole-game Brier delta
 of -0.00195 with 95% interval [-0.00373, -0.00020]. At tipoff it beats the
 starter model in every bootstrap draw. Its tipoff difference from ESPN is not
 identified: local-minus-ESPN interval [-0.00063, 0.00839].
+
+### Possession-start result
+
+Run `wp_possession_start_v1_9af34729ef` evaluates 261,222 possession starts in
+1,288 held-out 2025–26 games. On identical rows, possession plus time interactions
+reduces Brier from 0.14651 to 0.14632. The whole-game delta is -0.000189 with 95%
+interval [-0.000214, -0.000163]; all 5,000 bootstrap draws favor possession.
+
+The average fitted home-possession swing is 2.04 percentage points overall,
+11.57 points when the margin is at most three in the last two minutes, and 19.67
+points when tied inside ten seconds. In the close-last-two-minute subset, Brier
+improves from 0.17122 to 0.16719. This closely matches Inpredictable's qualitative
+late-game behavior, but it remains a one-fold research candidate until 2023–24 is
+ingested and used as an independent outer fold.
 
 ## Inpredictable reference-surface validation
 
@@ -83,8 +98,9 @@ feature set and training procedure are proprietary.
 - Actual game minutes: rejected as outcome leakage.
 - ESPN Net Points/WPA as training labels: rejected; benchmark-only and upstream
   redistribution rights are unresolved.
-- Raw CDN `possession` as a direct action feature: rejected until a causal
-  possession-start state is built; rebounds and made shots make naïve joins leak.
+- Raw CDN `possession` on arbitrary action rows: rejected; rebounds and made shots
+  make naïve joins leak. The retained implementation collapses ordered control
+  runs and scores each start only from completed prior possessions.
 - Terminal-state scoring: excluded because probabilities are mechanically 0/1.
 - GBM/neural/RL models: deferred until at least one additional outer season is
   available. Complexity before repeated chronological validation is low-value.
@@ -94,7 +110,7 @@ feature set and training procedure are proprietary.
 
 ```bash
 uv run python -m nba_impact.cli compare-wp-lineup-strength
+uv run python -m nba_impact.cli compare-wp-possession
 uv run python -m nba_impact.cli benchmark-inpredictable \
   --model-run artifacts/models/win_probability_lineup/wp_pregame_ablation_v2_522e1a36f2
 ```
-

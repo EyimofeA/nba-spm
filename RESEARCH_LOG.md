@@ -571,3 +571,34 @@ seconds left it moves probability by 23.4 points.
 Possession/control is the highest-value missing in-game state. Build a causal
 possession-start table before adding it; do not join the raw action possession tag
 naïvely or interpret this surface agreement as predictive accuracy.
+
+## 2026-08-08 — Causal possession-start WP improves late-game accuracy
+
+**Question:** Does knowing which team controls the ball improve WP on held-out
+games after score, clock, Elo, prior starter RAPM, rolling margin, and rest?
+
+**What we did:** Rebuilt the canonical possession table with separate home and
+away point deltas. A possession-start score is the cumulative sum of completed
+prior possessions only; the current possession's points and every future result
+are excluded. The first attempted shortcut—assigning all possession points to the
+tagged offense—failed score conservation in 417 games because technical/free-throw
+sequences can score for the other side. That representation was rejected. Three
+logistic models were fit on identical 2024–25 starts and tested on 2025–26:
+pregame context, context plus a possession sign, and possession with time-pressure
+interactions. Uncertainty resampled whole games 5,000 times.
+
+**Result:** Run `wp_possession_start_v1_9af34729ef` covers 261,222 test starts in
+1,288 games. The time-interacted possession model lowers Brier from 0.146513 to
+0.146325; mean game-level delta is -0.000189 with 95% interval
+[-0.000214, -0.000163], and all draws favor the candidate. In 2,497 regulation
+states inside two minutes with margin at most three, Brier improves from 0.17122
+to 0.16719 and AUC from 0.82594 to 0.83474. Its fitted home-possession swing is
+2.04 percentage points overall, 11.57 points in close last-two-minute states, and
+19.67 points when tied inside ten seconds; Inpredictable's corresponding public
+tied-ten-second swing is 23.4 points.
+
+**Verdict:** Possession/control is retained as a research feature and the
+time-interacted form beats a constant possession effect. It is not production yet:
+this is one chronological outer fold, only CDN-covered lineup-reconciled games are
+eligible, and the 2023–24 confirmation fold is not downloaded. The causal state
+contract and failed score-attribution shortcut are now regression-tested.
