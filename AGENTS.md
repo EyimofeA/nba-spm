@@ -4,11 +4,12 @@ This file orients any future AI agent (or human) working in this repo. Read it
 before making changes. Keep it short; update it whenever the high-level layout
 or pipeline shifts.
 
-For live priorities, read `ROADMAP.md`. For the detailed impact plan, read
-`IMPACT_MODEL_ROADMAP.md`; for shared model rules, read `MODELING_PLAYBOOK.md`.
-For WP inputs, evidence, and rejected
-variants, read `WIN_PROBABILITY.md`; for nonlinear candidates and their promotion
-gates, read `WP_ARCHITECTURES.md`. Treat the older untracked `PROJECT.md` and
+For live priorities, read `ROADMAP.md`. Use `docs/README.md` as the document
+index. For the detailed impact plan, read `docs/impact/ROADMAP.md`; for shared
+model rules, read `docs/modeling/PLAYBOOK.md`. For WP inputs, evidence, and
+rejected variants, read `docs/win_probability/MODEL_CARD.md`; for nonlinear
+candidates and their promotion gates, read `docs/win_probability/ARCHITECTURES.md`.
+Treat the older untracked `PROJECT.md` and
 `IDEAS.md` as historical RAPM context, not the current task queue.
 
 ---
@@ -43,7 +44,7 @@ gates, read `WP_ARCHITECTURES.md`. Treat the older untracked `PROJECT.md` and
 
 ## Model-building discipline
 
-Use `MODELING_PLAYBOOK.md`, which adapts Karpathy's neural-network recipe to NBA
+Use `docs/modeling/PLAYBOOK.md`, which adapts Karpathy's neural-network recipe to NBA
 statistical modeling. Use the original recipe as an engineering and debugging
 checklist, not as the scientific evaluation design:
 

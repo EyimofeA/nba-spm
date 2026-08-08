@@ -79,4 +79,3 @@ claims are tested separately, and complex methods add verified signal.
 - No contracts/draft detour before canonical identities and player-team stints.
 - No causal language for RAPM, Shapley allocation, or passive value-function fitting.
 - No production label while current possessions or play-ins are incomplete.
-

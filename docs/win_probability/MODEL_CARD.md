@@ -6,7 +6,7 @@ current NBA win-probability lane.
 Status: **frozen / good enough**. Do not continue local neural-model work unless
 new causal inputs or a concrete product failure justify reopening this lane.
 
-Nonlinear and sequence candidates are preregistered in `WP_ARCHITECTURES.md`.
+Nonlinear and sequence candidates are recorded in `ARCHITECTURES.md`.
 
 ## Estimand and split
 

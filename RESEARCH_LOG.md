@@ -214,7 +214,7 @@ credit, playoffs, roles, cloud ingestion, and the 2026 Sloan RL/Shapley paper fi
 available data and validation paths; reviewed ESPN's published Net Points explainer,
 Dean Oliver's public credit-allocation discussion, the complete Sloan
 DRL/temporal-difference/Shapley paper, and current Cloudflare storage/compute
-pricing. Created `RESEARCH_BACKLOG.md` as the active dependency-aware planning page.
+pricing. Created `docs/planning/RESEARCH_BACKLOG.md` as the dependency-aware planning page.
 
 **Result:**
 - Net Points is a descriptive event-accounting product, distinct from RAPM. Our
@@ -235,7 +235,7 @@ causal credit problem; Shapley allocates a model's prediction relative to a chos
 baseline. Do not make injuries, contracts, draft, or RL the current sprint before
 the canonical event and identity layer exists.
 
-**Promote?:** P0 in `RESEARCH_BACKLOG.md`: canonical data repair, independent simple
+**Promote?:** P0 in `docs/planning/RESEARCH_BACKLOG.md`: canonical data repair, independent simple
 RAPM, new chronological folds, model registry, and resumable ingest.
 
 ## 2026-08-08 — P0 implementation: immutable ingest, quality gates, independent RAPM
@@ -249,7 +249,7 @@ SHA-256 sidecars, source-aware event and possession audits, whole-game structura
 quarantine, DuckDB registry, independent zero-prior offense/defense RAPM, immutable
 artifacts, and a one-fold regularization diagnostic. Downloaded an Apache-2.0
 bootstrap of NBA Stats V3 events, PBPStats possessions, shot detail, and matchup
-detail. Added tests and an operator guide in `NBA_IMPACT_BUILD.md`.
+detail. Added tests and an operator guide in `docs/planning/NBA_IMPACT_BUILD.md`.
 
 **Data result:**
 - Current connection measured about 10.8 Mbps; the 12-file bootstrap completed

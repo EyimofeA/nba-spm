@@ -1,7 +1,7 @@
 # RAPM and All-in-One Roadmap
 
-This file gives the detailed player-impact plan. `ROADMAP.md` remains the short
-project queue. `MODELING_PLAYBOOK.md` gives the validation rules.
+This file gives the detailed player-impact plan. `../../ROADMAP.md` remains the
+short project queue. `../modeling/PLAYBOOK.md` gives the validation rules.
 
 ## Current facts
 

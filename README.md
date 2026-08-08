@@ -12,8 +12,8 @@ NBA player-impact modeling workspace. Three sub-projects live side by side:
 
 See [`AGENTS.md`](./AGENTS.md) for the full layout, data flow, and rules.
 Follow [`ROADMAP.md`](./ROADMAP.md) for the active queue and
-[`WIN_PROBABILITY.md`](./WIN_PROBABILITY.md) for the WP model card.
-The nonlinear research ladder is in [`WP_ARCHITECTURES.md`](./WP_ARCHITECTURES.md).
+[`docs/README.md`](./docs/README.md) for the documentation index. The frozen WP
+model card is in [`docs/win_probability/MODEL_CARD.md`](./docs/win_probability/MODEL_CARD.md).
 Sub-projects have their own charters in [`rapm/AGENTS.md`](./rapm/AGENTS.md)
 and [`zts/AGENTS.md`](./zts/AGENTS.md).
 

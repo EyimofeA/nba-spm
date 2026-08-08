@@ -2,8 +2,8 @@
 
 Updated: 2026-08-08
 
-This is the active planning page for the NBA project. `TODO.md`, `IDEAS.md`,
-`PROJECT.md`, existing outputs, and earlier critiques are historical evidence and
+This is a historical planning page for the NBA project. `../historical/TODO_2026-06-11.md`,
+`../../IDEAS.md`, `../../PROJECT.md`, existing outputs, and earlier critiques are historical evidence and
 hypothesis sources. Their claims are not considered independently validated.
 
 ## Working rule
@@ -206,7 +206,7 @@ Priority questions:
 ## Principal's RAPM question inventory
 
 These questions came from the principal's cross-sport RAPM note. They remain open
-unless a new independent run closes them; statuses in the older `IDEAS.md` are not
+unless a new independent run closes them; statuses in the older `../../IDEAS.md` are not
 carried forward as verdicts.
 
 | Lane | Questions to preserve | First fair test |

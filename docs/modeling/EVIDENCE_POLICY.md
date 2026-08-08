@@ -41,4 +41,3 @@ If there are `k` deterministic candidates and `f` folds, the basic cost is
 must be chosen inside earlier data; repeatedly choosing ideas from the same outer
 fold eventually overfits that fold. Keep the newest complete season sealed for final
 confirmation.
-

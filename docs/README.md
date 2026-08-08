@@ -1,0 +1,32 @@
+# Documentation Index
+
+Start at the repository root:
+
+- [`AGENTS.md`](../AGENTS.md) — operating rules for agents;
+- [`ROADMAP.md`](../ROADMAP.md) — current short queue;
+- [`RESEARCH_LOG.md`](../RESEARCH_LOG.md) — append-only experiment record;
+- [`README.md`](../README.md) — commands and repository overview.
+
+## Active specifications
+
+- [`impact/ROADMAP.md`](impact/ROADMAP.md) — detailed RAPM and all-in-one plan;
+- [`modeling/PLAYBOOK.md`](modeling/PLAYBOOK.md) — NBA statistical modeling procedure;
+- [`modeling/EVIDENCE_POLICY.md`](modeling/EVIDENCE_POLICY.md) — evidence and claim standards;
+- [`win_probability/MODEL_CARD.md`](win_probability/MODEL_CARD.md) — frozen WP specification and results;
+- [`win_probability/ARCHITECTURES.md`](win_probability/ARCHITECTURES.md) — paused WP architecture research.
+
+## Planning references
+
+- [`planning/LONG_TERM_GOALS.md`](planning/LONG_TERM_GOALS.md) — long horizon;
+- [`planning/NBA_IMPACT_BUILD.md`](planning/NBA_IMPACT_BUILD.md) — earlier clean-build plan;
+- [`planning/RESEARCH_BACKLOG.md`](planning/RESEARCH_BACKLOG.md) — earlier broad research queue.
+
+The root `ROADMAP.md` is authoritative when planning files conflict.
+
+## Historical references
+
+- [`historical/TODO_2026-06-11.md`](historical/TODO_2026-06-11.md);
+- [`historical/CRITIQUE_2026-06-11.md`](historical/CRITIQUE_2026-06-11.md).
+
+Root `PROJECT.md` and `IDEAS.md` are untracked legacy working documents. Do not
+delete or treat them as the active task queue.

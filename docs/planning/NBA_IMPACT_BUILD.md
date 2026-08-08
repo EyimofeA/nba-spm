@@ -63,7 +63,7 @@ The RAPM convention is points per 100 possessions. Positive offense is better;
 positive defense means points prevented. Both blocks are centered on the
 possession-weighted average player, with an exactly compensating intercept shift.
 Model-claim thresholds and the number of required folds are defined in
-`MODEL_EVIDENCE_POLICY.md`.
+`../modeling/EVIDENCE_POLICY.md`.
 
 ## Next build order
 
