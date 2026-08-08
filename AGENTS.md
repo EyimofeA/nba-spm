@@ -155,6 +155,10 @@ matched nonterminal plays across 1,313 games, 99.26% raw play-match coverage.
 ESPN Brier is 0.14759 versus 0.14883 locally; the equal-game bootstrap interval
 crosses zero. ESPN's clear advantage is at game start, so improve pregame team
 and expected-lineup strength before adding more in-game complexity.
+The first leakage-safe starter challenger is `wp_lineup_ablation_v1_7570ad01c9`.
+Prior-season starter RAPM slightly improves tipoff Brier (0.21181 → 0.21057),
+but its paired interval crosses zero and it remains materially behind ESPN
+(0.20210). Keep it as a documented null/inconclusive result, not production.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

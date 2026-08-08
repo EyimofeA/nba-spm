@@ -27,6 +27,7 @@ from nba_impact.models.rapm import (
 from nba_impact.models.win_probability import run_win_probability
 from nba_impact.models.win_probability_ablation import run_win_probability_elo_ablation
 from nba_impact.models.win_probability_benchmark import run_espn_win_probability_benchmark
+from nba_impact.models.win_probability_lineup import run_win_probability_lineup_ablation
 from nba_impact.paths import (
     ARTIFACT_ROOT,
     BRONZE_ROOT,
@@ -452,6 +453,40 @@ def command_benchmark_win_probability(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_compare_wp_lineup_strength(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_win_probability_lineup_ablation(
+        args.event_states,
+        args.game_dim,
+        args.player_games,
+        args.possessions,
+        args.segments,
+        args.legacy_cache,
+        args.espn_index,
+        artifact_root=args.artifact_root,
+        interval_seconds=args.interval_seconds,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        seed=args.seed,
+    )
+    register_model_run(args.registry, run)
+    metrics = run["metrics"]
+    print(
+        json.dumps(
+            {
+                "run_id": run["run_id"],
+                "variants": metrics["variants"],
+                "paired_game_bootstrap": metrics["paired_game_bootstrap"],
+                "espn_game_start": metrics["espn_game_start"],
+                "espn_game_start_paired": metrics["espn_game_start_paired"],
+                "starter_rating_coverage": metrics["starter_rating_coverage"],
+                "artifact_path": run["artifact_path"],
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="nba-impact")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -676,6 +711,28 @@ def build_parser() -> argparse.ArgumentParser:
     wp_benchmark.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     wp_benchmark.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     wp_benchmark.set_defaults(func=command_benchmark_win_probability)
+
+    wp_lineup = subparsers.add_parser(
+        "compare-wp-lineup-strength",
+        help="Compare Elo WP with leakage-safe prior-season starter RAPM strength.",
+    )
+    wp_lineup.add_argument("--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet")
+    wp_lineup.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    wp_lineup.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
+    wp_lineup.add_argument("--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet")
+    wp_lineup.add_argument(
+        "--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet"
+    )
+    wp_lineup.add_argument("--legacy-cache", type=Path, default=LEGACY_POSSESSION_CACHE)
+    wp_lineup.add_argument(
+        "--espn-index", type=Path, default=SILVER_ROOT / "espn_win_probability_index.parquet"
+    )
+    wp_lineup.add_argument("--interval-seconds", type=int, default=30)
+    wp_lineup.add_argument("--bootstrap-repetitions", type=int, default=5000)
+    wp_lineup.add_argument("--seed", type=int, default=7)
+    wp_lineup.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    wp_lineup.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    wp_lineup.set_defaults(func=command_compare_wp_lineup_strength)
     return parser
 
 

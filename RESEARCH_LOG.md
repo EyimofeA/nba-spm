@@ -489,3 +489,38 @@ superseded for provenance; new runs fingerprint both data and implementation.
 **Next:** Build a possession-start WP table and add current possession as a
 same-state ablation. Then replace team-only strength with frozen pregame player and
 projected-lineup strength once availability/projection data exists.
+
+## 2026-08-08 — ESPN benchmark and prior-season starter RAPM ablation
+
+**Question:** Where does the local WP model lag ESPN, and does frozen prior-season
+starter RAPM close the pregame gap without using current-game outcomes or minutes?
+
+**What we did:** Cached ESPN play-level WP for 1,314 of 1,315 2025–26 games and
+matched ESPN and local post-action states on game, period, score, and clock. The
+single unavailable game has ESPN play-by-play but no WP records. For the lineup
+ablation, 2024–25 games use RAPM fit only through 2023–24; 2025–26 games use RAPM
+fit only through 2024–25. Official starters are treated as tipoff-time information.
+Missing prior ratings are centered at zero; actual minutes and current-game results
+are excluded. All comparisons resample whole games.
+
+**External benchmark:** The validated run `wp_espn_benchmark_v1_ca79cde82d`
+scores 631,380 matched nonterminal plays across 1,313 games with 99.26% raw
+play-match coverage. ESPN Brier is 0.14759 versus 0.14883 for local state plus Elo.
+The equal-game Brier-difference interval crosses zero. ESPN's clear advantage is at
+tipoff: 0.20210 versus 0.21181, with local-minus-ESPN 95% interval
+[0.00451, 0.01495]. From halftime onward the models are statistically tied at the
+predeclared checkpoints.
+
+**Starter-RAPM result:** Run `wp_lineup_ablation_v1_7570ad01c9` reduces overall
+Brier from 0.14987 to 0.14922 and tipoff Brier from 0.21181 to 0.21057; tipoff AUC
+rises from 0.7195 to 0.7226. Evidence is inconclusive: the tipoff paired bootstrap
+favors the starter model in 70.24% of draws and its 95% delta interval
+[-0.00562, 0.00319] crosses zero. It remains clearly worse than ESPN at tipoff:
+local-minus-ESPN Brier delta 0.00847, 95% interval [0.00322, 0.01393]. Prior ratings
+cover 91.96% of 2024–25 starters and 92.34% of 2025–26 starters on average; some
+games cover only four of ten starters.
+
+**Verdict:** Do not promote the starter-RAPM feature. The direction is plausible,
+but one outer season and incomplete rookie/new-player coverage are insufficient.
+The next pregame challenger should use expected rotation minutes, rookie/translation
+priors, injuries/availability, and rest, while keeping ESPN as an external benchmark.
