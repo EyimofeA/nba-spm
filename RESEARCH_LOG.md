@@ -605,6 +605,12 @@ contract and failed score-attribution shortcut are now regression-tested.
 
 ## 2026-08-08 — Fractional and terminal lineup RAPM beat start-lineup attribution
 
+**Provenance:** Fractional exposure was designed and implemented inside this
+repository in commit `db4cb02`. It was motivated by the canonical segment table,
+which preserves substitutions inside a possession. It is not attributed to a
+paper or claimed as an established RAPM method. Treat it as a project-specific
+sensitivity analysis unless later literature review finds a direct precedent.
+
 **Question:** When substitutions occur inside a possession, should RAPM credit the
 lineup at the start, the lineup at the terminal event, or every lineup fractionally?
 

@@ -4,7 +4,9 @@ This file orients any future AI agent (or human) working in this repo. Read it
 before making changes. Keep it short; update it whenever the high-level layout
 or pipeline shifts.
 
-For live priorities, read `ROADMAP.md`. For WP inputs, evidence, and rejected
+For live priorities, read `ROADMAP.md`. For the detailed impact plan, read
+`IMPACT_MODEL_ROADMAP.md`; for shared model rules, read `MODELING_PLAYBOOK.md`.
+For WP inputs, evidence, and rejected
 variants, read `WIN_PROBABILITY.md`; for nonlinear candidates and their promotion
 gates, read `WP_ARCHITECTURES.md`. Treat the older untracked `PROJECT.md` and
 `IDEAS.md` as historical RAPM context, not the current task queue.
@@ -41,8 +43,9 @@ gates, read `WP_ARCHITECTURES.md`. Treat the older untracked `PROJECT.md` and
 
 ## Model-building discipline
 
-Use Karpathy's neural-network recipe as an engineering and debugging checklist,
-not as the scientific evaluation design:
+Use `MODELING_PLAYBOOK.md`, which adapts Karpathy's neural-network recipe to NBA
+statistical modeling. Use the original recipe as an engineering and debugging
+checklist, not as the scientific evaluation design:
 
 1. Inspect raw examples, labels, joins, missingness, duplicates, and outliers
    before model code.
@@ -61,6 +64,11 @@ not as the scientific evaluation design:
 
 Source: Andrej Karpathy, "A Recipe for Training Neural Networks":
 https://karpathy.github.io/2019/04/25/recipe/
+
+Fractional RAPM provenance: fractional within-possession exposure was created in
+this repository in commit `db4cb02` as a sensitivity analysis for substitutions
+inside possessions. It was not taken from a paper and is not an established RAPM
+standard. The implementation is `src/nba_impact/models/rapm_lineup_policy.py`.
 
 ---
 

@@ -2,6 +2,8 @@
 
 This is the one file to follow remotely. `RESEARCH_LOG.md` contains evidence and
 dead ends; `WIN_PROBABILITY.md` contains the WP model card. Updated 2026-08-08.
+See `IMPACT_MODEL_ROADMAP.md` for the detailed RAPM/all-in-one plan and
+`MODELING_PLAYBOOK.md` for the common statistical modeling procedure.
 
 ## Current position
 
