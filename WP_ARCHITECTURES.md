@@ -101,3 +101,7 @@ A challenger advances only if:
 
 Production remains the smallest model that passes. Larger models stay available
 as research and ensemble candidates even when they fail promotion.
+
+The two-fold gate is now cleared for rolling margin plus rest and causal
+possession-start control. Prior-season starter RAPM is null in both folds, so the
+final Stage 0 baseline must remove it and repeat the gate before Stage 1 begins.

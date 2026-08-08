@@ -502,6 +502,9 @@ def command_compare_wp_lineup_strength(args: argparse.Namespace) -> int:
         args.legacy_cache,
         args.espn_index,
         artifact_root=args.artifact_root,
+        train_season=args.train_season,
+        test_season=args.test_season,
+        include_espn=not args.skip_espn,
         interval_seconds=args.interval_seconds,
         bootstrap_repetitions=args.bootstrap_repetitions,
         seed=args.seed,
@@ -548,6 +551,8 @@ def command_compare_wp_possession(args: argparse.Namespace) -> int:
         args.player_games,
         args.legacy_cache,
         artifact_root=args.artifact_root,
+        train_season=args.train_season,
+        test_season=args.test_season,
         bootstrap_repetitions=args.bootstrap_repetitions,
         seed=args.seed,
     )
@@ -842,6 +847,9 @@ def build_parser() -> argparse.ArgumentParser:
     wp_lineup.add_argument(
         "--espn-index", type=Path, default=SILVER_ROOT / "espn_win_probability_index.parquet"
     )
+    wp_lineup.add_argument("--train-season", default="2024-25")
+    wp_lineup.add_argument("--test-season", default="2025-26")
+    wp_lineup.add_argument("--skip-espn", action="store_true")
     wp_lineup.add_argument("--interval-seconds", type=int, default=30)
     wp_lineup.add_argument("--bootstrap-repetitions", type=int, default=5000)
     wp_lineup.add_argument("--seed", type=int, default=7)
@@ -860,6 +868,8 @@ def build_parser() -> argparse.ArgumentParser:
     wp_possession.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
     wp_possession.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
     wp_possession.add_argument("--legacy-cache", type=Path, default=LEGACY_POSSESSION_CACHE)
+    wp_possession.add_argument("--train-season", default="2024-25")
+    wp_possession.add_argument("--test-season", default="2025-26")
     wp_possession.add_argument("--bootstrap-repetitions", type=int, default=5000)
     wp_possession.add_argument("--seed", type=int, default=7)
     wp_possession.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)

@@ -11,25 +11,26 @@ dead ends; `WIN_PROBABILITY.md` contains the WP model card. Updated 2026-08-08.
   games with zero score or point-domain failures.
 - ESPN WP benchmark covers 1,313 matched 2025–26 games.
 - WP's score/time surface agrees closely with Inpredictable.
+- Rolling margin plus rest and causal possession control improve WP in both
+  chronological folds; prior-season starter RAPM alone remains inconclusive.
 - Current RAPM is a two-season baseline, not the final all-in-one.
 - The old 1997–2024 RAPM archive remains valuable but is stale after 2024.
 
 ## Active next task
 
-Run the frozen second WP fold: train on 2023–24 and test on 2024–25 using the
-same rows, features, calibration, and whole-game bootstrap as the existing
-2024–25 → 2025–26 fold. Confirm rolling pregame context and causal possession
-control before starting the nonlinear model ladder.
+Remove starter RAPM from the confirmed rolling-context feature block and score
+the smaller logistic model on both chronological folds. Freeze that model if it
+is non-inferior or better, then start the preregistered GAM/GBM comparison.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
 
 ## Ordered queue
 
-1. **WP:** causal possession-start control passes one outer fold; confirm it and
-   rolling team context on at least one additional outer season before promotion.
-   Then run the frozen GAM/GBM → MLP → TCN → GRU → transformer ladder in
-   `WP_ARCHITECTURES.md`; do not tune architectures on 2025–26.
+1. **WP:** rolling margin plus rest and time-interacted possession control pass
+   both outer folds. Remove the null starter-RAPM block, freeze the smallest
+   surviving logistic baseline, then run the GAM/GBM → MLP → TCN → GRU →
+   transformer ladder in `WP_ARCHITECTURES.md`; do not tune on 2025–26.
 2. **RAPM:** terminal lineup is the simple current baseline; fractional segment
    exposure is the research challenger. Confirm both across additional seasons,
    then tune penalties with nested chronological folds.
@@ -68,9 +69,11 @@ now would break reproducibility links.
 - Lineups: `lineup_stints_7518759ccb7f181c` (3,931 passed games)
 - Possessions: `possessions_769070fb3b70f511` (3,907 games)
 - ESPN benchmark: `wp_espn_benchmark_v1_ca79cde82d`
-- WP pregame challenger: `wp_pregame_ablation_v2_522e1a36f2`
+- WP pregame folds: `wp_pregame_ablation_v2_3026c4a4b9`,
+  `wp_pregame_ablation_v2_522e1a36f2`
 - Inpredictable surface: `wp_inpredictable_surface_v1_56696b0386`
-- Possession-start WP: `wp_possession_start_v1_9af34729ef`
+- Possession-start WP folds: `wp_possession_start_v1_f4a1c8a2d2`,
+  `wp_possession_start_v1_9af34729ef`
 - RAPM lineup policy: `rapm_lineup_policy_v1_23149bbb29`
 - Current RAPM start lineup: `rapm_v0_d38f08740e`
 - Current RAPM terminal lineup: `rapm_v0_ec1f17c82a`

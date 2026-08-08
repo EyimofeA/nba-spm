@@ -157,10 +157,11 @@ def run_win_probability_possession_ablation(
     legacy_cache: str | Path,
     *,
     artifact_root: str | Path,
+    train_season: str = "2024-25",
+    test_season: str = "2025-26",
     bootstrap_repetitions: int = 5000,
     seed: int = 7,
 ) -> dict:
-    train_season, test_season = "2024-25", "2025-26"
     possessions = pd.read_parquet(possessions_path)
     games = pd.read_parquet(game_dim_path)
     states = build_possession_start_states(possessions, games)
@@ -278,7 +279,7 @@ def run_win_probability_possession_ablation(
         "caveats": [
             "Possession starts are observed event states, not pre-event forecasts.",
             "Only CDN-covered, lineup-reconciled games enter this fold.",
-            "Only one chronological outer test season is currently available.",
+            "This artifact reports one chronological outer fold; promotion uses both frozen folds.",
         ],
         "artifact_path": str(output.resolve()),
     }

@@ -690,3 +690,34 @@ scoreboard is the canonical path; V3 is a narrow validator/repair source.
 **Verdict:** The data constraint for the second WP fold is removed. Run the
 frozen 2023–24 → 2024–25 comparison next; do not tune architectures against the
 existing 2025–26 test season.
+
+## 2026-08-08 — Frozen second WP fold confirms context and possession
+
+**Question:** Do rolling team context and causal possession control repeat on an
+independent season, or were their 2025–26 gains one-fold noise?
+
+**What we did:** Parameterized the existing frozen comparisons by explicit train
+and test season without changing features, regularization, state sampling, or the
+5,000-draw whole-game bootstrap. Trained on 2023–24 and tested on 2024–25, then
+compared the result with the already-frozen 2024–25 → 2025–26 fold. ESPN was
+skipped on the earlier fold because it is an external later-season benchmark.
+
+**Result:** Run `wp_pregame_ablation_v2_3026c4a4b9` lowers Brier from 0.15496
+with Elo plus starters to 0.15378 with rolling margin and rest. Its paired delta
+is -0.00118, 95% interval [-0.00198, -0.00040]. The later fold lowers Brier from
+0.14922 to 0.14731, delta -0.00195, [-0.00373, -0.00020]. Starter RAPM versus
+Elo crosses zero in both folds. Run `wp_possession_start_v1_f4a1c8a2d2` lowers
+2024–25 Brier from 0.15333 to 0.15314 with time-interacted control, delta
+-0.000196, [-0.000230, -0.000164]. The later possession fold repeats the gain:
+0.14651 to 0.14632, delta -0.000189, [-0.000214, -0.000163]. Close-last-two-minute
+Brier improves in both seasons, with fitted possession swings rising above 11
+percentage points.
+
+**Null result:** Prior-season starter RAPM does not independently clear either
+fold. It is still included inside the current rolling-context candidate, so that
+exact combined implementation is larger than the evidence justifies.
+
+**Verdict:** Promote rolling margin plus rest and causal possession-start control
+as confirmed feature blocks. Do not freeze the exact production model until a
+starter-free rolling-context ablation passes both folds. Then begin the fixed
+GAM/GBM architecture ladder on identical states.

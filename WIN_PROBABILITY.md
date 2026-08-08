@@ -8,10 +8,11 @@ Nonlinear and sequence candidates are preregistered in `WP_ARCHITECTURES.md`.
 ## Estimand and split
 
 The model estimates the home team's probability of winning after a recorded
-play. Logistic models train on 2024–25 and test once on the full 2025–26 season.
-Training states are sampled every 30 seconds; terminal states are excluded.
-Model selection uses Brier score, log loss, AUC, calibration, checkpoint metrics,
-and paired whole-game bootstraps. This remains one outer fold.
+play. Frozen logistic comparisons use two chronological folds: train on 2023–24
+and test on 2024–25, then train on 2024–25 and test on 2025–26. Training states
+are sampled every 30 seconds; terminal states are excluded. Model selection uses
+Brier score, log loss, AUC, calibration, checkpoint metrics, and paired
+whole-game bootstraps.
 
 ## Implemented features
 
@@ -31,34 +32,36 @@ box statistics, current-game results, and future availability are not features.
 
 All current variants are `StandardScaler` + logistic regression (`C=1`, LBFGS).
 
-| Variant | 2025–26 overall Brier | Tipoff Brier | Verdict |
+| Variant | 2024–25 Brier | 2025–26 Brier | Verdict |
 |---|---:|---:|---|
-| Constant/state-free | 0.24708 at tipoff | 0.24708 | rejected |
-| State only | 0.16385 | 0.24708 | rejected; no team strength |
-| State + Elo | 0.14987 | 0.21181 | retained baseline |
-| + prior starter RAPM | 0.14922 | 0.21057 | inconclusive; do not promote |
-| + rolling margin and rest | **0.14731** | **0.20592** | research challenger |
-| ESPN | 0.14759 on matched plays | 0.20210 | external benchmark, not a label |
+| State + Elo | 0.15502 | 0.14987 | retained baseline |
+| + prior starter RAPM | 0.15496 | 0.14922 | inconclusive in both folds |
+| + rolling margin and rest | **0.15378** | **0.14731** | confirmed feature block |
 
-The rolling-context improvement over starter RAPM has a whole-game Brier delta
-of -0.00195 with 95% interval [-0.00373, -0.00020]. At tipoff it beats the
-starter model in every bootstrap draw. Its tipoff difference from ESPN is not
-identified: local-minus-ESPN interval [-0.00063, 0.00839].
+Rolling context beats the starter model in both outer folds. Its paired
+whole-game Brier deltas are -0.00118, 95% interval [-0.00198, -0.00040], on
+2024–25 and -0.00195, [-0.00373, -0.00020], on 2025–26. Starter RAPM versus Elo
+crosses zero in both folds, so the exact production specification still needs a
+starter-free ablation. On the later fold, the local tipoff difference from ESPN
+is not identified: local-minus-ESPN interval [-0.00063, 0.00839].
+ESPN remains an external 2025–26 benchmark, not a label: Brier is 0.14759 on
+matched plays and 0.20210 at tipoff.
 
 ### Possession-start result
 
-Run `wp_possession_start_v1_9af34729ef` evaluates 261,222 possession starts in
-1,288 held-out 2025–26 games. On identical rows, possession plus time interactions
-reduces Brier from 0.14651 to 0.14632. The whole-game delta is -0.000189 with 95%
-interval [-0.000214, -0.000163]; all 5,000 bootstrap draws favor possession.
+Runs `wp_possession_start_v1_f4a1c8a2d2` and
+`wp_possession_start_v1_9af34729ef` confirm time-interacted possession control on
+both folds. On 2024–25, it lowers Brier from 0.15333 to 0.15314; the whole-game
+delta is -0.000196 with 95% interval [-0.000230, -0.000164]. On 2025–26, it
+lowers Brier from 0.14651 to 0.14632; the delta is -0.000189 with interval
+[-0.000214, -0.000163]. All 5,000 bootstrap draws favor possession in each fold.
 
-The average fitted home-possession swing is 2.04 percentage points overall,
-11.57 points when the margin is at most three in the last two minutes, and 19.67
-points when tied inside ten seconds. In the close-last-two-minute subset, Brier
-improves from 0.17122 to 0.16719. This closely matches Inpredictable's qualitative
-late-game behavior, but it remains a one-fold research candidate. The 2023–24
-canonical data is now available; the independent 2023–24 → 2024–25 fold has not
-yet been run.
+The fitted home-possession swing is about 2.0 percentage points overall. It rises
+to 11.6–12.2 points in close last-two-minute states and 19.7–21.2 points when tied
+inside ten seconds. Close-last-two-minute Brier improves from 0.17912 to 0.17577
+on 2024–25 and from 0.17122 to 0.16719 on 2025–26. This matches Inpredictable's
+qualitative late-game behavior and clears the repeated-fold research gate, but
+possession is valid only at causally constructed possession starts.
 
 ## Inpredictable reference-surface validation
 
@@ -105,16 +108,20 @@ feature set and training procedure are proprietary.
   make naïve joins leak. The retained implementation collapses ordered control
   runs and scores each start only from completed prior possessions.
 - Terminal-state scoring: excluded because probabilities are mechanically 0/1.
-- GBM/neural/RL models: ordered in `WP_ARCHITECTURES.md` and deferred until the
-  second chronological fold is scored. Complexity before repeated validation
-  is low-value.
+- GBM/neural/RL models: ordered in `WP_ARCHITECTURES.md`. The second fold is now
+  scored; isolate the null starter feature, freeze the smallest logistic
+  baseline, then begin the ladder.
 - Starter RAPM alone: retained as a logged negative/inconclusive result.
 
 ## Reproduce
 
 ```bash
 uv run python -m nba_impact.cli compare-wp-lineup-strength
+uv run python -m nba_impact.cli compare-wp-lineup-strength \
+  --train-season 2023-24 --test-season 2024-25 --skip-espn
 uv run python -m nba_impact.cli compare-wp-possession
+uv run python -m nba_impact.cli compare-wp-possession \
+  --train-season 2023-24 --test-season 2024-25
 uv run python -m nba_impact.cli benchmark-inpredictable \
   --model-run artifacts/models/win_probability_lineup/wp_pregame_ablation_v2_522e1a36f2
 ```

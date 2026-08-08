@@ -45,9 +45,9 @@ def build_time_safe_prior_ratings(
     current_possessions_path: str | Path,
     current_segments_path: str | Path,
 ) -> pd.DataFrame:
-    """Fit ratings through 2023-24 for train and through 2024-25 for test."""
+    """Fit three-year ratings available before each rich-event season."""
     legacy = load_legacy_possessions(
-        legacy_cache, (2022, 2023, 2024), game_types=("regular",)
+        legacy_cache, (2021, 2022, 2023, 2024), game_types=("regular",)
     )
     current = load_current_possessions(
         current_possessions_path,
@@ -55,13 +55,14 @@ def build_time_safe_prior_ratings(
         lineup_policy="start",
         game_types=("regular",),
     )
+    through_2023 = _fit_rating_panel(legacy, (2021, 2022, 2023), 2023)
     through_2024 = _fit_rating_panel(legacy, (2022, 2023, 2024), 2024)
     through_2025_frame = pd.concat(
         [legacy.loc[legacy["season"].isin((2023, 2024))], current.loc[current["season"] == 2025]],
         ignore_index=True,
     )
     through_2025 = _fit_rating_panel(through_2025_frame, (2023, 2024, 2025), 2025)
-    ratings = pd.concat([through_2024, through_2025], ignore_index=True)
+    ratings = pd.concat([through_2023, through_2024, through_2025], ignore_index=True)
     if ratings.duplicated(["prior_season_end", "player_id"]).any():
         raise ValueError("Prior rating panels are not unique by season and player.")
     if (ratings["rating_window_end"] > ratings["prior_season_end"]).any():
@@ -235,11 +236,13 @@ def run_win_probability_lineup_ablation(
     espn_index_path: str | Path,
     *,
     artifact_root: str | Path,
+    train_season: str = "2024-25",
+    test_season: str = "2025-26",
+    include_espn: bool = True,
     interval_seconds: int = 30,
     bootstrap_repetitions: int = 5000,
     seed: int = 7,
 ) -> dict:
-    train_season, test_season = "2024-25", "2025-26"
     prior_ratings = build_time_safe_prior_ratings(
         legacy_cache, current_possessions_path, current_segments_path
     )
@@ -323,68 +326,65 @@ def run_win_probability_lineup_ablation(
             }
         )
 
-    test_events = events.loc[events["season_label"].eq(test_season)].merge(
-        elo[["game_id", "pregame_elo_diff"]], on="game_id", validate="many_to_one"
-    ).merge(
-        strengths[["game_id", "pregame_starter_net_diff", "starter_rating_coverage"]],
-        on="game_id",
-        validate="many_to_one",
-    ).merge(
-        team_context, on="game_id", validate="many_to_one"
-    )
-    espn = _load_espn_plays(espn_index_path, test_season)
-    external, external_coverage = match_espn_to_local_states(espn, test_events)
-    external = external.loc[~external["is_terminal_event"]].copy()
-    external["probability_elo"] = models["elo"].predict_proba(make_elo_features(external))[:, 1]
-    external["probability_elo_plus_starters"] = models["elo_plus_starters"].predict_proba(
-        make_lineup_features(external)
-    )[:, 1]
-    external["probability_elo_plus_starters_team_context"] = models[
-        "elo_plus_starters_team_context"
-    ].predict_proba(make_team_context_features(external))[:, 1]
-    external_start = _checkpoint_rows(external, CHECKPOINTS["game_start"])
-    external_outcome = external_start["home_win"].astype(int).to_numpy()
-    external_metrics = {
-        "espn": _metrics(external_outcome, external_start["espn_home_win_probability"].to_numpy()),
-        "elo": _metrics(external_outcome, external_start["probability_elo"].to_numpy()),
-        "elo_plus_starters": _metrics(
-            external_outcome, external_start["probability_elo_plus_starters"].to_numpy()
-        ),
-        "elo_plus_starters_team_context": _metrics(
-            external_outcome,
-            external_start["probability_elo_plus_starters_team_context"].to_numpy(),
-        ),
-    }
-    external_paired = {
-        "starters_vs_elo": _paired_bootstrap(
-            external_start,
-            "probability_elo",
-            "probability_elo_plus_starters",
-            repetitions=bootstrap_repetitions,
-            seed=seed,
-        ),
-        "starters_vs_espn": _paired_bootstrap(
-            external_start,
-            "espn_home_win_probability",
-            "probability_elo_plus_starters",
-            repetitions=bootstrap_repetitions,
-            seed=seed,
-        ),
-        "team_context_vs_starters": _paired_bootstrap(
-            external_start,
-            "probability_elo_plus_starters",
-            "probability_elo_plus_starters_team_context",
-            repetitions=bootstrap_repetitions,
-            seed=seed,
-        ),
-        "team_context_vs_espn": _paired_bootstrap(
-            external_start,
-            "espn_home_win_probability",
-            "probability_elo_plus_starters_team_context",
-            repetitions=bootstrap_repetitions,
-            seed=seed,
-        ),
-    }
+    external_start = pd.DataFrame()
+    external_metrics = None
+    external_paired = None
+    external_coverage = None
+    if include_espn:
+        test_events = events.loc[events["season_label"].eq(test_season)].merge(
+            elo[["game_id", "pregame_elo_diff"]], on="game_id", validate="many_to_one"
+        ).merge(
+            strengths[["game_id", "pregame_starter_net_diff", "starter_rating_coverage"]],
+            on="game_id",
+            validate="many_to_one",
+        ).merge(
+            team_context, on="game_id", validate="many_to_one"
+        )
+        espn = _load_espn_plays(espn_index_path, test_season)
+        external, external_coverage = match_espn_to_local_states(espn, test_events)
+        external = external.loc[~external["is_terminal_event"]].copy()
+        external["probability_elo"] = models["elo"].predict_proba(make_elo_features(external))[:, 1]
+        external["probability_elo_plus_starters"] = models["elo_plus_starters"].predict_proba(
+            make_lineup_features(external)
+        )[:, 1]
+        external["probability_elo_plus_starters_team_context"] = models[
+            "elo_plus_starters_team_context"
+        ].predict_proba(make_team_context_features(external))[:, 1]
+        external_start = _checkpoint_rows(external, CHECKPOINTS["game_start"])
+        external_outcome = external_start["home_win"].astype(int).to_numpy()
+        external_metrics = {
+            "espn": _metrics(
+                external_outcome, external_start["espn_home_win_probability"].to_numpy()
+            ),
+            "elo": _metrics(external_outcome, external_start["probability_elo"].to_numpy()),
+            "elo_plus_starters": _metrics(
+                external_outcome, external_start["probability_elo_plus_starters"].to_numpy()
+            ),
+            "elo_plus_starters_team_context": _metrics(
+                external_outcome,
+                external_start["probability_elo_plus_starters_team_context"].to_numpy(),
+            ),
+        }
+        external_paired = {
+            "starters_vs_elo": _paired_bootstrap(
+                external_start, "probability_elo", "probability_elo_plus_starters",
+                repetitions=bootstrap_repetitions, seed=seed,
+            ),
+            "starters_vs_espn": _paired_bootstrap(
+                external_start, "espn_home_win_probability", "probability_elo_plus_starters",
+                repetitions=bootstrap_repetitions, seed=seed,
+            ),
+            "team_context_vs_starters": _paired_bootstrap(
+                external_start, "probability_elo_plus_starters",
+                "probability_elo_plus_starters_team_context",
+                repetitions=bootstrap_repetitions, seed=seed,
+            ),
+            "team_context_vs_espn": _paired_bootstrap(
+                external_start, "espn_home_win_probability",
+                "probability_elo_plus_starters_team_context",
+                repetitions=bootstrap_repetitions, seed=seed,
+            ),
+        }
 
     run_id = f"wp_pregame_ablation_v2_{uuid.uuid4().hex[:10]}"
     output = Path(artifact_root) / "models" / "win_probability_lineup" / run_id
@@ -395,7 +395,8 @@ def run_win_probability_lineup_ablation(
     strengths.to_parquet(output / "pregame_starter_strength.parquet", index=False)
     team_context.to_parquet(output / "pregame_team_context.parquet", index=False)
     test.to_parquet(output / "test_predictions.parquet", index=False)
-    external_start.to_parquet(output / "espn_game_start_predictions.parquet", index=False)
+    if include_espn:
+        external_start.to_parquet(output / "espn_game_start_predictions.parquet", index=False)
     coverage_by_season = (
         strengths.groupby("season_label")["starter_rating_coverage"]
         .agg(["count", "mean", "min"])
@@ -411,7 +412,14 @@ def run_win_probability_lineup_ablation(
         "config": {
             "train_season_label": train_season,
             "test_season_label": test_season,
-            "rating_windows": {"2024-25": [2022, 2023, 2024], "2025-26": [2023, 2024, 2025]},
+            "rating_windows": {
+                str(row.prior_season_end): [
+                    int(row.rating_window_start), int(row.rating_window_end)
+                ]
+                for row in prior_ratings[
+                    ["prior_season_end", "rating_window_start", "rating_window_end"]
+                ].drop_duplicates().itertuples(index=False)
+            },
             "starter_definition": "official_boxscore_starters_known_at_tipoff",
             "missing_player_rating": 0.0,
             "team_context": {
@@ -429,15 +437,15 @@ def run_win_probability_lineup_ablation(
                 "player_games": sha256_file(player_games_path),
                 "current_possessions": sha256_file(current_possessions_path),
                 "current_segments": sha256_file(current_segments_path),
-                "espn_index": sha256_file(espn_index_path),
                 "source_code": sha256_file(Path(__file__)),
                 "rapm_source_code": sha256_file(Path(__file__).with_name("rapm.py")),
                 **{
                     f"legacy_possessions_{season}": sha256_file(
                         Path(legacy_cache) / f"matchups_{season}.parquet"
                     )
-                    for season in (2022, 2023, 2024)
+                    for season in (2021, 2022, 2023, 2024)
                 },
+                **({"espn_index": sha256_file(espn_index_path)} if include_espn else {}),
             },
         },
         "metrics": {
@@ -455,7 +463,7 @@ def run_win_probability_lineup_ablation(
         "caveats": [
             "Official starters are a tipoff-time feature, not an earlier-day forecast feature.",
             "Unrated starters are assigned the centered RAPM mean of zero.",
-            "Only one chronological outer test season is currently available.",
+            "This artifact reports one chronological outer fold; promotion uses both frozen folds.",
         ],
         "artifact_path": str(output.resolve()),
     }
