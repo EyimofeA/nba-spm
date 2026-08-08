@@ -48,8 +48,8 @@ outcomes, event type, and substitution context.
 | Stage | Model | Input | Purpose | Initial parameter budget |
 |---|---|---|---|---:|
 | 0 | Logistic | current state + pregame context + possession | frozen baseline | existing |
-| 1 | Dynamic Bayesian / GAM | same tabular state | smooth interpretable nonlinearity | small |
-| 2 | HistGBM / XGBoost / CatBoost | same tabular state | strongest cheap interaction test | <=500 trees, depth <=6 |
+| 1 | Dynamic Bayesian / GAM | same tabular state | smooth interpretable nonlinearity | rejected: worse both folds |
+| 2 | HistGBM / XGBoost / CatBoost | same tabular state | strongest cheap interaction test | HistGBM rejected: worse both folds |
 | 3 | Residual MLP | same tabular state | test generic nonlinear function | 2x64 hidden |
 | 4 | Causal TCN | last 32 possession/event tokens + static context | local and multi-scale history | 4x32 channels |
 | 5 | GRU | identical sequence and parameter budget to TCN | recurrence control | hidden 64 |
@@ -104,4 +104,11 @@ as research and ensemble candidates even when they fail promotion.
 
 The two-fold gate is cleared for starter-free rolling margin plus rest and causal
 possession-start control. Adding prior-season starter RAPM is unresolved, so the
-smaller model is frozen as Stage 0. Stage 1 may now begin with identical features.
+smaller model remains the frozen Stage 0 control for every later comparison.
+
+Run `wp_stage1_v1_7e6c77d51a` rejects the fixed five-knot spline GAM and bounded
+HistGBM on both folds. Their pooled candidate-minus-logistic Brier deltas are
++0.00214 and +0.01303, respectively, with intervals entirely above zero. Do not
+retune them on an outer test season. Proceed to the fixed residual MLP; a later
+sequence-model gain must be attributed to causal history unless state-parity also
+improves.

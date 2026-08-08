@@ -39,6 +39,7 @@ from nba_impact.models.win_probability_lineup import run_win_probability_lineup_
 from nba_impact.models.win_probability_possession import (
     run_win_probability_possession_ablation,
 )
+from nba_impact.models.win_probability_stage1 import run_win_probability_stage1_comparison
 from nba_impact.paths import (
     ARTIFACT_ROOT,
     BRONZE_ROOT,
@@ -620,6 +621,31 @@ def command_compare_wp_possession(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_compare_wp_stage1(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_win_probability_stage1_comparison(
+        args.event_states,
+        args.game_dim,
+        artifact_root=args.artifact_root,
+        interval_seconds=args.interval_seconds,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        seed=args.seed,
+    )
+    register_model_run(args.registry, run)
+    print(
+        json.dumps(
+            {
+                "run_id": run["run_id"],
+                "folds": run["metrics"]["folds"],
+                "pooled_paired_vs_logistic": run["metrics"]["pooled_paired_vs_logistic"],
+                "artifact_path": run["artifact_path"],
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
 def command_compare_rapm_lineups(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     run = run_rapm_lineup_policy_comparison(
@@ -1030,6 +1056,21 @@ def build_parser() -> argparse.ArgumentParser:
     wp_possession.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     wp_possession.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     wp_possession.set_defaults(func=command_compare_wp_possession)
+
+    wp_stage1 = subparsers.add_parser(
+        "compare-wp-stage1",
+        help="Compare frozen logistic, spline GAM, and histogram GBM on two outer folds.",
+    )
+    wp_stage1.add_argument(
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    wp_stage1.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    wp_stage1.add_argument("--interval-seconds", type=int, default=30)
+    wp_stage1.add_argument("--bootstrap-repetitions", type=int, default=5000)
+    wp_stage1.add_argument("--seed", type=int, default=7)
+    wp_stage1.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    wp_stage1.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    wp_stage1.set_defaults(func=command_compare_wp_stage1)
 
     rapm_lineups = subparsers.add_parser(
         "compare-rapm-lineups",

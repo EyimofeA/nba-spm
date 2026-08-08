@@ -68,6 +68,22 @@ on 2024–25 and from 0.17019 to 0.16594 on 2025–26. This matches Inpredictabl
 qualitative late-game behavior and clears the repeated-fold research gate, but
 possession is valid only at causally constructed possession starts.
 
+### Architecture parity result
+
+Run `wp_stage1_v1_7e6c77d51a` compares the frozen logistic model with an additive
+five-knot spline logistic model and a 200-tree histogram GBM on identical rows and
+the same 12 inputs. Neither nonlinear model passes:
+
+| Model | 2024–25 Brier | 2025–26 Brier | Pooled delta vs logistic |
+|---|---:|---:|---:|
+| Logistic | **0.15302** | **0.14777** | control |
+| Spline GAM | 0.15560 | 0.14943 | +0.00214 [0.00088, 0.00340] |
+| Histogram GBM | 0.17030 | 0.15661 | +0.01303 [0.00970, 0.01639] |
+
+Both challengers also lose AUC in both folds. The GAM misses the calibration gate
+on 2024–25 (slope 0.876); the GBM misses it in both folds. They are rejected, not
+retuned against the outer seasons.
+
 ## Inpredictable reference-surface validation
 
 Run `wp_inpredictable_surface_v1_56696b0386` queries the public calculator at
@@ -113,8 +129,10 @@ feature set and training procedure are proprietary.
   make naïve joins leak. The retained implementation collapses ordered control
   runs and scores each start only from completed prior possessions.
 - Terminal-state scoring: excluded because probabilities are mechanically 0/1.
-- GBM/neural/RL models: ordered in `WP_ARCHITECTURES.md`. The smallest logistic
-  baseline is now frozen; GAM/GBM is the active next comparison.
+- Spline GAM and histogram GBM: rejected on both folds with identical inputs.
+- Neural/RL models: ordered in `WP_ARCHITECTURES.md`; the 2×64 residual MLP is
+  next. Sequence models require causal history tokens and are a different-input
+  test, not evidence that attention itself improves WP.
 - Starter RAPM alone: retained as a logged negative/inconclusive result.
 
 ## Reproduce
@@ -126,6 +144,7 @@ uv run python -m nba_impact.cli compare-wp-lineup-strength \
 uv run python -m nba_impact.cli compare-wp-possession
 uv run python -m nba_impact.cli compare-wp-possession \
   --train-season 2023-24 --test-season 2024-25
+uv run python -m nba_impact.cli compare-wp-stage1
 uv run python -m nba_impact.cli benchmark-inpredictable \
   --model-run artifacts/models/win_probability_lineup/wp_pregame_ablation_v3_cdbcea84ee
 ```

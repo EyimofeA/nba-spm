@@ -748,3 +748,27 @@ zero. Late close-game gains remain materially larger.
 Starter RAPM remains a research feature, not a production dependency. The
 possession-start extension is separately validated and now uses the same smaller
 context. Begin the fixed GAM/GBM comparison on identical features.
+
+## 2026-08-08 — Spline GAM and histogram GBM fail state parity
+
+**Question:** Can generic nonlinear shape or interactions beat the frozen
+starter-free logistic WP model without adding information?
+
+**What we did:** Run `wp_stage1_v1_7e6c77d51a` fits three models on identical 12
+features, 30-second states, labels, and chronological folds: the frozen scaled
+logistic control; an additive logistic model with five-knot cubic splines; and a
+fixed histogram GBM with 200 trees, learning rate 0.05, at most 15 leaves and
+depth six. No hyperparameter was selected on an outer test season. Uncertainty is
+the same 5,000-draw whole-game bootstrap.
+
+**Result:** Logistic Brier is 0.15302 on 2024–25 and 0.14777 on 2025–26. The
+spline model is worse at 0.15560 and 0.14943; its pooled candidate-minus-logistic
+delta is +0.00214, 95% interval [0.00088, 0.00340]. HistGBM is substantially
+worse at 0.17030 and 0.15661; pooled delta +0.01303 [0.00970, 0.01639]. Both lose
+AUC in both folds. The spline calibration slope is 0.876 on the first fold;
+HistGBM slopes are 0.717 and 0.849.
+
+**Verdict:** Reject both candidates. Their failures are not merely calibration:
+ranking quality also declines. Do not tune around the result using 2024–25 or
+2025–26. Run the preregistered residual MLP next; treat TCN/GRU/transformer models
+as tests of causal sequence history, not automatic upgrades over tabular logistic.

@@ -174,6 +174,10 @@ Rolling margin plus rest is the stronger challenger: run
 Elo in both outer folds. Adding starter RAPM to context is unresolved and moves
 the two fold point estimates in opposite directions. Freeze the smaller
 starter-free Stage 0 model; keep the starter variant as research only.
+Run `wp_stage1_v1_7e6c77d51a` rejects both the five-knot additive spline model
+and the bounded histogram GBM on identical inputs: each loses Brier and AUC in
+both folds. Do not retune them on the outer seasons. The next fixed parity test
+is the 2×64 residual MLP with five seeds for optimizer variance.
 
 Possession/control must enter WP only at causal possession starts. Run
 `wp_possession_start_v2_1db472e450` confirms
