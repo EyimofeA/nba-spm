@@ -4,6 +4,8 @@ import pandas as pd
 
 from nba_impact.data.download import (
     DownloadTask,
+    TransientDownloadError,
+    _download_with_retries,
     _validate_file,
     ingest_task,
     plan_ingest_manifest,
@@ -83,3 +85,35 @@ def test_dry_run_reports_remaining_bytes(tmp_path) -> None:
     assert plan["verified"] == 0
     assert plan["remaining_bytes"] == 42
     assert plan["results"][0]["status"] == "missing"
+
+
+def test_retry_budget_recovers_and_resumes_partial(tmp_path, monkeypatch) -> None:
+    destination = tmp_path / "sample.csv"
+    attempts = 0
+
+    def flaky_download(session, task, target):
+        nonlocal attempts
+        attempts += 1
+        if attempts < 4:
+            target.with_suffix(target.suffix + ".partial").write_bytes(b"PLAYER_ID,year\n")
+            raise TransientDownloadError("connection dropped")
+        target.write_text("PLAYER_ID,year\n1,2026\n")
+        return _validate_file(target, task)
+
+    monkeypatch.setattr("nba_impact.data.download._download_once", flaky_download)
+    task = DownloadTask(
+        name="flaky",
+        url="https://example.invalid/sample.csv",
+        destination="sample.csv",
+        provider="fixture",
+        license="fixture",
+        required_columns=("PLAYER_ID",),
+        max_attempts=4,
+        retry_initial_seconds=0,
+        retry_max_seconds=0,
+    )
+
+    result = _download_with_retries(object(), task, destination)
+
+    assert attempts == 4
+    assert result["rows"] == 1

@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pyarrow.parquet as pq
 import requests
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter
+from tenacity import Retrying, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter
 
 from .manifest import sha256_file, write_json_atomic
 
@@ -30,6 +30,11 @@ class DownloadTask:
     expected_sha256: str | None = None
     expected_min_rows: int = 1
     required_columns: tuple[str, ...] = ()
+    max_attempts: int = 20
+    connect_timeout_seconds: int = 30
+    read_timeout_seconds: int = 300
+    retry_initial_seconds: int = 2
+    retry_max_seconds: int = 300
 
     @classmethod
     def from_dict(cls, payload: dict) -> "DownloadTask":
@@ -105,12 +110,6 @@ def _validate_file(path: Path, task: DownloadTask) -> dict:
     return {**validation, "sha256": digest}
 
 
-@retry(
-    retry=retry_if_exception_type((requests.RequestException, TransientDownloadError)),
-    wait=wait_exponential_jitter(initial=1, max=30),
-    stop=stop_after_attempt(5),
-    reraise=True,
-)
 def _download_once(session: requests.Session, task: DownloadTask, destination: Path) -> dict:
     partial = destination.with_suffix(destination.suffix + ".partial")
     if partial.exists():
@@ -122,11 +121,15 @@ def _download_once(session: requests.Session, task: DownloadTask, destination: P
             partial.replace(destination)
             return validation
     existing = partial.stat().st_size if partial.exists() else 0
-    headers = {"User-Agent": "nba-impact-lab/0.1 (+research; resumable downloader)"}
+    headers = {
+        "User-Agent": "nba-impact-lab/0.1 (+research; resumable downloader)",
+        "Accept-Encoding": "identity",
+    }
     if existing:
         headers["Range"] = f"bytes={existing}-"
-    with session.get(task.url, headers=headers, stream=True, timeout=(20, 120)) as response:
-        if response.status_code in {429, 500, 502, 503, 504}:
+    timeout = (task.connect_timeout_seconds, task.read_timeout_seconds)
+    with session.get(task.url, headers=headers, stream=True, timeout=timeout) as response:
+        if response.status_code in {408, 425, 429, 500, 502, 503, 504}:
             raise TransientDownloadError(f"{task.name}: transient HTTP {response.status_code}")
         response.raise_for_status()
         append = existing > 0 and response.status_code == 206
@@ -144,6 +147,26 @@ def _download_once(session: requests.Session, task: DownloadTask, destination: P
     return validation
 
 
+def _download_with_retries(
+    session: requests.Session, task: DownloadTask, destination: Path
+) -> dict:
+    if task.max_attempts < 1:
+        raise ValueError(f"{task.name}: max_attempts must be positive")
+    retrying = Retrying(
+        retry=retry_if_exception_type((requests.RequestException, TransientDownloadError)),
+        wait=wait_exponential_jitter(
+            initial=task.retry_initial_seconds,
+            max=task.retry_max_seconds,
+        ),
+        stop=stop_after_attempt(task.max_attempts),
+        reraise=True,
+    )
+    for attempt in retrying:
+        with attempt:
+            return _download_once(session, task, destination)
+    raise RuntimeError(f"{task.name}: retry loop ended without a result")
+
+
 def ingest_task(
     task: DownloadTask,
     *,
@@ -158,7 +181,7 @@ def ingest_task(
         validation = _validate_file(destination, task)
         status = "verified_existing"
     else:
-        validation = _download_once(session or requests.Session(), task, destination)
+        validation = _download_with_retries(session or requests.Session(), task, destination)
         status = "downloaded"
     result = {
         **asdict(task),

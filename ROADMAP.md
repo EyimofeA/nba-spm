@@ -17,12 +17,17 @@ The pinned 2023–24 rich-event batch is ready (10 files, 86.96 MB). Launch it
 when the laptop is on AC, then rebuild silver tables and run the second WP fold.
 Do not tune further against 2025–26 alone.
 
+Slow-network policy: each immutable file resumes from `.partial`, retries up to
+20 times with exponential jitter, and waits up to five minutes for the next bytes.
+
 ## Ordered queue
 
 1. **Data:** ingest 2023–24 event PBP, game dimension, player-games, and lineups;
    run the existing completeness and chronology gates.
 2. **WP:** causal possession-start control passes one outer fold; confirm it and
    rolling team context on at least one additional outer season before promotion.
+   Then run the frozen GAM/GBM → MLP → TCN → GRU → transformer ladder in
+   `WP_ARCHITECTURES.md`; do not tune architectures on 2025–26.
 3. **RAPM:** terminal lineup is the simple current baseline; fractional segment
    exposure is the research challenger. Confirm both across additional seasons,
    then tune penalties with nested chronological folds.

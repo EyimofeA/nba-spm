@@ -633,3 +633,26 @@ challenger: it is conceptually fairer for possessions spanning substitutions, bu
 its sub-second timing is approximated and only one outer season exists. Neither
 result is a true forecast; 82.8% player carryover and observed test lineups make it
 lineup-conditioned retrodiction.
+
+## 2026-08-08 — Nonlinear WP architecture ladder frozen before testing
+
+**Question:** Should the next WP model be a CNN, recurrent network, transformer,
+or a stronger tabular model?
+
+**Evidence:** Published NBA work supports dynamic Bayesian smoothing and reports
+small neural/recurrent mixture-density gains over logistic and random-forest
+baselines, but the latter study's preprocessing data are proprietary. Generic TCN
+research makes causal dilated convolutions a credible efficient sequence baseline.
+TFT, NBA2Vec, and Set Transformer motivate heterogeneous temporal inputs and
+permutation-invariant lineup embeddings; the Sloan distributional TD/Shapley work
+is more directly relevant to the later player-credit lane than to the first WP
+replacement. These sources do not establish that a transformer beats simpler NBA
+WP models on our states or seasons.
+
+**Decision:** Freeze the comparison order before the third rich season arrives:
+dynamic Bayesian/GAM, tree boosting, small MLP, causal TCN, parameter-matched GRU,
+then a two-layer causal transformer. A player-set encoder and recurrent mixture
+density/value model follow only after the core comparison. Candidates receive
+identical states, two chronological outer folds, whole-game bootstrap, calibration
+gates, and five fixed seeds for optimizer noise. A seed is not an independent run.
+Production remains the smallest model that clears both folds.

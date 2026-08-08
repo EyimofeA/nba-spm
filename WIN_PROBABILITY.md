@@ -3,6 +3,8 @@
 Last updated: 2026-08-08. This is the human-readable source of truth for the
 current NBA win-probability lane.
 
+Nonlinear and sequence candidates are preregistered in `WP_ARCHITECTURES.md`.
+
 ## Estimand and split
 
 The model estimates the home team's probability of winning after a recorded
@@ -102,8 +104,9 @@ feature set and training procedure are proprietary.
   make naïve joins leak. The retained implementation collapses ordered control
   runs and scores each start only from completed prior possessions.
 - Terminal-state scoring: excluded because probabilities are mechanically 0/1.
-- GBM/neural/RL models: deferred until at least one additional outer season is
-  available. Complexity before repeated chronological validation is low-value.
+- GBM/neural/RL models: ordered in `WP_ARCHITECTURES.md` and deferred until the
+  2023–24 fold is available. Complexity before repeated chronological validation
+  is low-value.
 - Starter RAPM alone: retained as a logged negative/inconclusive result.
 
 ## Reproduce

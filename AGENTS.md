@@ -5,7 +5,8 @@ before making changes. Keep it short; update it whenever the high-level layout
 or pipeline shifts.
 
 For live priorities, read `ROADMAP.md`. For WP inputs, evidence, and rejected
-variants, read `WIN_PROBABILITY.md`. Treat the older untracked `PROJECT.md` and
+variants, read `WIN_PROBABILITY.md`; for nonlinear candidates and their promotion
+gates, read `WP_ARCHITECTURES.md`. Treat the older untracked `PROJECT.md` and
 `IDEAS.md` as historical RAPM context, not the current task queue.
 
 ---
