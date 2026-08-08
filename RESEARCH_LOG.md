@@ -772,3 +772,26 @@ HistGBM slopes are 0.717 and 0.849.
 ranking quality also declines. Do not tune around the result using 2024–25 or
 2025–26. Run the preregistered residual MLP next; treat TCN/GRU/transformer models
 as tests of causal sequence history, not automatic upgrades over tabular logistic.
+
+## 2026-08-08 — Fixed feed-forward MLP fails across five seeds
+
+**Question:** Does a small neural network improve the same frozen tabular WP
+states where splines and trees failed?
+
+**What we did:** PyTorch is unavailable locally, so the residual architecture was
+not silently approximated. Run `wp_mlp_v1_7a7825bf09` explicitly tests a scaled
+scikit-learn feed-forward MLP with two 64-unit ReLU layers, Adam, batch size 1024,
+early stopping, a frozen 100-epoch cap, and seeds 7/17/29/43/71. Both outer folds
+use identical rows and the five-seed probability ensemble; seeds measure optimizer
+variance only.
+
+**Result:** On 2024–25 the ensemble Brier is 0.18965 versus logistic 0.15302; on
+2025–26 it is 0.17448 versus 0.14777. The pooled candidate-minus-logistic delta is
++0.03171, 95% interval [0.02619, 0.03745]. AUC falls from 0.8582 to 0.8092 and
+from 0.8666 to 0.8255. Calibration slopes are 0.411 and 0.485. Nine of ten seed
+fits hit 100 epochs, but every seed is materially worse.
+
+**Verdict:** Reject this feed-forward implementation and do not tune it against
+the outer seasons. This is not evidence against residual networks or sequence
+history. The next meaningful experiment is a prefix-invariant completed-
+possession token table, followed by parameter-matched TCN/GRU/transformer tests.

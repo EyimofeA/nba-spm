@@ -35,6 +35,7 @@ uv run python -m nba_impact.cli benchmark-win-probability \
 uv run python -m nba_impact.cli compare-wp-lineup-strength
 uv run python -m nba_impact.cli compare-wp-possession
 uv run python -m nba_impact.cli compare-wp-stage1
+uv run python -m nba_impact.cli compare-wp-mlp
 uv run python -m nba_impact.cli compare-rapm-lineups
 ```
 

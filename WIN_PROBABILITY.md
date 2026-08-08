@@ -84,6 +84,14 @@ Both challengers also lose AUC in both folds. The GAM misses the calibration gat
 on 2024–25 (slope 0.876); the GBM misses it in both folds. They are rejected, not
 retuned against the outer seasons.
 
+Run `wp_mlp_v1_7a7825bf09` tests a fixed 64×64 feed-forward MLP across five seeds.
+It is not the preregistered residual network because PyTorch is unavailable; that
+deviation is explicit in the artifact. The seed ensemble is decisively worse:
+Brier is 0.18965 versus 0.15302 on 2024–25 and 0.17448 versus 0.14777 on 2025–26.
+The pooled delta is +0.03171 [0.02619, 0.03745], both AUCs fall, and calibration
+slopes collapse to 0.41 and 0.49. Nine of ten seed fits reach the frozen 100-epoch
+cap. Reject this implementation; do not infer that all neural sequence models fail.
+
 ## Inpredictable reference-surface validation
 
 Run `wp_inpredictable_surface_v1_56696b0386` queries the public calculator at
@@ -130,9 +138,10 @@ feature set and training procedure are proprietary.
   runs and scores each start only from completed prior possessions.
 - Terminal-state scoring: excluded because probabilities are mechanically 0/1.
 - Spline GAM and histogram GBM: rejected on both folds with identical inputs.
-- Neural/RL models: ordered in `WP_ARCHITECTURES.md`; the 2×64 residual MLP is
-  next. Sequence models require causal history tokens and are a different-input
-  test, not evidence that attention itself improves WP.
+- Fixed 64×64 feed-forward MLP: rejected in all five seeds and both folds. It is
+  not evidence about a residual architecture or causal sequence history.
+- Sequence/RL models: require validated causal history tokens and are a
+  different-input test, not evidence that attention itself improves WP.
 - Starter RAPM alone: retained as a logged negative/inconclusive result.
 
 ## Reproduce
@@ -145,6 +154,7 @@ uv run python -m nba_impact.cli compare-wp-possession
 uv run python -m nba_impact.cli compare-wp-possession \
   --train-season 2023-24 --test-season 2024-25
 uv run python -m nba_impact.cli compare-wp-stage1
+uv run python -m nba_impact.cli compare-wp-mlp
 uv run python -m nba_impact.cli benchmark-inpredictable \
   --model-run artifacts/models/win_probability_lineup/wp_pregame_ablation_v3_cdbcea84ee
 ```

@@ -50,7 +50,7 @@ outcomes, event type, and substitution context.
 | 0 | Logistic | current state + pregame context + possession | frozen baseline | existing |
 | 1 | Dynamic Bayesian / GAM | same tabular state | smooth interpretable nonlinearity | rejected: worse both folds |
 | 2 | HistGBM / XGBoost / CatBoost | same tabular state | strongest cheap interaction test | HistGBM rejected: worse both folds |
-| 3 | Residual MLP | same tabular state | test generic nonlinear function | 2x64 hidden |
+| 3 | Residual MLP | same tabular state | test generic nonlinear function | feed-forward proxy rejected; residual untested |
 | 4 | Causal TCN | last 32 possession/event tokens + static context | local and multi-scale history | 4x32 channels |
 | 5 | GRU | identical sequence and parameter budget to TCN | recurrence control | hidden 64 |
 | 6 | Causal transformer | identical sequence | attention only if history adds value | 2 layers, width 64, 4 heads |
@@ -112,3 +112,9 @@ HistGBM on both folds. Their pooled candidate-minus-logistic Brier deltas are
 retune them on an outer test season. Proceed to the fixed residual MLP; a later
 sequence-model gain must be attributed to causal history unless state-parity also
 improves.
+
+Run `wp_mlp_v1_7a7825bf09` rejects the available 64×64 feed-forward proxy across
+five fixed seeds. The pooled Brier penalty is +0.03171 [0.02619, 0.03745], and
+nine of ten fits reach the frozen epoch cap. PyTorch is unavailable, so this does
+not test residual connections. Preserve the null rather than installing/tuning
+after seeing the outer folds. Build and validate causal history tokens next.

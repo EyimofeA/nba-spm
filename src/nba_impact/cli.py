@@ -36,6 +36,7 @@ from nba_impact.models.win_probability_benchmark import (
     run_espn_win_probability_benchmark,
 )
 from nba_impact.models.win_probability_lineup import run_win_probability_lineup_ablation
+from nba_impact.models.win_probability_mlp import run_win_probability_mlp_comparison
 from nba_impact.models.win_probability_possession import (
     run_win_probability_possession_ablation,
 )
@@ -646,6 +647,20 @@ def command_compare_wp_stage1(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_compare_wp_mlp(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_win_probability_mlp_comparison(
+        args.event_states,
+        args.game_dim,
+        artifact_root=args.artifact_root,
+        interval_seconds=args.interval_seconds,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
 def command_compare_rapm_lineups(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     run = run_rapm_lineup_policy_comparison(
@@ -1071,6 +1086,20 @@ def build_parser() -> argparse.ArgumentParser:
     wp_stage1.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     wp_stage1.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     wp_stage1.set_defaults(func=command_compare_wp_stage1)
+
+    wp_mlp = subparsers.add_parser(
+        "compare-wp-mlp",
+        help="Compare a fixed five-seed 64x64 feed-forward MLP with logistic.",
+    )
+    wp_mlp.add_argument(
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    wp_mlp.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    wp_mlp.add_argument("--interval-seconds", type=int, default=30)
+    wp_mlp.add_argument("--bootstrap-repetitions", type=int, default=5000)
+    wp_mlp.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    wp_mlp.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    wp_mlp.set_defaults(func=command_compare_wp_mlp)
 
     rapm_lineups = subparsers.add_parser(
         "compare-rapm-lineups",

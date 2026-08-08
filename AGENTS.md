@@ -177,7 +177,12 @@ starter-free Stage 0 model; keep the starter variant as research only.
 Run `wp_stage1_v1_7e6c77d51a` rejects both the five-knot additive spline model
 and the bounded histogram GBM on identical inputs: each loses Brier and AUC in
 both folds. Do not retune them on the outer seasons. The next fixed parity test
-is the 2×64 residual MLP with five seeds for optimizer variance.
+was a 2×64 feed-forward proxy with five seeds for optimizer variance.
+Run `wp_mlp_v1_7a7825bf09` rejects the available five-seed 64×64 feed-forward
+MLP: pooled Brier is worse by 0.03171 and ranking/calibration both regress. It is
+not a residual network because PyTorch is unavailable. Do not retune it on the
+outer folds; build prefix-invariant causal sequence tokens before TCN/GRU/
+transformer work.
 
 Possession/control must enter WP only at causal possession starts. Run
 `wp_possession_start_v2_1db472e450` confirms

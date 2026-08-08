@@ -14,15 +14,17 @@ dead ends; `WIN_PROBABILITY.md` contains the WP model card. Updated 2026-08-08.
 - Starter-free rolling context and causal possession control improve WP in both
   chronological folds; prior-season starter RAPM has not earned promotion.
 - Additive splines and a bounded histogram GBM lose to logistic on both WP folds.
+- The fixed five-seed 64×64 feed-forward MLP also loses badly; tabular logistic
+  remains the production model.
 - Current RAPM is a two-season baseline, not the final all-in-one.
 - The old 1997–2024 RAPM archive remains valuable but is stale after 2024.
 
 ## Active next task
 
-Run the preregistered 2×64 residual MLP on identical starter-free states with
-five fixed seeds. Seeds measure optimizer variance, not independent evidence.
-If it also loses, preserve logistic for tabular states and move to causal sequence
-tokens only as an explicitly different-input experiment.
+Define and validate causal sequence tokens from completed possessions: duration,
+points, outcome type, control side, foul/timeout/substitution flags, and lineup
+change. Enforce prefix invariance before fitting TCN, GRU, or transformer models.
+The tabular logistic model remains frozen; sequence models test added history.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
@@ -30,9 +32,9 @@ Slow-network policy: each immutable file resumes from `.partial`, retries up to
 ## Ordered queue
 
 1. **WP:** starter-free rolling context and time-interacted possession control
-   pass both outer folds and are frozen Stage 0. GAM and histogram GBM are
-   rejected; continue MLP → TCN → GRU → transformer in `WP_ARCHITECTURES.md`
-   without tuning on 2025–26.
+   pass both outer folds and are frozen Stage 0. GAM, histogram GBM, and the
+   feed-forward MLP are rejected. Build causal tokens, then compare TCN → GRU →
+   transformer in `WP_ARCHITECTURES.md` without tuning on 2025–26.
 2. **RAPM:** terminal lineup is the simple current baseline; fractional segment
    exposure is the research challenger. Confirm both across additional seasons,
    then tune penalties with nested chronological folds.
@@ -77,6 +79,7 @@ now would break reproducibility links.
 - Possession-start WP folds: `wp_possession_start_v2_1db472e450`,
   `wp_possession_start_v2_0a5d626234`
 - WP nonlinear parity: `wp_stage1_v1_7e6c77d51a`
+- WP five-seed MLP parity: `wp_mlp_v1_7a7825bf09`
 - RAPM lineup policy: `rapm_lineup_policy_v1_23149bbb29`
 - Current RAPM start lineup: `rapm_v0_d38f08740e`
 - Current RAPM terminal lineup: `rapm_v0_ec1f17c82a`
