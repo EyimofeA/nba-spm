@@ -183,6 +183,11 @@ MLP: pooled Brier is worse by 0.03171 and ranking/calibration both regress. It i
 not a residual network because PyTorch is unavailable. Do not retune it on the
 outer folds; build prefix-invariant causal sequence tokens before TCN/GRU/
 transformer work.
+WP is now frozen as good enough. Regular-season evidence is strong across two
+outer folds. Playoff slices contain only 84–85 games; one has poor calibration
+and neither identifies a context-versus-Elo gain. Do not fit a playoff-specific
+model or continue neural work on the local Mac. Reopen WP only for new causal
+inputs, historical event data, or a concrete product failure.
 
 Possession/control must enter WP only at causal possession starts. Run
 `wp_possession_start_v2_1db472e450` confirms

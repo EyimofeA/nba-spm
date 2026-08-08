@@ -118,3 +118,8 @@ five fixed seeds. The pooled Brier penalty is +0.03171 [0.02619, 0.03745], and
 nine of ten fits reach the frozen epoch cap. PyTorch is unavailable, so this does
 not test residual connections. Preserve the null rather than installing/tuning
 after seeing the outer folds. Build and validate causal history tokens next.
+
+This ladder is paused. The frozen logistic model is good enough for the current
+platform, playoff evidence is sample-limited, and neural training should not run
+on the local Mac. Revisit sequence architectures only on cloud compute after a
+causal token contract exists and higher-priority impact work is complete.

@@ -16,38 +16,38 @@ dead ends; `WIN_PROBABILITY.md` contains the WP model card. Updated 2026-08-08.
 - Additive splines and a bounded histogram GBM lose to logistic on both WP folds.
 - The fixed five-seed 64×64 feed-forward MLP also loses badly; tabular logistic
   remains the production model.
+- WP is frozen as good-enough infrastructure. Regular-season evidence is strong;
+  playoff calibration remains a documented small-sample caveat.
 - Current RAPM is a two-season baseline, not the final all-in-one.
 - The old 1997–2024 RAPM archive remains valuable but is stale after 2024.
 
 ## Active next task
 
-Define and validate causal sequence tokens from completed possessions: duration,
-points, outcome type, control side, foul/timeout/substitution flags, and lineup
-change. Enforce prefix invariance before fitting TCN, GRU, or transformer models.
-The tabular logistic model remains frozen; sequence models test added history.
+Return to player impact. Confirm terminal versus fractional lineup attribution on
+both current chronological folds, then tune RAPM penalties without using the
+2025–26 outer season for model selection. WP neural work is paused; do not train
+neural models on the local Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
 
 ## Ordered queue
 
-1. **WP:** starter-free rolling context and time-interacted possession control
-   pass both outer folds and are frozen Stage 0. GAM, histogram GBM, and the
-   feed-forward MLP are rejected. Build causal tokens, then compare TCN → GRU →
-   transformer in `WP_ARCHITECTURES.md` without tuning on 2025–26.
-2. **RAPM:** terminal lineup is the simple current baseline; fractional segment
+1. **RAPM:** terminal lineup is the simple current baseline; fractional segment
    exposure is the research challenger. Confirm both across additional seasons,
    then tune penalties with nested chronological folds.
-3. **All-in-one:** build independent box/tracking/playtype priors for offense and
+2. **All-in-one:** build independent box/tracking/playtype priors for offense and
    defense, then stack only improvements that pass next-season prediction gates.
-4. **Dynamic impact:** create annual time-decayed/player-state trajectories and
+3. **Dynamic impact:** create annual time-decayed/player-state trajectories and
    peak 1/3/5-year views in the style of NBA RAPM peaks.
-5. **WP-RAPM / credit:** value possession-start-to-end WP change only after the WP
+4. **WP-RAPM / credit:** value possession-start-to-end WP change only after the WP
    and lineup assignment are validated; compare Net Points and TD/Shapley ideas.
-6. **Product:** stable DuckDB/API contract first, then a restrained player explorer.
+5. **Product:** stable DuckDB/API contract first, then a restrained player explorer.
    Do not rebuild the deleted UI before metric contracts are frozen.
-7. **Later data:** injuries/availability, contracts, salaries, draft, roster stints,
+6. **Later data:** injuries/availability, contracts, salaries, draft, roster stints,
    travel, and historical team schedules.
+7. **WP later:** revisit only for playoff calibration or a cloud-trained causal
+   sequence experiment after the impact platform is useful.
 
 ## Research rules
 

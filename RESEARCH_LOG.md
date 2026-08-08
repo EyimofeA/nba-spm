@@ -795,3 +795,29 @@ fits hit 100 epochs, but every seed is materially worse.
 the outer seasons. This is not evidence against residual networks or sequence
 history. The next meaningful experiment is a prefix-invariant completed-
 possession token table, followed by parameter-matched TCN/GRU/transformer tests.
+
+## 2026-08-08 — WP frozen after playoff and temporal audit
+
+**Question:** Is the current model good enough to close the WP lane, including
+playoffs and older-season evidence?
+
+**What we did:** Segmented both frozen action-state and possession-start artifacts
+by regular season versus playoffs and recomputed Brier, AUC, calibration slope,
+and whole-game paired intervals. Also segmented the 2025–26 ESPN matched-play
+benchmark and audited whether the legacy cache can support an older WP backtest.
+
+**Result:** Regular-season action-state performance is stable: 2024–25 Brier
+0.15096/AUC 0.862/slope 0.954 and 2025–26 Brier 0.14696/AUC 0.868/slope 1.047.
+The earlier context-versus-Elo delta is -0.00250 with interval
+[-0.00417, -0.00085]; the later interval narrowly crosses zero. Playoff samples
+are only 84 and 85 games. Their Brier/slope pairs are 0.18317/0.648 and
+0.15945/0.937; context-versus-Elo intervals cross zero. ESPN playoff Brier is
+0.15696 versus 0.16182 for the older local matched-play benchmark, also unresolved
+by whole-game bootstrap. Possession improves the 60-game later CDN playoff slice,
+but the source omits the final 25 playoff games. Legacy pre-2023 possessions lack
+clock/state fields and cannot evaluate this estimand.
+
+**Verdict:** Freeze WP as good enough for regular-season platform use with an
+explicit playoff calibration caveat. Do not fit a playoff-only model from this
+sample, continue local neural training, or claim a pre-2023 backtest. Move active
+work to RAPM and the all-in-one impact model.

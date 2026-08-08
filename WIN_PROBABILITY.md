@@ -3,6 +3,9 @@
 Last updated: 2026-08-08. This is the human-readable source of truth for the
 current NBA win-probability lane.
 
+Status: **frozen / good enough**. Do not continue local neural-model work unless
+new causal inputs or a concrete product failure justify reopening this lane.
+
 Nonlinear and sequence candidates are preregistered in `WP_ARCHITECTURES.md`.
 
 ## Estimand and split
@@ -91,6 +94,31 @@ Brier is 0.18965 versus 0.15302 on 2024–25 and 0.17448 versus 0.14777 on 2025�
 The pooled delta is +0.03171 [0.02619, 0.03745], both AUCs fall, and calibration
 slopes collapse to 0.41 and 0.49. Nine of ten seed fits reach the frozen 100-epoch
 cap. Reject this implementation; do not infer that all neural sequence models fail.
+
+### Regular season and playoffs
+
+The frozen model is reliable enough for regular-season use. On 2024–25 regular-
+season states, Brier is 0.15096, AUC 0.862, and calibration slope 0.954; rolling
+context improves Elo by -0.00250 with interval [-0.00417, -0.00085]. On 2025–26,
+Brier is 0.14696, AUC 0.868, and slope 1.047; the context-versus-Elo interval
+narrowly crosses zero.
+
+Playoffs are a documented limitation, not a separate fitted model. There are only
+84 and 85 held-out playoff games. The 2024–25 slice has Brier 0.18317 and
+calibration slope 0.648; the 2025–26 slice improves to Brier 0.15945 and slope
+0.937. Context-versus-Elo uncertainty crosses zero in both. ESPN is also
+unresolved on the later 85-game playoff slice: Brier 0.15696 versus 0.16182 for
+the older local matched-play benchmark, with the paired interval crossing zero.
+
+Possession direction remains sensible in playoffs, but coverage is uneven. The
+earlier fold has 84 games and a borderline possession-delta interval; the later
+fold has only 60 CDN-covered playoff games because the source ends before the last
+25 games. This supports the general causal-possession result, not a separate
+playoff production claim.
+
+The exact model cannot be tested before 2023–24 with current local data. Legacy
+1997–2024 possessions lack game clock and other required state fields. Extending
+the historical backtest requires event-level historical play-by-play ingest.
 
 ## Inpredictable reference-surface validation
 
