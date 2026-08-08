@@ -1,0 +1,141 @@
+{
+  "provider": "cdechoch/nba-data-archive",
+  "source": "https://huggingface.co/datasets/cdechoch/nba-data-archive",
+  "upstream": "https://github.com/shufinskiy/nba_data",
+  "license": "Apache-2.0",
+  "purpose": "Bootstrap current event, shot, possession-tag, and matchup data before official incremental collection.",
+  "tasks": [
+    {
+      "name": "nbastatsv3_2024_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/main/per_season/nbastatsv3/2024.parquet",
+      "destination": "nba_data_archive/nbastatsv3/season=2024/regular.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2024,
+      "season_type": "regular",
+      "expected_min_rows": 1000,
+      "required_columns": ["_season", "_season_type"]
+    },
+    {
+      "name": "nbastatsv3_2024_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/main/per_season/nbastatsv3/po_2024.parquet",
+      "destination": "nba_data_archive/nbastatsv3/season=2024/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2024,
+      "season_type": "playoffs",
+      "expected_min_rows": 100,
+      "required_columns": ["_season", "_season_type"]
+    },
+    {
+      "name": "nbastatsv3_2025_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/main/per_season/nbastatsv3/2025.parquet",
+      "destination": "nba_data_archive/nbastatsv3/season=2025/regular.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2025,
+      "season_type": "regular",
+      "expected_min_rows": 1000,
+      "required_columns": ["_season", "_season_type"]
+    },
+    {
+      "name": "pbpstats_2024_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/main/per_season/pbpstats/2024.parquet",
+      "destination": "nba_data_archive/pbpstats/season=2024/regular.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2024,
+      "season_type": "regular",
+      "expected_min_rows": 1000,
+      "required_columns": ["_season", "_season_type"]
+    },
+    {
+      "name": "pbpstats_2024_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/main/per_season/pbpstats/po_2024.parquet",
+      "destination": "nba_data_archive/pbpstats/season=2024/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2024,
+      "season_type": "playoffs",
+      "expected_min_rows": 100,
+      "required_columns": ["_season", "_season_type"]
+    },
+    {
+      "name": "shotdetail_2024_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/main/per_season/shotdetail/2024.parquet",
+      "destination": "nba_data_archive/shotdetail/season=2024/regular.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2024,
+      "season_type": "regular",
+      "expected_min_rows": 1000,
+      "required_columns": ["_season", "_season_type"]
+    },
+    {
+      "name": "shotdetail_2025_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/main/per_season/shotdetail/2025.parquet",
+      "destination": "nba_data_archive/shotdetail/season=2025/regular.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2025,
+      "season_type": "regular",
+      "expected_min_rows": 1000,
+      "required_columns": ["_season", "_season_type"]
+    },
+    {
+      "name": "matchups_2024_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/main/per_season/matchups/2024.parquet",
+      "destination": "nba_data_archive/matchups/season=2024/regular.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2024,
+      "season_type": "regular",
+      "expected_min_rows": 1000,
+      "required_columns": ["_season", "_season_type"]
+    },
+    {
+      "name": "matchups_2025_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/main/per_season/matchups/2025.parquet",
+      "destination": "nba_data_archive/matchups/season=2025/regular.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2025,
+      "season_type": "regular",
+      "expected_min_rows": 1000,
+      "required_columns": ["_season", "_season_type"]
+    },
+    {
+      "name": "nbastatsv3_2025_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/main/per_season/nbastatsv3/po_2025.parquet",
+      "destination": "nba_data_archive/nbastatsv3/season=2025/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2025,
+      "season_type": "playoffs",
+      "expected_min_rows": 100,
+      "required_columns": ["_season", "_season_type"]
+    },
+    {
+      "name": "shotdetail_2025_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/main/per_season/shotdetail/po_2025.parquet",
+      "destination": "nba_data_archive/shotdetail/season=2025/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2025,
+      "season_type": "playoffs",
+      "expected_min_rows": 100,
+      "required_columns": ["_season", "_season_type"]
+    },
+    {
+      "name": "matchups_2025_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/main/per_season/matchups/po_2025.parquet",
+      "destination": "nba_data_archive/matchups/season=2025/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2025,
+      "season_type": "playoffs",
+      "expected_min_rows": 100,
+      "required_columns": ["_season", "_season_type"]
+    }
+  ]
+}

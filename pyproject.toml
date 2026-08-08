@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nba-impact-lab"
+version = "0.1.0"
+description = "Versioned NBA data ingestion and player-impact research tooling."
+requires-python = ">=3.11"
+dependencies = [
+  "duckdb>=1.5",
+  "nba_api>=1.11",
+  "numpy>=1.26",
+  "pandas>=2.1",
+  "pyarrow>=18",
+  "requests>=2.31",
+  "scikit-learn>=1.4",
+  "scipy>=1.11",
+  "tenacity>=8",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+nba-impact = "nba_impact.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["nba_impact*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
