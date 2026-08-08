@@ -16,7 +16,12 @@ or pipeline shifts.
 - Preserve the user's original goal and constraints. Complete authorized work
   end to end and verify the observable result before claiming success.
 - Ask only when a decision is materially ambiguous, risky, or needs approval.
-- Delegate only genuinely independent work; synthesize and verify its result.
+- Proactively delegate bounded research, implementation, and validation when
+  two or more workstreams can proceed independently. Default to two or three
+  concurrent workstreams, give each one a non-overlapping scope, and keep
+  critical-path integration with the primary agent. Synthesize and verify every
+  result; do not spawn agents for tiny sequential steps or as a substitute for
+  a clear design.
 - Keep changes focused and simple. Avoid unrelated edits, unnecessary
   abstractions, and low-signal tests.
 - Test observable behavior and validate user-facing work in the real interface
@@ -129,13 +134,16 @@ The current clean pipeline is:
 pinned source manifests
   → data/lake/bronze
   → game_dim + event_states + player_games + lineup_stints
+  → possessions + possession_lineup_segments (CDN orderNumber, not actionNumber)
   → chronological model evaluation
   → artifacts/models + artifacts/registry/nba_impact.duckdb
 ```
 
 Current validated scope is 2024–25 and 2025–26. `lineup_stints.parquet` emits
 only minute-reconciled games; quarantined games remain visible in
-`lineup_game_quality.parquet`. ESPN Net Points/WPA mirrors are research
+`lineup_game_quality.parquet`. Current RAPM must use `possessions.parquet` plus
+the ordinal `possession_lineup_segments.parquet`; a clock-only lineup join is
+not safe at same-clock substitutions. ESPN Net Points/WPA mirrors are research
 benchmarks only because the upstream repository declares no license.
 
 Run from the repository root with `PYTHONPATH=src python3 -m nba_impact.cli …`

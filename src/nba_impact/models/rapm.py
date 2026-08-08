@@ -18,8 +18,12 @@ from scipy.sparse import csr_matrix, diags
 from scipy.sparse.linalg import cg, spsolve
 
 from nba_impact.data.contracts import AWAY_PLAYER_COLUMNS, HOME_PLAYER_COLUMNS
-from nba_impact.data.manifest import write_json_atomic
+from nba_impact.data.manifest import sha256_file, write_json_atomic
 from nba_impact.data.normalize import normalize_legacy_possessions
+from nba_impact.data.possessions import (
+    AWAY_LINEUP_COLUMNS as CURRENT_AWAY_LINEUP_COLUMNS,
+    HOME_LINEUP_COLUMNS as CURRENT_HOME_LINEUP_COLUMNS,
+)
 from nba_impact.data.quality import audit_possession_frame, quarantine_invalid_games
 
 
@@ -76,6 +80,56 @@ def load_legacy_possessions(
         raise ValueError(f"No possessions remain for game types {game_types}.")
     combined.attrs["quarantine_counts"] = quarantine_counts
     return combined
+
+
+def load_current_possessions(
+    possessions_path: str | Path,
+    segments_path: str | Path,
+    *,
+    lineup_policy: str = "start",
+    game_types: tuple[str, ...] = ("regular",),
+) -> pd.DataFrame:
+    """Adapt canonical current possessions to the transparent RAPM design contract.
+
+    A possession can cross substitutions, so the lineup choice is explicit and
+    researchable. ``start`` and ``terminal`` are sensitivity variants; neither
+    is silently treated as ground truth.
+    """
+    if lineup_policy not in {"start", "terminal"}:
+        raise ValueError("lineup_policy must be 'start' or 'terminal'")
+    possessions = pd.read_parquet(possessions_path)
+    possessions = possessions.loc[possessions["season_type"].isin(game_types)].copy()
+    segments = pd.read_parquet(segments_path)
+    segments = segments.loc[segments["possession_id"].isin(possessions["possession_id"])].copy()
+    segments = segments.sort_values(["possession_id", "segment_number"], kind="stable")
+    selected = (
+        segments.groupby("possession_id", as_index=False, sort=False).head(1)
+        if lineup_policy == "start"
+        else segments.groupby("possession_id", as_index=False, sort=False).tail(1)
+    )
+    lineup_columns = [*CURRENT_HOME_LINEUP_COLUMNS, *CURRENT_AWAY_LINEUP_COLUMNS]
+    selected = selected[["possession_id", *lineup_columns]]
+    frame = possessions.merge(selected, on="possession_id", validate="one_to_one")
+    rename = {
+        **{f"away_player_{index}": f"a{index}" for index in range(1, 6)},
+        **{f"home_player_{index}": f"h{index}" for index in range(1, 6)},
+    }
+    frame = frame.rename(columns=rename)
+    output = pd.DataFrame(
+        {
+            "home_poss": frame["offense_is_home"].astype(int),
+            "pts": frame["points"].astype(float),
+            **{column: frame[column].astype("int64") for column in (*AWAY_PLAYER_COLUMNS, *HOME_PLAYER_COLUMNS)},
+            "season": frame["season_end"].astype(int),
+            "date": frame["game_date"],
+            "period": frame["period"].astype(int),
+            "num": frame["possession_number"].astype(int),
+            "gameid": frame["game_id"].astype(str),
+        }
+    )
+    output.attrs["lineup_policy"] = lineup_policy
+    output.attrs["source_paths"] = [str(Path(possessions_path).resolve()), str(Path(segments_path).resolve())]
+    return output
 
 
 def build_design(frame: pd.DataFrame, include_home: bool = True) -> RapmDesign:
@@ -546,11 +600,12 @@ def run_rapm(
         "quarantine_counts": frame.attrs.get("quarantine_counts", {}),
         "retrodiction": lineup_conditioned_retrodiction(design, config),
     }
+    config_payload = {**asdict(config), "source_code_sha256": sha256_file(Path(__file__))}
     run_id = f"rapm_v0_{uuid.uuid4().hex[:10]}"
     output = Path(artifact_root) / "models" / "rapm" / run_id
     output.mkdir(parents=True, exist_ok=False)
     ratings.to_parquet(output / "ratings.parquet", index=False)
-    write_json_atomic(asdict(config), output / "config.json")
+    write_json_atomic(config_payload, output / "config.json")
     write_json_atomic(metrics, output / "metrics.json")
     run = {
         "run_id": run_id,
@@ -558,7 +613,7 @@ def run_rapm(
         "estimand": "lineup_adjusted_descriptive_points_per_100",
         "status": "research_baseline_unverified",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "config": asdict(config),
+        "config": config_payload,
         "metrics": metrics,
         "artifact_path": str(output.resolve()),
     }

@@ -7,10 +7,39 @@ from nba_impact.models.rapm import (
     RapmConfig,
     build_design,
     fit_coefficients,
+    load_current_possessions,
     ratings_table,
     run_regularization_comparison,
     run_walk_forward_comparison,
 )
+
+
+def test_current_adapter_makes_lineup_policy_explicit(tmp_path) -> None:
+    possessions = pd.DataFrame(
+        {
+            "possession_id": ["g:001"], "game_id": ["g"], "possession_number": [1],
+            "season_end": [2026], "season_type": ["regular"], "game_date": pd.to_datetime(["2026-01-01"]),
+            "period": [1], "offense_is_home": [True], "points": [2.0],
+        }
+    )
+    segment_rows = []
+    for number, offset in ((1, 0), (2, 20)):
+        segment_rows.append(
+            {
+                "possession_id": "g:001", "segment_number": number,
+                **{f"home_player_{i}": i + offset for i in range(1, 6)},
+                **{f"away_player_{i}": i + 10 + offset for i in range(1, 6)},
+            }
+        )
+    possession_path = tmp_path / "possessions.parquet"
+    segment_path = tmp_path / "segments.parquet"
+    possessions.to_parquet(possession_path, index=False)
+    pd.DataFrame(segment_rows).to_parquet(segment_path, index=False)
+    start = load_current_possessions(possession_path, segment_path, lineup_policy="start")
+    terminal = load_current_possessions(possession_path, segment_path, lineup_policy="terminal")
+    assert start.loc[0, "h1"] == 1
+    assert terminal.loc[0, "h1"] == 21
+    assert start.loc[0, "home_poss"] == 1
 
 
 def test_synthetic_offense_and_defense_signs() -> None:

@@ -423,3 +423,69 @@ Net Points/WPA are benchmarks, not labels to copy into our own metric.
 **Next:** Convert validated stints plus event states into possession outcomes, then
 fit a current zero-prior RAPM baseline. Keep the seven quarantined games excluded
 until a second source or a provably minute-consistent repair resolves them.
+
+## 2026-08-08 — Ordinal possessions and current RAPM sensitivity
+
+**Question:** Can the current two-season event archive replace the stale legacy
+RAPM cache without silently misordering events or assigning same-clock actions to
+the wrong lineup?
+
+**What we did:** Built CDN possessions in physical `orderNumber` order and retained
+every within-possession lineup change in a separate ordinal segment table. Used
+`actionNumber` only as a guarded V3 score join when game, period, and clock agree.
+Replayed substitutions in source order, keeping the prior lineup active until a
+complete out/in transaction exists. Fit identical zero-prior RAPM models using the
+lineup at possession start and at possession end as explicit sensitivity variants.
+
+**Data result:** 525,279 possessions and 633,568 lineup segments cover 2,598 of
+2,629 games (98.82%). The 31 excluded games are 25 CDN games after the May 9, 2026
+source cutoff plus lineup-quality quarantines, with one overlap. All 2,598 included
+games reconcile exactly to final scores. There are zero duplicate IDs, invalid
+point outcomes, implausible game possession counts, or possession/segment point
+mismatches. 76,354 possessions cross at least one lineup change, which confirms
+that a single implicit clock-based lineup would be a lossy contract.
+
+**Model result:** On 2024–25 regular season training and 2025–26 regular season
+lineup-conditioned retrodiction, the start-lineup model has margin RMSE 15.798 and
+correlation 0.285; terminal-lineup has RMSE 15.733 and correlation 0.294. A paired
+10,000-draw game bootstrap gives a 99.73% probability that terminal-lineup squared
+error is lower, with mean MSE delta -2.05 and 95% interval [-3.50, -0.58]. The
+effect is real but small: about 0.4% relative RMSE, not a production verdict.
+
+**Cautions:** This is one outer season, uses observed future lineups, and knows only
+82.8% of test-season players from the training season. It is retrodiction, not a
+forecast. CDN coverage stops during the 2026 playoffs, and the existing V3 fallback
+must be validated prospectively before those 25 games enter possession RAPM.
+
+**Next:** Add time-safe pregame team strength to win probability, then compare
+possession-start state models. For RAPM, add a formal start-vs-terminal-vs-segment
+comparison harness and more seasons before selecting a production lineup policy.
+
+## 2026-08-08 — Time-safe pregame Elo materially improves win probability
+
+**Question:** Does a simple pregame strength signal improve the state-only win
+model without using current-game or future information?
+
+**What we did:** Added a fixed Elo ablation (1500 initial rating, K=20, 60-point
+home advantage, 25% offseason regression). Every game on the same date receives
+ratings from the start of that date; results update ratings only after the entire
+date is scored. Compared state-only and state-plus-Elo logistic models on identical
+30-second states, training on 2024–25 and holding out all 2025–26 games. Terminal
+states were excluded from the comparison, and uncertainty resampled whole games.
+
+**Result:** Across 128,232 nonterminal test states and 1,315 games, Elo reduces
+Brier from 0.16385 to 0.14987 (8.54%), log loss from 0.48175 to 0.44855, and raises
+AUC from 0.83339 to 0.86294. The 5,000-draw paired game bootstrap favors Elo in
+100% of draws; mean game-level Brier delta is -0.01404 with 95% interval
+[-0.01949, -0.00875]. At game start, Brier improves 0.24708 to 0.21175 and AUC
+improves from the expected 0.500 to 0.720. Elo's test calibration slope is 0.971.
+
+**Interpretation:** Pregame strength is a large missing input, not a marginal
+tweak. This is still one outer season and basic team Elo will lag trades, injuries,
+rookies, and lineup changes. Keep it as the first promoted research challenger,
+not a final production model. Older WP artifacts without a source-code hash are
+superseded for provenance; new runs fingerprint both data and implementation.
+
+**Next:** Build a possession-start WP table and add current possession as a
+same-state ablation. Then replace team-only strength with frozen pregame player and
+projected-lineup strength once availability/projection data exists.

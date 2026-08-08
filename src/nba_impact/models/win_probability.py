@@ -190,6 +190,7 @@ def run_win_probability(
     test_with_probability.to_parquet(output / "test_predictions.parquet", index=False)
     checkpoints.to_parquet(output / "checkpoint_metrics.parquet", index=False)
     source_hash = sha256_file(event_states_path)
+    source_code_hash = sha256_file(Path(__file__))
     metrics = {
         "overall_sampled_states": overall,
         "checkpoints": checkpoints.to_dict(orient="records"),
@@ -213,6 +214,7 @@ def run_win_probability(
             "features": list(FEATURE_COLUMNS),
             "event_states_path": str(Path(event_states_path).resolve()),
             "event_states_sha256": source_hash,
+            "source_code_sha256": source_code_hash,
         },
         "metrics": metrics,
         "artifact_path": str(output.resolve()),
