@@ -602,3 +602,34 @@ time-interacted form beats a constant possession effect. It is not production ye
 this is one chronological outer fold, only CDN-covered lineup-reconciled games are
 eligible, and the 2023–24 confirmation fold is not downloaded. The causal state
 contract and failed score-attribution shortcut are now regression-tested.
+
+## 2026-08-08 — Fractional and terminal lineup RAPM beat start-lineup attribution
+
+**Question:** When substitutions occur inside a possession, should RAPM credit the
+lineup at the start, the lineup at the terminal event, or every lineup fractionally?
+
+**What we did:** Compared fixed zero-prior ridge RAPM models on the exact same
+497,177 regular-season possessions. All use 2024–25 for training and retrodict game
+margins in 2025–26 with observed lineups. Start and terminal select one lineup.
+Fractional assignment keeps one outcome row per possession and gives each player
+their elapsed-time share across ordinal lineup segments; possessions with zero
+clock span fall back to action-count shares. Every fractional row sums to five
+offensive and five defensive player exposures. Uncertainty resamples 1,228 whole
+held-out games 5,000 times.
+
+**Result:** Run `rapm_lineup_policy_v1_23149bbb29` gives held-out game-margin RMSE
+15.798 for start, 15.733 for terminal, and 15.723 for fractional. Terminal minus
+start squared-error delta is -2.048 with 95% interval [-3.463, -0.665]; fractional
+minus start is -2.342 with interval [-3.303, -1.420]. Fractional is only
+directionally better than terminal: delta -0.294, 74.5% probability better, 95%
+interval [-1.082, 0.510]. Net-rating correlations with start remain 0.970 for
+terminal and 0.984 for fractional, so the policy changes some rankings without
+creating an unrelated metric.
+
+**Verdict:** Reject start-lineup attribution for current RAPM. Use terminal lineup
+as the simplest provisional production policy because fractional exposure has not
+shown a reliable advantage over it. Keep fractional exposure as the research
+challenger: it is conceptually fairer for possessions spanning substitutions, but
+its sub-second timing is approximated and only one outer season exists. Neither
+result is a true forecast; 82.8% player carryover and observed test lineups make it
+lineup-conditioned retrodiction.

@@ -24,6 +24,7 @@ from nba_impact.models.rapm import (
     run_regularization_comparison,
     run_walk_forward_comparison,
 )
+from nba_impact.models.rapm_lineup_policy import run_rapm_lineup_policy_comparison
 from nba_impact.models.inpredictable_benchmark import run_inpredictable_surface_benchmark
 from nba_impact.models.win_probability import run_win_probability
 from nba_impact.models.win_probability_ablation import run_win_probability_elo_ablation
@@ -536,6 +537,21 @@ def command_compare_wp_possession(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_compare_rapm_lineups(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_rapm_lineup_policy_comparison(
+        args.possessions,
+        args.segments,
+        artifact_root=args.artifact_root,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        seed=args.seed,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps({"run_id": run["run_id"], **run["metrics"],
+                      "artifact_path": run["artifact_path"]}, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="nba-impact")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -802,6 +818,20 @@ def build_parser() -> argparse.ArgumentParser:
     wp_possession.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     wp_possession.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     wp_possession.set_defaults(func=command_compare_wp_possession)
+
+    rapm_lineups = subparsers.add_parser(
+        "compare-rapm-lineups",
+        help="Compare start, terminal, and fractional lineup assignment on identical possessions.",
+    )
+    rapm_lineups.add_argument("--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet")
+    rapm_lineups.add_argument(
+        "--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet"
+    )
+    rapm_lineups.add_argument("--bootstrap-repetitions", type=int, default=5000)
+    rapm_lineups.add_argument("--seed", type=int, default=7)
+    rapm_lineups.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    rapm_lineups.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    rapm_lineups.set_defaults(func=command_compare_rapm_lineups)
 
     inp = subparsers.add_parser(
         "benchmark-inpredictable",

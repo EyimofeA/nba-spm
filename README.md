@@ -33,6 +33,7 @@ uv run python -m nba_impact.cli benchmark-win-probability \
   --model-run artifacts/models/win_probability_ablation/<run-id>
 uv run python -m nba_impact.cli compare-wp-lineup-strength
 uv run python -m nba_impact.cli compare-wp-possession
+uv run python -m nba_impact.cli compare-rapm-lineups
 ```
 
 ### Regenerate the SPM prior
