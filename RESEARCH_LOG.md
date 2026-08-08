@@ -549,3 +549,25 @@ production. It closes about 61% of the original Elo-to-ESPN tipoff Brier gap, bu
 only one outer season exists and the fixed smoothing choices have not been tested
 across folds. Next acquire an earlier event season, freeze a small smoothing grid,
 and require multi-season improvement before promotion.
+
+## 2026-08-08 — Inpredictable neutral-state surface audit
+
+**Question:** Does the local score/time probability shape agree with an independent
+published calculator, and what missing state matters most?
+
+**What we did:** Queried Inpredictable's public zero-spread calculator at eight
+checkpoints, eleven margins from -15 to +15, and possession/no-possession. Removed
+the local model's home intercept by averaging mirrored team orientations, then
+compared it with the midpoint of Inpredictable's two possession states. This is a
+reference-surface comparison, not outcome validation.
+
+**Result:** Run `wp_inpredictable_surface_v1_56696b0386` covers 88 neutral states.
+Surface correlation is 0.9983, mean absolute difference 1.64 percentage points,
+RMSE difference 2.32 points, and maximum difference 5.97 points. Inpredictable's
+possession input moves probability by 2.87 points on average; in a tie with ten
+seconds left it moves probability by 23.4 points.
+
+**Verdict:** The local score/time functional shape is independently plausible.
+Possession/control is the highest-value missing in-game state. Build a causal
+possession-start table before adding it; do not join the raw action possession tag
+naïvely or interpret this surface agreement as predictive accuracy.

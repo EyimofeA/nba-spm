@@ -11,6 +11,8 @@ NBA player-impact modeling workspace. Three sub-projects live side by side:
   possessions, RAPM, and win-probability research with external benchmarks.
 
 See [`AGENTS.md`](./AGENTS.md) for the full layout, data flow, and rules.
+Follow [`ROADMAP.md`](./ROADMAP.md) for the active queue and
+[`WIN_PROBABILITY.md`](./WIN_PROBABILITY.md) for the WP model card.
 Sub-projects have their own charters in [`rapm/AGENTS.md`](./rapm/AGENTS.md)
 and [`zts/AGENTS.md`](./zts/AGENTS.md).
 

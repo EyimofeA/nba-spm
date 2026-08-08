@@ -24,6 +24,7 @@ from nba_impact.models.rapm import (
     run_regularization_comparison,
     run_walk_forward_comparison,
 )
+from nba_impact.models.inpredictable_benchmark import run_inpredictable_surface_benchmark
 from nba_impact.models.win_probability import run_win_probability
 from nba_impact.models.win_probability_ablation import run_win_probability_elo_ablation
 from nba_impact.models.win_probability_benchmark import run_espn_win_probability_benchmark
@@ -490,6 +491,17 @@ def command_compare_wp_lineup_strength(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_benchmark_inpredictable(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_inpredictable_surface_benchmark(
+        args.model_run, artifact_root=args.artifact_root, max_workers=args.max_workers
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps({"run_id": run["run_id"], "metrics": run["metrics"],
+                      "artifact_path": run["artifact_path"]}, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="nba-impact")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -736,6 +748,16 @@ def build_parser() -> argparse.ArgumentParser:
     wp_lineup.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     wp_lineup.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     wp_lineup.set_defaults(func=command_compare_wp_lineup_strength)
+
+    inp = subparsers.add_parser(
+        "benchmark-inpredictable",
+        help="Compare the local neutral WP surface with Inpredictable's public calculator.",
+    )
+    inp.add_argument("--model-run", type=Path, required=True)
+    inp.add_argument("--max-workers", type=int, default=4)
+    inp.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    inp.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    inp.set_defaults(func=command_benchmark_inpredictable)
     return parser
 
 

@@ -4,6 +4,10 @@ This file orients any future AI agent (or human) working in this repo. Read it
 before making changes. Keep it short; update it whenever the high-level layout
 or pipeline shifts.
 
+For live priorities, read `ROADMAP.md`. For WP inputs, evidence, and rejected
+variants, read `WIN_PROBABILITY.md`. Treat the older untracked `PROJECT.md` and
+`IDEAS.md` as historical RAPM context, not the current task queue.
+
 ---
 
 ## Working style
