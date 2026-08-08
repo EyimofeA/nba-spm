@@ -13,8 +13,9 @@ dead ends; `WIN_PROBABILITY.md` contains the WP model card. Updated 2026-08-08.
 
 ## Active next task
 
-Acquire and canonicalize one earlier rich event season so WP and current RAPM
-have another chronological outer fold. Do not tune further against 2025–26 alone.
+The pinned 2023–24 rich-event batch is ready (10 files, 86.96 MB). Launch it
+when the laptop is on AC, then rebuild silver tables and run the second WP fold.
+Do not tune further against 2025–26 alone.
 
 ## Ordered queue
 
@@ -58,4 +59,3 @@ now would break reproducibility links.
 - Inpredictable surface: `wp_inpredictable_surface_v1_56696b0386`
 - Current RAPM start lineup: `rapm_v0_d38f08740e`
 - Current RAPM terminal lineup: `rapm_v0_ec1f17c82a`
-

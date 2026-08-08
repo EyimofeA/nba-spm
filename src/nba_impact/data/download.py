@@ -26,6 +26,8 @@ class DownloadTask:
     season: int | None = None
     season_type: str | None = None
     source_revision: str | None = None
+    expected_bytes: int | None = None
+    expected_sha256: str | None = None
     expected_min_rows: int = 1
     required_columns: tuple[str, ...] = ()
 
@@ -85,12 +87,22 @@ def _validate_csv(path: Path, task: DownloadTask) -> dict:
 
 
 def _validate_file(path: Path, task: DownloadTask) -> dict:
+    size = path.stat().st_size
+    if task.expected_bytes is not None and size != task.expected_bytes:
+        raise ValueError(f"{task.name}: expected {task.expected_bytes} bytes, found {size}")
+    digest = sha256_file(path)
+    if task.expected_sha256 is not None and digest != task.expected_sha256:
+        raise ValueError(
+            f"{task.name}: SHA-256 mismatch; expected {task.expected_sha256}, found {digest}"
+        )
     suffix = Path(task.destination).suffix.lower()
     if suffix == ".parquet":
-        return _validate_parquet(path, task)
-    if suffix == ".csv":
-        return _validate_csv(path, task)
-    raise ValueError(f"{task.name}: unsupported destination format {suffix!r}")
+        validation = _validate_parquet(path, task)
+    elif suffix == ".csv":
+        validation = _validate_csv(path, task)
+    else:
+        raise ValueError(f"{task.name}: unsupported destination format {suffix!r}")
+    return {**validation, "sha256": digest}
 
 
 @retry(
@@ -154,7 +166,7 @@ def ingest_task(
         "status": status,
         "path": str(destination.resolve()),
         "bytes": destination.stat().st_size,
-        "sha256": sha256_file(destination),
+        "sha256": validation.pop("sha256", None) or sha256_file(destination),
         "retrieved_at": datetime.now(timezone.utc).isoformat(),
         "elapsed_seconds": round(time.monotonic() - started, 3),
         **validation,
@@ -194,3 +206,42 @@ def run_ingest_manifest(manifest_path: str | Path, *, root: str | Path) -> dict:
     if failures:
         raise RuntimeError(f"{len(failures)} download task(s) failed; see {summary_path}")
     return summary
+
+
+def plan_ingest_manifest(manifest_path: str | Path, *, root: str | Path) -> dict:
+    """Report verified and missing tasks without making network requests."""
+    manifest, tasks = load_tasks(manifest_path)
+    root_path = Path(root)
+    results: list[dict] = []
+    remaining_bytes = 0
+    for task in tasks:
+        destination = root_path / task.destination
+        status = "missing"
+        error = None
+        if destination.exists():
+            try:
+                _validate_file(destination, task)
+            except Exception as exc:
+                status = "invalid_existing"
+                error = f"{type(exc).__name__}: {exc}"
+            else:
+                status = "verified_existing"
+        if status != "verified_existing" and task.expected_bytes is not None:
+            remaining_bytes += task.expected_bytes
+        results.append(
+            {
+                "name": task.name,
+                "status": status,
+                "path": str(destination.resolve()),
+                "expected_bytes": task.expected_bytes,
+                "error": error,
+            }
+        )
+    return {
+        "manifest": str(Path(manifest_path).resolve()),
+        "provider": manifest.get("provider"),
+        "tasks": len(tasks),
+        "verified": sum(item["status"] == "verified_existing" for item in results),
+        "remaining_bytes": remaining_bytes,
+        "results": results,
+    }

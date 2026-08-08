@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from nba_impact.data.download import run_ingest_manifest
+from nba_impact.data.download import plan_ingest_manifest, run_ingest_manifest
 from nba_impact.data.event_quality import build_event_snapshot
 from nba_impact.data.event_state import build_event_states
 from nba_impact.data.espn_win_probability import ingest_espn_win_probability
@@ -77,6 +77,10 @@ def command_audit(args: argparse.Namespace) -> int:
 
 def command_ingest(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
+    if args.dry_run:
+        plan = plan_ingest_manifest(args.manifest, root=args.root)
+        print(json.dumps(plan, indent=2))
+        return 0
     summary = run_ingest_manifest(args.manifest, root=args.root)
     print(json.dumps({key: summary[key] for key in ("succeeded", "failed", "completed_at")}, indent=2))
     return 0
@@ -516,6 +520,9 @@ def build_parser() -> argparse.ArgumentParser:
     ingest = subparsers.add_parser("ingest", help="Run a resumable HTTP ingestion manifest.")
     ingest.add_argument("--manifest", type=Path, required=True)
     ingest.add_argument("--root", type=Path, default=BRONZE_ROOT)
+    ingest.add_argument(
+        "--dry-run", action="store_true", help="Report verified and remaining files without downloading."
+    )
     ingest.set_defaults(func=command_ingest)
 
     event_audit = subparsers.add_parser("audit-events", help="Audit and reconcile downloaded event sources.")

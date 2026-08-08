@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import pandas as pd
 
-from nba_impact.data.download import DownloadTask, _validate_file, ingest_task
+from nba_impact.data.download import (
+    DownloadTask,
+    _validate_file,
+    ingest_task,
+    plan_ingest_manifest,
+)
 
 
 def test_validate_csv_contract(tmp_path) -> None:
@@ -41,3 +46,40 @@ def test_ingest_promotes_complete_partial_without_network(tmp_path) -> None:
     assert result["status"] == "downloaded"
     assert destination.exists()
     assert not partial.exists()
+
+
+def test_validate_enforces_content_identity(tmp_path) -> None:
+    path = tmp_path / "players.csv"
+    path.write_text("PLAYER_ID,year\n1,2026\n")
+    task = DownloadTask(
+        name="players",
+        url="https://example.invalid/players.csv",
+        destination="players.csv",
+        provider="fixture",
+        license="fixture",
+        expected_bytes=path.stat().st_size,
+        expected_sha256="0" * 64,
+        required_columns=("PLAYER_ID",),
+    )
+
+    try:
+        _validate_file(path, task)
+    except ValueError as exc:
+        assert "SHA-256 mismatch" in str(exc)
+    else:
+        raise AssertionError("wrong content hash should fail validation")
+
+
+def test_dry_run_reports_remaining_bytes(tmp_path) -> None:
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        '{"provider":"fixture","tasks":[{"name":"one","url":"https://example.invalid/one.csv",'
+        '"destination":"one.csv","provider":"fixture","license":"fixture","expected_bytes":42}]}'
+    )
+
+    plan = plan_ingest_manifest(manifest, root=tmp_path / "bronze")
+
+    assert plan["tasks"] == 1
+    assert plan["verified"] == 0
+    assert plan["remaining_bytes"] == 42
+    assert plan["results"][0]["status"] == "missing"

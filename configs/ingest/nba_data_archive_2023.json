@@ -1,0 +1,99 @@
+{
+  "provider": "cdechoch/nba-data-archive",
+  "source": "https://huggingface.co/datasets/cdechoch/nba-data-archive",
+  "upstream": "https://github.com/shufinskiy/nba_data",
+  "license": "Apache-2.0",
+  "purpose": "Pinned 2023-24 rich-event outer fold for WP and current RAPM validation.",
+  "tasks": [
+    {
+      "name": "nbastatsv3_2023_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/nbastatsv3/2023.parquet",
+      "destination": "nba_data_archive/nbastatsv3/season=2023/regular.parquet",
+      "provider": "cdechoch/nba-data-archive", "license": "Apache-2.0", "season": 2023, "season_type": "regular",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d", "expected_bytes": 15257332,
+      "expected_sha256": "1358521f24565513643295454ba2df05e41064e8e5f8c2d07094f96de9f54a49", "expected_min_rows": 500000,
+      "required_columns": ["gameId", "actionId", "actionNumber", "clock", "period", "teamId", "location", "actionType", "scoreHome", "scoreAway", "_season", "_season_type"]
+    },
+    {
+      "name": "nbastatsv3_2023_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/nbastatsv3/po_2023.parquet",
+      "destination": "nba_data_archive/nbastatsv3/season=2023/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive", "license": "Apache-2.0", "season": 2023, "season_type": "playoffs",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d", "expected_bytes": 903047,
+      "expected_sha256": "36594fd8a4ae59765263a073e49b7e4b01d3befbe3d1ce8fbaf3865202da1cc9", "expected_min_rows": 30000,
+      "required_columns": ["gameId", "actionId", "actionNumber", "clock", "period", "teamId", "location", "actionType", "scoreHome", "scoreAway", "_season", "_season_type"]
+    },
+    {
+      "name": "cdnnba_2023_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/cdnnba/2023.parquet",
+      "destination": "nba_data_archive/cdnnba/season=2023/regular.parquet",
+      "provider": "cdechoch/nba-data-archive", "license": "Apache-2.0", "season": 2023, "season_type": "regular",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d", "expected_bytes": 28857184,
+      "expected_sha256": "458bc6d97fac0ce0275733df508443154bd537c53fbffd3b81fbf5e7e596360e", "expected_min_rows": 500000,
+      "required_columns": ["gameId", "actionNumber", "orderNumber", "period", "clock", "actionType", "personId", "teamId", "possession", "_season", "_season_type"]
+    },
+    {
+      "name": "cdnnba_2023_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/cdnnba/po_2023.parquet",
+      "destination": "nba_data_archive/cdnnba/season=2023/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive", "license": "Apache-2.0", "season": 2023, "season_type": "playoffs",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d", "expected_bytes": 1858321,
+      "expected_sha256": "279d4bfd3c00b0452477429a1232cfbec5a844a3320a6786b792c47d69fdc049", "expected_min_rows": 30000,
+      "required_columns": ["gameId", "actionNumber", "orderNumber", "period", "clock", "actionType", "personId", "teamId", "possession", "_season", "_season_type"]
+    },
+    {
+      "name": "pbpstats_2023_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/pbpstats/2023.parquet",
+      "destination": "nba_data_archive/pbpstats/season=2023/regular.parquet",
+      "provider": "cdechoch/nba-data-archive", "license": "Apache-2.0", "season": 2023, "season_type": "regular",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d", "expected_bytes": 30727655,
+      "expected_sha256": "cdb6a7e9ff1a94cfceb2e69c0144218bed210be64d23a2f9d9b9191fbfe6d8d5", "expected_min_rows": 400000,
+      "required_columns": ["GAMEID", "GAMEDATE", "PERIOD", "STARTTIME", "ENDTIME", "STARTSCOREDIFFERENTIAL", "EVENTS", "_season", "_season_type"]
+    },
+    {
+      "name": "pbpstats_2023_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/pbpstats/po_2023.parquet",
+      "destination": "nba_data_archive/pbpstats/season=2023/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive", "license": "Apache-2.0", "season": 2023, "season_type": "playoffs",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d", "expected_bytes": 1921300,
+      "expected_sha256": "f1f1d5d5cad9955dcb4960f6bc596d60e6c7e8c5fd639ce2cfda42714e672799", "expected_min_rows": 20000,
+      "required_columns": ["GAMEID", "GAMEDATE", "PERIOD", "STARTTIME", "ENDTIME", "STARTSCOREDIFFERENTIAL", "EVENTS", "_season", "_season_type"]
+    },
+    {
+      "name": "shotdetail_2023_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/shotdetail/2023.parquet",
+      "destination": "nba_data_archive/shotdetail/season=2023/regular.parquet",
+      "provider": "cdechoch/nba-data-archive", "license": "Apache-2.0", "season": 2023, "season_type": "regular",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d", "expected_bytes": 2254936,
+      "expected_sha256": "93ea6168f5ff925e114c1406906adc931e8d3f2e95403f23a100bd9068417e4d", "expected_min_rows": 150000,
+      "required_columns": ["GAME_ID", "GAME_DATE", "PLAYER_ID", "TEAM_ID", "PERIOD", "SHOT_MADE_FLAG", "HTM", "VTM", "_season", "_season_type"]
+    },
+    {
+      "name": "shotdetail_2023_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/shotdetail/po_2023.parquet",
+      "destination": "nba_data_archive/shotdetail/season=2023/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive", "license": "Apache-2.0", "season": 2023, "season_type": "playoffs",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d", "expected_bytes": 163710,
+      "expected_sha256": "d677eff6bf177a420adaf4e7b919ea9e30e08ea769b136fed0ffaa4411f78f20", "expected_min_rows": 10000,
+      "required_columns": ["GAME_ID", "GAME_DATE", "PLAYER_ID", "TEAM_ID", "PERIOD", "SHOT_MADE_FLAG", "HTM", "VTM", "_season", "_season_type"]
+    },
+    {
+      "name": "matchups_2023_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/matchups/2023.parquet",
+      "destination": "nba_data_archive/matchups/season=2023/regular.parquet",
+      "provider": "cdechoch/nba-data-archive", "license": "Apache-2.0", "season": 2023, "season_type": "regular",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d", "expected_bytes": 4706014,
+      "expected_sha256": "4caa0e88742b928f3a348c4951561e1cd8b57166702a957cc086c57b0fc2212d", "expected_min_rows": 150000,
+      "required_columns": ["game_id", "home_team_id", "away_team_id", "team_id", "person_id", "matchups_person_id", "matchup_minutes", "_season", "_season_type"]
+    },
+    {
+      "name": "matchups_2023_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/matchups/po_2023.parquet",
+      "destination": "nba_data_archive/matchups/season=2023/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive", "license": "Apache-2.0", "season": 2023, "season_type": "playoffs",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d", "expected_bytes": 307168,
+      "expected_sha256": "30cf4a6754a83be25b04624214dd1c5583cd3d6f71278f083bdc8c53c8ff2e6f", "expected_min_rows": 10000,
+      "required_columns": ["game_id", "home_team_id", "away_team_id", "team_id", "person_id", "matchups_person_id", "matchup_minutes", "_season", "_season_type"]
+    }
+  ]
+}
