@@ -1,4 +1,5 @@
 """Leakage-safe possession-start win-probability ablation."""
+
 from __future__ import annotations
 
 import uuid
@@ -15,22 +16,33 @@ from nba_impact.models.win_probability_ablation import _fit, build_pregame_elo
 from nba_impact.models.win_probability_lineup import (
     _paired_bootstrap,
     build_pregame_team_context,
-    build_starter_strength,
-    build_time_safe_prior_ratings,
-    make_team_context_features,
+    make_rolling_context_features,
 )
 
 
-def build_possession_start_states(possessions: pd.DataFrame, games: pd.DataFrame) -> pd.DataFrame:
+def build_possession_start_states(
+    possessions: pd.DataFrame, games: pd.DataFrame
+) -> pd.DataFrame:
     """Construct state using only completed prior possessions and current control."""
     required = {
-        "possession_id", "game_id", "possession_number", "season_label", "season_type",
-        "period", "start_order_number", "start_seconds_elapsed", "offense_is_home", "points",
-        "home_points", "away_points",
+        "possession_id",
+        "game_id",
+        "possession_number",
+        "season_label",
+        "season_type",
+        "period",
+        "start_order_number",
+        "start_seconds_elapsed",
+        "offense_is_home",
+        "points",
+        "home_points",
+        "away_points",
     }
     missing = required - set(possessions.columns)
     if missing:
-        raise ValueError(f"Possessions are missing start-state columns: {sorted(missing)}")
+        raise ValueError(
+            f"Possessions are missing start-state columns: {sorted(missing)}"
+        )
     ordered = possessions.sort_values(
         ["game_id", "possession_number", "start_order_number"], kind="stable"
     ).copy()
@@ -42,10 +54,12 @@ def build_possession_start_states(possessions: pd.DataFrame, games: pd.DataFrame
     home_points = ordered["home_points"].astype(float).to_numpy()
     away_points = ordered["away_points"].astype(float).to_numpy()
     ordered["home_score_before"] = (
-        pd.Series(home_points, index=ordered.index).groupby(ordered["game_id"]).cumsum() - home_points
+        pd.Series(home_points, index=ordered.index).groupby(ordered["game_id"]).cumsum()
+        - home_points
     )
     ordered["away_score_before"] = (
-        pd.Series(away_points, index=ordered.index).groupby(ordered["game_id"]).cumsum() - away_points
+        pd.Series(away_points, index=ordered.index).groupby(ordered["game_id"]).cumsum()
+        - away_points
     )
     ordered["home_score_diff_before"] = (
         ordered["home_score_before"] - ordered["away_score_before"]
@@ -64,7 +78,9 @@ def build_possession_start_states(possessions: pd.DataFrame, games: pd.DataFrame
     )
     period_length = np.where(regulation, 720.0, 300.0)
     ordered["seconds_remaining_period"] = np.clip(
-        period_length - (ordered["seconds_elapsed_game"] - period_start), 0.0, period_length
+        period_length - (ordered["seconds_elapsed_game"] - period_start),
+        0.0,
+        period_length,
     )
     ordered["actionId"] = ordered["start_order_number"].astype(int)
     ordered["is_terminal_event"] = False
@@ -81,17 +97,19 @@ def build_possession_start_states(possessions: pd.DataFrame, games: pd.DataFrame
     )
     terminal_score["reconstructed_home"] += terminal_score["final_home_points"]
     terminal_score["reconstructed_away"] += terminal_score["final_away_points"]
-    mismatch = terminal_score["reconstructed_home"].ne(terminal_score["home_score"]) | terminal_score[
-        "reconstructed_away"
-    ].ne(terminal_score["away_score"])
+    mismatch = terminal_score["reconstructed_home"].ne(
+        terminal_score["home_score"]
+    ) | terminal_score["reconstructed_away"].ne(terminal_score["away_score"])
     if mismatch.any():
         raise ValueError(f"{int(mismatch.sum())} games fail prefix-score conservation.")
     return states
 
 
-def make_possession_features(states: pd.DataFrame, *, time_interactions: bool) -> pd.DataFrame:
+def make_possession_features(
+    states: pd.DataFrame, *, time_interactions: bool
+) -> pd.DataFrame:
     """Add possession known at state creation; never use the possession outcome."""
-    features = make_team_context_features(states)
+    features = make_rolling_context_features(states)
     possession = np.where(states["offense_is_home"].astype(bool), 1.0, -1.0)
     features["home_possession"] = possession
     if time_interactions:
@@ -100,7 +118,9 @@ def make_possession_features(states: pd.DataFrame, *, time_interactions: bool) -
             states["seconds_remaining_period"].astype(float),
             states["regulation_seconds_remaining"].astype(float),
         )
-        elapsed_fraction = np.minimum(states["seconds_elapsed_game"].astype(float) / 2880.0, 1.0)
+        elapsed_fraction = np.minimum(
+            states["seconds_elapsed_game"].astype(float) / 2880.0, 1.0
+        )
         features["possession_time_pressure"] = possession / np.sqrt(
             effective_remaining / 60.0 + 1.0
         )
@@ -134,9 +154,14 @@ def _possession_effects(model, states: pd.DataFrame) -> list[dict]:
         away = subset.copy()
         home["offense_is_home"] = True
         away["offense_is_home"] = False
-        swing = model.predict_proba(make_possession_features(home, time_interactions=True))[:, 1] - model.predict_proba(
-            make_possession_features(away, time_interactions=True)
-        )[:, 1]
+        swing = (
+            model.predict_proba(make_possession_features(home, time_interactions=True))[
+                :, 1
+            ]
+            - model.predict_proba(
+                make_possession_features(away, time_interactions=True)
+            )[:, 1]
+        )
         rows.append(
             {
                 "window": name,
@@ -151,10 +176,7 @@ def _possession_effects(model, states: pd.DataFrame) -> list[dict]:
 
 def run_win_probability_possession_ablation(
     possessions_path: str | Path,
-    segments_path: str | Path,
     game_dim_path: str | Path,
-    player_games_path: str | Path,
-    legacy_cache: str | Path,
     *,
     artifact_root: str | Path,
     train_season: str = "2024-25",
@@ -167,20 +189,19 @@ def run_win_probability_possession_ablation(
     states = build_possession_start_states(possessions, games)
     elo = build_pregame_elo(games)
     context = build_pregame_team_context(games)
-    prior_ratings = build_time_safe_prior_ratings(legacy_cache, possessions_path, segments_path)
-    strengths = build_starter_strength(pd.read_parquet(player_games_path), prior_ratings)
-    states = states.merge(elo[["game_id", "pregame_elo_diff"]], on="game_id", validate="many_to_one").merge(
-        strengths[["game_id", "pregame_starter_net_diff", "starter_rating_coverage"]],
-        on="game_id", validate="many_to_one",
+    states = states.merge(
+        elo[["game_id", "pregame_elo_diff"]], on="game_id", validate="many_to_one"
     ).merge(context, on="game_id", validate="many_to_one")
     train = states.loc[states["season_label"].eq(train_season)].copy()
     test = states.loc[states["season_label"].eq(test_season)].copy()
     if train.empty or test.empty:
-        raise ValueError("Both chronological seasons must contain possession-start states.")
+        raise ValueError(
+            "Both chronological seasons must contain possession-start states."
+        )
     y_train = train["home_win"].astype(int).to_numpy()
     y_test = test["home_win"].astype(int).to_numpy()
     feature_sets = {
-        "context": make_team_context_features,
+        "context": make_rolling_context_features,
         "context_plus_possession": lambda frame: make_possession_features(
             frame, time_interactions=False
         ),
@@ -188,24 +209,38 @@ def run_win_probability_possession_ablation(
             frame, time_interactions=True
         ),
     }
-    models = {name: _fit(builder(train), y_train) for name, builder in feature_sets.items()}
+    models = {
+        name: _fit(builder(train), y_train) for name, builder in feature_sets.items()
+    }
     for name, model in models.items():
-        test[f"probability_{name}"] = model.predict_proba(feature_sets[name](test))[:, 1]
+        test[f"probability_{name}"] = model.predict_proba(feature_sets[name](test))[
+            :, 1
+        ]
     metrics = {
-        name: _metrics(y_test, test[f"probability_{name}"].to_numpy()) for name in models
+        name: _metrics(y_test, test[f"probability_{name}"].to_numpy())
+        for name in models
     }
     paired = {
         "possession_vs_context": _paired_bootstrap(
-            test, "probability_context", "probability_context_plus_possession",
-            repetitions=bootstrap_repetitions, seed=seed,
+            test,
+            "probability_context",
+            "probability_context_plus_possession",
+            repetitions=bootstrap_repetitions,
+            seed=seed,
         ),
         "possession_time_vs_context": _paired_bootstrap(
-            test, "probability_context", "probability_context_plus_possession_time",
-            repetitions=bootstrap_repetitions, seed=seed,
+            test,
+            "probability_context",
+            "probability_context_plus_possession_time",
+            repetitions=bootstrap_repetitions,
+            seed=seed,
         ),
         "possession_time_vs_constant_possession": _paired_bootstrap(
-            test, "probability_context_plus_possession", "probability_context_plus_possession_time",
-            repetitions=bootstrap_repetitions, seed=seed,
+            test,
+            "probability_context_plus_possession",
+            "probability_context_plus_possession_time",
+            repetitions=bootstrap_repetitions,
+            seed=seed,
         ),
     }
     checkpoints = []
@@ -235,7 +270,7 @@ def run_win_probability_possession_ablation(
         for name in models
     }
 
-    run_id = f"wp_possession_start_v1_{uuid.uuid4().hex[:10]}"
+    run_id = f"wp_possession_start_v2_{uuid.uuid4().hex[:10]}"
     output = Path(artifact_root) / "models" / "win_probability_possession" / run_id
     output.mkdir(parents=True, exist_ok=False)
     for name, model in models.items():
@@ -254,12 +289,13 @@ def run_win_probability_possession_ablation(
             "outcome_exclusion": "current and future possession points are never features",
             "bootstrap_repetitions": bootstrap_repetitions,
             "seed": seed,
-            "features": {name: list(builder(train).columns) for name, builder in feature_sets.items()},
+            "features": {
+                name: list(builder(train).columns)
+                for name, builder in feature_sets.items()
+            },
             "source_hashes": {
                 "possessions": sha256_file(possessions_path),
-                "segments": sha256_file(segments_path),
                 "game_dim": sha256_file(game_dim_path),
-                "player_games": sha256_file(player_games_path),
                 "source_code": sha256_file(Path(__file__)),
             },
         },

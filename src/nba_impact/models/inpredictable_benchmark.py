@@ -1,4 +1,5 @@
 """Neutral-state surface comparison with Inpredictable's public NBA calculator."""
+
 from __future__ import annotations
 
 import re
@@ -13,7 +14,10 @@ import pandas as pd
 import requests
 
 from nba_impact.data.manifest import sha256_file, write_json_atomic
-from nba_impact.models.win_probability_lineup import make_team_context_features
+from nba_impact.models.win_probability_lineup import (
+    make_rolling_context_features,
+    make_team_context_features,
+)
 
 
 CALCULATOR_URL = "https://stats.inpredictable.com/nba/wpCalc.php"
@@ -36,7 +40,9 @@ def parse_calculator_probability(html: str) -> float:
     return float(match.group(1)) / 100.0
 
 
-def neutralize_home_probability(probability: np.ndarray, mirrored_probability: np.ndarray) -> np.ndarray:
+def neutralize_home_probability(
+    probability: np.ndarray, mirrored_probability: np.ndarray
+) -> np.ndarray:
     """Remove the fitted home/intercept advantage by averaging focal-team orientations."""
     return 0.5 * (probability + 1.0 - mirrored_probability)
 
@@ -45,24 +51,34 @@ def _calculator_query(row: dict) -> dict:
     response = requests.post(
         CALCULATOR_URL,
         data={
-            "qtr": row["quarter"], "mintm": str(row["minutes"]),
-            "sectm": str(row["seconds"]), "scr": str(row["margin"]),
+            "qtr": row["quarter"],
+            "mintm": str(row["minutes"]),
+            "sectm": str(row["seconds"]),
+            "scr": str(row["margin"]),
             "poss": row["possession"],
         },
         timeout=(10, 45),
     )
     response.raise_for_status()
-    return {**row, "inpredictable_probability": parse_calculator_probability(response.text)}
+    return {
+        **row,
+        "inpredictable_probability": parse_calculator_probability(response.text),
+    }
 
 
 def _model_states(rows: pd.DataFrame, margin: pd.Series) -> pd.DataFrame:
-    seconds_period = rows["minutes"].astype(float) * 60.0 + rows["seconds"].astype(float)
+    seconds_period = rows["minutes"].astype(float) * 60.0 + rows["seconds"].astype(
+        float
+    )
     return pd.DataFrame(
         {
             "home_score_diff_after": margin.astype(float),
-            "regulation_seconds_remaining": rows["regulation_seconds_remaining"].astype(float),
+            "regulation_seconds_remaining": rows["regulation_seconds_remaining"].astype(
+                float
+            ),
             "seconds_remaining_period": seconds_period,
-            "seconds_elapsed_game": 2880.0 - rows["regulation_seconds_remaining"].astype(float),
+            "seconds_elapsed_game": 2880.0
+            - rows["regulation_seconds_remaining"].astype(float),
             "is_overtime": False,
             "pregame_elo_diff": 0.0,
             "pregame_starter_net_diff": 0.0,
@@ -79,16 +95,28 @@ def run_inpredictable_surface_benchmark(
     max_workers: int = 4,
 ) -> dict:
     model_run_path = Path(model_run_path)
-    model = joblib.load(model_run_path / "elo_plus_starters_team_context.joblib")
+    starter_free_model = model_run_path / "elo_plus_team_context.joblib"
+    if starter_free_model.exists():
+        model = joblib.load(starter_free_model)
+        feature_builder = make_rolling_context_features
+        model_variant = "elo_plus_team_context"
+    else:
+        model = joblib.load(model_run_path / "elo_plus_starters_team_context.joblib")
+        feature_builder = make_team_context_features
+        model_variant = "elo_plus_starters_team_context"
     inputs = []
     for checkpoint, quarter, minutes, seconds, regulation_remaining in CHECKPOINTS:
         for margin in range(-15, 16, 3):
             for possession in ("Y", "N"):
                 inputs.append(
                     {
-                        "checkpoint": checkpoint, "quarter": quarter, "minutes": minutes,
-                        "seconds": seconds, "regulation_seconds_remaining": regulation_remaining,
-                        "margin": margin, "possession": possession,
+                        "checkpoint": checkpoint,
+                        "quarter": quarter,
+                        "minutes": minutes,
+                        "seconds": seconds,
+                        "regulation_seconds_remaining": regulation_remaining,
+                        "margin": margin,
+                        "possession": possession,
                     }
                 )
     rows = []
@@ -96,26 +124,56 @@ def run_inpredictable_surface_benchmark(
         futures = [pool.submit(_calculator_query, row) for row in inputs]
         for future in as_completed(futures):
             rows.append(future.result())
-    frame = pd.DataFrame(rows).sort_values(["regulation_seconds_remaining", "margin", "possession"])
+    frame = pd.DataFrame(rows).sort_values(
+        ["regulation_seconds_remaining", "margin", "possession"]
+    )
     focal = frame.drop_duplicates(["checkpoint", "margin"])[
-        ["checkpoint", "quarter", "minutes", "seconds", "regulation_seconds_remaining", "margin"]
+        [
+            "checkpoint",
+            "quarter",
+            "minutes",
+            "seconds",
+            "regulation_seconds_remaining",
+            "margin",
+        ]
     ].copy()
-    probability = model.predict_proba(make_team_context_features(_model_states(focal, focal["margin"])))[:, 1]
-    mirrored = model.predict_proba(make_team_context_features(_model_states(focal, -focal["margin"])))[:, 1]
-    focal["local_neutral_probability"] = neutralize_home_probability(probability, mirrored)
-    possession = frame.pivot_table(
-        index=["checkpoint", "margin"], columns="possession",
-        values="inpredictable_probability", aggfunc="first",
-    ).reset_index().rename(columns={"Y": "inpredictable_possession", "N": "inpredictable_no_possession"})
-    comparison = focal.merge(possession, on=["checkpoint", "margin"], validate="one_to_one")
+    probability = model.predict_proba(
+        feature_builder(_model_states(focal, focal["margin"]))
+    )[:, 1]
+    mirrored = model.predict_proba(
+        feature_builder(_model_states(focal, -focal["margin"]))
+    )[:, 1]
+    focal["local_neutral_probability"] = neutralize_home_probability(
+        probability, mirrored
+    )
+    possession = (
+        frame.pivot_table(
+            index=["checkpoint", "margin"],
+            columns="possession",
+            values="inpredictable_probability",
+            aggfunc="first",
+        )
+        .reset_index()
+        .rename(
+            columns={
+                "Y": "inpredictable_possession",
+                "N": "inpredictable_no_possession",
+            }
+        )
+    )
+    comparison = focal.merge(
+        possession, on=["checkpoint", "margin"], validate="one_to_one"
+    )
     comparison["inpredictable_midpoint"] = 0.5 * (
-        comparison["inpredictable_possession"] + comparison["inpredictable_no_possession"]
+        comparison["inpredictable_possession"]
+        + comparison["inpredictable_no_possession"]
     )
     comparison["local_minus_inpredictable"] = (
         comparison["local_neutral_probability"] - comparison["inpredictable_midpoint"]
     )
     comparison["possession_swing"] = (
-        comparison["inpredictable_possession"] - comparison["inpredictable_no_possession"]
+        comparison["inpredictable_possession"]
+        - comparison["inpredictable_no_possession"]
     )
     error = comparison["local_minus_inpredictable"].to_numpy()
     run_id = f"wp_inpredictable_surface_v1_{uuid.uuid4().hex[:10]}"
@@ -126,9 +184,15 @@ def run_inpredictable_surface_benchmark(
         "states": int(len(comparison)),
         "mean_absolute_probability_difference": float(np.abs(error).mean()),
         "root_mean_squared_probability_difference": float(np.sqrt(np.mean(error**2))),
-        "correlation": float(comparison[["local_neutral_probability", "inpredictable_midpoint"]].corr().iloc[0, 1]),
+        "correlation": float(
+            comparison[["local_neutral_probability", "inpredictable_midpoint"]]
+            .corr()
+            .iloc[0, 1]
+        ),
         "max_absolute_probability_difference": float(np.abs(error).max()),
-        "mean_absolute_inpredictable_possession_swing": float(np.abs(comparison["possession_swing"]).mean()),
+        "mean_absolute_inpredictable_possession_swing": float(
+            np.abs(comparison["possession_swing"]).mean()
+        ),
     }
     run = {
         "run_id": run_id,
@@ -136,9 +200,16 @@ def run_inpredictable_surface_benchmark(
         "estimand": "neutral_team_win_probability_by_score_clock_and_possession_midpoint",
         "status": "reference_surface_comparison_not_outcome_validation",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "config": {"margins": list(range(-15, 16, 3)), "checkpoints": [row[0] for row in CHECKPOINTS], "max_workers": max_workers,
-                   "model_run_path": str(model_run_path.resolve()), "model_run_sha256": sha256_file(model_run_path / "run.json"),
-                   "source_code_sha256": sha256_file(Path(__file__)), "calculator_url": CALCULATOR_URL},
+        "config": {
+            "margins": list(range(-15, 16, 3)),
+            "checkpoints": [row[0] for row in CHECKPOINTS],
+            "max_workers": max_workers,
+            "model_variant": model_variant,
+            "model_run_path": str(model_run_path.resolve()),
+            "model_run_sha256": sha256_file(model_run_path / "run.json"),
+            "source_code_sha256": sha256_file(Path(__file__)),
+            "calculator_url": CALCULATOR_URL,
+        },
         "metrics": metrics,
         "caveats": [
             "This compares model surfaces, not predictive accuracy against game outcomes.",

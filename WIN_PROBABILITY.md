@@ -34,32 +34,37 @@ All current variants are `StandardScaler` + logistic regression (`C=1`, LBFGS).
 
 | Variant | 2024–25 Brier | 2025–26 Brier | Verdict |
 |---|---:|---:|---|
-| State + Elo | 0.15502 | 0.14987 | retained baseline |
-| + prior starter RAPM | 0.15496 | 0.14922 | inconclusive in both folds |
-| + rolling margin and rest | **0.15378** | **0.14731** | confirmed feature block |
+| State + Elo | 0.15502 | 0.14961 | retained comparison |
+| + prior starter RAPM | 0.15496 | 0.14908 | inconclusive in both folds |
+| + starter-free rolling margin and rest | **0.15302** | **0.14777** | frozen Stage 0 |
+| + rolling context and starter RAPM | 0.15378 | 0.14724 | larger research variant |
 
-Rolling context beats the starter model in both outer folds. Its paired
-whole-game Brier deltas are -0.00118, 95% interval [-0.00198, -0.00040], on
-2024–25 and -0.00195, [-0.00373, -0.00020], on 2025–26. Starter RAPM versus Elo
-crosses zero in both folds, so the exact production specification still needs a
-starter-free ablation. On the later fold, the local tipoff difference from ESPN
-is not identified: local-minus-ESPN interval [-0.00063, 0.00839].
+Starter-free context beats Elo in both outer folds. Its paired whole-game Brier
+deltas are -0.00201, 95% interval [-0.00365, -0.00042], on 2024–25 and -0.00189,
+[-0.00377, -0.00008], on 2025–26. Adding starter RAPM to that model is unresolved:
+the smaller model is better by 0.00077 on the first fold and worse by 0.00053 on
+the second, with both paired intervals crossing zero. The smaller model is frozen
+because the extra player-data dependency has not earned promotion.
+
+On the later fold, the combined model's tipoff difference from ESPN is not
+identified: local-minus-ESPN interval [-0.00093, 0.00765].
 ESPN remains an external 2025–26 benchmark, not a label: Brier is 0.14759 on
 matched plays and 0.20210 at tipoff.
 
 ### Possession-start result
 
-Runs `wp_possession_start_v1_f4a1c8a2d2` and
-`wp_possession_start_v1_9af34729ef` confirm time-interacted possession control on
-both folds. On 2024–25, it lowers Brier from 0.15333 to 0.15314; the whole-game
-delta is -0.000196 with 95% interval [-0.000230, -0.000164]. On 2025–26, it
-lowers Brier from 0.14651 to 0.14632; the delta is -0.000189 with interval
-[-0.000214, -0.000163]. All 5,000 bootstrap draws favor possession in each fold.
+Runs `wp_possession_start_v2_1db472e450` and
+`wp_possession_start_v2_0a5d626234` use the frozen starter-free context and
+confirm time-interacted possession control on both folds. On 2024–25, it lowers
+Brier from 0.15270 to 0.15253; the whole-game delta is -0.000177 with 95% interval
+[-0.000206, -0.000147]. On 2025–26, it lowers Brier from 0.14689 to 0.14671; the
+delta is -0.000175 with interval [-0.000205, -0.000146]. All 5,000 bootstrap
+draws favor possession in each fold.
 
-The fitted home-possession swing is about 2.0 percentage points overall. It rises
-to 11.6–12.2 points in close last-two-minute states and 19.7–21.2 points when tied
-inside ten seconds. Close-last-two-minute Brier improves from 0.17912 to 0.17577
-on 2024–25 and from 0.17122 to 0.16719 on 2025–26. This matches Inpredictable's
+The fitted home-possession swing is about 2.1 percentage points overall. It rises
+to 11.6–12.4 points in close last-two-minute states and 19.8–21.8 points when tied
+inside ten seconds. Close-last-two-minute Brier improves from 0.17933 to 0.17626
+on 2024–25 and from 0.17019 to 0.16594 on 2025–26. This matches Inpredictable's
 qualitative late-game behavior and clears the repeated-fold research gate, but
 possession is valid only at causally constructed possession starts.
 
@@ -108,9 +113,8 @@ feature set and training procedure are proprietary.
   make naïve joins leak. The retained implementation collapses ordered control
   runs and scores each start only from completed prior possessions.
 - Terminal-state scoring: excluded because probabilities are mechanically 0/1.
-- GBM/neural/RL models: ordered in `WP_ARCHITECTURES.md`. The second fold is now
-  scored; isolate the null starter feature, freeze the smallest logistic
-  baseline, then begin the ladder.
+- GBM/neural/RL models: ordered in `WP_ARCHITECTURES.md`. The smallest logistic
+  baseline is now frozen; GAM/GBM is the active next comparison.
 - Starter RAPM alone: retained as a logged negative/inconclusive result.
 
 ## Reproduce
@@ -123,5 +127,5 @@ uv run python -m nba_impact.cli compare-wp-possession
 uv run python -m nba_impact.cli compare-wp-possession \
   --train-season 2023-24 --test-season 2024-25
 uv run python -m nba_impact.cli benchmark-inpredictable \
-  --model-run artifacts/models/win_probability_lineup/wp_pregame_ablation_v2_522e1a36f2
+  --model-run artifacts/models/win_probability_lineup/wp_pregame_ablation_v3_cdbcea84ee
 ```

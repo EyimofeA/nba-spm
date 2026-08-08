@@ -1,4 +1,5 @@
 """Command line entry point for the new data/model spine."""
+
 from __future__ import annotations
 
 import argparse
@@ -26,12 +27,18 @@ from nba_impact.models.rapm import (
     run_walk_forward_comparison,
 )
 from nba_impact.models.rapm_lineup_policy import run_rapm_lineup_policy_comparison
-from nba_impact.models.inpredictable_benchmark import run_inpredictable_surface_benchmark
+from nba_impact.models.inpredictable_benchmark import (
+    run_inpredictable_surface_benchmark,
+)
 from nba_impact.models.win_probability import run_win_probability
 from nba_impact.models.win_probability_ablation import run_win_probability_elo_ablation
-from nba_impact.models.win_probability_benchmark import run_espn_win_probability_benchmark
+from nba_impact.models.win_probability_benchmark import (
+    run_espn_win_probability_benchmark,
+)
 from nba_impact.models.win_probability_lineup import run_win_probability_lineup_ablation
-from nba_impact.models.win_probability_possession import run_win_probability_possession_ablation
+from nba_impact.models.win_probability_possession import (
+    run_win_probability_possession_ablation,
+)
 from nba_impact.paths import (
     ARTIFACT_ROOT,
     BRONZE_ROOT,
@@ -67,7 +74,16 @@ def command_audit(args: argparse.Namespace) -> int:
     destination = Path(args.output or MANIFEST_ROOT / f"{snapshot['snapshot_id']}.json")
     write_json_atomic(snapshot, destination)
     register_snapshot(args.registry, snapshot)
-    print(json.dumps({"snapshot_id": snapshot["snapshot_id"], "passed": snapshot["passed"], "path": str(destination)}, indent=2))
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "path": str(destination),
+            },
+            indent=2,
+        )
+    )
     for item in snapshot["files"]:
         quality = item["quality"]
         print(
@@ -75,7 +91,9 @@ def command_audit(args: argparse.Namespace) -> int:
             f"dates={quality['date_min']}..{quality['date_max']} passed={quality['passed']}"
         )
         for issue in quality["issues"]:
-            print(f"  {issue['severity']:>8} {issue['code']}: {issue['count']} — {issue['message']}")
+            print(
+                f"  {issue['severity']:>8} {issue['code']}: {issue['count']} — {issue['message']}"
+            )
     return 0 if snapshot["passed"] else 2
 
 
@@ -86,7 +104,12 @@ def command_ingest(args: argparse.Namespace) -> int:
         print(json.dumps(plan, indent=2))
         return 0
     summary = run_ingest_manifest(args.manifest, root=args.root)
-    print(json.dumps({key: summary[key] for key in ("succeeded", "failed", "completed_at")}, indent=2))
+    print(
+        json.dumps(
+            {key: summary[key] for key in ("succeeded", "failed", "completed_at")},
+            indent=2,
+        )
+    )
     return 0
 
 
@@ -144,7 +167,9 @@ def command_build_game_dim(args: argparse.Namespace) -> int:
 
 def command_build_event_states(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
-    snapshot = build_event_states(args.root, args.game_dim, args.output, args.manifest_dir)
+    snapshot = build_event_states(
+        args.root, args.game_dim, args.output, args.manifest_dir
+    )
     register_snapshot(args.registry, snapshot)
     print(
         json.dumps(
@@ -288,7 +313,9 @@ def command_build_possessions(args: argparse.Namespace) -> int:
 def command_fit_rapm(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     seasons = tuple(args.seasons)
-    game_types = tuple(item.strip() for item in args.game_types.split(",") if item.strip())
+    game_types = tuple(
+        item.strip() for item in args.game_types.split(",") if item.strip()
+    )
     frame = load_legacy_possessions(args.cache_dir, seasons, game_types=game_types)
     names = pd.read_csv(args.names) if Path(args.names).exists() else None
     config = RapmConfig(
@@ -309,7 +336,9 @@ def command_fit_rapm(args: argparse.Namespace) -> int:
 
 def command_fit_current_rapm(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
-    game_types = tuple(item.strip() for item in args.game_types.split(",") if item.strip())
+    game_types = tuple(
+        item.strip() for item in args.game_types.split(",") if item.strip()
+    )
     frame = load_current_possessions(
         args.possessions,
         args.segments,
@@ -346,7 +375,9 @@ def _lambda_pairs(value: str) -> tuple[tuple[float, float], ...]:
             offense, defense = item.strip().split(":", maxsplit=1)
             pairs.append((float(offense), float(defense)))
     except ValueError as exc:
-        raise argparse.ArgumentTypeError("use comma-separated offense:def pairs") from exc
+        raise argparse.ArgumentTypeError(
+            "use comma-separated offense:def pairs"
+        ) from exc
     if not pairs or any(offense <= 0 or defense <= 0 for offense, defense in pairs):
         raise argparse.ArgumentTypeError("lambda pairs must be positive")
     return tuple(pairs)
@@ -355,7 +386,9 @@ def _lambda_pairs(value: str) -> tuple[tuple[float, float], ...]:
 def command_compare_rapm(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     seasons = tuple(args.seasons)
-    game_types = tuple(item.strip() for item in args.game_types.split(",") if item.strip())
+    game_types = tuple(
+        item.strip() for item in args.game_types.split(",") if item.strip()
+    )
     frame = load_legacy_possessions(args.cache_dir, seasons, game_types=game_types)
     config = RapmConfig(
         seasons=seasons,
@@ -381,7 +414,9 @@ def command_walk_forward_rapm(args: argparse.Namespace) -> int:
     test_seasons = tuple(args.test_seasons)
     season_start = min(test_seasons) - args.train_window
     seasons = tuple(range(season_start, max(test_seasons) + 1))
-    game_types = tuple(item.strip() for item in args.game_types.split(",") if item.strip())
+    game_types = tuple(
+        item.strip() for item in args.game_types.split(",") if item.strip()
+    )
     frame = load_legacy_possessions(args.cache_dir, seasons, game_types=game_types)
     config = RapmConfig(
         seasons=seasons,
@@ -438,7 +473,8 @@ def command_compare_win_probability(args: argparse.Namespace) -> int:
     write_json_atomic(run, Path(run["artifact_path"]) / "run.json")
     register_model_run(args.registry, run)
     summary = {
-        "run_id": run["run_id"], "status": run["status"],
+        "run_id": run["run_id"],
+        "status": run["status"],
         "variants": run["metrics"]["nonterminal_variants"],
         "paired_game_bootstrap": run["metrics"]["paired_game_bootstrap"],
         "artifact_path": run["artifact_path"],
@@ -520,6 +556,10 @@ def command_compare_wp_lineup_strength(args: argparse.Namespace) -> int:
                 "team_context_paired_game_bootstrap": metrics[
                     "team_context_paired_game_bootstrap"
                 ],
+                "starter_free_context_vs_starter_context": metrics[
+                    "starter_free_context_vs_starter_context"
+                ],
+                "starter_free_context_vs_elo": metrics["starter_free_context_vs_elo"],
                 "espn_game_start": metrics["espn_game_start"],
                 "espn_game_start_paired": metrics["espn_game_start_paired"],
                 "starter_rating_coverage": metrics["starter_rating_coverage"],
@@ -537,8 +577,16 @@ def command_benchmark_inpredictable(args: argparse.Namespace) -> int:
         args.model_run, artifact_root=args.artifact_root, max_workers=args.max_workers
     )
     register_model_run(args.registry, run)
-    print(json.dumps({"run_id": run["run_id"], "metrics": run["metrics"],
-                      "artifact_path": run["artifact_path"]}, indent=2))
+    print(
+        json.dumps(
+            {
+                "run_id": run["run_id"],
+                "metrics": run["metrics"],
+                "artifact_path": run["artifact_path"],
+            },
+            indent=2,
+        )
+    )
     return 0
 
 
@@ -546,10 +594,7 @@ def command_compare_wp_possession(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     run = run_win_probability_possession_ablation(
         args.possessions,
-        args.segments,
         args.game_dim,
-        args.player_games,
-        args.legacy_cache,
         artifact_root=args.artifact_root,
         train_season=args.train_season,
         test_season=args.test_season,
@@ -563,7 +608,9 @@ def command_compare_wp_possession(args: argparse.Namespace) -> int:
                 "run_id": run["run_id"],
                 "variants": run["metrics"]["variants"],
                 "paired_game_bootstrap": run["metrics"]["paired_game_bootstrap"],
-                "close_last_2m_margin_le_3": run["metrics"]["close_last_2m_margin_le_3"],
+                "close_last_2m_margin_le_3": run["metrics"][
+                    "close_last_2m_margin_le_3"
+                ],
                 "possession_effects": run["metrics"]["possession_effects"],
                 "artifact_path": run["artifact_path"],
             },
@@ -583,8 +630,16 @@ def command_compare_rapm_lineups(args: argparse.Namespace) -> int:
         seed=args.seed,
     )
     register_model_run(args.registry, run)
-    print(json.dumps({"run_id": run["run_id"], **run["metrics"],
-                      "artifact_path": run["artifact_path"]}, indent=2))
+    print(
+        json.dumps(
+            {
+                "run_id": run["run_id"],
+                **run["metrics"],
+                "artifact_path": run["artifact_path"],
+            },
+            indent=2,
+        )
+    )
     return 0
 
 
@@ -592,46 +647,68 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="nba-impact")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    audit = subparsers.add_parser("audit-possessions", help="Audit and register legacy possession partitions.")
+    audit = subparsers.add_parser(
+        "audit-possessions", help="Audit and register legacy possession partitions."
+    )
     audit.add_argument("--seasons", type=_season_list, default=tuple(range(1997, 2026)))
     audit.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
     audit.add_argument("--output", type=Path)
     audit.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     audit.set_defaults(func=command_audit)
 
-    ingest = subparsers.add_parser("ingest", help="Run a resumable HTTP ingestion manifest.")
+    ingest = subparsers.add_parser(
+        "ingest", help="Run a resumable HTTP ingestion manifest."
+    )
     ingest.add_argument("--manifest", type=Path, required=True)
     ingest.add_argument("--root", type=Path, default=BRONZE_ROOT)
     ingest.add_argument(
-        "--dry-run", action="store_true", help="Report verified and remaining files without downloading."
+        "--dry-run",
+        action="store_true",
+        help="Report verified and remaining files without downloading.",
     )
     ingest.set_defaults(func=command_ingest)
 
-    event_audit = subparsers.add_parser("audit-events", help="Audit and reconcile downloaded event sources.")
-    event_audit.add_argument("--root", type=Path, default=BRONZE_ROOT / "nba_data_archive")
+    event_audit = subparsers.add_parser(
+        "audit-events", help="Audit and reconcile downloaded event sources."
+    )
+    event_audit.add_argument(
+        "--root", type=Path, default=BRONZE_ROOT / "nba_data_archive"
+    )
     event_audit.add_argument("--output", type=Path)
     event_audit.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     event_audit.set_defaults(func=command_audit_events)
 
-    game_dim = subparsers.add_parser("build-game-dim", help="Build the canonical silver game dimension.")
+    game_dim = subparsers.add_parser(
+        "build-game-dim", help="Build the canonical silver game dimension."
+    )
     game_dim.add_argument("--root", type=Path, default=BRONZE_ROOT / "nba_data_archive")
-    game_dim.add_argument("--output", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    game_dim.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
     game_dim.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
     game_dim.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     game_dim.set_defaults(func=command_build_game_dim)
 
     event_states = subparsers.add_parser(
-        "build-event-states", help="Build canonical post-action score states from V3 events."
+        "build-event-states",
+        help="Build canonical post-action score states from V3 events.",
     )
-    event_states.add_argument("--root", type=Path, default=BRONZE_ROOT / "nba_data_archive")
-    event_states.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
-    event_states.add_argument("--output", type=Path, default=SILVER_ROOT / "event_states.parquet")
+    event_states.add_argument(
+        "--root", type=Path, default=BRONZE_ROOT / "nba_data_archive"
+    )
+    event_states.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    event_states.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
     event_states.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
     event_states.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     event_states.set_defaults(func=command_build_event_states)
 
     player_games = subparsers.add_parser(
-        "build-player-games", help="Build canonical player-game boxes and exact starter seeds."
+        "build-player-games",
+        help="Build canonical player-game boxes and exact starter seeds.",
     )
     player_games.add_argument(
         "--box",
@@ -643,10 +720,16 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=BRONZE_ROOT / "llimllib_nba_data" / "espn" / "player_box.parquet",
     )
-    player_games.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
-    player_games.add_argument("--output", type=Path, default=SILVER_ROOT / "player_games.parquet")
+    player_games.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    player_games.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
     player_games.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
-    player_games.add_argument("--official-box-dir", type=Path, default=OFFICIAL_BOXSCORE_ROOT)
+    player_games.add_argument(
+        "--official-box-dir", type=Path, default=OFFICIAL_BOXSCORE_ROOT
+    )
     player_games.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     player_games.set_defaults(func=command_build_player_games)
 
@@ -658,7 +741,9 @@ def build_parser() -> argparse.ArgumentParser:
         "--quality", type=Path, default=SILVER_ROOT / "lineup_game_quality.parquet"
     )
     official_boxes.add_argument("--seasons", type=_text_list, default=())
-    official_boxes.add_argument("--output-root", type=Path, default=OFFICIAL_BOXSCORE_ROOT)
+    official_boxes.add_argument(
+        "--output-root", type=Path, default=OFFICIAL_BOXSCORE_ROOT
+    )
     official_boxes.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
     official_boxes.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     official_boxes.add_argument("--max-attempts", type=int, default=20)
@@ -666,14 +751,23 @@ def build_parser() -> argparse.ArgumentParser:
     official_boxes.set_defaults(func=command_ingest_official_boxscores)
 
     lineups = subparsers.add_parser(
-        "build-lineups", help="Reconstruct and minute-reconcile current five-player lineup stints."
+        "build-lineups",
+        help="Reconstruct and minute-reconcile current five-player lineup stints.",
     )
     lineups.add_argument("--root", type=Path, default=BRONZE_ROOT / "nba_data_archive")
-    lineups.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
-    lineups.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
-    lineups.add_argument("--output", type=Path, default=SILVER_ROOT / "lineup_stints.parquet")
     lineups.add_argument(
-        "--quality-output", type=Path, default=SILVER_ROOT / "lineup_game_quality.parquet"
+        "--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
+    lineups.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    lineups.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "lineup_stints.parquet"
+    )
+    lineups.add_argument(
+        "--quality-output",
+        type=Path,
+        default=SILVER_ROOT / "lineup_game_quality.parquet",
     )
     lineups.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
     lineups.add_argument("--registry", type=Path, default=REGISTRY_PATH)
@@ -682,24 +776,41 @@ def build_parser() -> argparse.ArgumentParser:
     lineups.set_defaults(func=command_build_lineups)
 
     possessions = subparsers.add_parser(
-        "build-possessions", help="Build current possessions and ordinal lineup segments."
+        "build-possessions",
+        help="Build current possessions and ordinal lineup segments.",
     )
-    possessions.add_argument("--root", type=Path, default=BRONZE_ROOT / "nba_data_archive")
-    possessions.add_argument("--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet")
-    possessions.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
-    possessions.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
     possessions.add_argument(
-        "--lineup-quality", type=Path, default=SILVER_ROOT / "lineup_game_quality.parquet"
+        "--root", type=Path, default=BRONZE_ROOT / "nba_data_archive"
     )
-    possessions.add_argument("--output", type=Path, default=SILVER_ROOT / "possessions.parquet")
     possessions.add_argument(
-        "--segments-output", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet"
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    possessions.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    possessions.add_argument(
+        "--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
+    possessions.add_argument(
+        "--lineup-quality",
+        type=Path,
+        default=SILVER_ROOT / "lineup_game_quality.parquet",
+    )
+    possessions.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    possessions.add_argument(
+        "--segments-output",
+        type=Path,
+        default=SILVER_ROOT / "possession_lineup_segments.parquet",
     )
     possessions.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
     possessions.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     possessions.set_defaults(func=command_build_possessions)
 
-    rapm = subparsers.add_parser("fit-rapm", help="Fit the independent zero-prior RAPM baseline.")
+    rapm = subparsers.add_parser(
+        "fit-rapm", help="Fit the independent zero-prior RAPM baseline."
+    )
     rapm.add_argument("--seasons", type=_season_list, required=True)
     rapm.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
     rapm.add_argument("--names", type=Path, default=PLAYER_NAMES)
@@ -714,13 +825,20 @@ def build_parser() -> argparse.ArgumentParser:
     rapm.set_defaults(func=command_fit_rapm)
 
     current_rapm = subparsers.add_parser(
-        "fit-current-rapm", help="Fit current RAPM from canonical CDN possessions and ordinal lineups."
+        "fit-current-rapm",
+        help="Fit current RAPM from canonical CDN possessions and ordinal lineups.",
     )
-    current_rapm.add_argument("--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet")
     current_rapm.add_argument(
-        "--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet"
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
     )
-    current_rapm.add_argument("--lineup-policy", choices=("start", "terminal"), default="start")
+    current_rapm.add_argument(
+        "--segments",
+        type=Path,
+        default=SILVER_ROOT / "possession_lineup_segments.parquet",
+    )
+    current_rapm.add_argument(
+        "--lineup-policy", choices=("start", "terminal"), default="start"
+    )
     current_rapm.add_argument("--names", type=Path, default=PLAYER_NAMES)
     current_rapm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     current_rapm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
@@ -733,7 +851,8 @@ def build_parser() -> argparse.ArgumentParser:
     current_rapm.set_defaults(func=command_fit_current_rapm)
 
     compare = subparsers.add_parser(
-        "compare-rapm", help="Compare fixed RAPM penalties on one chronological diagnostic fold."
+        "compare-rapm",
+        help="Compare fixed RAPM penalties on one chronological diagnostic fold.",
     )
     compare.add_argument("--seasons", type=_season_list, required=True)
     compare.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
@@ -743,7 +862,9 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument(
         "--lambda-pairs",
         type=_lambda_pairs,
-        default=_lambda_pairs("500:500,1000:1000,2000:2000,3000:3000,6000:6000,2000:4500"),
+        default=_lambda_pairs(
+            "500:500,1000:1000,2000:2000,3000:3000,6000:6000,2000:4500"
+        ),
     )
     compare.add_argument("--lambda-home", type=float, default=300.0)
     compare.add_argument("--game-types", default="regular")
@@ -751,7 +872,8 @@ def build_parser() -> argparse.ArgumentParser:
     compare.set_defaults(func=command_compare_rapm)
 
     walk = subparsers.add_parser(
-        "walk-forward-rapm", help="Compare RAPM candidates across chronological outer seasons."
+        "walk-forward-rapm",
+        help="Compare RAPM candidates across chronological outer seasons.",
     )
     walk.add_argument("--test-seasons", type=_season_list, required=True)
     walk.add_argument("--train-window", type=int, default=3)
@@ -772,11 +894,18 @@ def build_parser() -> argparse.ArgumentParser:
     walk.set_defaults(func=command_walk_forward_rapm)
 
     win_probability = subparsers.add_parser(
-        "fit-win-probability", help="Fit the chronological state-only win-probability baseline."
+        "fit-win-probability",
+        help="Fit the chronological state-only win-probability baseline.",
     )
-    win_probability.add_argument("--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet")
-    win_probability.add_argument("--train-seasons", type=_text_list, default=("2024-25",))
-    win_probability.add_argument("--test-seasons", type=_text_list, default=("2025-26",))
+    win_probability.add_argument(
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    win_probability.add_argument(
+        "--train-seasons", type=_text_list, default=("2024-25",)
+    )
+    win_probability.add_argument(
+        "--test-seasons", type=_text_list, default=("2025-26",)
+    )
     win_probability.add_argument("--interval-seconds", type=int, default=30)
     win_probability.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     win_probability.add_argument("--registry", type=Path, default=REGISTRY_PATH)
@@ -784,10 +913,15 @@ def build_parser() -> argparse.ArgumentParser:
     win_probability.set_defaults(func=command_fit_win_probability)
 
     wp_compare = subparsers.add_parser(
-        "compare-win-probability", help="Compare state-only WP with time-safe pregame Elo."
+        "compare-win-probability",
+        help="Compare state-only WP with time-safe pregame Elo.",
     )
-    wp_compare.add_argument("--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet")
-    wp_compare.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    wp_compare.add_argument(
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    wp_compare.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
     wp_compare.add_argument("--train-seasons", type=_text_list, default=("2024-25",))
     wp_compare.add_argument("--test-seasons", type=_text_list, default=("2025-26",))
     wp_compare.add_argument("--interval-seconds", type=int, default=30)
@@ -802,13 +936,17 @@ def build_parser() -> argparse.ArgumentParser:
         "ingest-espn-win-probability",
         help="Cache ESPN play-level win probabilities for canonical games.",
     )
-    espn_ingest.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    espn_ingest.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
     espn_ingest.add_argument("--seasons", type=_text_list, default=("2025-26",))
     espn_ingest.add_argument(
         "--raw-root", type=Path, default=BRONZE_ROOT / "espn_win_probability"
     )
     espn_ingest.add_argument(
-        "--output", type=Path, default=SILVER_ROOT / "espn_win_probability_index.parquet"
+        "--output",
+        type=Path,
+        default=SILVER_ROOT / "espn_win_probability_index.parquet",
     )
     espn_ingest.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
     espn_ingest.add_argument("--registry", type=Path, default=REGISTRY_PATH)
@@ -819,10 +957,16 @@ def build_parser() -> argparse.ArgumentParser:
         "benchmark-win-probability",
         help="Compare the local WP model with ESPN on identical matched play states.",
     )
-    wp_benchmark.add_argument("--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet")
-    wp_benchmark.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
     wp_benchmark.add_argument(
-        "--espn-index", type=Path, default=SILVER_ROOT / "espn_win_probability_index.parquet"
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    wp_benchmark.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    wp_benchmark.add_argument(
+        "--espn-index",
+        type=Path,
+        default=SILVER_ROOT / "espn_win_probability_index.parquet",
     )
     wp_benchmark.add_argument("--model-run", type=Path, required=True)
     wp_benchmark.add_argument("--clock-tolerance-seconds", type=float, default=1.0)
@@ -836,16 +980,28 @@ def build_parser() -> argparse.ArgumentParser:
         "compare-wp-lineup-strength",
         help="Compare Elo WP with leakage-safe prior-season starter RAPM strength.",
     )
-    wp_lineup.add_argument("--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet")
-    wp_lineup.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
-    wp_lineup.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
-    wp_lineup.add_argument("--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet")
     wp_lineup.add_argument(
-        "--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet"
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    wp_lineup.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    wp_lineup.add_argument(
+        "--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
+    wp_lineup.add_argument(
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    wp_lineup.add_argument(
+        "--segments",
+        type=Path,
+        default=SILVER_ROOT / "possession_lineup_segments.parquet",
     )
     wp_lineup.add_argument("--legacy-cache", type=Path, default=LEGACY_POSSESSION_CACHE)
     wp_lineup.add_argument(
-        "--espn-index", type=Path, default=SILVER_ROOT / "espn_win_probability_index.parquet"
+        "--espn-index",
+        type=Path,
+        default=SILVER_ROOT / "espn_win_probability_index.parquet",
     )
     wp_lineup.add_argument("--train-season", default="2024-25")
     wp_lineup.add_argument("--test-season", default="2025-26")
@@ -861,13 +1017,12 @@ def build_parser() -> argparse.ArgumentParser:
         "compare-wp-possession",
         help="Compare pregame-context WP with leakage-safe possession-start control.",
     )
-    wp_possession.add_argument("--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet")
     wp_possession.add_argument(
-        "--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet"
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
     )
-    wp_possession.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
-    wp_possession.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
-    wp_possession.add_argument("--legacy-cache", type=Path, default=LEGACY_POSSESSION_CACHE)
+    wp_possession.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
     wp_possession.add_argument("--train-season", default="2024-25")
     wp_possession.add_argument("--test-season", default="2025-26")
     wp_possession.add_argument("--bootstrap-repetitions", type=int, default=5000)
@@ -880,9 +1035,13 @@ def build_parser() -> argparse.ArgumentParser:
         "compare-rapm-lineups",
         help="Compare start, terminal, and fractional lineup assignment on identical possessions.",
     )
-    rapm_lineups.add_argument("--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet")
     rapm_lineups.add_argument(
-        "--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet"
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    rapm_lineups.add_argument(
+        "--segments",
+        type=Path,
+        default=SILVER_ROOT / "possession_lineup_segments.parquet",
     )
     rapm_lineups.add_argument("--bootstrap-repetitions", type=int, default=5000)
     rapm_lineups.add_argument("--seed", type=int, default=7)

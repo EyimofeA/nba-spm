@@ -6,10 +6,13 @@ from nba_impact.models.win_probability_lineup import (
     build_pregame_team_context,
     build_starter_strength,
     make_lineup_features,
+    make_rolling_context_features,
 )
 
 
-def test_starter_strength_uses_only_prior_season_ratings_and_centered_missing_value() -> None:
+def test_starter_strength_uses_only_prior_season_ratings_and_centered_missing_value() -> (
+    None
+):
     rows = []
     for side, start_id in (("home", 1), ("away", 6)):
         for player_id in range(start_id, start_id + 5):
@@ -72,3 +75,24 @@ def test_team_context_updates_only_after_the_full_date() -> None:
     assert context.loc["g1", "pregame_rolling_margin_diff"] == 0.0
     assert context.loc["g2", "pregame_rolling_margin_diff"] == 0.0
     assert context.loc["g3", "pregame_rolling_margin_diff"] == 2.0
+
+
+def test_rolling_context_features_exclude_starter_ratings() -> None:
+    states = pd.DataFrame(
+        {
+            "home_score_diff_after": [0.0],
+            "regulation_seconds_remaining": [2880.0],
+            "seconds_remaining_period": [720.0],
+            "seconds_elapsed_game": [0.0],
+            "is_overtime": [False],
+            "pregame_elo_diff": [0.5],
+            "pregame_starter_net_diff": [99.0],
+            "pregame_rolling_margin_diff": [2.0],
+            "pregame_rest_advantage_days": [1.0],
+        }
+    )
+    features = make_rolling_context_features(states)
+    assert "pregame_starter_net_diff" not in features
+    assert "pregame_starter_remaining" not in features
+    assert features.loc[0, "pregame_rolling_margin_remaining"] == 2.0
+    assert features.loc[0, "pregame_rest_remaining"] == 1.0

@@ -721,3 +721,30 @@ exact combined implementation is larger than the evidence justifies.
 as confirmed feature blocks. Do not freeze the exact production model until a
 starter-free rolling-context ablation passes both folds. Then begin the fixed
 GAM/GBM architecture ladder on identical states.
+
+## 2026-08-08 — Starter-free WP becomes the frozen Stage 0 baseline
+
+**Question:** Does prior-season starter RAPM add enough value to justify its
+coverage gaps and dependencies once rolling team margin and rest are present?
+
+**What we did:** Added an explicit starter-free model with the same state, Elo,
+rolling margin, rest, interactions, regularization, rows, and whole-game
+bootstrap as the combined model. Scored both frozen folds. Then removed player
+games, lineup segments, legacy possessions, and starter ratings from the
+possession-start model and repeated both possession folds.
+
+**Result:** Pregame runs `wp_pregame_ablation_v3_30ab68d381` and
+`wp_pregame_ablation_v3_cdbcea84ee` show starter-free context beating Elo on
+2024–25 (0.15502 → 0.15302; delta -0.00201, 95% interval
+[-0.00365, -0.00042]) and 2025–26 (0.14961 → 0.14777; delta -0.00189,
+[-0.00377, -0.00008]). Against context plus starters, the smaller model wins the
+first fold by 0.00077 and loses the second by 0.00053; both intervals cross zero.
+Possession runs `wp_possession_start_v2_1db472e450` and
+`wp_possession_start_v2_0a5d626234` retain the time-interacted control gain on
+both folds, with Brier deltas -0.000177 and -0.000175 and both intervals excluding
+zero. Late close-game gains remain materially larger.
+
+**Verdict:** Freeze starter-free Elo plus rolling margin and rest as Stage 0.
+Starter RAPM remains a research feature, not a production dependency. The
+possession-start extension is separately validated and now uses the same smaller
+context. Begin the fixed GAM/GBM comparison on identical features.

@@ -169,18 +169,19 @@ Prior-season starter RAPM slightly improves tipoff Brier (0.21181 → 0.21057),
 but its paired interval crosses zero and it remains materially behind ESPN
 (0.20210). Keep it as a documented null/inconclusive result, not production.
 Rolling margin plus rest is the stronger challenger: run
-`wp_pregame_ablation_v2_3026c4a4b9` confirms the later
-`wp_pregame_ablation_v2_522e1a36f2` result on the independent 2024–25 test
-season. Rolling context beats starters in both whole-game bootstraps; starter
-RAPM alone crosses zero in both. Remove the null starter block and rerun both
-folds before freezing the smallest production specification.
+`wp_pregame_ablation_v3_30ab68d381` and
+`wp_pregame_ablation_v3_cdbcea84ee` confirm starter-free rolling context against
+Elo in both outer folds. Adding starter RAPM to context is unresolved and moves
+the two fold point estimates in opposite directions. Freeze the smaller
+starter-free Stage 0 model; keep the starter variant as research only.
 
 Possession/control must enter WP only at causal possession starts. Run
-`wp_possession_start_v1_f4a1c8a2d2` confirms
-`wp_possession_start_v1_9af34729ef`: time-interacted control improves Brier and
-late-game accuracy in both outer folds. Each run reconstructs score from
-completed prior possessions; raw CDN possession tags on arbitrary action rows
-remain forbidden because they can reveal rebound/control outcomes. For current
+`wp_possession_start_v2_1db472e450` confirms
+`wp_possession_start_v2_0a5d626234`: time-interacted control improves Brier and
+late-game accuracy in both outer folds on the starter-free baseline. Each run
+reconstructs score from completed prior possessions; raw CDN possession tags on
+arbitrary action rows remain forbidden because they can reveal rebound/control
+outcomes. For current
 RAPM, run `rapm_lineup_policy_v1_23149bbb29` rejects
 start-lineup attribution. Use terminal lineup as the provisional simple policy;
 keep fractional segment exposure as a research challenger because its small
