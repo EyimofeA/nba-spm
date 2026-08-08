@@ -6,12 +6,35 @@ or pipeline shifts.
 
 ---
 
+## Working style
+
+- Lead with the outcome and next action. Be concise, direct, and candid; clearly
+  separate verified facts, inferences, and unresolved uncertainty.
+- Use the Visualize skill when a chart, diagram, simulator, or interface view
+  materially improves an explanation. Do not add decorative visuals.
+- Ground research in authoritative, current sources and link important evidence.
+- Preserve the user's original goal and constraints. Complete authorized work
+  end to end and verify the observable result before claiming success.
+- Ask only when a decision is materially ambiguous, risky, or needs approval.
+- Delegate only genuinely independent work; synthesize and verify its result.
+- Keep changes focused and simple. Avoid unrelated edits, unnecessary
+  abstractions, and low-signal tests.
+- Test observable behavior and validate user-facing work in the real interface
+  when one exists. Preserve unrelated work and avoid destructive, production,
+  or external actions beyond the granted scope.
+- Report meaningful blockers, outcomes, and evidence without noisy narration.
+
+---
+
 ## What lives here
 
-Three related NBA analytics projects share this workspace:
+Four related NBA analytics projects share this workspace. The clean NBA Impact
+package is the active integration path; the older SPM/RAPM scripts remain useful
+research references until intentionally migrated.
 
 | Sub-project        | Purpose                                                                                                                                             | Entry points                                                                             |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **NBA Impact** (`src/nba_impact/`) | Versioned ingestion, canonical games/events/player-games/lineups, model registry, clean RAPM, and win probability. | `nba-impact`, `pyproject.toml`, `configs/ingest/` |
 | **SPM** (root)     | Train gradient-boosted models that predict offensive / defensive RAPM from box + tracking features. Output is a per-player "prior" used downstream. | `src/train_spm.py`, `src/generate_priors.py`, `src/apply_prior.py`                       |
 | **RAPM** (`rapm/`) | Ridge regression on play-by-play possessions from a MySQL `matchups` table, with optional SPM priors and playoff/meta adjustments.                  | `rapm/src/rapm.py`, `rapm/src/rapm_with_prior.py`, `rapm/src/playoff_rapm_with_prior.py` |
 | **zTS** (`zts/`)   | Playtype-adjusted relative True Shooting. Has its own charter — see `zts/AGENTS.md`.                                                                | `zts/compute_zts.ipynb`                                                                  |
@@ -27,9 +50,14 @@ The SPM and RAPM projects exchange a single artifact: `data/outputs/prior.csv`
 New SPM/
 ├── AGENTS.md                         ← this file
 ├── README.md                         ← quick-start for humans
-├── requirements.txt                  ← SPM + RAPM deps (zts has its own)
+├── pyproject.toml                     ← clean NBA Impact package + CLI dependencies
+├── configs/ingest/                    ← pinned, resumable source manifests
+├── artifacts/                        ← model runs + DuckDB registry (generated)
 │
-├── src/                              ← SPM pipeline (Python scripts, run directly)
+├── src/
+│   ├── nba_impact/                   ← active clean ingestion/model package
+│   │   ├── data/                     ← canonical builders + QA/quarantine gates
+│   │   └── models/                   ← clean RAPM and win-probability baselines
 │   ├── paths.py                      ← central path constants (IMPORT THIS)
 │   ├── fetch_playtypes.py            ← downloads Synergy playtype CSV → POE features
 │   ├── train_spm.py                  ← GBM training (was bpm_optimized.py)
@@ -51,6 +79,7 @@ New SPM/
 │       └── scaler.pkl
 │
 ├── data/
+│   ├── lake/                         ← bronze/silver/manifests for NBA Impact
 │   ├── raw/                          ← scraped inputs, don't modify
 │   │   ├── site_Data/                ← mirror of github.com/gabriel1200/site_Data
 │   │   ├── playersheets/year_totals/ ← per-season box score totals
@@ -89,6 +118,28 @@ New SPM/
     ├── data/                         ← old Combined_Rapm_*.csv, AIAGENT.md, …
     └── AIAGENT.md                    ← previous agent charter (superseded by this file)
 ```
+
+---
+
+## Active NBA Impact path
+
+The current clean pipeline is:
+
+```text
+pinned source manifests
+  → data/lake/bronze
+  → game_dim + event_states + player_games + lineup_stints
+  → chronological model evaluation
+  → artifacts/models + artifacts/registry/nba_impact.duckdb
+```
+
+Current validated scope is 2024–25 and 2025–26. `lineup_stints.parquet` emits
+only minute-reconciled games; quarantined games remain visible in
+`lineup_game_quality.parquet`. ESPN Net Points/WPA mirrors are research
+benchmarks only because the upstream repository declares no license.
+
+Run from the repository root with `PYTHONPATH=src python3 -m nba_impact.cli …`
+or install the `nba-impact` entry point from `pyproject.toml`.
 
 ---
 
