@@ -32,11 +32,12 @@ dead ends. Updated 2026-08-09. See `docs/README.md` for the document index,
 
 ## Active next task
 
-Generate cross-fitted v2 statistical priors for each historical window. Then
-compare prior-only, normal RAPM, a simple blend, and prior-informed RAPM without
-letting a target window train its own prior. Keep on/off as a separately labeled
-impact-assisted model. WP neural work is paused; do not train neural models on
-the local Mac.
+Build the eight-head factor RAPM target layer described in
+`docs/impact/FACTOR_DECOMPOSITION.md`. Treat the six-head TS version as an
+ablation. Continue the direct prior-informed RAPM path in parallel because rich
+historical factor events are not yet available. Keep on/off as a separately
+labeled impact-assisted model. WP neural work is paused; do not train neural
+models on the local Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.

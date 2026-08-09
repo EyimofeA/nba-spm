@@ -88,6 +88,12 @@ net RMSE improves from 1.30196 to 1.27987 and correlation improves from 0.54104
 to 0.55221. This is a research challenger because earlier family comparisons
 already inspected 2024. More subset search on these folds is not valid.
 
+The next challenger uses the target and feature contract in
+[`FACTOR_DECOMPOSITION.md`](FACTOR_DECOMPOSITION.md). Its primary form estimates
+offensive and defensive eFG, turnover, rebound, and free-throw effects. A
+six-head true-shooting version is an ablation. Keep direct offense and defense
+as the production baseline until the factor model wins on untouched windows.
+
 ## Phase 4 — Create the all-in-one rating
 
 1. Evaluate the statistical prior by itself.
@@ -126,7 +132,7 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Generate cross-fitted optimized statistical priors for every historical window,
-then center possession-level RAPM penalties on those priors. Tune prior strength
-inside earlier windows and compare normal RAPM, prior-only statistical AIO, a
-simple blend, and prior-informed RAPM on identical future games.
+Build and validate the eight-head factor target builder on current rich events.
+In parallel, generate cross-fitted direct statistical priors for every
+historical window. Factor-model promotion requires historical event ingestion;
+the direct prior-informed RAPM path does not.

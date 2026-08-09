@@ -1066,3 +1066,31 @@ optimal: 2024 was held out from this feature selection but was inspected during
 earlier model-family work, and the target RAPM run ends in 2024. Stop subset
 search on 2022–24. Next, create cross-fitted priors and test whether this feature
 gain improves the downstream possession model.
+
+## 2026-08-10 — Public all-in-one methods support a factor challenger
+
+**Question:** Should the statistical AIO estimate direct offensive and defensive
+RAPM only, or also estimate interpretable team-factor effects?
+
+**What we reviewed:** Public methodology for MAMBA and its six-factor RAPM,
+Thinking Basketball's Box Creation, Offensive Load, Passer Rating, ScoreVal, and
+AuPM, BPM 2.0, RAPTOR, LEBRON, EPM, DARKO, PIPM, the Dean Oliver Four Factors,
+and the linked APBR RAPM implementation discussion. Exact source links and the
+resulting model contract are in `docs/impact/FACTOR_DECOMPOSITION.md`.
+
+**Verified findings:** Teemo's factor RAPM uses six targets: TS, turnovers, and
+rebounds on offense and defense, then learns a linear scale back to offensive and
+defensive RAPM. EPM and DARKO both support stat-specific stabilization and decay
+instead of one shared rolling average. RAPTOR supports expected shot value,
+assisted-shot, contested-rebound, and spacing features. BPM and LEBRON support
+behavioral role interactions and role-based stabilization. Ben Taylor's work
+supports creation and turnover features that distinguish responsibility from
+efficiency. It does not provide a reproducible current all-in-one formula.
+
+**Decision:** Make an eight-head eFG, turnover, rebound, and free-throw model the
+primary factor challenger. Make the six-head TS version an ablation. Do not use
+TS with a separate free-throw head. Keep the direct offense and defense model as
+the production baseline and allow a cross-fitted residual for effects the four
+factors do not assign. Current rich events are sufficient to validate the target
+builder for 2023–24 through 2025–26, but historical event ingestion is required
+before production promotion.

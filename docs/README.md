@@ -10,6 +10,8 @@ Start at the repository root:
 ## Active specifications
 
 - [`impact/ROADMAP.md`](impact/ROADMAP.md) — detailed RAPM and all-in-one plan;
+- [`impact/FACTOR_DECOMPOSITION.md`](impact/FACTOR_DECOMPOSITION.md) — eight-head
+  factor RAPM and statistical AIO target/feature contract;
 - [`modeling/PLAYBOOK.md`](modeling/PLAYBOOK.md) — NBA statistical modeling procedure;
 - [`modeling/EVIDENCE_POLICY.md`](modeling/EVIDENCE_POLICY.md) — evidence and claim standards;
 - [`win_probability/MODEL_CARD.md`](win_probability/MODEL_CARD.md) — frozen WP specification and results;
