@@ -90,6 +90,15 @@ check, net RMSE improves from 1.29843 to 1.26244 and correlation improves from
 family comparisons already inspected 2024. More subset search on these folds is
 not valid.
 
+Run `statistical_priors_v1_2c81b23662` creates the historical handoff. For each
+eligible prediction window `T`, its offense GBM and defense ridge train only on
+target windows ending by `T-3`. It predicts every feature-covered player before
+joining labels for evaluation. The output covers 4,656 player-windows from
+2019–24 with no duplicate keys, missing values, non-finite values, or purge
+violations. Six-fold prior-only net RMSE is 1.25131 and correlation is 0.51980.
+These are same-window retrodictions. They are not forecasts, and 2022–24 are not
+untouched promotion evidence.
+
 The next feature challenger uses
 [`FACTOR_DECOMPOSITION.md`](FACTOR_DECOMPOSITION.md). The basketball factors are
 feature families and explanation groups. The supervised targets remain direct
@@ -134,6 +143,6 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Implement the versioned CraftedNBA-derived candidate features, then generate
-cross-fitted direct statistical priors for every historical window. Test these
-priors in prior-informed RAPM without allowing a target window to train itself.
+Test the cross-fitted priors in prior-informed RAPM against zero-prior RAPM and
+prior-only predictions on identical chronological windows. Tune prior strength
+inside older windows only. Do not allow a target window to train its own prior.

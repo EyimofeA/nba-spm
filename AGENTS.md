@@ -266,17 +266,18 @@ Run `statistical_feature_ablation_v1_918be14a38` freezes both learners and selec
 improves net RMSE and correlation on its 2024 feature-confirmation fold. Frozen
 artifacts are `statistical_aio_v1_b0295558c6`. Do not search more subsets on these
 three folds; the next work is cross-fitted prior integration.
-Run `statistical_features_v2_6f7b3c5c57` adds empirical-Bayes percentages,
-era-relative rates, latest-season levels, trends, volatility, scoring topology,
-creation, role, and defensive interactions. Missing engineered values receive a
-neutral within-window fill so missingness cannot act as an experience or games
-feature. Run `statistical_feature_v2_comparison_e1cba6dd1d` confirms
-era-relative, recent-level, and temporal-dynamics blocks for offense. It selects
-no new defensive block. The 2024 net RMSE improves from 1.30196 to 1.27987, but
-2024 was inspected in earlier model-family work. Treat this as the current
-research challenger, not a final untouched estimate. Do not run another subset
-search on 2022–24. The next valid gate is cross-fitted prior integration or new
-labels/data.
+Run `statistical_features_v2_8b2566243f` adds empirical-Bayes percentages,
+era-relative rates, temporal features, domain interactions, and versioned public
+basketball formulas. Missing engineered values receive a neutral within-window
+fill so missingness cannot act as an experience or games feature. Run
+`statistical_feature_v2_comparison_9b8d0555e0` selects stabilized ratios,
+era-relative rates, recent levels, temporal dynamics, and the public-metric block
+for offense. It selects no new defensive block. This is a research challenger,
+not a final untouched estimate. Do not run another subset search on 2022–24.
+Run `statistical_priors_v1_2c81b23662` creates purged cross-fitted priors for
+2019–24. For window `T`, it trains only on target windows ending by `T-3` and
+scores every feature-covered player. These are same-window retrodictions, not
+forecasts. Never use a saved full-panel model to create a historical prior.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

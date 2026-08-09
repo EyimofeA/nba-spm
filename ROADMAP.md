@@ -29,16 +29,19 @@ dead ends. Updated 2026-08-09. See `docs/README.md` for the document index,
 - Frozen feature engineering improves the statistical AIO's reused 2024 net
   RMSE from 1.2984 to 1.2624. The gain is offensive; no new defensive block
   passes. Treat this as exploratory because 2024 informed earlier research.
+- Cross-fitted statistical priors cover every eligible 2019–24 feature row. For
+  window `T`, training labels end by `T-3`. Six-fold prior-only net RMSE is
+  1.2513 with 0.5198 correlation.
 - The old 1997–2024 RAPM archive remains valuable but is stale after 2024.
 
 ## Active next task
 
-Generate cross-fitted direct offensive and defensive statistical priors for
-every historical window, then test prior-informed RAPM. The CraftedNBA-derived
-feature block is implemented and is an exploratory offense win. The exact
-Crafted passer challenger still needs canonical height and position metadata.
-Keep on/off as a separately labeled impact-assisted model. WP neural work is
-paused; do not train neural models on the local Mac.
+Implement and evaluate prior-informed RAPM against zero-prior RAPM and the
+prior-only statistical model on identical chronological windows. The cross-fitted
+2019–24 priors are ready. Tune prior strength only inside older windows. The
+exact Crafted passer challenger still needs canonical height and position
+metadata. Keep on/off as a separately labeled impact-assisted model. WP neural
+work is paused; do not train neural models on the local Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
@@ -103,3 +106,4 @@ now would break reproducibility links.
 - Optimized statistical AIO: `statistical_aio_v1_b0295558c6`
 - Statistical features v2: `statistical_features_v2_8b2566243f`
 - Statistical feature v2 comparison: `statistical_feature_v2_comparison_9b8d0555e0`
+- Cross-fitted statistical priors: `statistical_priors_v1_2c81b23662`

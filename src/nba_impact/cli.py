@@ -41,6 +41,9 @@ from nba_impact.models.statistical_feature_ablation import (
 from nba_impact.models.statistical_model_comparison import (
     run_statistical_model_comparison,
 )
+from nba_impact.models.statistical_priors import (
+    build_cross_fitted_statistical_priors,
+)
 from nba_impact.models.statistical_feature_v2 import (
     run_statistical_feature_v2_comparison,
 )
@@ -538,6 +541,20 @@ def command_compare_statistical_features_v2(args: argparse.Namespace) -> int:
         args.targets,
         args.baseline_run,
         artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_statistical_priors(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_cross_fitted_statistical_priors(
+        args.features,
+        args.targets,
+        args.reference_run,
+        artifact_root=args.artifact_root,
+        prediction_window_ends=args.window_ends,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1229,6 +1246,26 @@ def build_parser() -> argparse.ArgumentParser:
     statistical_features_v2_comparison.set_defaults(
         func=command_compare_statistical_features_v2
     )
+
+    statistical_priors = subparsers.add_parser(
+        "build-statistical-priors",
+        help="Build purged cross-fitted statistical priors for historical RAPM windows.",
+    )
+    statistical_priors.add_argument("--features", type=Path, required=True)
+    statistical_priors.add_argument("--reference-run", type=Path, required=True)
+    statistical_priors.add_argument(
+        "--targets",
+        type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    statistical_priors.add_argument(
+        "--window-ends", type=_season_list, default=None
+    )
+    statistical_priors.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    statistical_priors.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    statistical_priors.set_defaults(func=command_build_statistical_priors)
 
     compare = subparsers.add_parser(
         "compare-rapm",

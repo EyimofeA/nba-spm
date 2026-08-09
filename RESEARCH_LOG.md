@@ -1151,3 +1151,33 @@ choices and the historical RAPM labels may not be the final target run.
 from these reused seasons or search individual public features on the same
 folds. The next valid test is whether cross-fitted statistical priors improve a
 downstream prior-informed RAPM on chronological future games.
+
+## 2026-08-10 — Cross-fitted statistical priors are ready for RAPM
+
+**Question:** Can the selected statistical AIO generate a prior for every
+historical player-window without allowing a target window to train itself?
+
+**Method:** Run `statistical_priors_v1_2c81b23662` freezes the selected 162-feature
+offense histogram GBM and 50-feature defense ridge. For prediction window `T`,
+training includes only RAPM target windows ending by `T-3`. The three-year train
+and prediction targets therefore share no seasons. Same-window box and tracking
+features are observed before prediction, so this is an end-of-window
+retrodiction rather than a forecast. Models predict all feature rows; labels are
+joined only afterward for evaluation.
+
+**Quality:** The artifact contains 4,656 unique player-windows across 2019–24
+and 1,270 players. It scores every eligible feature row. Minimum label coverage
+is 96.21%; the remaining feature-covered players still receive priors. There are
+zero duplicate keys, missing predictions, non-finite predictions, purge
+violations, or offense-plus-defense identity errors. A test confirms that
+changing a window's target cannot change that window's prior.
+
+**Result:** Across six chronological folds, offense RMSE is 0.85494 with 0.60664
+correlation, defense RMSE is 0.87365 with 0.29882 correlation, and net RMSE is
+1.25131 with 0.51980 correlation. Defense remains the weak component. The 2019
+fold has only one older target window, and the 2022–24 metrics are reused
+research evidence.
+
+**Verdict:** The priors are valid inputs for a prior-informed RAPM experiment.
+They are not yet a final all-in-one. Next compare zero-prior RAPM, prior-only
+ratings, and prior-informed RAPM on identical chronological possession windows.
