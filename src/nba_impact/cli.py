@@ -33,6 +33,10 @@ from nba_impact.models.statistical_impact import run_statistical_impact_baseline
 from nba_impact.models.statistical_direct_net import (
     run_statistical_direct_net_comparison,
 )
+from nba_impact.models.statistical_feature_ablation import (
+    fit_optimized_statistical_aio,
+    run_statistical_feature_ablation,
+)
 from nba_impact.models.statistical_model_comparison import (
     run_statistical_model_comparison,
 )
@@ -479,6 +483,31 @@ def command_compare_statistical_direct_net(args: argparse.Namespace) -> int:
         args.features,
         args.targets,
         args.component_run,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_ablate_statistical_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_statistical_feature_ablation(
+        args.features,
+        args.targets,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_fit_optimized_statistical_aio(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = fit_optimized_statistical_aio(
+        args.features,
+        args.targets,
+        args.ablation_run,
         artifact_root=args.artifact_root,
     )
     register_model_run(args.registry, run)
@@ -1095,6 +1124,41 @@ def build_parser() -> argparse.ArgumentParser:
     )
     statistical_direct_net.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     statistical_direct_net.set_defaults(func=command_compare_statistical_direct_net)
+
+    statistical_ablation = subparsers.add_parser(
+        "ablate-statistical-features",
+        help="Ablate feature families with frozen offense and defense models.",
+    )
+    statistical_ablation.add_argument("--features", type=Path, required=True)
+    statistical_ablation.add_argument(
+        "--targets",
+        type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    statistical_ablation.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    statistical_ablation.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    statistical_ablation.set_defaults(func=command_ablate_statistical_features)
+
+    optimized_statistical_aio = subparsers.add_parser(
+        "fit-optimized-statistical-aio",
+        help="Fit frozen optimized offense and defense statistical AIO models.",
+    )
+    optimized_statistical_aio.add_argument("--features", type=Path, required=True)
+    optimized_statistical_aio.add_argument("--ablation-run", type=Path, required=True)
+    optimized_statistical_aio.add_argument(
+        "--targets",
+        type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    optimized_statistical_aio.add_argument(
+        "--artifact-root", type=Path, default=ARTIFACT_ROOT
+    )
+    optimized_statistical_aio.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    optimized_statistical_aio.set_defaults(func=command_fit_optimized_statistical_aio)
 
     compare = subparsers.add_parser(
         "compare-rapm",

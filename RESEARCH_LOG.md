@@ -999,3 +999,28 @@ primary loss in 2022, 2023, and 2024.
 **Verdict:** Reject direct nonlinear net for this feature set. Keep the AIO
 decomposed as histogram GBM offense plus ridge defense. Next, ablate feature
 families before adding complexity.
+
+## 2026-08-09 — Frozen-model feature-family optimization
+
+**Question:** With histogram GBM offense and ridge defense frozen, which broad
+feature families add chronological signal?
+
+**What we did:** Run `statistical_feature_ablation_v1_918be14a38` removes core
+box, shot profile, creation/role, turnover detail, and tracking rebound/defense
+families one at a time. Model families and hyperparameters never change. The
+2022–23 folds select combined removals; 2024 is scored once as the feature-level
+confirmation fold.
+
+**Result:** Offense removes the 25-feature creation/role block. Defense removes
+35 shot-profile and 10 turnover-detail features. Core box and tracking
+rebound/defense survive. On 2024, offensive RMSE improves 0.8846→0.8822,
+defensive RMSE improves 0.9055→0.8998, and combined net RMSE improves
+1.3096→1.3020. Net correlation improves 0.5155→0.5410. The resulting models
+use 70 offensive and 50 defensive features and are saved in
+`statistical_aio_v1_b0295558c6`.
+
+**Verdict:** Freeze this statistical feature contract as a research challenger.
+Do not continue subset search on the same three outer folds. Another search would
+reuse the only tracking-era evidence and overfit research choices. The next AIO
+step is cross-fitted prior generation and prior-informed RAPM, not another model
+or feature sweep.

@@ -252,6 +252,11 @@ RMSE in all three outer folds. Elastic net is rejected.
 Run `statistical_direct_net_v1_286a104216` rejects direct nonlinear net prediction:
 it loses RMSE to histogram offense plus ridge defense in all three outer folds.
 Keep the AIO decomposed.
+Run `statistical_feature_ablation_v1_918be14a38` freezes both learners and selects
+70 offensive and 50 defensive features on 2022–23. The combined feature contract
+improves net RMSE and correlation on its 2024 feature-confirmation fold. Frozen
+artifacts are `statistical_aio_v1_b0295558c6`. Do not search more subsets on these
+three folds; the next work is cross-fitted prior integration.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

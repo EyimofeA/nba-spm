@@ -94,3 +94,5 @@ now would break reproducibility links.
 - Statistical impact ridge: `statistical_impact_v2_5224a3b4a6`
 - Statistical model families: `statistical_model_comparison_v1_dd31e7957d`
 - Statistical direct net: `statistical_direct_net_v1_286a104216`
+- Statistical feature ablation: `statistical_feature_ablation_v1_918be14a38`
+- Optimized statistical AIO: `statistical_aio_v1_b0295558c6`

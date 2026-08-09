@@ -116,7 +116,7 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Run feature-family ablations for the selected component challenger: histogram
-GBM offense plus ridge defense. Remove one declared feature family at a time and
-keep the same rows, purged folds, weights, and tuning. Then compare the user's
-feature set under the same player-window contract.
+Generate cross-fitted optimized statistical priors for every historical window,
+then center possession-level RAPM penalties on those priors. Tune prior strength
+inside earlier windows and compare normal RAPM, prior-only statistical AIO, a
+simple blend, and prior-informed RAPM on identical future games.

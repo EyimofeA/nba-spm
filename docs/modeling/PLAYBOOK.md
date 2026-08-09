@@ -124,3 +124,28 @@ A production candidate must:
 
 Research models can remain available after they fail promotion. Production stays
 simple until additional complexity earns its cost.
+
+## 9. Use a tabular model ladder
+
+For medium-sized numeric NBA panels, begin with regularized linear models and
+gradient-boosted trees. Feature semantics, temporal aggregation, denominators,
+missingness, and leakage controls remain important; a model cannot recover
+unobserved matchup or role state from a convenient aggregate column.
+
+Current research does not support a universal "deep learning wins tabular data"
+rule. Tree ensembles remain strong on medium-sized heterogeneous tables, while
+new tabular foundation and neural ensemble models can win on some datasets.
+Use this fixed ladder:
+
+1. ridge or elastic net;
+2. one tuned boosted-tree implementation;
+3. CatBoost, LightGBM, or XGBoost parity only after the feature contract freezes;
+4. TabPFN or TabM as cloud research comparators, not automatic production choices;
+5. ensembles only after a component adds chronological out-of-fold signal.
+
+Primary references:
+
+- [Why do tree-based models still outperform deep learning on typical tabular data?](https://proceedings.neurips.cc/paper_files/paper/2022/hash/0378c7692da36807bdec87ab043cdadc-Abstract-Datasets_and_Benchmarks.html)
+- [When Do Neural Nets Outperform Boosted Trees on Tabular Data?](https://proceedings.neurips.cc/paper_files/paper/2023/file/f06d5ebd4ff40b40dd97e30cee632123-Paper-Datasets_and_Benchmarks.pdf)
+- [Accurate predictions on small data with a tabular foundation model](https://www.nature.com/articles/s41586-024-08328-6)
+- [TabM: Advancing Tabular Deep Learning with Parameter-Efficient Ensembling](https://openreview.net/pdf?id=Sd4wYYOhmY)
