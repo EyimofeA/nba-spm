@@ -1094,3 +1094,60 @@ the production baseline and allow a cross-fitted residual for effects the four
 factors do not assign. Current rich events are sufficient to validate the target
 builder for 2023–24 through 2025–26, but historical event ingestion is required
 before production promotion.
+
+## 2026-08-10 — Correction: factors structure features, not required targets
+
+**User clarification:** The shooting, turnover, rebound, and free-throw factors
+are the user's mental decomposition of basketball value. The first AIO does not
+need a separate supervised RAPM target for every factor.
+
+**Additional source review:** The CraftedNBA glossary publishes Box Creation,
+Offensive Load, Shooting Proficiency, Spacing, and an explicit Passer Rating
+formula. CraftedNBA labels its Passer Rating as inspired by Ben Taylor, not as
+Taylor's exact formula. It uses standardized Load, assist-to-Load,
+position-standardized assist-to-Load, turnover-to-Load, creation-to-Load, and
+height. The glossary does not specify the standardization population, padding,
+position assignment, or final 1–10 transform. CraftedOPM, CraftedDPM, and
+Portability include external impact metrics and are not valid independent prior
+inputs.
+
+**Corrected decision:** Keep direct three-year offensive and defensive RAPM as
+the primary targets. Use the factors as feature families, diagnostics, and the
+published explanation layer. Add versioned public formulas as candidate inputs.
+Test the exact and behavioral passer ratings as separate challengers. Raw height
+and listed position remain excluded as general columns; the exact composite is
+blocked until canonical metadata and its standardization contract exist. Factor
+RAPM remains optional research.
+
+## 2026-08-10 — Public basketball features pass an exploratory offense test
+
+**Question:** Do versioned Box Creation, Offensive Load, passing-ratio,
+Shooting Proficiency, and Spacing features add signal to the frozen direct
+offensive RAPM model?
+
+**What we did:** Feature run `statistical_features_v2_8b2566243f` adds exact
+public-formula benchmarks plus possession-shrunk model variants. The model-safe
+block has eight features: Shooting Proficiency, Box Creation, Offensive Load,
+assist-to-Load, turnover-to-Load, creation-to-Load, a behavioral passer score,
+and a stable spacing proxy. The feature table has 6,689 player-windows, zero
+duplicate keys, zero infinities, and zero missing engineered values after the
+documented neutral fill. The exact Crafted passer variant is not present because
+the current canonical table lacks height and position metadata.
+
+Run `statistical_feature_v2_comparison_9b8d0555e0` holds the learner and target
+fixed. It evaluates the public block separately from generic empirical-Bayes
+ratios. The public block reduces offense RMSE from the 0.94912 discovery mean to
+0.92292 and improves both 2022 and 2023. The final selected offense combination
+also includes stabilized ratios, era-relative rates, recent level, and temporal
+dynamics. No defensive block passes.
+
+**Result:** On the reused 2024 check, offense RMSE improves from 0.87881 to
+0.82701 and correlation improves from 0.56890 to 0.62133. Recombined net RMSE
+improves from 1.29843 to 1.26244 and correlation improves from 0.54462 to
+0.57485. These are exploratory estimates because 2024 informed earlier model
+choices and the historical RAPM labels may not be the final target run.
+
+**Verdict:** Keep the public block in the research challenger. Do not promote it
+from these reused seasons or search individual public features on the same
+folds. The next valid test is whether cross-fitted statistical priors improve a
+downstream prior-informed RAPM on chronological future games.

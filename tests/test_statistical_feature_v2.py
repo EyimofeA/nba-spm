@@ -10,8 +10,26 @@ from sklearn.linear_model import Ridge
 from sklearn.pipeline import Pipeline
 
 from nba_impact.models.statistical_feature_v2 import (
+    candidate_feature_blocks,
     run_statistical_feature_v2_comparison,
 )
+
+
+def test_public_metrics_are_a_separate_offense_block() -> None:
+    blocks = candidate_feature_blocks(
+        (
+            "fg3_pct_eb",
+            "shooting_proficiency_2017_eb",
+            "box_creation_2017_eb_p100",
+            "behavioral_passer_score_v1",
+        )
+    )
+    assert blocks["offense"]["stabilized_ratios"] == ("fg3_pct_eb",)
+    assert blocks["offense"]["public_basketball_metrics"] == (
+        "shooting_proficiency_2017_eb",
+        "box_creation_2017_eb_p100",
+        "behavioral_passer_score_v1",
+    )
 
 
 def test_v2_comparison_selects_signal_on_discovery_and_confirms(

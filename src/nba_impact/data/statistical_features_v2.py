@@ -32,7 +32,8 @@ EXTRA_COUNTS = (
     "PtsAssisted2s", "PtsAssisted3s", "PtsUnassisted2s", "PtsUnassisted3s",
     "PULL_UP_FGA", "CATCH_SHOOT_FGA", "DRIVE_PASSES", "DRIVES",
     "AST", "POTENTIAL_AST", "AST_PTS_CREATED", "TOUCHES", "PTS",
-    "LiveBallTurnovers", "PASSES_MADE", "PFD", "FGA", "FG2A", "FG3A",
+    "LiveBallTurnovers", "PASSES_MADE", "PFD", "FGA", "FG2A", "FG2M",
+    "FG3A", "FG3M",
     "REB_CONTEST", "REB_CHANCES", "DREB_CONTEST", "DREB_UNCONTEST",
     "RecoveredBlocks", "BLK", "STL", "PF", "DefPoss", "OffPoss",
     "PAINT_TOUCHES", "POST_TOUCHES", "ELBOW_TOUCHES",
@@ -42,7 +43,30 @@ BOUNDED_FEATURES = (
     "self_created_point_share", "assisted_three_share", "pull_up_attempt_share",
     "potential_assist_conversion", "drive_pass_rate",
     "rebound_contest_share", "dreb_contested_share",
-    "rim_and_three_frequency", "midrange_frequency",
+    "rim_and_three_frequency", "midrange_frequency", "effective_fg_pct",
+    "three_point_attempt_rate",
+)
+
+PUBLIC_BENCHMARK_FEATURES = (
+    "shooting_proficiency_2017",
+    "box_creation_2017_p100",
+    "offensive_load_2017_p100",
+    "assist_to_load_2017",
+    "turnover_to_load_2017",
+    "creation_to_load_2017",
+    "behavioral_passer_score_v1",
+    "crafted_spacing_proxy_v1",
+)
+
+PRIMARY_PUBLIC_INSPIRED_FEATURES = (
+    "shooting_proficiency_2017_eb",
+    "box_creation_2017_eb_p100",
+    "offensive_load_2017_eb_p100",
+    "assist_to_load_2017_eb",
+    "turnover_to_load_2017_eb",
+    "creation_to_load_2017_eb",
+    "behavioral_passer_score_v1",
+    "crafted_spacing_stable_v1",
 )
 
 
@@ -53,6 +77,33 @@ def _ratio(numerator: pd.Series, denominator: pd.Series) -> pd.Series:
 def _bounded_ratio(numerator: pd.Series, denominator: pd.Series) -> pd.Series:
     ratio = _ratio(numerator, denominator)
     return ratio.where(numerator <= denominator)
+
+
+def _weighted_zscore(values: pd.Series, weights: pd.Series) -> pd.Series:
+    valid = values.notna() & weights.gt(0)
+    if not valid.any():
+        return pd.Series(np.nan, index=values.index, dtype=float)
+    center = float(np.average(values.loc[valid], weights=weights.loc[valid]))
+    variance = float(
+        np.average((values.loc[valid] - center) ** 2, weights=weights.loc[valid])
+    )
+    if variance <= 0:
+        return pd.Series(0.0, index=values.index, dtype=float).where(values.notna())
+    return (values - center) / np.sqrt(variance)
+
+
+def _shrink_rate(
+    values: pd.Series,
+    exposure: pd.Series,
+    *,
+    strength: float = 500.0,
+) -> pd.Series:
+    valid = values.notna() & exposure.gt(0)
+    if not valid.any():
+        return pd.Series(np.nan, index=values.index, dtype=float)
+    center = float(np.average(values.loc[valid], weights=exposure.loc[valid]))
+    reliability = exposure.clip(lower=0) / (exposure.clip(lower=0) + strength)
+    return reliability * values + (1.0 - reliability) * center
 
 
 def _pooled_counts(frames: list[pd.DataFrame]) -> pd.DataFrame:
@@ -175,6 +226,100 @@ def _engineer_window(
         + 3 * output["arc3_frequency"] * output["arc3_accuracy_eb"]
     )
 
+    fga_p100 = output["FG2A_p100"] + output["FG3A_p100"]
+    fgm_p100 = output["FG2M_p100"] + output["FG3M_p100"]
+    engineered["effective_fg_pct"] = _ratio(
+        fgm_p100 + 0.5 * output["FG3M_p100"], fga_p100
+    )
+    engineered["three_point_attempt_rate"] = _ratio(output["FG3A_p100"], fga_p100)
+    engineered["free_throw_rate"] = _ratio(output["FTA_p100"], fga_p100)
+
+    shooting_proficiency = (
+        2.0 / (1.0 + np.exp(-output["FG3A_p100"].clip(lower=0))) - 1.0
+    ) * output["fg3_pct"]
+    engineered["shooting_proficiency_2017"] = shooting_proficiency
+    box_creation = (
+        0.1843 * output["AST_p100"]
+        + 0.0969 * (output["PTS_p100"] + output["TOV_p100"])
+        - 2.3021 * shooting_proficiency
+        + 0.0582
+        * output["AST_p100"]
+        * (output["PTS_p100"] + output["TOV_p100"])
+        * shooting_proficiency
+        - 1.1942
+    )
+    engineered["box_creation_2017_p100"] = box_creation
+    offensive_load = (
+        0.75 * (output["AST_p100"] - 0.38 * box_creation)
+        + fga_p100
+        + 0.44 * output["FTA_p100"]
+        + box_creation
+        + output["TOV_p100"]
+    )
+    engineered["offensive_load_2017_p100"] = offensive_load
+    engineered["assist_to_load_2017"] = _ratio(output["AST_p100"], offensive_load)
+    engineered["turnover_to_load_2017"] = _ratio(output["TOV_p100"], offensive_load)
+    engineered["creation_to_load_2017"] = _ratio(box_creation, offensive_load)
+
+    weights = output["OffPoss"]
+    pts_eb = _shrink_rate(output["PTS_p100"], weights)
+    ast_eb = _shrink_rate(output["AST_p100"], weights)
+    tov_eb = _shrink_rate(output["TOV_p100"], weights)
+    fga_eb = _shrink_rate(fga_p100, weights)
+    fta_eb = _shrink_rate(output["FTA_p100"], weights)
+    fg3a_eb = _shrink_rate(output["FG3A_p100"], weights)
+    shooting_proficiency_eb = (
+        2.0 / (1.0 + np.exp(-fg3a_eb.clip(lower=0))) - 1.0
+    ) * output["fg3_pct_eb"]
+    engineered["shooting_proficiency_2017_eb"] = shooting_proficiency_eb
+    box_creation_eb = (
+        0.1843 * ast_eb
+        + 0.0969 * (pts_eb + tov_eb)
+        - 2.3021 * shooting_proficiency_eb
+        + 0.0582 * ast_eb * (pts_eb + tov_eb) * shooting_proficiency_eb
+        - 1.1942
+    )
+    engineered["box_creation_2017_eb_p100"] = box_creation_eb
+    offensive_load_eb = (
+        0.75 * (ast_eb - 0.38 * box_creation_eb)
+        + fga_eb
+        + 0.44 * fta_eb
+        + box_creation_eb
+        + tov_eb
+    )
+    engineered["offensive_load_2017_eb_p100"] = offensive_load_eb
+    load_exposure = weights * offensive_load_eb.clip(lower=0) / 100.0
+    assist_to_load_eb = _shrink_rate(
+        _ratio(ast_eb, offensive_load_eb), load_exposure, strength=150.0
+    )
+    turnover_to_load_eb = _shrink_rate(
+        _ratio(tov_eb, offensive_load_eb), load_exposure, strength=150.0
+    )
+    creation_to_load_eb = _shrink_rate(
+        _ratio(box_creation_eb, offensive_load_eb), load_exposure, strength=150.0
+    )
+    engineered["assist_to_load_2017_eb"] = assist_to_load_eb
+    engineered["turnover_to_load_2017_eb"] = turnover_to_load_eb
+    engineered["creation_to_load_2017_eb"] = creation_to_load_eb
+    engineered["behavioral_passer_score_v1"] = (
+        _weighted_zscore(offensive_load_eb, weights).clip(-4.0, 4.0)
+        + 3.0 * _weighted_zscore(assist_to_load_eb, weights).clip(-4.0, 4.0)
+        - 2.0 * _weighted_zscore(turnover_to_load_eb, weights).clip(-4.0, 4.0)
+        + 0.5 * _weighted_zscore(creation_to_load_eb, weights).clip(-4.0, 4.0)
+    )
+    league_fga = float(mapped["FGA"].sum(skipna=True))
+    league_efg = (
+        float((mapped["FG2M"] + 1.5 * mapped["FG3M"]).sum(skipna=True)) / league_fga
+        if league_fga > 0
+        else np.nan
+    )
+    engineered["crafted_spacing_proxy_v1"] = (
+        output["FG3A_p100"] * (1.5 * output["fg3_pct"]) - league_efg
+    )
+    engineered["crafted_spacing_stable_v1"] = (
+        fg3a_eb * (1.5 * output["fg3_pct_eb"]) - league_efg
+    )
+
     for feature in RELATIVE_FEATURES:
         defensive_rates = {"STL_p100", "BLK_p100", "DREB_p100", "PF_p100"}
         weights = output["DefPoss"] if feature in defensive_rates else output["OffPoss"]
@@ -283,6 +428,15 @@ def build_statistical_features_v2(
             ),
         },
         "bounded_feature_violations": bound_violations,
+        "public_benchmark_features": list(PUBLIC_BENCHMARK_FEATURES),
+        "primary_public_inspired_features": list(PRIMARY_PUBLIC_INSPIRED_FEATURES),
+        "public_benchmark_provenance": {
+            "source": "https://craftednba.com/glossary",
+            "box_creation_and_offensive_load": "Ben Taylor public formulas as reproduced by CraftedNBA",
+            "primary_variants": "possession-shrunk within each player window; derived z-score components clipped to [-4, 4]",
+            "behavioral_passer_score_v1": "CraftedNBA-inspired; excludes height and positional standardization; uses shrunk rates",
+            "crafted_spacing_proxy_v1": "CraftedNBA formula with FG3A per 100 and pooled window league eFG; unit choice made explicit by this project",
+        },
         "new_feature_names": new_features,
         "features_path": str(features_path.resolve()),
         "audit_path": str(audit_path.resolve()),

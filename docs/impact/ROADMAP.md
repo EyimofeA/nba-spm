@@ -81,18 +81,20 @@ The separate models preserve the requested offense/defense decomposition.
 The v2 feature layer keeps the learners frozen while it tests basketball-domain
 engineering. It adds stabilized percentages, era-relative rates, recent-season
 levels, trends, volatility, scoring topology, creation quality, behavioral role,
-and defensive interactions. Run `statistical_feature_v2_comparison_e1cba6dd1d`
-selects the era-relative, recent-level, and temporal-dynamics blocks for offense
-on 2022–23. It selects no defensive block. On the 2024 feature confirmation,
-net RMSE improves from 1.30196 to 1.27987 and correlation improves from 0.54104
-to 0.55221. This is a research challenger because earlier family comparisons
-already inspected 2024. More subset search on these folds is not valid.
+defensive interactions, and versioned public basketball formulas. Run
+`statistical_feature_v2_comparison_9b8d0555e0` selects stabilized ratios,
+era-relative rates, recent levels, temporal dynamics, and the public-metric
+block for offense on 2022–23. It selects no defensive block. On the reused 2024
+check, net RMSE improves from 1.29843 to 1.26244 and correlation improves from
+0.54462 to 0.57485. This is an exploratory research challenger because earlier
+family comparisons already inspected 2024. More subset search on these folds is
+not valid.
 
-The next challenger uses the target and feature contract in
-[`FACTOR_DECOMPOSITION.md`](FACTOR_DECOMPOSITION.md). Its primary form estimates
-offensive and defensive eFG, turnover, rebound, and free-throw effects. A
-six-head true-shooting version is an ablation. Keep direct offense and defense
-as the production baseline until the factor model wins on untouched windows.
+The next feature challenger uses
+[`FACTOR_DECOMPOSITION.md`](FACTOR_DECOMPOSITION.md). The basketball factors are
+feature families and explanation groups. The supervised targets remain direct
+offensive and defensive RAPM. Factor RAPM is a separate research branch, not a
+dependency for the first AIO.
 
 ## Phase 4 — Create the all-in-one rating
 
@@ -132,7 +134,6 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Build and validate the eight-head factor target builder on current rich events.
-In parallel, generate cross-fitted direct statistical priors for every
-historical window. Factor-model promotion requires historical event ingestion;
-the direct prior-informed RAPM path does not.
+Implement the versioned CraftedNBA-derived candidate features, then generate
+cross-fitted direct statistical priors for every historical window. Test these
+priors in prior-informed RAPM without allowing a target window to train itself.

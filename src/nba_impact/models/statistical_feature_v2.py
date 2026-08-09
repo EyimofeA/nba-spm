@@ -1,4 +1,4 @@
-"""Feature-block comparison for the frozen decomposed statistical all-in-one."""
+"""Feature-block comparison for the frozen statistical all-in-one."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from pathlib import Path
 import joblib
 import pandas as pd
 
+from nba_impact.data.statistical_features_v2 import PRIMARY_PUBLIC_INSPIRED_FEATURES
 from nba_impact.data.manifest import sha256_file, write_json_atomic
 from nba_impact.models.statistical_feature_ablation import _frozen_model
 from nba_impact.models.statistical_impact import _load_panel, _metrics
@@ -63,7 +64,16 @@ def _suffix_features(
 def candidate_feature_blocks(columns: tuple[str, ...]) -> dict[str, dict[str, tuple[str, ...]]]:
     """Return predeclared basketball feature blocks for each component target."""
     available = set(columns)
-    stable = tuple(sorted(column for column in available if column.endswith("_eb")))
+    public_metrics = tuple(
+        feature for feature in PRIMARY_PUBLIC_INSPIRED_FEATURES if feature in available
+    )
+    stable = tuple(
+        sorted(
+            column
+            for column in available
+            if column.endswith("_eb") and column not in public_metrics
+        )
+    )
     offense_relative = tuple(
         sorted(
             f"{root}_relative"
@@ -92,6 +102,7 @@ def candidate_feature_blocks(columns: tuple[str, ...]) -> dict[str, dict[str, tu
             "creation_quality": tuple(
                 feature for feature in CREATION_QUALITY if feature in available
             ),
+            "public_basketball_metrics": public_metrics,
         },
         "defense": {
             "era_relative": defense_relative,
@@ -427,7 +438,7 @@ def run_statistical_feature_v2_comparison(
 
     run = {
         "run_id": run_id,
-        "model_family": "frozen_decomposed_statistical_aio_feature_v2",
+        "model_family": "frozen_statistical_aio_feature_v2",
         "estimand": "three_season_normal_rapm_offense_defense_and_net",
         "status": "research_challenger" if confirmed else "rejected",
         "created_at": datetime.now(timezone.utc).isoformat(),

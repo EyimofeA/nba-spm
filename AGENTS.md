@@ -12,10 +12,14 @@ candidates and their promotion gates, read `docs/win_probability/ARCHITECTURES.m
 Treat the older untracked `PROJECT.md` and
 `IDEAS.md` as historical RAPM context, not the current task queue.
 
-For the factor-decomposed all-in-one, read
-`docs/impact/FACTOR_DECOMPOSITION.md`. Keep three layers distinct: player input
-features, lineup-adjusted factor targets, and the final points-per-100 rating.
-Do not combine TS with a separate free-throw head.
+For the factor-structured all-in-one, read
+`docs/impact/FACTOR_DECOMPOSITION.md`. The primary targets remain direct
+offensive and defensive RAPM. Treat the basketball factors as feature families,
+diagnostics, and explanation groups. Factor RAPM is optional research. Do not
+combine TS with a separate free-throw explanation lane.
+Test the exact and behavioral passer ratings as separate challengers. The exact
+formula may contain height and positional normalization, but raw height and
+listed position remain excluded as general model inputs.
 
 ---
 

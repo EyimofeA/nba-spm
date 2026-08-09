@@ -26,18 +26,19 @@ dead ends. Updated 2026-08-09. See `docs/README.md` for the document index,
   lost on the untouched 2025–26 confirmation season.
 - The first three-year statistical ridge baseline now compares box, advanced,
   and advanced-plus-on/off feature sets across three purged chronological folds.
-- Frozen feature engineering improves the statistical AIO's 2024 net RMSE from
-  1.3020 to 1.2799. The gain is offensive; no new defensive block passes.
+- Frozen feature engineering improves the statistical AIO's reused 2024 net
+  RMSE from 1.2984 to 1.2624. The gain is offensive; no new defensive block
+  passes. Treat this as exploratory because 2024 informed earlier research.
 - The old 1997–2024 RAPM archive remains valuable but is stale after 2024.
 
 ## Active next task
 
-Build the eight-head factor RAPM target layer described in
-`docs/impact/FACTOR_DECOMPOSITION.md`. Treat the six-head TS version as an
-ablation. Continue the direct prior-informed RAPM path in parallel because rich
-historical factor events are not yet available. Keep on/off as a separately
-labeled impact-assisted model. WP neural work is paused; do not train neural
-models on the local Mac.
+Generate cross-fitted direct offensive and defensive statistical priors for
+every historical window, then test prior-informed RAPM. The CraftedNBA-derived
+feature block is implemented and is an exploratory offense win. The exact
+Crafted passer challenger still needs canonical height and position metadata.
+Keep on/off as a separately labeled impact-assisted model. WP neural work is
+paused; do not train neural models on the local Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
@@ -100,5 +101,5 @@ now would break reproducibility links.
 - Statistical direct net: `statistical_direct_net_v1_286a104216`
 - Statistical feature ablation: `statistical_feature_ablation_v1_918be14a38`
 - Optimized statistical AIO: `statistical_aio_v1_b0295558c6`
-- Statistical features v2: `statistical_features_v2_6f7b3c5c57`
-- Statistical feature v2 comparison: `statistical_feature_v2_comparison_e1cba6dd1d`
+- Statistical features v2: `statistical_features_v2_8b2566243f`
+- Statistical feature v2 comparison: `statistical_feature_v2_comparison_9b8d0555e0`

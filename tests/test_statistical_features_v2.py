@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 import pandas as pd
@@ -61,6 +62,35 @@ def test_v2_stabilizes_small_samples_and_builds_temporal_features(tmp_path: Path
     assert 0 < features.loc[1, "fg3_pct_eb"] < 1.0
     assert features.loc[1, "PTS_p100_latest"] == pytest.approx(30.0)
     assert features.loc[1, "PTS_p100_trend"] == pytest.approx(10.0)
+    expected_proficiency = (2 / (1 + math.exp(-1.0)) - 1) * 1.0
+    expected_creation = (
+        0.1843 * 5.0
+        + 0.0969 * (20.0 + 2.0)
+        - 2.3021 * expected_proficiency
+        + 0.0582 * 5.0 * (20.0 + 2.0) * expected_proficiency
+        - 1.1942
+    )
+    assert features.loc[1, "shooting_proficiency_2017"] == pytest.approx(
+        expected_proficiency
+    )
+    assert features.loc[1, "box_creation_2017_p100"] == pytest.approx(
+        expected_creation
+    )
+    assert features.loc[1, "effective_fg_pct"] == pytest.approx(6.5 / 11.0)
+    assert features.loc[1, "three_point_attempt_rate"] == pytest.approx(1.0 / 11.0)
+    assert features.loc[1, "free_throw_rate"] == pytest.approx(5.0 / 11.0)
+    assert features["behavioral_passer_score_v1"].notna().all()
+    assert features["behavioral_passer_score_v1"].abs().max() <= 26.0
+    assert v2["primary_public_inspired_features"] == [
+        "shooting_proficiency_2017_eb",
+        "box_creation_2017_eb_p100",
+        "offensive_load_2017_eb_p100",
+        "assist_to_load_2017_eb",
+        "turnover_to_load_2017_eb",
+        "creation_to_load_2017_eb",
+        "behavioral_passer_score_v1",
+        "crafted_spacing_stable_v1",
+    ]
     assert v2["quality"]["infinite_values"] == 0
     assert Path(v2["audit_path"]).exists()
     assert not {"AGE", "MIN", "GP"}.intersection(features.columns)

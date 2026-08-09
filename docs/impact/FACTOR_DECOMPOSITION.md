@@ -1,234 +1,244 @@
-# Factor-Decomposed All-in-One Design
+# Factor-Structured All-in-One Design
 
-This document defines the next statistical all-in-one challenger. It separates
-player inputs, factor impact targets, and the final points-per-100 rating. Read
-it with [`ROADMAP.md`](ROADMAP.md) and
+This document defines the conceptual and feature structure for the statistical
+all-in-one. It does not require a separate RAPM target for every basketball
+factor. Read it with [`ROADMAP.md`](ROADMAP.md) and
 [`../modeling/PLAYBOOK.md`](../modeling/PLAYBOOK.md).
 
 ## Decision
 
-Build and compare two decompositions:
+Keep the primary supervised targets simple:
 
-1. **Eight-head model:** eFG, turnover rate, offensive rebound rate, and free
-   throw rate on offense and defense.
-2. **Six-head ablation:** true shooting, turnover rate, and rebound rate on
-   offense and defense.
+- three-year offensive RAPM;
+- three-year defensive RAPM;
+- net RAPM is the sum of the two predictions.
 
-The eight-head model is the primary research specification. True shooting
-already includes free throws. A model that uses both true shooting and a
-separate free-throw head counts part of foul value twice. The six-head version
-is valid only when true shooting replaces both eFG and free throws.
+Use the basketball factors as:
 
-Do not replace the direct offensive and defensive statistical models before a
-factor model wins on untouched chronological data. Four factors are useful
-accounting outcomes, but they do not assign all individual value. Spacing,
-screening, off-ball movement, help defense, matchup difficulty, and scheme can
-remain in a residual.
+1. feature families;
+2. grouped model diagnostics;
+3. the public explanation layer;
+4. optional auxiliary targets or Factor RAPM research.
 
-## Target contract
+Do not require eight independently trained target models for the first AIO.
+Factor RAPM remains useful research, but it is not a dependency for the direct
+statistical model or prior-informed RAPM.
 
-Each target is a lineup-adjusted player effect. It is not the player's own box
-rate. Positive values always mean better play.
+## Mental model
 
-| Side | Head | Raw team outcome | Positive player effect means |
-|---|---|---|---|
-| Offense | `off_efg` | `(FGM + 0.5 * 3PM) / FGA` | team eFG increases |
-| Offense | `off_tov` | `TOV / (FGA + 0.44 * FTA + TOV)` | team turnover rate decreases |
-| Offense | `off_oreb` | `OREB / (OREB + opponent DREB)` | team offensive rebound rate increases |
-| Offense | `off_ftr` | `FTM / FGA` for scoring value; retain `FTA/FGA` for diagnosis | team free-throw scoring rate increases |
-| Defense | `def_efg` | opponent eFG | opponent eFG decreases |
-| Defense | `def_tov` | opponent turnover rate | forced turnover rate increases |
-| Defense | `def_dreb` | `1 - opponent OREB%` | defensive rebound completion increases |
-| Defense | `def_ftr` | opponent `FTM / FGA` | opponent free-throw scoring rate decreases |
+The Dean Oliver accounting factors remain the top-level team outcomes:
 
-Use separate opportunity denominators and reliability weights for each head.
-Do not fit unweighted regressions to raw percentages. Preserve the underlying
-counts so that the builder can compare weighted ridge, binomial models, and
-possession-level encodings without changing the public target names.
+| Side | Shooting | Ball security | Rebounding | Free throws |
+|---|---|---|---|---|
+| Offense | create and convert valuable shots | avoid turnovers | extend possessions | draw and convert free throws |
+| Defense | suppress shot quality and conversion | force turnovers | finish possessions | avoid valuable fouls |
 
-For the six-head ablation, replace `off_efg` plus `off_ftr` with `off_ts` and
-replace `def_efg` plus `def_ftr` with `def_ts`. Keep turnover and rebound heads.
+This is an ontology, not a claim that the categories are independent. Creation,
+spacing, role, transition, and playtype connect several outcomes. True shooting
+can summarize shooting plus free throws. If free throws are shown separately,
+use eFG for the shooting lane so that the explanation does not double count.
 
-## Model path
+## Direct model path
 
 ```text
-ordered events + ordinal lineups
-  -> opportunity counts by lineup segment
-  -> 8 factor RAPM targets
-  -> player-window feature table
-  -> 8 statistical factor models
-  -> time-safe factor-to-points calibration
-  -> offensive and defensive explained impact
-  -> residual model
-  -> final offensive, defensive, and net AIO
+player-window box + tracking + playtype data
+  -> stat-specific stabilization and era adjustment
+  -> basketball feature families
+  -> direct offensive RAPM model
+  -> direct defensive RAPM model
+  -> offensive + defensive = net AIO
+  -> grouped contribution and counterfactual diagnostics
 ```
 
-The factor-to-points calibration must use training windows only. Start with a
-linear map from the factor RAPM heads to normal offensive or defensive RAPM.
-Allow a residual target equal to normal RAPM minus the cross-fitted factor sum.
-The residual must be cross-fitted. An in-sample residual would leak the target.
+For nonlinear models, grouped feature contributions are explanations of the
+model prediction. They are not causal player credit. Correlated variables can
+move contribution between groups. Report grouped permutation results alongside
+tree attribution when the explanation is important.
 
-Keep the direct offense and defense models as the production baseline. Compare:
+## Feature families
 
-1. direct offense plus defense;
-2. six-head factor sum;
-3. eight-head factor sum;
-4. eight-head factor sum plus residual;
-5. a multi-task factor model only after the separate ridge heads pass.
-
-## Input feature contract
-
-All rates use player or team possessions as appropriate. Raw opportunity counts
-can set reliability weights. They cannot enter as predictive features. Exclude
-age, experience, height, listed position, minutes, games, raw plus-minus,
-on/off, and target-derived team ratings from the independent model.
-
-### Offensive eFG
+### Shooting and spacing
 
 - 2-point and 3-point accuracy and frequency;
 - rim, short-midrange, long-midrange, corner-three, and above-break-three rates;
-- catch-and-shoot and pull-up accuracy and frequency;
-- assisted and self-created scoring shares;
-- defender-distance shot splits and expected shot value;
-- three-point proficiency, rim-and-three frequency, and shot-profile entropy;
-- playtype frequency and points above expectation, with transition separated;
-- behavioral creation and spacing interactions.
+- catch-and-shoot, pull-up, assisted, and self-created shooting;
+- defender-distance and shot-quality splits;
+- expected shot value and actual-minus-expected shot making;
+- shooting proficiency, spacing, rim-and-three frequency, and profile entropy.
 
-### Offensive turnovers
+### Creation and passing
 
+- Box Creation, Offensive Load, assists per Load, and creation per Load;
+- potential assists, assist points created, secondary assists, and passes;
+- touches, time of possession, dribbles, drives, and drive passes;
+- playtype frequency, transition creation, and points above expectation;
+- behavioral role interactions.
+
+### Turnovers and ball security
+
+- turnovers per Load, touch, pass, drive, and creation event;
 - bad-pass, lost-ball, live-ball, travel, and offensive-foul rates;
-- turnovers per touch, pass, drive, and creation event;
-- assists, potential assists, passes, touches, drives, and time of possession;
-- creation load and nonlinear creation-load by turnover-type interactions.
+- turnover-type by creation-load interactions.
 
-### Offensive rebounds
+### Offensive rebounding
 
-- offensive rebounds, rebound chances, contested chances, and putbacks;
-- rim misses and shot-zone mix, which change rebound opportunity quality;
+- offensive rebounds, chances, contests, and putbacks;
+- miss location and shot profile, which change rebound opportunity quality;
 - paint touches, post touches, cuts, rolls, and interior role load;
-- crash-versus-transition indicators when the event data supports them.
+- crash-versus-transition behavior when event data supports it.
 
-### Offensive free throws
+### Free-throw pressure
 
-- shooting fouls drawn, free-throw attempts, and free throws made;
-- drives, rim attempts, paint and post touches;
+- free-throw attempts and shooting fouls drawn;
+- drives, rim attempts, paint touches, and post touches;
 - isolation, transition, cut, roll, and post-up frequency;
-- foul-drawing efficiency conditional on creation load.
+- foul drawing conditional on creation load.
 
-### Defensive eFG
+### Defensive shot suppression
 
-- defended field-goal accuracy and volume by zone;
+- defended accuracy and volume by zone;
 - expected-versus-actual opponent shot value;
-- rim deterrence, rim contests, blocks, and recovered blocks;
-- closeout and defender-distance splits;
-- matchup difficulty and shot-profile mix when IDs are reliable.
+- rim attempts defended, deterrence, contests, blocks, and recovered blocks;
+- matchup difficulty, closeout, and defender-distance splits.
 
-### Defensive turnovers
+### Defensive disruption
 
-- steals, deflections, loose balls recovered, charges drawn, and recovered blocks;
+- steals, deflections, loose balls recovered, and charges drawn;
 - forced live-ball turnovers and offensive fouls;
-- disruption per foul and role-conditioned defensive activity.
+- disruption per foul and role-conditioned activity.
 
-### Defensive rebounds
+### Defensive possession finishing
 
 - defensive rebounds, chances, contests, contested share, and box outs;
 - opponent offensive-rebound opportunities and second-chance possessions;
-- rim and interior matchup load.
+- foul type, drives defended, rim attempts defended, and contest-to-foul tradeoff.
 
-### Defensive free throws
+## Versioned public benchmark features
 
-- personal, shooting, transition, clear-path, and offensive fouls separated;
-- drives and rim attempts defended;
-- contest activity per foul and matchup difficulty.
+Implement public formulas only when the full formula and scaling population are
+known. Give each formula a source and version. Public formulas are candidate
+features, not ground truth.
 
-Use stat-specific empirical-Bayes stabilization and decay. Three-point accuracy
-must not use the same history weight as turnovers, drives, or rebound chances.
-Learn role from behavior. Do not use listed position. Any team calibration or
-on/off input belongs in a separately labeled impact-assisted challenger.
+### Ben Taylor formulas published by CraftedNBA
 
-## Versioned benchmark features
-
-Implement public formulas only when the complete formula is available. Give the
-formula a source year. Do not imply that an old public formula is the author's
-current private version.
-
-Ben Taylor's public 2017 Box Creation formula is:
+The public 2017 Box Creation formula is:
 
 ```text
-three_point_proficiency = (2 / (1 + exp(-3PA)) - 1) * 3P%
+three_point_proficiency = (2 / (1 + exp(-3PA_per_100)) - 1) * 3P%
+
 box_creation_2017 =
-    0.1843 * AST
-  + 0.0969 * (PTS + TOV)
+    0.1843 * AST_per_100
+  + 0.0969 * (PTS_per_100 + TOV_per_100)
   - 2.3021 * three_point_proficiency
-  + 0.0582 * AST * (PTS + TOV) * three_point_proficiency
+  + 0.0582 * AST_per_100 * (PTS_per_100 + TOV_per_100)
+    * three_point_proficiency
   - 1.1942
 ```
 
-All inputs are per 100 possessions. Taylor reported mean absolute error of 0.90
-against hand-tracked opportunities created for players with at least 500 tracked
-possessions and 0.77 above 1,000. He also warned that the three-point term may
-not transfer to the 1980s. A later Box Creation update is not public, so this
-feature must remain `box_creation_2017`.
+Taylor reported mean absolute error of 0.90 against hand-tracked opportunities
+created for players with at least 500 tracked possessions and 0.77 above 1,000.
+He warned that the three-point term may not transfer to the 1980s. A later
+update is not public, so retain the source year in the feature name.
 
-Taylor's public Offensive Load and creation-adjusted turnover formulas are:
+The public Offensive Load formula is:
 
 ```text
 offensive_load_2017 =
-    0.75 * (AST - 0.38 * box_creation_2017)
-  + FGA + 0.44 * FTA + box_creation_2017 + TOV
-
-creation_adjusted_tov_pct_2017 = TOV_per_100 / offensive_load_2017
+    0.75 * (AST_per_100 - 0.38 * box_creation_2017)
+  + FGA_per_100 + 0.44 * FTA_per_100
+  + box_creation_2017 + TOV_per_100
 ```
 
-Offensive Load estimates responsibility, not value. Its assist adjustment is
-explicitly ad hoc. Use these as named challenger inputs, not ground truth.
+Offensive Load estimates responsibility, not value. Taylor described part of
+the assist adjustment as ad hoc.
 
-Do not implement a claimed exact Ben Taylor Passer Rating or ScoreVal formula.
-The authoritative public pages describe their inputs and intent but do not
-publish a complete current equation.
+### CraftedNBA Passer Rating
 
-## Lessons from public methods
+[CraftedNBA](https://craftednba.com/glossary) publishes:
 
-| Method | Useful design lesson | Do not copy unchanged |
-|---|---|---|
-| [MAMBA](https://www.teemohoop.com/mamba/Blog%20Post%20Title%20One-mm8gk-cy9wh) | playtype POE, transition value, assist points created, rim points saved, time decay | self-reported win tests use actual minutes and weak rookie handling |
-| [MAMBA Four Factor RAPM](https://www.teemohoop.com/mamba/four-factor-rapm) | six factor RAPM heads and a learned scale back to offensive and defensive RAPM | two-year samples are noisy; the reported near-additivity is not independent validation |
-| [MAMBA rework](https://www.teemohoop.com/mamba/mamba-reworked-updated) | defense needs rim protection, missed shots against, charges, and constrained interactions | arbitrary caps and smell-test edits need preregistered validation |
-| [Ben Taylor: Box Creation](https://fansided.com/2017/08/11/nylon-calculus-measuring-creation-box-score/) | assists, scoring pressure, turnovers, three-point proficiency, and their interaction estimate creation better than assists alone | the published formula was fit to a small hand-tracked sample and has an era warning |
-| [Ben Taylor: Offensive Load](https://thinkingbasketball.net/2017/10/16/offensive-load-and-adjusted-tov/) | separate offensive responsibility from efficiency and scale turnovers by creation load | its non-creation assist adjustment is explicitly ad hoc |
-| [Ben Taylor: Passer Rating](https://thinkingbasketball.net/2018/07/15/nba-passer-ratings-since-1978/) | passing production and passing ability are different; role changes observed volume | the canonical current equation is not public, so do not claim a replication |
-| [Thinking Basketball archive](https://thinkingbasketball.net/archives-2/) | Box Creation, Offensive Load, Passer Rating, spacing, WOWY, and playoff stability are separate concepts | do not collapse talent, role, scalability, and observed impact into one target |
-| [BPM 2.0](https://www.basketball-reference.com/about/bpm2.html) | long RAPM targets, per-100 inputs, learned role, and role-dependent coefficients | team adjustment and estimated position make it unsuitable as our independent prior contract |
-| [RAPTOR](https://fivethirtyeight.com/features/how-our-raptor-metric-works/) | expected shot value, assisted shots, enhanced assists, contested rebounds, spacing, and box/on-off separation | descriptive and predictive versions use different inputs; historical approximation is a different model |
-| [LEBRON](https://www.bball-index.com/lebron-introduction/) | role-based stabilization, a box prior, luck-adjusted RAPM, and explicit impact-versus-talent distinction | proprietary role/stabilization choices are not an independently reproducible benchmark |
-| [EPM](https://dunksandthrees.com/about/epm) | stat-specific estimated skills, long RAPM targets, league-relative features, and decayed prior-informed RAPM | current EPM uses age and other context that the user excluded from this model |
-| [DARKO](https://www.darko.app/about) | daily stat-specific decay, Kalman-style updating, interactions, and forward prediction | this is the later dynamic layer, not the first static factor prior |
-| [PIPM](https://www.bball-index.com/player-impact-plus-minus/) | box interactions plus luck-adjusted on/off and separate wins conversion | team-quality and on/off terms belong outside the independent prior |
-| [APBR RAPM discussion](https://apbr.org/metrics/viewtopic.php?t=8859&start=15) | possession-weighted stint regression and priors for low-information players | forum implementations are engineering references, not validation evidence |
+```text
+z(Load)
++ 3.00 * z(AST / Load)
++ z_positional(AST / Load) / 1.75
+- 2.00 * z(TOV / Load)
++ z(Creation / Load) / 2.00
++ z(Height) / 5.00
+```
 
-## Validation gates
+The result is converted to a 1–10 scale. CraftedNBA describes this formula as
+**inspired by** Ben Taylor's Passer Rating. It is not documented as Taylor's
+exact current formula.
 
-1. Verify event ordering, lineup assignment, score conservation, and factor
-   opportunity conservation before any player coefficients.
-2. Compare factor coefficients across adjacent three-year windows. A head that
-   changes sign or rank erratically is not ready for interpretation.
-3. Freeze factor definitions before tuning penalties.
-4. Select penalties and factor-to-points coefficients only in older windows.
-5. Score identical player rows on chronological outer windows.
-6. Report offense, defense, net, and every factor head. Report direct-versus-
-   decomposed deltas in RMSE and correlation.
-7. Resample whole games for lineup-based target uncertainty. Random model seeds
-   do not count as independent runs.
-8. Require the eight-head model to beat the direct baseline in at least two
-   chronological outer windows before promotion. If only the decomposition is
-   useful, publish it as an explanation layer and keep the direct model.
+The equation is not reproducible until the implementation freezes:
 
-## Current data constraint
+- the standardization population and season scope;
+- whether standard deviations are minutes- or possession-weighted;
+- the minimum sample and padding policy;
+- the position definitions and positional comparison population;
+- the final 1–10 transformation.
 
-The current rich canonical events cover only 2023–24 through 2025–26. That is
-enough to build and test the target builder, but not enough to establish a
-stable eight-head production model. The 1997–2024 legacy possession cache has
-lineups and points but not the event fields needed for eFG, turnover, rebound,
-and free-throw outcomes. Historical event ingestion, ideally 2014 onward, is a
-promotion dependency. Do not manufacture historical factor labels from player
-box totals.
+Keep two explicit variants:
+
+1. `crafted_passer_rating_v1`: exact documented terms after the missing scaling
+   rules are defined.
+2. `behavioral_passer_rating_v1`: no height and no listed position. Replace the
+   positional term with an older-window behavioral-role cluster or omit it.
+
+Both variants are eligible as distinct challengers. Do not also expose raw height
+or listed position as general model columns. The exact variant remains blocked
+until canonical height and position metadata and a frozen standardization
+contract exist. Never silently call the behavioral variant CraftedNBA Passer
+Rating.
+
+### Other CraftedNBA candidates
+
+| Metric | Use |
+|---|---|
+| Shooting Proficiency | implement as a versioned volume-and-accuracy interaction |
+| Spacing | benchmark the published formula; compare with defended 3PA and shot-location features |
+| PTS_GAINED / PTS_SAVED | recreate from zone-relative expected points after the exact opportunity contract is frozen |
+| AstUsg | retain as a simple passing-role ratio |
+| RAD/g, DFG%, NDFG%, FGDiff%, deflections | prioritize for defensive feature canonicalization |
+| Shooting Quality | use our own transparent padding and career blend; the glossary does not fully specify theirs |
+| Portability | research output, not a primary input; it includes external impact and position terms |
+| CraftedOPM / CraftedDPM | external ensemble benchmarks only; never train on them as independent inputs |
+
+## Input rules
+
+- Use possession or natural-opportunity rates.
+- Use raw counts only for reliability weights and stabilization.
+- Exclude age, experience, height, listed position, minutes, and games from the
+  general predictive columns. A predeclared composite such as
+  `crafted_passer_rating_v1` can include height and positional normalization as
+  part of its published formula, but must be tested as its own challenger.
+- Exclude raw plus-minus, on/off, RAPM, LEBRON, DARKO, BPM, and other target-like
+  impact metrics from the independent prior.
+- Label a separate impact-assisted challenger if target-like inputs are tested.
+- Fit standardization, padding, role clusters, and league baselines inside the
+  chronological training period only.
+- Give efficiency and rate statistics their own stabilization/decay schedules.
+
+## Evaluation
+
+Compare feature blocks against the frozen direct offense and defense models.
+Do not judge a feature by whether individual rankings look familiar.
+
+1. State the expected basketball mechanism before the run.
+2. Add one predeclared family at a time.
+3. Use identical rows and chronological outer windows.
+4. Tune only inside older data.
+5. Require repeated out-of-sample improvement, not multiple random seeds.
+6. Report RMSE, correlation, calibration, and role/volume subgroups.
+7. Retain null results and feature provenance.
+
+The existing 2022–24 tracking-era folds have already been inspected repeatedly.
+New CraftedNBA-derived features can be implemented and explored there, but they
+cannot earn a strong production claim without new target seasons or a frozen
+historical backtest that was not used during feature design.
+
+## Optional Factor RAPM branch
+
+Factor RAPM can still estimate lineup-adjusted effects on team eFG/TS,
+turnovers, rebounds, and free throws. Use it for research and explanation after
+historical event data is available. It is not the required label for the first
+all-in-one.
