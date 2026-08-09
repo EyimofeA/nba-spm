@@ -43,6 +43,9 @@ uv run python -m nba_impact.cli fit-statistical-impact \
   --features artifacts/features/statistical_impact/<run-id>/features.parquet
 uv run python -m nba_impact.cli compare-statistical-models \
   --features artifacts/features/statistical_impact/<run-id>/features.parquet
+uv run python -m nba_impact.cli compare-statistical-direct-net \
+  --features artifacts/features/statistical_impact/<run-id>/features.parquet \
+  --component-run artifacts/models/statistical_model_comparison/<run-id>
 ```
 
 The three-season canonical data rebuild is also resumable:

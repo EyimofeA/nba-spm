@@ -249,6 +249,9 @@ percentages from their natural attempts or touches.
 Run `statistical_model_comparison_v1_dd31e7957d` promotes histogram GBM for the
 offensive challenger only. Keep ridge for defense: histogram GBM loses defensive
 RMSE in all three outer folds. Elastic net is rejected.
+Run `statistical_direct_net_v1_286a104216` rejects direct nonlinear net prediction:
+it loses RMSE to histogram offense plus ridge defense in all three outer folds.
+Keep the AIO decomposed.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

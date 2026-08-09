@@ -1,6 +1,6 @@
 # NBA Impact Lab — Research Backlog
 
-Updated: 2026-08-08
+Updated: 2026-08-09
 
 This is a historical planning page for the NBA project. `../historical/TODO_2026-06-11.md`,
 `../../IDEAS.md`, `../../PROJECT.md`, existing outputs, and earlier critiques are historical evidence and
@@ -276,6 +276,38 @@ Initial queue:
 3. ESPN-style conserved event-credit baseline.
 4. Distributional TD + Shapley paper, through the ladder above.
 5. EPV/action valuation only when the required event/tracking state exists.
+
+## New idea inbox
+
+### MATCHUP-001 — Zone-conditioned 1v1 offense/defense ratings
+
+- **Question:** Can public NBA matchup and shot-location data estimate a player's
+  one-on-one scoring and defending strength by court zone?
+- **Estimand:** Expected points added by the offensive player and prevented by
+  the primary defender, conditional on shot zone and observable possession state.
+- **Minimum data:** Shooter, primary defender, shot result/value, court zone,
+  game clock, score state, transition/halfcourt indicator, and matchup exposure.
+  Public NBA matchup aggregates can support a first seasonal model. True
+  possession-level 1v1 claims require event-level matchup labels or optical data.
+- **Simplest baseline:** Reliability-weighted, zone-specific make/expected-points
+  rates with partial pooling for shooter, defender, season, and zone. Compare an
+  Elo-style online update only after this baseline.
+- **Main identification/leakage risk:** “Primary defender” is assignment rather
+  than sole causation. Help defense, screens, switches, shot selection, and NBA's
+  matchup attribution rules confound literal 1v1 skill. Binary win/loss Elo also
+  discards shot value and shot difficulty.
+- **Chronological validation:** Train through season T; evaluate shot probability,
+  expected points, and held-out matchup calibration in T+1. Test stability for
+  team changers and low-exposure matchups.
+- **Product if it works:** Offensive and defensive matchup ratings by rim, short
+  midrange, long midrange, corner three, and above-the-break three; matchup
+  explorer; role/portability inputs for the all-in-one model.
+- **Status:** inbox
+
+Do not call the result Elo unless the model uses sequential opponent-adjusted
+updates. A hierarchical Bradley–Terry or mixed-effects expected-points model is
+the stronger statistical baseline because basketball attempts have different
+values and zones.
 
 ## Idea intake template
 

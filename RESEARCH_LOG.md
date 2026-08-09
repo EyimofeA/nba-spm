@@ -979,3 +979,23 @@ the defensive baseline. Reject elastic net. The mixed histogram-offense plus
 ridge-defense model is the next component candidate; compare it with direct
 nonlinear net prediction before any production choice. Three chronological fold
 wins are initial evidence, not proof across every NBA era.
+
+## 2026-08-09 — Direct nonlinear net loses to decomposed AIO
+
+**Question:** Does a histogram GBM trained directly on net RAPM beat histogram
+offense plus ridge defense?
+
+**What we did:** Run `statistical_direct_net_v1_286a104216` tunes the direct
+histogram model only inside each chronological training fold. It compares direct
+net with saved component predictions from
+`statistical_model_comparison_v1_dd31e7957d` on identical test players.
+
+**Result:** Direct net loses weighted RMSE in all three folds. Mean RMSE is
+1.3413, versus 1.3257 for histogram offense plus ridge defense and 1.3593 for
+ridge components. Direct net has higher correlation than the hybrid, 0.5093
+versus 0.4825, but worse magnitude calibration. The hybrid is better on the
+primary loss in 2022, 2023, and 2024.
+
+**Verdict:** Reject direct nonlinear net for this feature set. Keep the AIO
+decomposed as histogram GBM offense plus ridge defense. Next, ablate feature
+families before adding complexity.

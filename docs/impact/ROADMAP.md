@@ -116,7 +116,7 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Test direct nonlinear net RAPM against the component model selected by
-`statistical_model_comparison_v1_dd31e7957d`: histogram GBM offense plus ridge
-defense. Keep the same purged folds and inner-only tuning. Then run feature-family
-ablations and compare the user's feature set under the same player-window contract.
+Run feature-family ablations for the selected component challenger: histogram
+GBM offense plus ridge defense. Remove one declared feature family at a time and
+keep the same rows, purged folds, weights, and tuning. Then compare the user's
+feature set under the same player-window contract.
