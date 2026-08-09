@@ -51,6 +51,11 @@ uv run python -m nba_impact.cli ablate-statistical-features \
 uv run python -m nba_impact.cli fit-optimized-statistical-aio \
   --features artifacts/features/statistical_impact/<run-id>/features.parquet \
   --ablation-run artifacts/models/statistical_feature_ablation/<run-id>
+uv run python -m nba_impact.cli build-statistical-features-v2 \
+  --base-features artifacts/features/statistical_impact/<v1-run-id>/features.parquet
+uv run python -m nba_impact.cli compare-statistical-features-v2 \
+  --features artifacts/features/statistical_impact/<v2-run-id>/features.parquet \
+  --baseline-run artifacts/models/statistical_aio/<run-id>
 ```
 
 The three-season canonical data rebuild is also resumable:

@@ -78,6 +78,16 @@ predictions for net impact. Run `statistical_impact_v2_48f6ad776f` found no
 measurable advantage from fitting net RAPM directly on the advanced feature sets.
 The separate models preserve the requested offense/defense decomposition.
 
+The v2 feature layer keeps the learners frozen while it tests basketball-domain
+engineering. It adds stabilized percentages, era-relative rates, recent-season
+levels, trends, volatility, scoring topology, creation quality, behavioral role,
+and defensive interactions. Run `statistical_feature_v2_comparison_e1cba6dd1d`
+selects the era-relative, recent-level, and temporal-dynamics blocks for offense
+on 2022–23. It selects no defensive block. On the 2024 feature confirmation,
+net RMSE improves from 1.30196 to 1.27987 and correlation improves from 0.54104
+to 0.55221. This is a research challenger because earlier family comparisons
+already inspected 2024. More subset search on these folds is not valid.
+
 ## Phase 4 — Create the all-in-one rating
 
 1. Evaluate the statistical prior by itself.

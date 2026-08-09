@@ -1,7 +1,7 @@
 # NBA Impact Roadmap
 
 This is the one file to follow remotely. `RESEARCH_LOG.md` contains evidence and
-dead ends. Updated 2026-08-08. See `docs/README.md` for the document index,
+dead ends. Updated 2026-08-09. See `docs/README.md` for the document index,
 `docs/impact/ROADMAP.md` for the detailed RAPM/all-in-one plan, and
 `docs/modeling/PLAYBOOK.md` for the common statistical modeling procedure.
 
@@ -26,14 +26,17 @@ dead ends. Updated 2026-08-08. See `docs/README.md` for the document index,
   lost on the untouched 2025–26 confirmation season.
 - The first three-year statistical ridge baseline now compares box, advanced,
   and advanced-plus-on/off feature sets across three purged chronological folds.
+- Frozen feature engineering improves the statistical AIO's 2024 net RMSE from
+  1.3020 to 1.2799. The gain is offensive; no new defensive block passes.
 - The old 1997–2024 RAPM archive remains valuable but is stale after 2024.
 
 ## Active next task
 
-Rebuild three-year advanced inputs with natural attempt/touch denominators, then
-compare the user's feature set against the frozen box and advanced ridge
-baselines. Keep on/off as a separately labeled impact-assisted model. WP neural
-work is paused; do not train neural models on the local Mac.
+Generate cross-fitted v2 statistical priors for each historical window. Then
+compare prior-only, normal RAPM, a simple blend, and prior-informed RAPM without
+letting a target window train its own prior. Keep on/off as a separately labeled
+impact-assisted model. WP neural work is paused; do not train neural models on
+the local Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
@@ -96,3 +99,5 @@ now would break reproducibility links.
 - Statistical direct net: `statistical_direct_net_v1_286a104216`
 - Statistical feature ablation: `statistical_feature_ablation_v1_918be14a38`
 - Optimized statistical AIO: `statistical_aio_v1_b0295558c6`
+- Statistical features v2: `statistical_features_v2_6f7b3c5c57`
+- Statistical feature v2 comparison: `statistical_feature_v2_comparison_e1cba6dd1d`

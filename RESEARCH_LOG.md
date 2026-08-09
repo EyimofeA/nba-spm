@@ -1024,3 +1024,45 @@ Do not continue subset search on the same three outer folds. Another search woul
 reuse the only tracking-era evidence and overfit research choices. The next AIO
 step is cross-fitted prior generation and prior-informed RAPM, not another model
 or feature sweep.
+
+## 2026-08-09 — Basketball-domain feature engineering improves offense only
+
+**Question:** Can stabilized rates, era context, scoring topology, creation
+quality, behavioral role, and within-window temporal shape improve the frozen
+statistical AIO without age, experience, height, position, minutes, games, on/off,
+or plus-minus inputs?
+
+**What we did:** Run `statistical_features_v2_6f7b3c5c57` adds 131 engineered
+features to 6,689 validated player-windows. It recalculates empirical-Bayes
+percentages from pooled natural denominators; adds possession-weighted
+era-relative rates; separates latest-season level, linear trend, and volatility;
+and adds scoring-topology, creation, role, rebound, and defensive interactions.
+Missing engineered values receive a neutral within-window fill. The table has
+zero duplicate keys, infinities, bounded-feature failures, or remaining missing
+engineered values.
+
+Run `statistical_feature_v2_comparison_e1cba6dd1d` holds the learners fixed:
+Histogram GBM for offense (`learning_rate=0.03`, seven leaves, L2=1) and ridge
+for defense (`alpha=3000`). It tests predeclared blocks on 2022 and 2023. A block
+must reduce component RMSE in both folds. The selected combination is scored once
+on 2024.
+
+**Result:** Offense selects era-relative rates, latest-season levels, and
+trend/volatility. Discovery offense RMSE improves 0.97270 to 0.90945 in 2022 and
+0.92624 to 0.88170 in 2023. No defensive block passes both folds. On 2024,
+offense RMSE improves 0.88224 to 0.84528 and correlation improves 0.56423 to
+0.58908. Recombined net RMSE improves 1.30196 to 1.27987 and correlation improves
+0.54104 to 0.55221. The saved challenger uses 117 offensive and 50 defensive
+features.
+
+**Null results:** Stabilized percentages, scoring topology, and creation-quality
+blocks do not improve offense in both discovery folds. Era context, recent level,
+temporal dynamics, direct defensive interactions, and offensive role context do
+not improve defense in both folds. The available public panel still contains
+little direct defensive matchup information.
+
+**Verdict:** Keep v2 as the current research challenger. Do not call it final or
+optimal: 2024 was held out from this feature selection but was inspected during
+earlier model-family work, and the target RAPM run ends in 2024. Stop subset
+search on 2022–24. Next, create cross-fitted priors and test whether this feature
+gain improves the downstream possession model.

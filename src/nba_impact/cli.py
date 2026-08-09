@@ -19,6 +19,7 @@ from nba_impact.data.official_boxscore import ingest_official_boxscores
 from nba_impact.data.player_game import build_player_games
 from nba_impact.data.possessions import build_possessions
 from nba_impact.data.statistical_features import build_statistical_feature_windows
+from nba_impact.data.statistical_features_v2 import build_statistical_features_v2
 from nba_impact.models.rapm import (
     RapmConfig,
     load_current_possessions,
@@ -39,6 +40,9 @@ from nba_impact.models.statistical_feature_ablation import (
 )
 from nba_impact.models.statistical_model_comparison import (
     run_statistical_model_comparison,
+)
+from nba_impact.models.statistical_feature_v2 import (
+    run_statistical_feature_v2_comparison,
 )
 from nba_impact.models.inpredictable_benchmark import (
     run_inpredictable_surface_benchmark,
@@ -465,6 +469,18 @@ def command_build_statistical_features(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_build_statistical_features_v2(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_statistical_features_v2(
+        args.source_dir,
+        args.base_features,
+        artifact_root=args.artifact_root,
+        window_ends=args.window_ends,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
 def command_compare_statistical_models(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     run = run_statistical_model_comparison(
@@ -508,6 +524,19 @@ def command_fit_optimized_statistical_aio(args: argparse.Namespace) -> int:
         args.features,
         args.targets,
         args.ablation_run,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_compare_statistical_features_v2(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_statistical_feature_v2_comparison(
+        args.features,
+        args.targets,
+        args.baseline_run,
         artifact_root=args.artifact_root,
     )
     register_model_run(args.registry, run)
@@ -1070,6 +1099,24 @@ def build_parser() -> argparse.ArgumentParser:
     statistical_features.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     statistical_features.set_defaults(func=command_build_statistical_features)
 
+    statistical_features_v2 = subparsers.add_parser(
+        "build-statistical-features-v2",
+        help="Add stabilized, era-relative, temporal, role, and interaction features.",
+    )
+    statistical_features_v2.add_argument(
+        "--source-dir",
+        type=Path,
+        default=Path("data/raw/playersheets/year_totals"),
+    )
+    statistical_features_v2.add_argument("--base-features", type=Path, required=True)
+    statistical_features_v2.add_argument(
+        "--window-ends",
+        type=_season_list,
+        default=tuple(range(2016, 2025)),
+    )
+    statistical_features_v2.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    statistical_features_v2.set_defaults(func=command_build_statistical_features_v2)
+
     statistical_impact = subparsers.add_parser(
         "fit-statistical-impact",
         help="Fit the first purged three-season normal-RAPM statistical baseline.",
@@ -1159,6 +1206,29 @@ def build_parser() -> argparse.ArgumentParser:
     )
     optimized_statistical_aio.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     optimized_statistical_aio.set_defaults(func=command_fit_optimized_statistical_aio)
+
+    statistical_features_v2_comparison = subparsers.add_parser(
+        "compare-statistical-features-v2",
+        help="Select v2 feature blocks with the frozen offense and defense learners.",
+    )
+    statistical_features_v2_comparison.add_argument("--features", type=Path, required=True)
+    statistical_features_v2_comparison.add_argument("--baseline-run", type=Path, required=True)
+    statistical_features_v2_comparison.add_argument(
+        "--targets",
+        type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    statistical_features_v2_comparison.add_argument(
+        "--artifact-root", type=Path, default=ARTIFACT_ROOT
+    )
+    statistical_features_v2_comparison.add_argument(
+        "--registry", type=Path, default=REGISTRY_PATH
+    )
+    statistical_features_v2_comparison.set_defaults(
+        func=command_compare_statistical_features_v2
+    )
 
     compare = subparsers.add_parser(
         "compare-rapm",
