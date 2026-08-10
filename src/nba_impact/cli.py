@@ -52,6 +52,7 @@ from nba_impact.models.annual_spm_priors import (
 )
 from nba_impact.models.annual_aio_ratings import build_annual_aio_ratings
 from nba_impact.models.current_spm_confirmation import run_current_spm_confirmation
+from nba_impact.models.current_spm_diagnostics import run_current_spm_diagnostics
 from nba_impact.models.rolling_rapm_peaks import build_rolling_rapm_peaks
 from nba_impact.models.statistical_impact import run_statistical_impact_baseline
 from nba_impact.models.single_season_spm import (
@@ -812,6 +813,24 @@ def command_confirm_current_spm(args: argparse.Namespace) -> int:
         args.player_games,
         artifact_root=args.artifact_root,
         season=args.season,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_diagnose_current_spm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_current_spm_diagnostics(
+        args.confirmation_run,
+        args.current_features,
+        args.reference_features,
+        args.frozen_spm_run,
+        args.possessions,
+        args.segments,
+        artifact_root=args.artifact_root,
+        season=args.season,
+        comparison_season=args.comparison_season,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1754,6 +1773,26 @@ def build_parser() -> argparse.ArgumentParser:
     current_spm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     current_spm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     current_spm.set_defaults(func=command_confirm_current_spm)
+
+    current_spm_diagnostics = subparsers.add_parser(
+        "diagnose-current-spm",
+        help="Diagnose a frozen current-season SPM miss without model tuning.",
+    )
+    current_spm_diagnostics.add_argument("--confirmation-run", type=Path, required=True)
+    current_spm_diagnostics.add_argument("--current-features", type=Path, required=True)
+    current_spm_diagnostics.add_argument("--reference-features", type=Path, required=True)
+    current_spm_diagnostics.add_argument("--frozen-spm-run", type=Path, required=True)
+    current_spm_diagnostics.add_argument(
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    current_spm_diagnostics.add_argument(
+        "--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet"
+    )
+    current_spm_diagnostics.add_argument("--season", type=int, default=2025)
+    current_spm_diagnostics.add_argument("--comparison-season", type=int, default=2024)
+    current_spm_diagnostics.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    current_spm_diagnostics.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    current_spm_diagnostics.set_defaults(func=command_diagnose_current_spm)
 
     ratings_api = subparsers.add_parser(
         "serve-ratings",

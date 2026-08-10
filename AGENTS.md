@@ -368,6 +368,14 @@ promote or tune this frozen model on 2025. Use 2025 only for diagnosis. The next
 model change must use nested or forward-only selection and reserve a new season
 for confirmation.
 
+Run `current_spm_diagnostics_v1_59632783de` shows the miss is not fixed by an
+exposure filter or by removing the defensive tracking block. At 2,000+
+possessions, defense RMSE remains 1.232 and predictions are materially
+under-dispersed. Split-half high-exposure defensive RAPM stability is almost
+unchanged from 2024 to 2025. Neutralizing DFG/rim/hustle features makes 2025
+performance worse. Keep tracking and target better defensive signal plus
+calibration in the next nested experiment.
+
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`
 entry point from `pyproject.toml` in an equivalently locked environment.

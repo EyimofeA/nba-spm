@@ -73,7 +73,23 @@ as proof of a source break.
 
 ## Next experiment
 
-Use 2025 only to locate defensive failure modes by exposure, role, team, and
-feature family. Develop the next defensive challenger with nested or
-forward-only validation inside 2014–24. Reserve the next complete season for one
-untouched confirmation.
+Run `current_spm_diagnostics_v1_59632783de` completes the no-tuning failure
+audit. Low exposure does not explain the miss: the 276 players above 2,000
+possessions have defensive RMSE 1.232 and correlation 0.433. Their target
+standard deviation is 1.346, while the frozen predictions have standard
+deviation 0.649. The model is under-dispersed for this group.
+
+Target instability also does not explain the high-exposure regression. First-
+half versus second-half defensive RAPM correlation at 1,000 possessions in each
+half is 0.329 in 2024 and 0.331 in 2025. This is weak absolute reliability, but
+it did not deteriorate in 2025.
+
+The defensive tracking block still adds signal. Neutralizing all ten DFG, rim,
+and hustle features worsens 2025 defense RMSE from 1.154 to 1.182 and correlation
+from 0.331 to 0.230. Neutralizing only DFG/rim is worse than neutralizing only
+hustle. Do not remove the block.
+
+Develop the next defensive challenger with nested or forward-only validation
+inside 2014–24. Focus on additional stable defensive signal and calibration,
+not on deleting tracking or filtering low-minute players. Reserve the next
+complete season for one untouched confirmation.

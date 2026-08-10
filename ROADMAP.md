@@ -54,11 +54,12 @@ dead ends. Updated 2026-08-10. See `docs/README.md` for the document index,
 
 ## Active next task
 
-Diagnose the failed 2025 defensive SPM confirmation without changing the frozen
-model. Compare feature drift, target stability, and subgroup errors. Then define
-a nested or forward-only defensive feature experiment. Keep 2025 as inspected
-evidence and reserve the next complete season for one final untouched test. The
-published annual AIO stays at 2017–24. WP neural work stays paused on the Mac.
+Define one nested or forward-only defensive feature experiment inside 2014–24.
+The completed 2025 diagnosis rules out low exposure and the existing tracking
+block as primary causes. Target additional stable defensive signal and calibrated
+spread. Keep 2025 as inspected evidence and reserve the next complete season for
+one final untouched test. The published annual AIO stays at 2017–24. WP neural
+work stays paused on the Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.

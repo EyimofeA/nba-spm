@@ -1540,3 +1540,29 @@ Do not tune it on 2025. Use 2025 for failure diagnosis, develop the next defense
 model inside nested or forward-only 2014–24 validation, and reserve a new season
 for confirmation. The historical-range rule was recorded after observing 2025;
 it is a diagnostic comparison, not a predeclared gate.
+
+## 2026-08-10 — No-tuning diagnosis of the 2025 defensive SPM miss
+
+**Question:** Is the 2025 defensive regression caused by low exposure, unstable
+RAPM targets, schema drift, or the new defensive tracking block?
+
+**Method:** Run `current_spm_diagnostics_v1_59632783de` keeps the frozen model
+unchanged. It stratifies errors by possession exposure, compares selected-feature
+distributions with 2014–24, fits 2024 and 2025 first-half/second-half normal RAPM
+diagnostics, and neutralizes saved defensive feature blocks at historical
+medians. Neutralization is interpretation, not a retrained challenger.
+
+**Result:** The 276 players above 2,000 possessions still have defense RMSE 1.232
+and correlation 0.433. Their target standard deviation is 1.346 versus 0.649 for
+predictions. At a 1,000-possession floor in each half, split-half defensive RAPM
+correlation is nearly unchanged: 0.329 in 2024 and 0.331 in 2025. Neutralizing
+all ten DFG/rim/hustle features worsens RMSE from 1.154 to 1.182 and correlation
+from 0.331 to 0.230. Neutralizing DFG/rim alone is worse than neutralizing hustle
+alone. The largest median shift is contested-threes per 100 at 1.32 historical
+IQR, but its 2025 values remain inside the historical player range.
+
+**Verdict:** The current evidence rejects two simple explanations: low-minute
+noise alone and a harmful defensive-tracking block. The frozen model lacks enough
+stable, calibrated defensive separation in 2025. Keep tracking. Design the next
+defensive challenger under nested or forward-only validation and reserve a new
+season for confirmation.
