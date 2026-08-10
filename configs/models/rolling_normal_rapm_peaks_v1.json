@@ -1,0 +1,39 @@
+{
+  "contract_version": "rolling_normal_rapm_peaks_v1",
+  "status": "frozen_research_contract",
+  "estimand": "regular-season lineup-adjusted points per 100 possessions",
+  "population": "NBA regular season",
+  "season_range": [1997, 2024],
+  "window_lengths": [3, 5],
+  "model": {
+    "name": "normal RAPM",
+    "prior": "zero",
+    "lambda_off": 3000.0,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "season_scoring_environment": "remove each season's mean points per possession before fitting player effects",
+    "lineup_policy": "legacy possession terminal lineup"
+  },
+  "peak_eligibility": {
+    "minimum_offensive_possessions_per_window_season": 1000,
+    "minimum_defensive_possessions_per_window_season": 1000,
+    "rule": "both possession counts must be at least window length times 1000"
+  },
+  "peak_components": ["offense", "defense", "net"],
+  "tie_break": [
+    "larger component rating",
+    "larger minimum offensive or defensive possession count",
+    "earlier window end"
+  ],
+  "intended_use": [
+    "all-time rolling RAPM leaderboards",
+    "three-year and five-year player peaks",
+    "career trajectory research"
+  ],
+  "caveats": [
+    "The possession archive is stale after 2024.",
+    "The 2024 regular-season cache has 1229 games.",
+    "The model has no box-score prior and does not estimate uncertainty.",
+    "Peak selection creates winner's-curse bias and is descriptive."
+  ]
+}

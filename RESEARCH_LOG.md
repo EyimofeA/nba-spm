@@ -1409,3 +1409,41 @@ sides. Treat the precise order as exploratory, not ground truth.
 **Verdict:** Use this versioned panel for annual leaderboards and decomposition.
 Do not add uncertainty labels until they are estimated. Build three-year and
 five-year peak tables next.
+
+## 2026-08-10 — Independent three-year and five-year normal-RAPM peaks
+
+**Contract:** `configs/models/rolling_normal_rapm_peaks_v1.json` freezes 1997–2024
+regular-season windows, zero-prior ridge penalties 3000/3000/300, terminal
+lineups, and a minimum 1,000 offensive and defensive possessions per included
+window season. Peak selection is descriptive and winner's-curse biased. The
+model removes each season's mean points per possession before fitting player
+effects so changing league scoring environments do not become player credit.
+
+**Implementation and quality:** Run `rolling_rapm_peaks_v1_584adf4f3d` fits 26
+three-year and 24 five-year windows. It saves 36,530 rolling ratings and 7,866
+offense/defense/net player peaks. Rating and peak keys are unique; component
+identity error is below 9e-16. Annual player sheets fill historical crosswalk
+gaps, including Sasha Danilović (ID 390), so every eligible peak has a name.
+Legacy IDs 471 and 775 remain unresolved in four non-eligible rating rows. ID
+775 appears across unrelated teams in 1997 and is likely a parser placeholder;
+do not assign it a player name. Window fits checkpoint atomically after the
+full archive audit.
+
+**Leaders:** Three-year net peaks start with LeBron James 2009–11 (+9.19), Kevin
+Garnett 2007–09 (+8.96), Nikola Jokić 2022–24 (+8.82), Stephen Curry 2016–18
+(+8.77), and Kawhi Leonard 2020–22 (+8.32). Five-year net peaks start with Curry
+2015–19 (+9.58), LeBron 2007–11 (+9.34), Garnett 2003–07 (+9.23), Chris Paul
+2014–18 (+8.67), and Steve Nash 2007–11 (+8.16). Five-year offense is led by
+Nash 2006–10 (+8.93); five-year defense is led by Garnett 2007–11 (+6.37).
+
+**Validation:** For 1,223 players eligible in both window lengths, three-year
+and five-year peaks correlate 0.963 for net, 0.964 for offense, and 0.950 for
+defense. The independent three-year ratings correlate 0.842 with the legacy
+three-year net panel across 16,716 matched rows. The difference is expected:
+the legacy pipeline removes garbage time and adds score-margin and penalized
+season terms, while this model uses all regular-season possessions and a direct
+season scoring-level adjustment.
+
+**Verdict:** Use this artifact for the first all-time peak product. Keep it
+labeled normal RAPM, not AIO, because it has no statistical prior. Next build
+the read-only query layer and player trajectory/decomposition schemas.

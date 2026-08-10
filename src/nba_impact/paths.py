@@ -22,6 +22,7 @@ REGISTRY_PATH = Path(
 )
 LEGACY_POSSESSION_CACHE = PROJECT_ROOT / "rapm" / "data" / "possession_cache"
 PLAYER_NAMES = PROJECT_ROOT / "rapm" / "data" / "all_names.csv"
+LEGACY_PLAYER_SHEETS = PROJECT_ROOT / "data" / "raw" / "playersheets" / "year_totals"
 
 
 def ensure_owned_dirs() -> None:

@@ -44,6 +44,7 @@ from nba_impact.models.annual_spm_priors import (
     build_forward_chained_annual_spm_priors,
 )
 from nba_impact.models.annual_aio_ratings import build_annual_aio_ratings
+from nba_impact.models.rolling_rapm_peaks import build_rolling_rapm_peaks
 from nba_impact.models.statistical_impact import run_statistical_impact_baseline
 from nba_impact.models.single_season_spm import (
     build_single_season_rapm_targets,
@@ -84,6 +85,7 @@ from nba_impact.models.win_probability_stage1 import (
 from nba_impact.paths import (
     ARTIFACT_ROOT,
     BRONZE_ROOT,
+    LEGACY_PLAYER_SHEETS,
     LEGACY_POSSESSION_CACHE,
     MANIFEST_ROOT,
     OFFICIAL_BOXSCORE_ROOT,
@@ -749,6 +751,20 @@ def command_build_annual_aio_ratings(args: argparse.Namespace) -> int:
         lambda_off=args.lambda_off,
         lambda_def=args.lambda_def,
         lambda_home=args.lambda_home,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_rolling_rapm_peaks(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_rolling_rapm_peaks(
+        args.cache_dir,
+        args.names,
+        args.player_sheets_dir,
+        args.contract,
+        artifact_root=args.artifact_root,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1646,6 +1662,20 @@ def build_parser() -> argparse.ArgumentParser:
     annual_aio.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     annual_aio.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     annual_aio.set_defaults(func=command_build_annual_aio_ratings)
+
+    rolling_peaks = subparsers.add_parser(
+        "build-rolling-rapm-peaks",
+        help="Build independent three-year and five-year normal-RAPM peaks.",
+    )
+    rolling_peaks.add_argument("--contract", type=Path, required=True)
+    rolling_peaks.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    rolling_peaks.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    rolling_peaks.add_argument(
+        "--player-sheets-dir", type=Path, default=LEGACY_PLAYER_SHEETS
+    )
+    rolling_peaks.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    rolling_peaks.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    rolling_peaks.set_defaults(func=command_build_rolling_rapm_peaks)
 
     compare = subparsers.add_parser(
         "compare-rapm",

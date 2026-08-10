@@ -334,6 +334,14 @@ contains raw and centered SPM, zero-prior normal RAPM, final AIO, RAPM update,
 possessions, and rank for 4,341 player-seasons. All prior and name joins pass and
 all component identities close to floating-point precision. Use this artifact
 for annual product work. Next build three-year and five-year peak tables.
+Run `rolling_rapm_peaks_v1_584adf4f3d` completes 26 three-year and 24 five-year
+normal-RAPM windows over 1997–2024. The frozen contract is
+`configs/models/rolling_normal_rapm_peaks_v1.json`. It uses season scoring-level
+normalization and requires 1,000 offensive and defensive possessions per window
+season for peak eligibility. Numeric window fits checkpoint atomically. Never
+invent names for unresolved legacy IDs 471 and 775; neither is peak eligible.
+The next product task is a read-only query layer for annual ratings, rolling
+ratings, peaks, and decomposition.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

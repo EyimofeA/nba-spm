@@ -194,6 +194,17 @@ season remains one game short.
   present interpolation as new evidence.
 - Add career and peak views in the style of NBA RAPM peak datasets.
 
+The rolling normal-RAPM peak table is complete in
+`rolling_rapm_peaks_v1_584adf4f3d`. It independently fits 26 three-year and 24
+five-year regular-season windows over 1997–2024. The model uses zero-prior
+3000/3000/300 ridge, terminal lineups, a home term, and season scoring-environment
+normalization. Published peaks require at least 1,000 offensive and defensive
+possessions per window season. The output contains 36,530 rolling ratings and
+7,866 player/component peaks with no duplicate keys or missing peak names.
+Three-year and five-year peak values have 0.963 correlation for 1,223 players
+eligible in both. The two unresolved archive IDs, 471 and 775, occur only in
+1997, are not peak eligible, and remain explicitly unnamed rather than guessed.
+
 ## Phase 6 — Product contract
 
 Freeze Parquet/DuckDB schemas first. Then add a thin read-only API for:
@@ -209,7 +220,7 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Build rolling three-year and five-year normal-RAPM peak tables. Then add annual
-trajectory and decomposition query schemas for the read-only API. Use
+Add annual, rolling-window, peak, and decomposition query schemas for the
+read-only API. Then build the first player trajectory view. Use
 the saved annual defensive disagreements to define future defensive feature
 families; do not tune them on the same 2017–24 table.
