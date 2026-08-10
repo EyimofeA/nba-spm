@@ -152,6 +152,45 @@ def load_current_possessions(
     return output
 
 
+def load_current_player_names(
+    legacy_names_path: str | Path,
+    player_games_path: str | Path,
+) -> pd.DataFrame:
+    """Extend the stale legacy crosswalk with names observed in current boxes."""
+    legacy_path = Path(legacy_names_path)
+    if legacy_path.exists():
+        legacy = pd.read_csv(legacy_path)[["PLAYER_ID", "PLAYER_NAME"]]
+        legacy["PLAYER_ID"] = pd.to_numeric(
+            legacy["PLAYER_ID"], errors="coerce"
+        ).astype("Int64")
+        legacy = legacy.dropna(subset=["PLAYER_ID", "PLAYER_NAME"])
+    else:
+        legacy = pd.DataFrame(columns=["PLAYER_ID", "PLAYER_NAME"])
+
+    current = pd.read_parquet(
+        player_games_path,
+        columns=["player_id", "player_name", "game_date"],
+    ).dropna(subset=["player_id", "player_name"])
+    current["PLAYER_ID"] = pd.to_numeric(
+        current["player_id"], errors="coerce"
+    ).astype("Int64")
+    current = current.dropna(subset=["PLAYER_ID"]).sort_values(
+        ["game_date", "PLAYER_ID"], kind="stable"
+    )
+    current = current.drop_duplicates("PLAYER_ID", keep="last").rename(
+        columns={"player_name": "PLAYER_NAME"}
+    )[["PLAYER_ID", "PLAYER_NAME"]]
+    current_ids = set(current["PLAYER_ID"].astype(int))
+    combined = pd.concat(
+        [legacy.loc[~legacy["PLAYER_ID"].isin(current_ids)], current],
+        ignore_index=True,
+    )
+    combined["PLAYER_ID"] = combined["PLAYER_ID"].astype(int)
+    if combined["PLAYER_ID"].duplicated().any():
+        raise ValueError("Current player-name crosswalk must be unique by PLAYER_ID.")
+    return combined.sort_values("PLAYER_ID", kind="stable").reset_index(drop=True)
+
+
 def build_design(frame: pd.DataFrame, include_home: bool = True) -> RapmDesign:
     away_players = frame.loc[:, AWAY_PLAYER_COLUMNS].to_numpy(
         dtype=np.int64, copy=False

@@ -29,6 +29,11 @@ ANNUAL_METRICS = (
     "rapm_update_defense",
 )
 PEAK_COMPONENTS = ("net", "offense", "defense")
+CURRENT_METRICS = {
+    "net": "net_per_100",
+    "offense": "offense_per_100",
+    "defense": "defense_per_100",
+}
 
 
 def _records(frame: pd.DataFrame) -> list[dict[str, Any]]:
@@ -47,6 +52,7 @@ class RatingsApiConfig:
     contract_version: str
     annual_run_id: str
     rolling_run_id: str
+    current_rapm_run_id: str
     default_limit: int = 25
     maximum_limit: int = 100
 
@@ -68,11 +74,14 @@ class RatingsStore:
         artifact_root = Path(artifact_root)
         self.annual_dir = artifact_root / "annual_aio_ratings" / config.annual_run_id
         self.rolling_dir = artifact_root / "rolling_rapm_peaks" / config.rolling_run_id
+        self.current_dir = artifact_root / "rapm" / config.current_rapm_run_id
         self.annual_manifest = _read_run(self.annual_dir / "run.json")
         self.rolling_manifest = _read_run(self.rolling_dir / "run.json")
+        self.current_manifest = _read_run(self.current_dir / "run.json")
         self.annual = pd.read_parquet(self.annual_dir / "ratings.parquet")
         self.rolling = pd.read_parquet(self.rolling_dir / "rolling_ratings.parquet")
         self.peaks = pd.read_parquet(self.rolling_dir / "player_peaks.parquet")
+        self.current = pd.read_parquet(self.current_dir / "ratings.parquet")
         self._validate()
 
     def _validate(self) -> None:
@@ -95,10 +104,20 @@ class RatingsStore:
             *PEAK_COMPONENTS,
         }
         peak_required = rolling_required | {"peak_component", "peak_value", "all_time_rank"}
+        current_required = {
+            "player_id",
+            "player_name",
+            "offense_per_100",
+            "defense_per_100",
+            "net_per_100",
+            "off_possessions",
+            "def_possessions",
+        }
         for label, frame, required in (
             ("annual", self.annual, annual_required),
             ("rolling", self.rolling, rolling_required),
             ("peaks", self.peaks, peak_required),
+            ("current", self.current, current_required),
         ):
             missing = sorted(required - set(frame.columns))
             if missing:
@@ -109,6 +128,8 @@ class RatingsStore:
             raise ValueError("Rolling rating keys are not unique.")
         if self.peaks.duplicated(["PLAYER_ID", "window_seasons", "peak_component"]).any():
             raise ValueError("Peak rating keys are not unique.")
+        if self.current["player_id"].duplicated().any():
+            raise ValueError("Current RAPM player IDs are not unique.")
 
     def _limit(self, limit: int | None) -> int:
         value = self.config.default_limit if limit is None else int(limit)
@@ -121,20 +142,68 @@ class RatingsStore:
             "contract_version": self.config.contract_version,
             "annual_run_id": self.config.annual_run_id,
             "rolling_run_id": self.config.rolling_run_id,
+            "current_rapm_run_id": self.config.current_rapm_run_id,
             "annual_status": self.annual_manifest["status"],
             "rolling_status": self.rolling_manifest["status"],
+            "current_rapm_status": self.current_manifest["status"],
             "annual_estimand": self.annual_manifest["estimand"],
             "rolling_estimand": self.rolling_manifest["estimand"],
+            "current_rapm_estimand": self.current_manifest["estimand"],
             "annual_seasons": sorted(int(value) for value in self.annual["Season"].unique()),
             "rolling_windows": sorted(
                 int(value) for value in self.rolling["window_seasons"].unique()
             ),
             "annual_metrics": list(ANNUAL_METRICS),
             "peak_components": list(PEAK_COMPONENTS),
+            "current_rapm_metrics": list(CURRENT_METRICS),
             "caveats": sorted(
                 set(self.annual_manifest.get("caveats", []))
                 | set(self.rolling_manifest.get("caveats", []))
+                | set(self.current_manifest.get("caveats", []))
             ),
+        }
+
+    def current_leaderboard(
+        self,
+        metric: str = "net",
+        *,
+        limit: int | None = None,
+        offset: int = 0,
+        minimum_possessions: int = 0,
+    ) -> dict[str, Any]:
+        if metric not in CURRENT_METRICS:
+            raise ValueError(f"unsupported current RAPM metric: {metric}")
+        if offset < 0 or minimum_possessions < 0:
+            raise ValueError("offset and minimum_possessions must be nonnegative")
+        size = self._limit(limit)
+        column = CURRENT_METRICS[metric]
+        frame = self.current.loc[
+            self.current[["off_possessions", "def_possessions"]].min(axis=1)
+            >= minimum_possessions
+        ].copy()
+        frame = frame.sort_values(
+            [column, "off_possessions", "player_id"],
+            ascending=[False, False, True],
+            kind="stable",
+        )
+        frame["rank"] = np.arange(1, len(frame) + 1)
+        columns = [
+            "rank",
+            "player_id",
+            "player_name",
+            "offense_per_100",
+            "defense_per_100",
+            "net_per_100",
+            "off_possessions",
+            "def_possessions",
+        ]
+        return {
+            "metric": metric,
+            "seasons": self.current_manifest["config"]["seasons"],
+            "total": len(frame),
+            "offset": int(offset),
+            "limit": size,
+            "results": _records(frame.iloc[offset : offset + size][columns]),
         }
 
     def annual_leaderboard(
@@ -235,6 +304,9 @@ class RatingsStore:
             [
                 self.annual[["PLAYER_ID", "PLAYER_NAME"]],
                 self.rolling[["PLAYER_ID", "PLAYER_NAME"]],
+                self.current[["player_id", "player_name"]].rename(
+                    columns={"player_id": "PLAYER_ID", "player_name": "PLAYER_NAME"}
+                ),
             ],
             ignore_index=True,
         ).drop_duplicates("PLAYER_ID")
@@ -266,9 +338,17 @@ class RatingsStore:
             ["window_seasons", "peak_component"]
         )
         if annual.empty and rolling.empty:
-            return None
+            current = self.current.loc[self.current["player_id"] == player_id]
+            if current.empty:
+                return None
+        else:
+            current = self.current.loc[self.current["player_id"] == player_id]
         available = annual if not annual.empty else rolling
-        name = available["PLAYER_NAME"].dropna().iloc[-1]
+        name = (
+            current["player_name"].dropna().iloc[-1]
+            if not current.empty
+            else available["PLAYER_NAME"].dropna().iloc[-1]
+        )
         annual_columns = [
             "Season",
             "Poss_Off",
@@ -291,4 +371,9 @@ class RatingsStore:
             "annual": _records(annual[annual_columns]),
             "rolling": _records(rolling[rolling_columns]),
             "peaks": _records(peaks.drop(columns=["PLAYER_ID", "PLAYER_NAME"])),
+            "current_normal_rapm": (
+                _records(current.drop(columns=["player_id", "player_name"]))[0]
+                if not current.empty
+                else None
+            ),
         }

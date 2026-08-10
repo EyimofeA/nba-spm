@@ -4,6 +4,7 @@ The first product slice is one player trajectory page. It reads the pinned
 ratings API and shows:
 
 - annual AIO offense, defense, and net;
+- current 2023–24 through 2025–26 normal RAPM;
 - the SPM center plus RAPM update decomposition;
 - three- and five-year normal RAPM trajectories;
 - the player's offense, defense, and net peak ranks;

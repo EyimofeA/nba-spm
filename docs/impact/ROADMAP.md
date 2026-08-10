@@ -220,11 +220,10 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-The read-only ratings API v1 and first player trajectory page are complete. The
-page exposes annual AIO decomposition and 3Y/5Y normal-RAPM history without
-pretending the research artifacts are production truth. Do not expand it into a
-full site yet. Return to the highest-value scientific blocker: construct and
-validate current-season possessions from the downloaded event archive, then fit
-a current normal-RAPM baseline. Use the saved annual defensive disagreements to
-define future defensive feature families; do not tune them on the same 2017–24
-table.
+The read-only API, first player trajectory page, current possession quality gate,
+and frozen 2024–26 normal RAPM are complete. The page now shows that current
+normal RAPM beside annual AIO and historical rolling peaks. Do not expand it into
+a full site yet. Next build current 2025 and 2026 statistical feature panels,
+measure their schema/coverage drift against 2024, and only then extend annual AIO
+beyond 2024. Use the saved annual defensive disagreements to define future
+defensive feature families; do not tune them on the same 2017–24 table.

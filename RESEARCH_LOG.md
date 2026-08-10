@@ -1481,3 +1481,30 @@ the read-only query layer and player trajectory/decomposition schemas.
 - The Cloudflare-compatible production build and rendered product-shell test
   pass. This slice remains local: deploying only the page would be broken until
   the ratings API also has a managed public runtime.
+
+## 2026-08-10 — Current possessions and frozen 2024–26 normal RAPM
+
+- Re-audited the canonical current possession and ordinal lineup tables for the
+  regular-season RAPM estimand. They contain 743,946 possessions across 3,681 of
+  3,690 source games (99.76%). Nine games fail minute/substitution reconciliation
+  and remain quarantined.
+- Possession and segment keys are unique, player lineup slots have zero nulls,
+  offense/defense team domains are valid, game scores and child-segment points
+  conserve exactly, and there are no negative or greater-than-seven-point rows.
+- Added current-box fallback names to the RAPM runner. This replaces stale legacy
+  names when available and yields zero missing names across 802 fitted players.
+- Frozen run `rapm_v0_01b5084f0a` uses terminal-lineup zero-prior ridge at
+  3000/3000/300 over the 2023–24 through 2025–26 regular seasons. Its ratings are
+  numerically identical to the earlier validated frozen run. The new run adds
+  explicit input hashes, corrected research status, current names, and caveats.
+- On 2025–26 observed-lineup retrodiction, margin RMSE is 15.473 and correlation
+  is 0.334. Earlier-season player coverage is only 86.5%, so this remains a
+  descriptive baseline, not a forecast.
+- Start-versus-terminal net ratings correlate 0.971 with mean absolute difference
+  0.358. This confirms that lineup policy matters; terminal remains the active
+  simple contract by prior validation and user direction.
+- The pinned API now exposes `/v1/leaderboards/current` and embeds current normal
+  RAPM in each player payload. With at least 3,000 possessions per side, the top
+  five are Shai Gilgeous-Alexander (+8.78), Nikola Jokić (+8.69), Kawhi Leonard
+  (+6.79), Giannis Antetokounmpo (+6.70), and Victor Wembanyama (+5.90). Treat the
+  order as a research result.

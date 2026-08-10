@@ -18,7 +18,11 @@ from nba_impact.data.event_state import build_event_states
 from nba_impact.data.espn_win_probability import ingest_espn_win_probability
 from nba_impact.data.game_dim import build_game_dimension
 from nba_impact.data.lineups import build_lineup_stints
-from nba_impact.data.manifest import build_possession_snapshot, write_json_atomic
+from nba_impact.data.manifest import (
+    build_possession_snapshot,
+    sha256_file,
+    write_json_atomic,
+)
 from nba_impact.data.official_boxscore import ingest_official_boxscores
 from nba_impact.data.player_game import build_player_games
 from nba_impact.data.playtype_features import build_playtype_features
@@ -28,6 +32,7 @@ from nba_impact.data.statistical_features_v2 import build_statistical_features_v
 from nba_impact.models.rapm import (
     RapmConfig,
     load_current_possessions,
+    load_current_player_names,
     load_legacy_possessions,
     run_nested_normal_rapm_tuning,
     run_rapm,
@@ -405,7 +410,7 @@ def command_fit_current_rapm(args: argparse.Namespace) -> int:
         game_types=game_types,
     )
     seasons = tuple(sorted(int(value) for value in frame["season"].unique()))
-    names = pd.read_csv(args.names) if Path(args.names).exists() else None
+    names = load_current_player_names(args.names, args.player_games)
     config = RapmConfig(
         seasons=seasons,
         lambda_off=args.lambda_off,
@@ -416,11 +421,32 @@ def command_fit_current_rapm(args: argparse.Namespace) -> int:
         data_scope=f"current_cdn_{args.lineup_policy}_lineup",
     )
     run = run_rapm(frame, config, artifact_root=args.artifact_root, names=names)
+    ratings_path = Path(run["artifact_path"]) / "ratings.parquet"
+    ratings = pd.read_parquet(ratings_path, columns=["player_name"])
+    run["status"] = (
+        "research_frozen_baseline"
+        if args.lineup_policy == "terminal"
+        else "research_lineup_sensitivity"
+    )
     run["config"]["lineup_policy"] = args.lineup_policy
     run["config"]["possessions_path"] = str(args.possessions.resolve())
     run["config"]["segments_path"] = str(args.segments.resolve())
+    run["config"]["source_hashes"] = {
+        "possessions": sha256_file(args.possessions),
+        "segments": sha256_file(args.segments),
+        "player_games": sha256_file(args.player_games),
+        "legacy_names": sha256_file(args.names) if Path(args.names).exists() else None,
+    }
+    run["metrics"]["missing_player_names"] = int(ratings["player_name"].isna().sum())
+    run["caveats"] = [
+        "The estimand is descriptive and uses observed lineups, not a pregame forecast.",
+        "Source games that fail lineup quality gates are excluded rather than repaired.",
+        "The latest-season retrodiction contains players absent from earlier training seasons.",
+        "Uncertainty is not estimated in this version.",
+    ]
     run["dataset_snapshot_id"] = args.snapshot_id
     write_json_atomic(run["config"], Path(run["artifact_path"]) / "config.json")
+    write_json_atomic(run["metrics"], Path(run["artifact_path"]) / "metrics.json")
     write_json_atomic(run, Path(run["artifact_path"]) / "run.json")
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1279,6 +1305,9 @@ def build_parser() -> argparse.ArgumentParser:
         "--lineup-policy", choices=("start", "terminal"), default="start"
     )
     current_rapm.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    current_rapm.add_argument(
+        "--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
     current_rapm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     current_rapm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     current_rapm.add_argument("--snapshot-id")

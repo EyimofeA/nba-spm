@@ -352,6 +352,13 @@ local until the API has a managed public runtime. Do not grow the frontend yet;
 the next scientific task is a validated current-season possession table and
 current normal RAPM.
 
+That task is complete. `docs/impact/CURRENT_POSSESSION_QUALITY.md` records the
+quality gate. Frozen terminal-lineup run `rapm_v0_01b5084f0a` covers the
+2023–24 through 2025–26 regular seasons, matches the earlier validated numerical
+ratings exactly, has no missing player names, and is pinned in the ratings API.
+Next audit and build current 2025/2026 statistical feature panels before extending
+annual AIO beyond 2024.
+
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`
 entry point from `pyproject.toml` in an equivalently locked environment.

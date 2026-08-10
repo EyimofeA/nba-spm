@@ -9,6 +9,7 @@ from nba_impact.models.rapm import (
     fit_coefficients,
     fit_coefficients_with_center,
     load_current_possessions,
+    load_current_player_names,
     ratings_table,
     run_nested_normal_rapm_tuning,
     run_regularization_comparison,
@@ -53,6 +54,25 @@ def test_current_adapter_makes_lineup_policy_explicit(tmp_path) -> None:
     assert start.loc[0, "h1"] == 1
     assert terminal.loc[0, "h1"] == 21
     assert start.loc[0, "home_poss"] == 1
+
+
+def test_current_names_replace_stale_legacy_and_add_new_ids(tmp_path) -> None:
+    legacy = tmp_path / "names.csv"
+    pd.DataFrame(
+        {"PLAYER_ID": [1, 2], "PLAYER_NAME": ["Old Name", "Legacy Only"]}
+    ).to_csv(legacy, index=False)
+    games = tmp_path / "player_games.parquet"
+    pd.DataFrame(
+        {
+            "player_id": [1, 1, 3],
+            "player_name": ["New Name", "Newest Name", "Current Rookie"],
+            "game_date": pd.to_datetime(["2025-01-01", "2026-01-01", "2026-01-01"]),
+        }
+    ).to_parquet(games, index=False)
+    names = load_current_player_names(legacy, games).set_index("PLAYER_ID")
+    assert names.loc[1, "PLAYER_NAME"] == "Newest Name"
+    assert names.loc[2, "PLAYER_NAME"] == "Legacy Only"
+    assert names.loc[3, "PLAYER_NAME"] == "Current Rookie"
 
 
 def test_synthetic_offense_and_defense_signs() -> None:

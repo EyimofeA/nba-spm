@@ -37,6 +37,13 @@ type Player = {
   annual: AnnualRating[];
   rolling: RollingRating[];
   peaks: PeakRating[];
+  current_normal_rapm: {
+    offense_per_100: number;
+    defense_per_100: number;
+    net_per_100: number;
+    off_possessions: number;
+    def_possessions: number;
+  } | null;
 };
 
 type SearchResult = { PLAYER_ID: number; PLAYER_NAME: string };
@@ -175,7 +182,7 @@ export function PlayerLab() {
     <main>
       <header className="site-header">
         <a className="wordmark" href="#top" aria-label="NBA Impact Lab home"><span>NBA</span> IMPACT LAB</a>
-        <div className="research-badge">RESEARCH BUILD · DATA THROUGH 2024</div>
+        <div className="research-badge">AIO THROUGH 2024 · RAPM THROUGH 2026</div>
       </header>
 
       <section className="hero" id="top">
@@ -200,11 +207,11 @@ export function PlayerLab() {
       {status && <div className="status" role="status">{status}</div>}
 
       {player && latest && <>
-        <section className="score-strip" aria-label={`${latest.Season} rating summary`}>
-          <div><span>{latest.Season} AIO</span><strong>{formatRating(latest.aio_net)}</strong></div>
-          <div><span>OFFENSE</span><strong>{formatRating(latest.aio_offense)}</strong></div>
-          <div><span>DEFENSE</span><strong>{formatRating(latest.aio_defense)}</strong></div>
-          <div><span>MIN. SIDE POSS.</span><strong>{Math.min(latest.Poss_Off, latest.Poss_Def).toLocaleString()}</strong></div>
+        <section className="score-strip" aria-label="Current normal RAPM summary">
+          <div><span>2024–26 NORMAL RAPM</span><strong>{player.current_normal_rapm ? formatRating(player.current_normal_rapm.net_per_100) : "—"}</strong></div>
+          <div><span>OFFENSE</span><strong>{player.current_normal_rapm ? formatRating(player.current_normal_rapm.offense_per_100) : "—"}</strong></div>
+          <div><span>DEFENSE</span><strong>{player.current_normal_rapm ? formatRating(player.current_normal_rapm.defense_per_100) : "—"}</strong></div>
+          <div><span>MIN. SIDE POSS.</span><strong>{player.current_normal_rapm ? Math.min(player.current_normal_rapm.off_possessions, player.current_normal_rapm.def_possessions).toLocaleString() : "—"}</strong></div>
         </section>
 
         <section className="trajectory-section">
@@ -238,7 +245,7 @@ export function PlayerLab() {
           </article>
         </section>
 
-        <aside className="caveat-band"><strong>Read this correctly.</strong><span>Annual AIO and rolling RAPM answer different questions. The archive is stale after 2024, the 2024 cache is one game short, and uncertainty is not estimated yet.</span></aside>
+        <aside className="caveat-band"><strong>Read this correctly.</strong><span>Current normal RAPM covers the 2023–24 through 2025–26 regular seasons. Annual AIO still stops at 2024. Nine source games are quarantined, and uncertainty is not estimated yet.</span></aside>
       </>}
 
       <footer>NBA IMPACT LAB <span>·</span> MODEL VERSION IS PART OF THE RESULT</footer>

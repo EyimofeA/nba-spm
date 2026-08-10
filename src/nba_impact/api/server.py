@@ -34,6 +34,13 @@ def dispatch(store: RatingsStore, target: str) -> tuple[int, dict]:
             offset=int(_single(query, "offset", "0")),
             minimum_possessions=int(_single(query, "minimum_possessions", "0")),
         )
+    if parsed.path == "/v1/leaderboards/current":
+        return HTTPStatus.OK, store.current_leaderboard(
+            _single(query, "metric", "net"),
+            limit=int(_single(query, "limit", str(store.config.default_limit))),
+            offset=int(_single(query, "offset", "0")),
+            minimum_possessions=int(_single(query, "minimum_possessions", "0")),
+        )
     if parsed.path == "/v1/leaderboards/peaks":
         return HTTPStatus.OK, store.peak_leaderboard(
             int(_single(query, "window")),

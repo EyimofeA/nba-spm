@@ -14,8 +14,10 @@ from nba_impact.api.server import dispatch
 def _store(tmp_path: Path) -> RatingsStore:
     annual_dir = tmp_path / "annual_aio_ratings" / "annual_test"
     rolling_dir = tmp_path / "rolling_rapm_peaks" / "rolling_test"
+    current_dir = tmp_path / "rapm" / "current_test"
     annual_dir.mkdir(parents=True)
     rolling_dir.mkdir(parents=True)
+    current_dir.mkdir(parents=True)
     annual = pd.DataFrame(
         {
             "PLAYER_ID": [1, 2, 1],
@@ -69,9 +71,21 @@ def _store(tmp_path: Path) -> RatingsStore:
     peaks["all_time_rank"] = peaks.groupby(
         ["window_seasons", "peak_component"]
     ).cumcount() + 1
+    current = pd.DataFrame(
+        {
+            "player_id": [1, 3],
+            "player_name": ["Alpha Guard", "Current Rookie"],
+            "offense_per_100": [4.0, 1.0],
+            "defense_per_100": [1.0, 2.0],
+            "net_per_100": [5.0, 3.0],
+            "off_possessions": [6000, 800],
+            "def_possessions": [5990, 810],
+        }
+    )
     annual.to_parquet(annual_dir / "ratings.parquet", index=False)
     rolling.to_parquet(rolling_dir / "rolling_ratings.parquet", index=False)
     peaks.to_parquet(rolling_dir / "player_peaks.parquet", index=False)
+    current.to_parquet(current_dir / "ratings.parquet", index=False)
     (annual_dir / "run.json").write_text(
         json.dumps(
             {"status": "research", "estimand": "annual", "caveats": ["annual caveat"]}
@@ -82,7 +96,19 @@ def _store(tmp_path: Path) -> RatingsStore:
             {"status": "research", "estimand": "rolling", "caveats": ["rolling caveat"]}
         )
     )
-    config = RatingsApiConfig("ratings_api_v1", "annual_test", "rolling_test", 2, 10)
+    (current_dir / "run.json").write_text(
+        json.dumps(
+            {
+                "status": "research_frozen_baseline",
+                "estimand": "current",
+                "config": {"seasons": [2024, 2025, 2026]},
+                "caveats": ["current caveat"],
+            }
+        )
+    )
+    config = RatingsApiConfig(
+        "ratings_api_v1", "annual_test", "rolling_test", "current_test", 2, 10
+    )
     return RatingsStore(config, tmp_path)
 
 
@@ -105,6 +131,7 @@ def test_player_payload_contains_annual_rolling_and_peaks(tmp_path: Path) -> Non
         "defense",
         "net",
     }
+    assert result["current_normal_rapm"]["net_per_100"] == 5.0
 
 
 def test_dispatch_exposes_contract_and_rejects_invalid_metric(tmp_path: Path) -> None:
@@ -122,3 +149,11 @@ def test_search_prefers_exact_and_prefix_matches(tmp_path: Path) -> None:
     store = _store(tmp_path)
     result = store.search_players("Alpha")
     assert result["results"] == [{"PLAYER_ID": 1, "PLAYER_NAME": "Alpha Guard"}]
+
+
+def test_current_leaderboard_uses_minimum_side_possessions(tmp_path: Path) -> None:
+    store = _store(tmp_path)
+    result = store.current_leaderboard("net", minimum_possessions=1000)
+    assert result["seasons"] == [2024, 2025, 2026]
+    assert result["total"] == 1
+    assert result["results"][0]["player_name"] == "Alpha Guard"
