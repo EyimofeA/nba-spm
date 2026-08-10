@@ -76,6 +76,26 @@
       "required_columns": ["PLAYER", "year", "DFGA"]
     },
     {
+      "name": "gabriel_rim_dfg_regular",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/rimdfg.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/rimdfg.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 100,
+      "required_columns": ["PLAYER", "year", "DFGA"]
+    },
+    {
+      "name": "gabriel_rim_dfg_playoffs",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/rimdfg_p.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/rimdfg_playoffs.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 50,
+      "required_columns": ["PLAYER", "year", "DFGA"]
+    },
+    {
       "name": "gabriel_shotzone_regular",
       "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/shotzone.csv",
       "destination": "gabriel_site_data/revision=bc583cb/shotzone.csv",

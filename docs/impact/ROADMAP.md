@@ -125,6 +125,12 @@ and is not promoted. The next feature task is a canonical annual DFG,
 rim-defense, and hustle layer; those raw tables exist but are not in the clean
 annual model.
 
+That task is complete in `defensive_tracking_features_v1_9f66c664eb`. The ten
+feature block improves defensive RMSE/correlation from 1.0578/0.3091 to
+0.9595/0.4964 and wins both metrics in all eight annual folds. Keep the block
+whole; do not subset-search the inspected folds. The next annual AIO task is a
+time-safe, one-season SPM-prior RAPM with model-derived prior precision.
+
 The next feature challenger uses
 [`FACTOR_DECOMPOSITION.md`](FACTOR_DECOMPOSITION.md). The basketball factors are
 feature families and explanation groups. The supervised targets remain direct

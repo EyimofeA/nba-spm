@@ -310,6 +310,14 @@ offense model and improves mean held-out offense RMSE from 1.0060 to 0.9972 and
 correlation from 0.6178 to 0.6302. Keep it as research because the folds are
 already inspected. The clean annual pipeline still does not consume separate
 DFG, rim-defense, and hustle tables. Build and QA that layer next.
+Run `defensive_tracking_features_v1_9f66c664eb` adds ten canonical DFG, rim,
+and hustle fields. `single_season_spm_v1_bff6060df6` improves defensive RMSE
+from 1.0578 to 0.9595 and correlation from 0.3091 to 0.4964; defense and net win
+both metrics in all eight annual folds. High-exposure defense correlation with
+xRAPM rises from 0.590 to 0.701. Keep the entire predeclared block in the annual
+research model. Do not subset-search it on 2017–24. Confirm on new seasons or
+with a predeclared nested design. Upstream Gabriel data has no declared license
+and remains research-only.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

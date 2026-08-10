@@ -288,3 +288,15 @@ Separate local DFG, rim-defense, and hustle tables contain defended-shot volume
 and differential, rim points saved inputs, deflections, charges, contested
 shots, and loose-ball activity. They are not yet canonicalized or used by the
 clean annual SPM. The exact active columns are in each annual SPM `run.json`.
+
+The first canonical defensive block now implements ten source-level fields:
+defended attempts per 100, stabilized overall DFG differential, rim DFGA per
+100, stabilized rim differential, rim points saved per 100, deflections,
+charges, contested 2-point shots, contested 3-point shots, and defensive loose
+balls recovered. These are local reproducible measurements. They are not
+claimed as exact proprietary BBall Index grades.
+
+The public BBall Index glossary page currently contains no metric definitions
+or formulas. Do not reverse-engineer or invent exact BBall Index labels. Add a
+BBall Index-named feature only when its public definition is reproducible. Use
+independently named source statistics and cite their formulas otherwise.

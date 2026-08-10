@@ -1303,3 +1303,39 @@ transition POE (`single_season_spm_v1_1f2125a38b`) records offense
 tiny RMSE gain and slightly worse correlation do not justify promotion. These
 seasons are now inspected, so require new data or a predeclared nested rule for
 promotion. Next canonicalize DFG, rim-defense, and hustle features.
+
+## 2026-08-10 — Canonical defensive tracking block
+
+**Question:** Do direct shot-defense and hustle measurements repair the weak
+annual defensive SPM?
+
+**Source and quality:** The existing manifest already pinned and downloaded
+Gabriel O'Connell's current `site_Data` commit
+`bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd`. The aggregate rim-defense files
+were missing from the manifest, so they were added and downloaded through the
+resumable ingest path. Upstream declares no license; use these inputs for local
+research only. Run `defensive_tracking_features_v1_9f66c664eb` contains 5,791
+unique player-seasons with no non-finite values. DFG and rim source-name joins
+cover 99.60% and 99.61% of rows; hustle joins cover 100%. Hustle begins in 2018,
+so earlier seasons receive the global neutral median rather than a zero-valued
+era marker.
+
+**Features:** The predeclared block contains defended attempts per 100,
+empirical-Bayes overall DFG differential, rim DFGA per 100, empirical-Bayes rim
+DFG differential, rim points saved per 100, deflections, charges, contested
+2-point and 3-point shots, and defensive loose balls recovered. Hustle counts
+use defensive possessions. DFG differentials shrink toward zero with 200 total
+or 100 rim attempts. Positive rim points saved means better defense.
+
+**Result:** `single_season_spm_v1_bff6060df6` keeps the zTS offense challenger
+and adds all ten fields to the frozen defensive ridge. Defense held-out RMSE
+improves from 1.0578 to 0.9595 and correlation from 0.3091 to 0.4964. Net RMSE
+improves from 1.4553 to 1.3859 and correlation from 0.5383 to 0.5991. Defense
+and net improve on both metrics in all eight 2017–24 season folds. High-exposure
+defense correlation with xRAPM rises from 0.590 to 0.701, while correlation with
+BPM defense falls from 0.803 to 0.690. This is consistent with adding information
+that is less box-score-like; neither comparator is ground truth.
+
+**Verdict:** Retain the full defensive tracking block in the annual research
+model. Do not search its subsets on these folds. Confirm on new seasons or use a
+predeclared nested historical selection design before production promotion.

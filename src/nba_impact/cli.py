@@ -9,6 +9,7 @@ from pathlib import Path
 import pandas as pd
 
 from nba_impact.data.download import plan_ingest_manifest, run_ingest_manifest
+from nba_impact.data.defensive_tracking_features import build_defensive_tracking_features
 from nba_impact.data.event_quality import build_event_snapshot
 from nba_impact.data.event_state import build_event_states
 from nba_impact.data.espn_win_probability import ingest_espn_win_probability
@@ -506,6 +507,7 @@ def command_build_statistical_features_v2(args: argparse.Namespace) -> int:
         window_ends=args.window_ends,
         pooled_window_seasons=args.pooled_window_seasons,
         playtype_features_path=args.playtype_features,
+        defensive_tracking_features_path=args.defensive_tracking_features,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -519,6 +521,16 @@ def command_build_playtype_features(args: argparse.Namespace) -> int:
         minimum_minutes=args.minimum_minutes,
         minimum_player_playtype_possessions=args.minimum_synergy_possessions,
         minimum_league_row_possessions=args.minimum_league_row_possessions,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_defensive_tracking_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_defensive_tracking_features(
+        args.dfg_source, args.rim_dfg_source, args.hustle_source,
+        args.box_source_dir, artifact_root=args.artifact_root, seasons=args.seasons,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -1265,6 +1277,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     statistical_features_v2.add_argument("--base-features", type=Path, required=True)
     statistical_features_v2.add_argument("--playtype-features", type=Path)
+    statistical_features_v2.add_argument("--defensive-tracking-features", type=Path)
     statistical_features_v2.add_argument(
         "--window-ends",
         type=_season_list,
@@ -1290,6 +1303,23 @@ def build_parser() -> argparse.ArgumentParser:
     playtype_features.add_argument("--minimum-league-row-possessions", type=float, default=20.0)
     playtype_features.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     playtype_features.set_defaults(func=command_build_playtype_features)
+
+    defensive_tracking = subparsers.add_parser(
+        "build-defensive-tracking-features",
+        help="Build annual DFG, rim-defense, and hustle features.",
+    )
+    defensive_tracking.add_argument("--dfg-source", type=Path, required=True)
+    defensive_tracking.add_argument("--rim-dfg-source", type=Path, required=True)
+    defensive_tracking.add_argument("--hustle-source", type=Path, required=True)
+    defensive_tracking.add_argument(
+        "--box-source-dir", type=Path,
+        default=Path("data/raw/playersheets/year_totals"),
+    )
+    defensive_tracking.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2014, 2025))
+    )
+    defensive_tracking.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    defensive_tracking.set_defaults(func=command_build_defensive_tracking_features)
 
     statistical_impact = subparsers.add_parser(
         "fit-statistical-impact",
