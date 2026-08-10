@@ -1208,3 +1208,34 @@ normal RAPM with penalties 3000/3000/300 as production. Keep the statistical
 model separate and labeled as research. Do not tune more scales on these reused
 seasons. Revisit integration only with new seasons or one predeclared
 sample-size-adaptive rule.
+
+## 2026-08-10 — SPM benchmarked against BPM and xRAPM
+
+**Question:** Does the current three-season SPM resemble established box and
+prior-informed adjusted-impact metrics on matched historical windows?
+
+**Method:** Run `external_impact_benchmark_v1_bab43a4087` downloads and hashes
+annual 2017–24 Basketball Reference advanced tables and xrapm.com historical
+tables. It resolves traded-player BPM rows to the multi-team total, converts
+xRAPM defense from lower-is-better to positive-good, normalizes accents and
+suffixes, and minutes-weights annual values over each `T-2:T` SPM window. The
+comparison covers all 4,656 SPM rows and separately reports rows with at least
+3,000 offensive and defensive possessions.
+
+**Quality:** External source-to-source name matching is at least 99.43% in every
+season. SPM-to-BPM and SPM-to-xRAPM coverage is at least 98.52% and 98.47% per
+window. There are zero duplicate player-window keys. Seventeen normalized names
+are ambiguous in the historical NBA name dimension and are quarantined rather
+than guessed.
+
+**Result:** Across 2,295 high-exposure player-windows, SPM net correlates 0.876
+Pearson / 0.841 Spearman with BPM and 0.756 / 0.692 with xRAPM. Offensive SPM
+correlates 0.831 with xRAPM offense. Defensive SPM correlates only 0.630 with
+xRAPM defense, the clearest component gap. Including all tiny samples lowers net
+Pearson correlation to 0.541 versus BPM and 0.610 versus xRAPM, showing that
+sample/reliability handling materially changes any leaderboard comparison.
+
+**Verdict:** The SPM has strong external face validity for established players
+but remains closer to BPM than to the possession-informed xRAPM, especially on
+defense. Use player-level defensive disagreements as the next feature diagnostic.
+Do not train on BPM or xRAPM and do not treat either as ground truth.

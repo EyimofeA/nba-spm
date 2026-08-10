@@ -36,16 +36,19 @@ dead ends. Updated 2026-08-10. See `docs/README.md` for the document index,
   Full prior scale won 2020–22 selection, but beat zero-prior by only 0.0033
   margin RMSE on 2023–24, won 1/2 folds, and had a paired-game MSE interval of
   -1.12 to +0.73. Prior-only was clearly worse. Zero-prior remains production.
+- External benchmark `external_impact_benchmark_v1_bab43a4087` matches at least
+  98.47% of SPM rows per window to minutes-weighted BPM and xRAPM. Among 2,295
+  high-exposure player-windows, net SPM correlates 0.876 with BPM and 0.756 with
+  xRAPM. Defense is the main external disagreement (0.630 with xRAPM).
 - The old 1997–2024 RAPM archive remains valuable but is stale after 2024.
 
 ## Active next task
 
-Build the frozen historical normal-RAPM products: annual, rolling three-year,
-and rolling five-year panels with one shared schema and peak tables. Do not force
-the statistical prior into production after an inconclusive confirmation. Reopen
-prior integration only on genuinely new seasons or with one predeclared
-sample-size-adaptive rule. The exact Crafted passer challenger still needs
-canonical height and position metadata. WP neural work stays paused on the Mac.
+Use the new BPM/xRAPM disagreement table to diagnose the defensive SPM before
+changing features. Then build rolling three-year and five-year normal-RAPM peak
+tables. Single-season SPM-prior RAPM is explicitly deferred. When it returns,
+use calibrated SPM as the prior mean and estimate/tune prior precision; do not
+add an arbitrary prior-amplitude scale. WP neural work stays paused on the Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
@@ -112,3 +115,4 @@ now would break reproducibility links.
 - Statistical feature v2 comparison: `statistical_feature_v2_comparison_9b8d0555e0`
 - Cross-fitted statistical priors: `statistical_priors_v1_2c81b23662`
 - Prior-informed RAPM comparison: `prior_informed_rapm_v1_122ef63045`
+- External BPM/xRAPM benchmark: `external_impact_benchmark_v1_bab43a4087`

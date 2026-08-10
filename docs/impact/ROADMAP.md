@@ -99,6 +99,14 @@ violations. Six-fold prior-only net RMSE is 1.25131 and correlation is 0.51980.
 These are same-window retrodictions. They are not forecasts, and 2022–24 are not
 untouched promotion evidence.
 
+External run `external_impact_benchmark_v1_bab43a4087` aggregates annual
+Basketball Reference BPM and xRAPM with NBA minutes over the same three-season
+windows. It matches at least 98.47% of SPM rows per window. On the 2,295 windows
+with at least 3,000 offensive and defensive possessions, net SPM has Pearson
+correlation 0.876 with BPM and 0.756 with xRAPM. The weakest external agreement
+is defensive SPM versus defensive xRAPM at 0.630. This is a diagnostic for
+feature work, not evidence that either external metric is truth.
+
 The next feature challenger uses
 [`FACTOR_DECOMPOSITION.md`](FACTOR_DECOMPOSITION.md). The basketball factors are
 feature families and explanation groups. The supervised targets remain direct
@@ -155,6 +163,7 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Create frozen annual, rolling three-year, and rolling five-year normal-RAPM
-panels plus 1/3/5-year peak tables. Use the current zero-prior terminal-lineup
-specification and publish the window and estimand with every value.
+Create a player-level defensive disagreement report from the matched SPM,
+BPM, and xRAPM table. Use it to identify missing feature families before
+changing the defensive model. Then build rolling three-year and five-year
+normal-RAPM peak tables. Single-season SPM-prior RAPM is deferred.

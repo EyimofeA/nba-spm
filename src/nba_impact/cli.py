@@ -30,6 +30,10 @@ from nba_impact.models.rapm import (
     run_walk_forward_comparison,
 )
 from nba_impact.models.rapm_lineup_policy import run_rapm_lineup_policy_comparison
+from nba_impact.models.external_impact_benchmark import (
+    acquire_external_impact_pages,
+    build_external_impact_benchmark,
+)
 from nba_impact.models.prior_informed_rapm import (
     run_prior_informed_rapm_comparison,
 )
@@ -604,6 +608,32 @@ def command_compare_prior_informed_rapm(args: argparse.Namespace) -> int:
         confirmation_test_seasons=tuple(args.confirmation_test_seasons),
         bootstrap_repetitions=args.bootstrap_repetitions,
         bootstrap_seed=args.seed,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_ingest_external_impact(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    manifest = acquire_external_impact_pages(
+        args.raw_root,
+        seasons=tuple(args.seasons),
+    )
+    print(json.dumps(manifest, indent=2))
+    return 0
+
+
+def command_benchmark_external_impact(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_external_impact_benchmark(
+        args.priors,
+        args.features,
+        args.names,
+        args.raw_root,
+        artifact_root=args.artifact_root,
+        window_ends=tuple(args.window_ends),
+        minimum_window_possessions_per_side=args.minimum_possessions,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1345,6 +1375,36 @@ def build_parser() -> argparse.ArgumentParser:
     prior_informed_rapm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     prior_informed_rapm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     prior_informed_rapm.set_defaults(func=command_compare_prior_informed_rapm)
+
+    external_ingest = subparsers.add_parser(
+        "ingest-external-impact",
+        help="Download versioned Basketball Reference BPM and xRAPM pages.",
+    )
+    external_ingest.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2017, 2025))
+    )
+    external_ingest.add_argument(
+        "--raw-root", type=Path, default=BRONZE_ROOT / "external_impact"
+    )
+    external_ingest.set_defaults(func=command_ingest_external_impact)
+
+    external_benchmark = subparsers.add_parser(
+        "benchmark-external-impact",
+        help="Compare three-season statistical priors with BPM and xRAPM.",
+    )
+    external_benchmark.add_argument("--priors", type=Path, required=True)
+    external_benchmark.add_argument("--features", type=Path, required=True)
+    external_benchmark.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    external_benchmark.add_argument(
+        "--raw-root", type=Path, default=BRONZE_ROOT / "external_impact"
+    )
+    external_benchmark.add_argument(
+        "--window-ends", type=_season_list, default=(2019, 2020, 2021, 2022, 2023, 2024)
+    )
+    external_benchmark.add_argument("--minimum-possessions", type=float, default=3000.0)
+    external_benchmark.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    external_benchmark.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    external_benchmark.set_defaults(func=command_benchmark_external_impact)
 
     compare = subparsers.add_parser(
         "compare-rapm",

@@ -285,6 +285,17 @@ two folds, and the paired-game MSE 95% interval crosses zero (-1.12, +0.73).
 Prior-only is worse. Keep zero-prior normal RAPM in production. Do not search
 more prior scales on these seasons; require new data or a predeclared adaptive
 rule.
+The scale grid in that run was a diagnostic invented in-project, not part of the
+final annual AIO design. Final integration should use calibrated SPM directly as
+the prior mean. Possessions and collinearity enter through `X'X`; offensive and
+defensive prior precision belongs in the ridge penalty and must be estimated or
+tuned without a separate amplitude multiplier.
+Run `external_impact_benchmark_v1_bab43a4087` minutes-weights annual BPM and
+xRAPM over the same 2019–24 three-season windows as SPM. Source-to-source name
+matching is at least 99.43% per season and SPM-to-external coverage is at least
+98.47% per window. For 2,295 high-exposure player-windows, net Pearson
+correlation is 0.876 with BPM and 0.756 with xRAPM; defense versus xRAPM is only
+0.630. External metrics are diagnostics, not labels or ground truth.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`
