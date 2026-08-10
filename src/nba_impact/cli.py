@@ -18,6 +18,7 @@ from nba_impact.data.event_state import build_event_states
 from nba_impact.data.espn_win_probability import ingest_espn_win_probability
 from nba_impact.data.game_dim import build_game_dimension
 from nba_impact.data.lineups import build_lineup_stints
+from nba_impact.data.matchup_defense_features import build_matchup_defense_features
 from nba_impact.data.manifest import (
     build_possession_snapshot,
     sha256_file,
@@ -549,6 +550,7 @@ def command_build_statistical_features_v2(args: argparse.Namespace) -> int:
         playtype_features_path=args.playtype_features,
         defensive_tracking_features_path=args.defensive_tracking_features,
         assist_quality_features_path=args.assist_quality_features,
+        matchup_defense_features_path=args.matchup_defense_features,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -572,6 +574,20 @@ def command_build_defensive_tracking_features(args: argparse.Namespace) -> int:
     run = build_defensive_tracking_features(
         args.dfg_source, args.rim_dfg_source, args.hustle_source,
         args.box_source_dir, artifact_root=args.artifact_root, seasons=args.seasons,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_matchup_defense_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_matchup_defense_features(
+        args.archive_root,
+        args.box_source_dir,
+        artifact_root=args.artifact_root,
+        seasons=args.seasons,
+        defender_prior_possessions=args.defender_prior_possessions,
+        shooting_prior_attempts=args.shooting_prior_attempts,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -1449,6 +1465,7 @@ def build_parser() -> argparse.ArgumentParser:
     statistical_features_v2.add_argument("--playtype-features", type=Path)
     statistical_features_v2.add_argument("--defensive-tracking-features", type=Path)
     statistical_features_v2.add_argument("--assist-quality-features", type=Path)
+    statistical_features_v2.add_argument("--matchup-defense-features", type=Path)
     statistical_features_v2.add_argument(
         "--window-ends",
         type=_season_list,
@@ -1491,6 +1508,35 @@ def build_parser() -> argparse.ArgumentParser:
     )
     defensive_tracking.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     defensive_tracking.set_defaults(func=command_build_defensive_tracking_features)
+
+    matchup_defense = subparsers.add_parser(
+        "build-matchup-defense-features",
+        help="Build opponent-adjusted annual primary-defender matchup features.",
+    )
+    matchup_defense.add_argument(
+        "--archive-root",
+        type=Path,
+        default=(
+            BRONZE_ROOT
+            / "shufinskiy_nba_data"
+            / "revision=e829d46"
+            / "matchups"
+        ),
+    )
+    matchup_defense.add_argument(
+        "--box-source-dir", type=Path, default=LEGACY_PLAYER_SHEETS
+    )
+    matchup_defense.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2018, 2026))
+    )
+    matchup_defense.add_argument(
+        "--defender-prior-possessions", type=float, default=500.0
+    )
+    matchup_defense.add_argument(
+        "--shooting-prior-attempts", type=float, default=200.0
+    )
+    matchup_defense.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    matchup_defense.set_defaults(func=command_build_matchup_defense_features)
 
     assist_quality = subparsers.add_parser(
         "build-assist-quality-features",

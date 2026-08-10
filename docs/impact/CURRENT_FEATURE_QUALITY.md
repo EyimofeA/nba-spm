@@ -121,5 +121,18 @@ run as invalid for the pre-2025 contract. The final run rebuilds all defensive
 features strictly through 2024 and reaches the same non-promotion conclusion.
 
 The next defense lane needs genuinely new information, not another recombination
-of the same annual aggregates. Prioritize matchup-level or spatial assignment
-data and validate its coverage before another model comparison.
+of the same annual aggregates. The first matchup-assignment lane is complete in
+`matchup_defense_features_v1_86d13d7357`. It covers 2018–25 and passes identity,
+point-conservation, exposure, and finite-value gates.
+
+Run `annual_defense_features_nested_v1_eaeca704eb` tests the new data without
+using 2025. Each 2022–24 outer fold selects among four predeclared matchup blocks
+on its two prior seasons. The event-context block is selected in all three folds.
+It lowers weighted RMSE in all three folds and by 0.0131 on average. However, it
+lowers mean correlation by 0.0202. The predeclared gate fails, so do not add the
+block to the frozen SPM.
+
+The matchup block increases prediction spread toward the target spread, but its
+player ranking is worse. Raw leaderboards also show strong role structure. The
+next matchup experiment must control shot location, offensive role, and lineup
+context. Do not subset-search these inspected 2022–24 folds.

@@ -354,6 +354,7 @@ def build_statistical_features_v2(
     playtype_features_path: str | Path | None = None,
     defensive_tracking_features_path: str | Path | None = None,
     assist_quality_features_path: str | Path | None = None,
+    matchup_defense_features_path: str | Path | None = None,
 ) -> dict:
     if pooled_window_seasons < 1:
         raise ValueError("pooled_window_seasons must be positive.")
@@ -427,6 +428,22 @@ def build_statistical_features_v2(
             assist[["PLAYER_ID", "Window_End", *assist_quality_feature_names]],
             on=["PLAYER_ID", "Window_End"], how="left", validate="one_to_one",
         )
+    matchup_defense_feature_names: list[str] = []
+    if matchup_defense_features_path is not None:
+        matchup = pd.read_parquet(matchup_defense_features_path).rename(
+            columns={"Season": "Window_End"}
+        )
+        if matchup.duplicated(["PLAYER_ID", "Window_End"]).any():
+            raise ValueError("Matchup-defense feature keys are not unique.")
+        matchup_defense_feature_names = [
+            column
+            for column in matchup.columns
+            if column not in {"PLAYER_ID", "Window_End", "matchup_possessions"}
+        ]
+        features = features.merge(
+            matchup[["PLAYER_ID", "Window_End", *matchup_defense_feature_names]],
+            on=["PLAYER_ID", "Window_End"], how="left", validate="one_to_one",
+        )
     if features.duplicated(["PLAYER_ID", "Window_End"]).any():
         raise ValueError("V2 feature keys are not unique.")
     new_features = [column for column in features if column not in base.columns]
@@ -467,6 +484,10 @@ def build_statistical_features_v2(
             sha256_file(assist_quality_features_path)
             if assist_quality_features_path else None
         ),
+        "matchup_defense_features_sha256": (
+            sha256_file(matchup_defense_features_path)
+            if matchup_defense_features_path else None
+        ),
     }
     identity = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()[:10]
     run_id = f"statistical_features_v2_{identity}"
@@ -501,6 +522,7 @@ def build_statistical_features_v2(
         "playtype_feature_names": playtype_feature_names,
         "defensive_tracking_feature_names": defensive_tracking_feature_names,
         "assist_quality_feature_names": assist_quality_feature_names,
+        "matchup_defense_feature_names": matchup_defense_feature_names,
         "public_benchmark_provenance": {
             "source": "https://craftednba.com/glossary",
             "box_creation_and_offensive_load": "Ben Taylor public formulas as reproduced by CraftedNBA",

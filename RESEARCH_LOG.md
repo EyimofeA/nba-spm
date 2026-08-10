@@ -1649,3 +1649,33 @@ actual SHA-256 values.
 adjusted, sample-shrunk defender features before any new SPM comparison. Matchup
 assignment is not optical tracking and must not be interpreted as sole causal
 credit.
+
+## 2026-08-10 — Opponent-adjusted matchup-defense feature test
+
+**Question:** Does primary-defender assignment data add stable annual defensive
+SPM signal beyond the frozen box, DFG, rim, and hustle model?
+
+**Feature layer:** Run `matchup_defense_features_v1_86d13d7357` aggregates
+1,769,658 source rows into 4,409 defender-seasons for 2018–25. The main feature
+compares each scorer-defender pair with the scorer's leave-one-defender-out
+points rate, centers the result within season, and shrinks it with 500 assigned
+matchup possessions. Point reconstruction is exact. Exposure-weighted ID match
+is at least 99.46%. The output has no duplicate or non-finite feature rows.
+
+**Contract:** `configs/models/annual_defense_matchup_nested_v1.json` freezes the
+baseline and four matchup blocks. It keeps ridge alpha 3000 and excludes raw
+exposure. For outer seasons 2022–24, it selects a block using the two prior
+seasons. The gate requires at least two RMSE wins, lower mean RMSE, and
+noninferior mean correlation. Season 2025 is excluded.
+
+**Result:** Run `annual_defense_features_nested_v1_eaeca704eb` selects the
+event-context block in all three folds. It improves weighted RMSE in all three:
+0.966 to 0.944 in 2022, 0.940 to 0.932 in 2023, and 0.968 to 0.959 in 2024.
+Mean RMSE improves by 0.0131. Mean correlation falls by 0.0202. Prediction spread
+moves closer to target spread, but player ordering becomes worse.
+
+**Verdict:** The gate fails. Keep the canonical matchup data and feature panel,
+but do not promote this block to the frozen SPM. The result is not evidence that
+matchup assignments are useless. It shows that scorer-quality adjustment alone
+does not remove shot-role, scheme, help, and lineup context. Add those controls
+before one new predeclared test. Do not search more subsets on 2022–24.

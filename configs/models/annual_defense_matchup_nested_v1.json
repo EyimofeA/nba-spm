@@ -1,0 +1,51 @@
+{
+  "contract_version": "annual_defense_matchup_nested_v1",
+  "status": "frozen_before_run",
+  "estimand": "single_regular_season_normal_rapm_defense_points_prevented_per_100",
+  "training_start_season": 2018,
+  "outer_test_seasons": [2022, 2023, 2024],
+  "inner_validation_seasons": "two seasons immediately before each outer test",
+  "ridge_alpha": 3000.0,
+  "baseline_features": "frozen defense features from single_season_spm_v1_bff6060df6",
+  "candidate_additions": {
+    "baseline": [],
+    "opponent_adjusted_core": [
+      "matchup_opponent_adjusted_points_saved_p100_eb"
+    ],
+    "shot_context": [
+      "matchup_opponent_adjusted_points_saved_p100_eb",
+      "matchup_efg_pct_allowed_eb",
+      "matchup_fga_p100",
+      "matchup_3pa_share"
+    ],
+    "event_context": [
+      "matchup_opponent_adjusted_points_saved_p100_eb",
+      "matchup_turnovers_forced_p100",
+      "matchup_assists_allowed_p100",
+      "matchup_shooting_fouls_committed_p100"
+    ],
+    "full_matchup": [
+      "matchup_opponent_adjusted_points_saved_p100_eb",
+      "matchup_efg_pct_allowed_eb",
+      "matchup_fga_p100",
+      "matchup_3pa_share",
+      "matchup_turnovers_forced_p100",
+      "matchup_assists_allowed_p100",
+      "matchup_shooting_fouls_committed_p100"
+    ]
+  },
+  "selection_metric": "mean inner-fold possession-weighted RMSE",
+  "tie_break": "fewer added features, then variant name",
+  "promotion_gate": {
+    "minimum_outer_rmse_wins": 2,
+    "require_lower_mean_outer_rmse": true,
+    "require_noninferior_mean_outer_correlation": true
+  },
+  "interpretation_gate": "Three outer seasons are preliminary evidence. A pass can promote the block to the research candidate, not to production, until a future untouched season confirms it.",
+  "forbidden_uses": [
+    "No 2025 target or metric may select a feature group.",
+    "Do not use raw unshrunk points saved together with its shrunk form.",
+    "Do not use matchup_possessions, on/off, plus-minus, team rating, games, minutes, age, experience, height, or listed position.",
+    "Do not change ridge regularization in this experiment."
+  ]
+}

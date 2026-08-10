@@ -230,7 +230,9 @@ Frozen run `single_season_spm_v1_bff6060df6` did not pass its first untouched
 also falls from a historical mean correlation of 0.496 to 0.331. The no-tuning
 diagnostic shows that low exposure and the tracking block are not primary causes.
 Nested forward ridge selection also fails, so keep alpha 3000. Do not tune on
-2025. Nested defensive interaction blocks also fail, so do not run another
-subset search on 2014–24. Audit one new matchup-level or spatial defensive source,
-then predeclare one revised model for a future untouched season. Current annual
-AIO remains published only through 2024.
+2025. The licensed 2018–25 player-matchup panel is now canonical and validated.
+Its first forward-only matchup feature block lowers RMSE in all three 2022–24
+folds but lowers correlation, so it also fails promotion. Do not subset-search
+these inspected seasons. Build the next defender model from shot-location and
+lineup-context controls, then reserve a future complete season for confirmation.
+Current annual AIO remains published only through 2024.

@@ -56,3 +56,23 @@ The generic ingest now validates `.tar.xz` members without extracting them. It
 resumes `.partial` downloads, retries transient failures up to 20 times, writes
 atomically, and skips checksum-valid existing files. A repeat run is read-only
 apart from refreshed ingest summaries.
+
+## Validated feature layer
+
+Run `matchup_defense_features_v1_86d13d7357` converts all eight archives into
+4,409 unique defender-seasons. It reconstructs every recorded point exactly.
+It has no duplicate keys, negative exposures, null feature values, or non-finite
+feature values. Exposure-weighted NBA player-ID coverage is 99.46%–99.95% by
+season. Matchup exposure correlates 0.987–1.000 with the player-sheet defensive
+possession field among matched IDs.
+
+The primary research feature compares points allowed in each scorer-defender
+pair with that scorer's leave-one-defender-out points rate. It then centers the
+result within season and shrinks it toward zero using 500 assigned matchup
+possessions. The panel also contains shot, turnover, assist, and shooting-foul
+context. `matchup_possessions` is an audit field, not a model input.
+
+Do not describe the result as causal points prevented. The assignment can encode
+scheme, help, offensive role, and shot mix. The raw leaderboards put several rim
+centers near the bottom, which is direct evidence that role remains in the
+statistic after scorer-quality adjustment.
