@@ -1,0 +1,61 @@
+{
+  "contract_version": "annual_defense_features_nested_v1",
+  "status": "frozen_before_run",
+  "estimand": "single_regular_season_normal_rapm_defense_points_prevented_per_100",
+  "training_start_season": 2014,
+  "outer_test_seasons": [2020, 2021, 2022, 2023, 2024],
+  "inner_validation_seasons": "two seasons immediately before each outer test",
+  "ridge_alpha": 3000.0,
+  "baseline_features": "frozen defense features from single_season_spm_v1_bff6060df6",
+  "candidate_additions": {
+    "baseline": [],
+    "defensive_interactions": [
+      "stocks_p100_def",
+      "defensive_activity_p100",
+      "rebound_contest_share",
+      "dreb_contested_share",
+      "block_recovery_rate",
+      "stocks_per_foul",
+      "interior_role_load"
+    ],
+    "matchup_interactions": [
+      "dfg_two_point_equivalent_saved_p100",
+      "rim_matchup_attempt_share",
+      "contested_3pt_share"
+    ],
+    "era_relative_defense": [
+      "STL_p100_relative",
+      "BLK_p100_relative",
+      "DREB_p100_relative",
+      "PF_p100_relative"
+    ],
+    "combined": [
+      "stocks_p100_def",
+      "defensive_activity_p100",
+      "rebound_contest_share",
+      "dreb_contested_share",
+      "block_recovery_rate",
+      "stocks_per_foul",
+      "interior_role_load",
+      "dfg_two_point_equivalent_saved_p100",
+      "rim_matchup_attempt_share",
+      "contested_3pt_share",
+      "STL_p100_relative",
+      "BLK_p100_relative",
+      "DREB_p100_relative",
+      "PF_p100_relative"
+    ]
+  },
+  "selection_metric": "mean inner-fold possession-weighted RMSE",
+  "tie_break": "fewer added features, then variant name",
+  "promotion_gate": {
+    "minimum_outer_rmse_wins": 4,
+    "require_lower_mean_outer_rmse": true,
+    "require_noninferior_mean_outer_correlation": true
+  },
+  "forbidden_uses": [
+    "No 2025 target or metric may select a feature group.",
+    "Do not use on/off, plus-minus, team rating, games, minutes, age, experience, height, or listed position.",
+    "Do not change ridge regularization in this experiment."
+  ]
+}

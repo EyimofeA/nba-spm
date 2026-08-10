@@ -382,6 +382,14 @@ and slightly worsens both mean RMSE and correlation versus fixed alpha 3000.
 Keep alpha 3000. The next defense experiment must test new stable signal, not
 another regularization grid.
 
+Run `annual_defense_features_nested_v1_22b677e1ef` also rejects the predeclared
+defensive interaction blocks: two of five outer RMSE wins and small mean losses
+in RMSE and correlation. An earlier run ending `d913f807c5` is invalid because
+its fallback medians could see 2025; do not cite it as evidence. Keep the new
+DFG points-saved, rim-share, and contest-mix fields as research-only. The next
+defense lane needs new matchup-level or spatial signal, not another 2014–24
+subset search.
+
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`
 entry point from `pyproject.toml` in an equivalently locked environment.

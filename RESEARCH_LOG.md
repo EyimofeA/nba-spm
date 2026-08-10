@@ -1588,3 +1588,38 @@ outer folds. Selected-minus-fixed mean RMSE is +0.0015 and mean correlation is
 **Verdict:** Keep fixed alpha 3000. Lower regularization does not fix the 2025
 under-dispersion and is not supported by older forward folds. The next defensive
 experiment must add stable signal rather than retune ridge strength.
+
+## 2026-08-10 — Nested annual defense feature-block experiment
+
+**Question:** Do interpretable defensive interactions improve the frozen annual
+defense model under forward-only nested selection?
+
+**Features:** Added overall DFG two-point-equivalent points saved per 100, rim
+matchup-attempt share, and contested-three share to the defensive tracking
+builder. Combined these with pre-existing stocks/foul, rebound-contest,
+block-recovery, interior-role, and era-relative defensive features. On/off,
+plus-minus, team ratings, games, minutes, age, experience, height, and position
+remain forbidden.
+
+**Contract:** `configs/models/annual_defense_features_nested_v1.json` freezes
+five variants before the valid run: baseline, seven defensive interactions,
+three matchup interactions, four era-relative rates, and all 14 additions. Ridge
+alpha remains 3000. Each 2020–24 outer fold selects on the two prior validation
+seasons. The promotion gate requires four of five RMSE wins, lower mean RMSE,
+and noninferior mean correlation.
+
+**Leakage correction:** Initial run `annual_defense_features_nested_v1_d913f807c5`
+used a feature artifact built through 2025. Although outer rows ended in 2024,
+global defensive-source fallback medians could include 2025. That run is invalid
+for the stated contract. Rebuilt defensive and combined feature panels strictly
+through 2024 before the final run.
+
+**Result:** Valid run `annual_defense_features_nested_v1_22b677e1ef` selects the
+combined block three times, defensive interactions once, and matchup interactions
+once. It beats baseline in two of five outer folds. Selected-minus-baseline mean
+RMSE is +0.00024 and mean correlation is -0.00274. The gate fails.
+
+**Verdict:** Keep the frozen 60-feature defense model and the new derived fields
+as research features only. Existing annual aggregates appear near their current
+signal limit. The next defense experiment should start with new matchup-level or
+spatial assignment data, not another subset search on 2014–24.

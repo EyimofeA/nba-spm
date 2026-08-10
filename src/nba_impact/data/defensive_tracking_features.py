@@ -17,13 +17,25 @@ from nba_impact.data.manifest import sha256_file, write_json_atomic
 DEFENSIVE_TRACKING_FEATURES = (
     "dfg_attempts_p100",
     "dfg_diff_pct_eb",
+    "dfg_two_point_equivalent_saved_p100",
     "rim_dfga_p100",
     "rim_diff_pct_eb",
     "rim_points_saved_p100",
+    "rim_matchup_attempt_share",
     "deflections_p100",
     "charges_drawn_p100",
     "contested_2pt_p100",
     "contested_3pt_p100",
+    "contested_3pt_share",
+    "def_loose_balls_recovered_p100",
+)
+
+HUSTLE_FEATURES = (
+    "deflections_p100",
+    "charges_drawn_p100",
+    "contested_2pt_p100",
+    "contested_3pt_p100",
+    "contested_3pt_share",
     "def_loose_balls_recovered_p100",
 )
 
@@ -167,6 +179,9 @@ def compute_defensive_tracking_features(
         contested_2pt=("contested_2pt", "sum"), contested_3pt=("contested_3pt", "sum"),
         def_loose_balls=("def_loose_balls", "sum"),
     ).merge(key, on=["PLAYER_ID", "Season"], validate="one_to_one")
+    hustle["contested_3pt_share"] = hustle["contested_3pt"] / (
+        hustle["contested_2pt"] + hustle["contested_3pt"]
+    ).where((hustle["contested_2pt"] + hustle["contested_3pt"]).gt(0))
     for source, destination in (
         ("deflections", "deflections_p100"), ("charges", "charges_drawn_p100"),
         ("contested_2pt", "contested_2pt_p100"),
@@ -180,9 +195,17 @@ def compute_defensive_tracking_features(
     ).merge(
         rim_features, on=["PLAYER_ID", "Season"], how="left", validate="one_to_one"
     ).merge(
-        hustle[["PLAYER_ID", "Season", *DEFENSIVE_TRACKING_FEATURES[5:]]],
+        hustle[["PLAYER_ID", "Season", *HUSTLE_FEATURES]],
         on=["PLAYER_ID", "Season"], how="left", validate="one_to_one",
     )
+    output["dfg_two_point_equivalent_saved_p100"] = (
+        -2.0 * output["dfg_attempts_p100"] * output["dfg_diff_pct_eb"] / 100.0
+    )
+    output["rim_matchup_attempt_share"] = (
+        output["rim_dfga_p100"] / output["dfg_attempts_p100"].where(
+            output["dfg_attempts_p100"].gt(0)
+        )
+    ).where(output["rim_dfga_p100"].le(output["dfg_attempts_p100"]))
     missing_before = {name: float(output[name].isna().mean()) for name in DEFENSIVE_TRACKING_FEATURES}
     for feature in DEFENSIVE_TRACKING_FEATURES:
         season_median = output.groupby("Season")[feature].transform("median")

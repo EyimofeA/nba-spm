@@ -52,6 +52,7 @@ from nba_impact.models.annual_spm_priors import (
 )
 from nba_impact.models.annual_aio_ratings import build_annual_aio_ratings
 from nba_impact.models.annual_defense_ridge_nested import run_annual_defense_ridge_nested
+from nba_impact.models.annual_defense_features_nested import run_annual_defense_features_nested
 from nba_impact.models.current_spm_confirmation import run_current_spm_confirmation
 from nba_impact.models.current_spm_diagnostics import run_current_spm_diagnostics
 from nba_impact.models.rolling_rapm_peaks import build_rolling_rapm_peaks
@@ -841,6 +842,20 @@ def command_diagnose_current_spm(args: argparse.Namespace) -> int:
 def command_run_annual_defense_ridge_nested(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     run = run_annual_defense_ridge_nested(
+        args.features,
+        args.targets,
+        args.frozen_spm_run,
+        args.contract,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_run_annual_defense_features_nested(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_annual_defense_features_nested(
         args.features,
         args.targets,
         args.frozen_spm_run,
@@ -1824,6 +1839,22 @@ def build_parser() -> argparse.ArgumentParser:
     defense_ridge_nested.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     defense_ridge_nested.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     defense_ridge_nested.set_defaults(func=command_run_annual_defense_ridge_nested)
+
+    defense_features_nested = subparsers.add_parser(
+        "run-annual-defense-features-nested",
+        help="Select predeclared annual defense feature blocks on past seasons only.",
+    )
+    defense_features_nested.add_argument("--features", type=Path, required=True)
+    defense_features_nested.add_argument("--targets", type=Path, required=True)
+    defense_features_nested.add_argument("--frozen-spm-run", type=Path, required=True)
+    defense_features_nested.add_argument(
+        "--contract",
+        type=Path,
+        default=PROJECT_ROOT / "configs" / "models" / "annual_defense_features_nested_v1.json",
+    )
+    defense_features_nested.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    defense_features_nested.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    defense_features_nested.set_defaults(func=command_run_annual_defense_features_nested)
 
     ratings_api = subparsers.add_parser(
         "serve-ratings",

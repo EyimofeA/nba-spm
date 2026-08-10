@@ -54,13 +54,12 @@ dead ends. Updated 2026-08-10. See `docs/README.md` for the document index,
 
 ## Active next task
 
-Define one nested or forward-only defensive feature experiment inside 2014–24.
-The completed 2025 diagnosis rules out low exposure and the existing tracking
-block as primary causes. Nested ridge selection also fails, so keep alpha 3000.
-Target additional stable defensive signal and calibrated spread. Keep 2025 as
-inspected evidence and reserve the next complete season for one final untouched
-test. The published annual AIO stays at 2017–24. WP neural work stays paused on
-the Mac.
+Audit and ingest one genuinely new defensive signal source, preferably matchup-
+level or spatial assignment data. Existing aggregate interactions fail nested
+forward promotion, as does ridge retuning. Keep the frozen model, alpha 3000,
+and published annual AIO through 2024. Keep 2025 as inspected evidence and
+reserve the next complete season for one final untouched test. WP neural work
+stays paused on the Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.

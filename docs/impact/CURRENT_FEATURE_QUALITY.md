@@ -100,3 +100,26 @@ predeclared gate. Do not change ridge strength.
 Focus next on additional stable defensive signal and calibration, not on deleting
 tracking, filtering low-minute players, or retuning alpha. Reserve the next
 complete season for one untouched confirmation.
+
+The tracking builder now also emits three interpretable interactions:
+
+- overall DFG two-point-equivalent points saved per 100;
+- rim matchup-attempt share;
+- contested-three share.
+
+Run `annual_defense_features_nested_v1_22b677e1ef` compares the frozen baseline,
+these matchup interactions, seven existing defensive interactions, four
+era-relative rates, and their union. Each outer 2020–24 fold selects a block
+using only its two prior validation seasons. The selected block wins two of five
+outer folds, worsens mean RMSE by 0.00024, and worsens mean correlation by
+0.00274. It fails the predeclared gate. Keep the derived fields for research,
+but do not add them to the frozen SPM.
+
+An earlier run, `annual_defense_features_nested_v1_d913f807c5`, used a panel
+built through 2025. Global fallback medians could therefore see 2025. Treat that
+run as invalid for the pre-2025 contract. The final run rebuilds all defensive
+features strictly through 2024 and reaches the same non-promotion conclusion.
+
+The next defense lane needs genuinely new information, not another recombination
+of the same annual aggregates. Prioritize matchup-level or spatial assignment
+data and validate its coverage before another model comparison.

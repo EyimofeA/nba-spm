@@ -51,6 +51,9 @@ def test_build_defensive_tracking_features_resolves_names_and_rates(tmp_path: Pa
     assert features.loc[1, "dfg_diff_pct_eb"] == pytest.approx(-10 / 3)
     assert features.loc[1, "rim_diff_pct_eb"] == pytest.approx(-20 / 3)
     assert features.loc[1, "rim_points_saved_p100"] == pytest.approx(8 / 3)
+    assert features.loc[1, "dfg_two_point_equivalent_saved_p100"] == pytest.approx(8 / 3)
+    assert features.loc[1, "rim_matchup_attempt_share"] == pytest.approx(0.5)
+    assert features.loc[1, "contested_3pt_share"] == pytest.approx(1 / 3)
     assert features.loc[1, "deflections_p100"] == pytest.approx(2.0)
     assert run["quality"]["source_join_quality"]["dfg"]["match_rate"] == 1.0
     assert run["quality"]["nonfinite_values"] == 0

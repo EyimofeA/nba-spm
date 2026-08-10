@@ -230,6 +230,7 @@ Frozen run `single_season_spm_v1_bff6060df6` did not pass its first untouched
 also falls from a historical mean correlation of 0.496 to 0.331. The no-tuning
 diagnostic shows that low exposure and the tracking block are not primary causes.
 Nested forward ridge selection also fails, so keep alpha 3000. Do not tune on
-2025. Design the next defensive feature challenger with nested or forward-only
-2014–24 validation, then predeclare one revised model for a future untouched
-season. Current annual AIO remains published only through 2024.
+2025. Nested defensive interaction blocks also fail, so do not run another
+subset search on 2014–24. Audit one new matchup-level or spatial defensive source,
+then predeclare one revised model for a future untouched season. Current annual
+AIO remains published only through 2024.
