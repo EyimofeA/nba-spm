@@ -276,7 +276,11 @@ def build_statistical_feature_windows(
     run = {
         "run_id": run_id,
         "dataset": "statistical_impact_features",
-        "grain": "player_three_season_window",
+        "grain": (
+            "player_single_season"
+            if window_seasons == 1
+            else f"player_{window_seasons}_season_window"
+        ),
         "status": "validated",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "config": config,

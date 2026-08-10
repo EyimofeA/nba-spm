@@ -40,15 +40,22 @@ dead ends. Updated 2026-08-10. See `docs/README.md` for the document index,
   98.47% of SPM rows per window to minutes-weighted BPM and xRAPM. Among 2,295
   high-exposure player-windows, net SPM correlates 0.876 with BPM and 0.756 with
   xRAPM. Defense is the main external disagreement (0.630 with xRAPM).
+- Annual run `single_season_spm_v1_51adc53061` uses current-season-only inputs
+  and one-season normal RAPM labels from 2014–24. Its 2017–24 leave-one-season-out
+  net RMSE is 1.4611 and correlation is 0.5314. For 2,860 matched player-seasons
+  above 1,000 possessions per side, net correlation is 0.897 with BPM and 0.762
+  with xRAPM. xRAPM remains a multi-window external comparator.
 - The old 1997–2024 RAPM archive remains valuable but is stale after 2024.
 
 ## Active next task
 
-Use the new BPM/xRAPM disagreement table to diagnose the defensive SPM before
-changing features. Then build rolling three-year and five-year normal-RAPM peak
-tables. Single-season SPM-prior RAPM is explicitly deferred. When it returns,
-use calibrated SPM as the prior mean and estimate/tune prior precision; do not
-add an arbitrary prior-amplitude scale. WP neural work stays paused on the Mac.
+Build the annual all-in-one integration. Use annual out-of-fold SPM as the prior
+mean for one-season normal RAPM. Estimate or tune offensive and defensive prior
+precision without an arbitrary amplitude scale. Compare SPM alone, zero-prior
+one-season RAPM, and the posterior on identical next-season evidence. Keep the
+annual defensive disagreement table as the feature diagnostic. Then build
+rolling three-year and five-year normal-RAPM peak tables. WP neural work stays
+paused on the Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
@@ -116,3 +123,5 @@ now would break reproducibility links.
 - Cross-fitted statistical priors: `statistical_priors_v1_2c81b23662`
 - Prior-informed RAPM comparison: `prior_informed_rapm_v1_122ef63045`
 - External BPM/xRAPM benchmark: `external_impact_benchmark_v1_bab43a4087`
+- Annual normal RAPM targets: `single_season_rapm_targets_v1_fd876680da`
+- Annual SPM and disagreements: `single_season_spm_v1_51adc53061`

@@ -38,6 +38,10 @@ from nba_impact.models.prior_informed_rapm import (
     run_prior_informed_rapm_comparison,
 )
 from nba_impact.models.statistical_impact import run_statistical_impact_baseline
+from nba_impact.models.single_season_spm import (
+    build_single_season_rapm_targets,
+    fit_single_season_spm,
+)
 from nba_impact.models.statistical_direct_net import (
     run_statistical_direct_net_comparison,
 )
@@ -486,6 +490,7 @@ def command_build_statistical_features(args: argparse.Namespace) -> int:
         args.source_dir,
         artifact_root=args.artifact_root,
         window_ends=args.window_ends,
+        window_seasons=args.window_seasons,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -498,6 +503,7 @@ def command_build_statistical_features_v2(args: argparse.Namespace) -> int:
         args.base_features,
         artifact_root=args.artifact_root,
         window_ends=args.window_ends,
+        pooled_window_seasons=args.pooled_window_seasons,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -634,6 +640,38 @@ def command_benchmark_external_impact(args: argparse.Namespace) -> int:
         artifact_root=args.artifact_root,
         window_ends=tuple(args.window_ends),
         minimum_window_possessions_per_side=args.minimum_possessions,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_single_season_rapm_targets(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_single_season_rapm_targets(
+        args.cache_dir,
+        artifact_root=args.artifact_root,
+        seasons=tuple(args.seasons),
+        lambda_off=args.lambda_off,
+        lambda_def=args.lambda_def,
+        lambda_home=args.lambda_home,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_fit_single_season_spm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = fit_single_season_spm(
+        args.features,
+        args.targets,
+        args.reference_run,
+        args.names,
+        args.external_raw_root,
+        artifact_root=args.artifact_root,
+        output_seasons=tuple(args.output_seasons),
+        minimum_possessions_per_side=args.minimum_possessions,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1192,6 +1230,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=_season_list,
         default=tuple(range(2016, 2025)),
     )
+    statistical_features.add_argument("--window-seasons", type=int, default=3)
     statistical_features.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     statistical_features.set_defaults(func=command_build_statistical_features)
 
@@ -1203,6 +1242,9 @@ def build_parser() -> argparse.ArgumentParser:
         "--source-dir",
         type=Path,
         default=Path("data/raw/playersheets/year_totals"),
+    )
+    statistical_features_v2.add_argument(
+        "--pooled-window-seasons", type=int, default=3
     )
     statistical_features_v2.add_argument("--base-features", type=Path, required=True)
     statistical_features_v2.add_argument(
@@ -1405,6 +1447,42 @@ def build_parser() -> argparse.ArgumentParser:
     external_benchmark.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     external_benchmark.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     external_benchmark.set_defaults(func=command_benchmark_external_impact)
+
+    annual_rapm_targets = subparsers.add_parser(
+        "build-single-season-rapm-targets",
+        help="Fit one zero-prior normal RAPM target table per regular season.",
+    )
+    annual_rapm_targets.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2014, 2025))
+    )
+    annual_rapm_targets.add_argument(
+        "--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE
+    )
+    annual_rapm_targets.add_argument("--lambda-off", type=float, default=3000.0)
+    annual_rapm_targets.add_argument("--lambda-def", type=float, default=3000.0)
+    annual_rapm_targets.add_argument("--lambda-home", type=float, default=300.0)
+    annual_rapm_targets.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    annual_rapm_targets.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    annual_rapm_targets.set_defaults(func=command_build_single_season_rapm_targets)
+
+    annual_spm = subparsers.add_parser(
+        "fit-single-season-spm",
+        help="Fit season-held-out and final single-season statistical plus-minus.",
+    )
+    annual_spm.add_argument("--features", type=Path, required=True)
+    annual_spm.add_argument("--targets", type=Path, required=True)
+    annual_spm.add_argument("--reference-run", type=Path, required=True)
+    annual_spm.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    annual_spm.add_argument(
+        "--external-raw-root", type=Path, default=BRONZE_ROOT / "external_impact"
+    )
+    annual_spm.add_argument(
+        "--output-seasons", type=_season_list, default=tuple(range(2017, 2025))
+    )
+    annual_spm.add_argument("--minimum-possessions", type=float, default=1000.0)
+    annual_spm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    annual_spm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    annual_spm.set_defaults(func=command_fit_single_season_spm)
 
     compare = subparsers.add_parser(
         "compare-rapm",

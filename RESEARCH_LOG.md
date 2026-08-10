@@ -1239,3 +1239,41 @@ sample/reliability handling materially changes any leaderboard comparison.
 but remains closer to BPM than to the possession-informed xRAPM, especially on
 defense. Use player-level defensive disagreements as the next feature diagnostic.
 Do not train on BPM or xRAPM and do not treat either as ground truth.
+
+## 2026-08-10 — Single-season SPM baseline and defensive disagreement report
+
+**Question:** Can one global statistical model turn each season's own box and
+tracking evidence into an annual SPM, while keeping annual xRAPM only as a
+multi-window comparator?
+
+**Method:** Target run `single_season_rapm_targets_v1_fd876680da` fits separate
+zero-prior normal RAPM models for 2014–24 with penalties 3000/3000/300. Feature
+run `statistical_features_v2_0e1350d95a` uses one-season pooling. It excludes
+age, experience, height, position, minutes, games, on/off, plus-minus, and all
+three-season temporal features. Run `single_season_spm_v1_51adc53061` keeps the
+frozen offense histogram GBM and defense ridge. For each reported 2017–24
+season, it trains on every other 2014–24 season. The final leaderboard refits on
+all 2014–24 labels. This is descriptive leave-one-season-out evaluation, not a
+forecast.
+
+**Quality:** The panel has 5,791 unique player-seasons and the reported table has
+4,341 rows. It has zero duplicate keys, missing names, non-finite predictions,
+or offense-plus-defense identity errors. BPM matches 98.89% and xRAPM matches
+98.99% of reported rows. The high-exposure comparison has 2,860 rows matched to
+both sources. The 2024 target cache has 1,229 regular-season games, one fewer
+than expected, and all legacy targets stop after 2024.
+
+**Result:** Mean held-out weighted RMSE/correlation is 1.0060/0.6178 on offense,
+1.0578/0.3091 on defense, and 1.4611/0.5314 on net. For high-exposure rows, net
+Pearson correlation is 0.897 with BPM and 0.762 with xRAPM. Defensive correlation
+with xRAPM is 0.590. The annual net xRAPM correlation remains between 0.725 and
+0.795 in every season. Stable disagreement examples include Dillon Brooks and
+Robin Lopez ranked higher by xRAPM defense, and Damian Jones and Mo Bamba ranked
+higher by SPM defense. These are audit leads, not evidence that one metric is
+correct.
+
+**Verdict:** Share with caveats as the first annual SPM baseline. It is not the
+final all-in-one because the target is noisy and the evaluation uses later as
+well as earlier seasons. Next use annual out-of-fold SPM as the prior mean in a
+one-season RAPM comparison. Estimate or tune prior precision inside training
+seasons; do not restore the earlier arbitrary amplitude scale.

@@ -65,6 +65,18 @@ uv run python -m nba_impact.cli ingest-external-impact
 uv run python -m nba_impact.cli benchmark-external-impact \
   --priors artifacts/models/statistical_priors/<run-id>/priors.parquet \
   --features artifacts/features/statistical_impact/<v2-run-id>/features.parquet
+uv run python -m nba_impact.cli build-statistical-features \
+  --window-ends 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024 \
+  --window-seasons 1
+uv run python -m nba_impact.cli build-statistical-features-v2 \
+  --base-features artifacts/features/statistical_impact/<annual-v1>/features.parquet \
+  --window-ends 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024 \
+  --pooled-window-seasons 1
+uv run python -m nba_impact.cli build-single-season-rapm-targets
+uv run python -m nba_impact.cli fit-single-season-spm \
+  --features artifacts/features/statistical_impact/<annual-v2>/features.parquet \
+  --targets artifacts/models/single_season_rapm_targets/<run-id>/targets.parquet \
+  --reference-run artifacts/models/statistical_feature_v2/<run-id>
 ```
 
 The three-season canonical data rebuild is also resumable:

@@ -350,22 +350,30 @@ def build_statistical_features_v2(
     *,
     artifact_root: str | Path,
     window_ends: tuple[int, ...] = tuple(range(2016, 2025)),
+    pooled_window_seasons: int = 3,
 ) -> dict:
+    if pooled_window_seasons < 1:
+        raise ValueError("pooled_window_seasons must be positive.")
     source = Path(source_dir)
     base = pd.read_parquet(base_features_path)
     loaded = {}
     source_hashes = {}
-    for season in range(min(window_ends) - 2, max(window_ends) + 1):
+    history_seasons = max(3, pooled_window_seasons)
+    for season in range(min(window_ends) - history_seasons + 1, max(window_ends) + 1):
         path = source / f"{season}.csv"
         loaded[season] = _load_source(path, season)[0]
         source_hashes[str(season)] = sha256_file(path)
     outputs = []
     for end in window_ends:
-        frames = [loaded[season] for season in range(end - 2, end + 1)]
+        frames = [
+            loaded[season]
+            for season in range(end - pooled_window_seasons + 1, end + 1)
+        ]
+        temporal_frames = [loaded[season] for season in range(end - 2, end + 1)]
         seasonal = [
             _aggregate_window([frame], season)
             for frame, season in zip(
-                frames, range(end - 2, end + 1), strict=True
+                temporal_frames, range(end - 2, end + 1), strict=True
             )
         ]
         base_window = base.loc[base["Window_End"].eq(end)].copy()
@@ -399,6 +407,7 @@ def build_statistical_features_v2(
         "source_hashes": source_hashes,
         "builder_sha256": sha256_file(Path(__file__)),
         "window_ends": list(window_ends),
+        "pooled_window_seasons": pooled_window_seasons,
     }
     identity = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()[:10]
     run_id = f"statistical_features_v2_{identity}"

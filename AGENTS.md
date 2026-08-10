@@ -296,6 +296,13 @@ matching is at least 99.43% per season and SPM-to-external coverage is at least
 98.47% per window. For 2,295 high-exposure player-windows, net Pearson
 correlation is 0.876 with BPM and 0.756 with xRAPM; defense versus xRAPM is only
 0.630. External metrics are diagnostics, not labels or ground truth.
+Run `single_season_spm_v1_51adc53061` creates current-season-only 2017–24 SPM
+leaderboards from models trained on the 2014–24 panel. Each evaluation season is
+held out; the saved final leaderboard refits all seasons. High-exposure net
+correlation is 0.897 with BPM and 0.762 with xRAPM. xRAPM is a multi-window
+comparator. Defense remains the weak lane (0.590 with xRAPM). The next task is
+annual SPM-prior one-season RAPM with calibrated precision, not another arbitrary
+prior scale.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

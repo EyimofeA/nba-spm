@@ -107,6 +107,17 @@ correlation 0.876 with BPM and 0.756 with xRAPM. The weakest external agreement
 is defensive SPM versus defensive xRAPM at 0.630. This is a diagnostic for
 feature work, not evidence that either external metric is truth.
 
+Annual run `single_season_spm_v1_51adc53061` is separate from the rolling
+model. It builds current-season-only features for 2014–24, excludes temporal
+features, and learns one global mapping with each reported 2017–24 season held
+out in turn. The final descriptive leaderboard refits on all 2014–24 labels.
+Across eight held-out seasons, net weighted RMSE is 1.4611 and mean correlation
+is 0.5314 against noisy one-season normal RAPM. On 2,860 matched player-seasons
+with at least 1,000 possessions per side, net correlation is 0.897 with BPM and
+0.762 with xRAPM. Annual xRAPM is still a multi-window, prior-informed metric;
+it is not a one-season label. Defensive SPM versus xRAPM correlation is 0.590.
+The saved disagreement tables use the same high-exposure rule.
+
 The next feature challenger uses
 [`FACTOR_DECOMPOSITION.md`](FACTOR_DECOMPOSITION.md). The basketball factors are
 feature families and explanation groups. The supervised targets remain direct
@@ -136,6 +147,12 @@ statistical rating remains a separately labeled research estimate.
 Do not tune more prior scales on these seasons. A future integration test needs
 genuinely new data or one predeclared sample-size-adaptive shrinkage rule.
 
+The annual integration is the next distinct experiment. Use the annual
+out-of-fold SPM prediction as the prior mean for one-season RAPM. Estimate or
+tune offensive and defensive prior precision inside training seasons. Compare
+SPM alone, zero-prior one-season RAPM, and the posterior on identical
+next-season evidence. Do not reuse the earlier amplitude scale.
+
 The all-in-one must be decomposable. A user must be able to see why the final
 rating differs from raw RAPM or the box/tracking prior.
 
@@ -163,7 +180,7 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Create a player-level defensive disagreement report from the matched SPM,
-BPM, and xRAPM table. Use it to identify missing feature families before
-changing the defensive model. Then build rolling three-year and five-year
-normal-RAPM peak tables. Single-season SPM-prior RAPM is deferred.
+Build the annual SPM-prior one-season RAPM comparison with model-derived or
+training-tuned prior precision. Then build rolling three-year and five-year
+normal-RAPM peak tables. Use the saved annual defensive disagreements to define
+future defensive feature families; do not tune them on the same 2017–24 table.

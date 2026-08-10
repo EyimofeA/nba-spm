@@ -94,3 +94,22 @@ def test_v2_stabilizes_small_samples_and_builds_temporal_features(tmp_path: Path
     assert v2["quality"]["infinite_values"] == 0
     assert Path(v2["audit_path"]).exists()
     assert not {"AGE", "MIN", "GP"}.intersection(features.columns)
+
+    annual_v1 = build_statistical_feature_windows(
+        source,
+        artifact_root=tmp_path,
+        window_ends=(2024,),
+        window_seasons=1,
+    )
+    annual_v2 = build_statistical_features_v2(
+        source,
+        annual_v1["features_path"],
+        artifact_root=tmp_path,
+        window_ends=(2024,),
+        pooled_window_seasons=1,
+    )
+    annual = pd.read_parquet(annual_v2["features_path"]).set_index("PLAYER_ID")
+    assert annual.loc[1, "PTS_p100"] == pytest.approx(30.0)
+    assert annual.loc[1, "PTS_p100_latest"] == pytest.approx(30.0)
+    assert annual_v1["grain"] == "player_single_season"
+    assert annual_v2["config"]["pooled_window_seasons"] == 1
