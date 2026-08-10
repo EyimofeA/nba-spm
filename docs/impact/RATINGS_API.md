@@ -21,13 +21,18 @@ Default address: `http://127.0.0.1:8765`.
 | `GET /v1/leaderboards/annual?season=2024&metric=aio_net` | Annual AIO/SPM/normal-RAPM leaderboard |
 | `GET /v1/leaderboards/current?metric=net` | Current 2024–26 frozen normal-RAPM leaderboard |
 | `GET /v1/leaderboards/peaks?window=5&component=net` | Three- or five-year all-time peak table |
+| `GET /v1/leaderboards/matchup-defense?season=2024` | Research-only scorer-adjusted matchup-factor leaderboard |
 | `GET /v1/players/search?q=lebron` | Case-insensitive player lookup |
-| `GET /v1/players/2544` | Annual decomposition, rolling history, and peaks |
+| `GET /v1/players/2544` | Annual decomposition, rolling history, peaks, and matchup-defense factors |
 
 Leaderboard routes accept `limit` and `offset`; annual leaderboards also accept
 `minimum_possessions`. The server caps `limit` at 100. Invalid metrics,
 components, and parameters return HTTP 400. Unknown players and routes return
 HTTP 404.
+
+The matchup-defense route accepts `minimum_matchup_possessions`. It exposes six
+positive-good factor metrics. The default is scorer-adjusted shot-making points
+saved. Every response is labeled `research_only` and includes the source caveat.
 
 ## Published runs
 
@@ -36,8 +41,9 @@ The pinned run IDs live in `configs/api/ratings_v1.json`:
 - annual: `annual_aio_ratings_v1_23c4895f8f`
 - rolling/peaks: `rolling_rapm_peaks_v1_584adf4f3d`
 - current normal RAPM: `rapm_v0_01b5084f0a`
+- matchup-defense factors: `matchup_defense_features_v1_09829b48c8`
 
-Both are research artifacts, not production truth. `/v1/meta` returns their
+These are research artifacts, not production truth. `/v1/meta` returns their
 caveats so a frontend cannot silently hide that status.
 
 ## Deployment boundary

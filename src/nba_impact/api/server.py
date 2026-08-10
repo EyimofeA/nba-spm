@@ -48,6 +48,20 @@ def dispatch(store: RatingsStore, target: str) -> tuple[int, dict]:
             limit=int(_single(query, "limit", str(store.config.default_limit))),
             offset=int(_single(query, "offset", "0")),
         )
+    if parsed.path == "/v1/leaderboards/matchup-defense":
+        return HTTPStatus.OK, store.matchup_defense_leaderboard(
+            int(_single(query, "season")),
+            _single(
+                query,
+                "metric",
+                "matchup_shotmaking_points_saved_vs_scorer_p100_eb",
+            ),
+            limit=int(_single(query, "limit", str(store.config.default_limit))),
+            offset=int(_single(query, "offset", "0")),
+            minimum_matchup_possessions=int(
+                _single(query, "minimum_matchup_possessions", "0")
+            ),
+        )
     if parsed.path == "/v1/players/search":
         return HTTPStatus.OK, store.search_players(
             _single(query, "q"),

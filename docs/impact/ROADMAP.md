@@ -236,3 +236,8 @@ folds but lowers correlation, so it also fails promotion. Do not subset-search
 these inspected seasons. Build the next defender model from shot-location and
 lineup-context controls, then reserve a future complete season for confirmation.
 Current annual AIO remains published only through 2024.
+
+The API now also exposes the validated 2018–25 matchup-defense factor panel. It
+labels the route `research_only`, requires an explicit pinned run, and returns
+the observational-data caveat. This is a data/research surface, not a promoted
+AIO component. No UI change is authorized from this addition.

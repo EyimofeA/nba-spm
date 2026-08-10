@@ -34,6 +34,14 @@ CURRENT_METRICS = {
     "offense": "offense_per_100",
     "defense": "defense_per_100",
 }
+MATCHUP_FACTOR_METRICS = (
+    "matchup_fga_suppressed_vs_scorer_p100_eb",
+    "matchup_shotmaking_points_saved_vs_scorer_p100_eb",
+    "matchup_three_pa_suppressed_vs_scorer_p100_eb",
+    "matchup_turnovers_forced_vs_scorer_p100_eb",
+    "matchup_assists_suppressed_vs_scorer_p100_eb",
+    "matchup_shooting_fouls_prevented_vs_scorer_p100_eb",
+)
 
 
 def _records(frame: pd.DataFrame) -> list[dict[str, Any]]:
@@ -55,6 +63,7 @@ class RatingsApiConfig:
     current_rapm_run_id: str
     default_limit: int = 25
     maximum_limit: int = 100
+    matchup_defense_run_id: str | None = None
 
     @classmethod
     def from_json(cls, path: str | Path) -> "RatingsApiConfig":
@@ -82,6 +91,23 @@ class RatingsStore:
         self.rolling = pd.read_parquet(self.rolling_dir / "rolling_ratings.parquet")
         self.peaks = pd.read_parquet(self.rolling_dir / "player_peaks.parquet")
         self.current = pd.read_parquet(self.current_dir / "ratings.parquet")
+        self.matchup_manifest: dict[str, Any] | None = None
+        self.matchup: pd.DataFrame | None = None
+        if config.matchup_defense_run_id is not None:
+            local_matchup = (
+                artifact_root / "matchup_defense" / config.matchup_defense_run_id
+            )
+            sibling_matchup = (
+                artifact_root.parent
+                / "features"
+                / "matchup_defense"
+                / config.matchup_defense_run_id
+            )
+            self.matchup_dir = (
+                local_matchup if local_matchup.exists() else sibling_matchup
+            )
+            self.matchup_manifest = _read_run(self.matchup_dir / "run.json")
+            self.matchup = pd.read_parquet(self.matchup_dir / "features.parquet")
         self._validate()
 
     def _validate(self) -> None:
@@ -130,6 +156,17 @@ class RatingsStore:
             raise ValueError("Peak rating keys are not unique.")
         if self.current["player_id"].duplicated().any():
             raise ValueError("Current RAPM player IDs are not unique.")
+        if self.matchup is not None:
+            matchup_required = {
+                "PLAYER_ID",
+                "Season",
+                "matchup_possessions",
+                *MATCHUP_FACTOR_METRICS,
+            }
+            if missing := sorted(matchup_required - set(self.matchup.columns)):
+                raise ValueError(f"Matchup feature artifact lacks columns: {missing}")
+            if self.matchup.duplicated(["PLAYER_ID", "Season"]).any():
+                raise ValueError("Matchup feature keys are not unique.")
 
     def _limit(self, limit: int | None) -> int:
         value = self.config.default_limit if limit is None else int(limit)
@@ -143,6 +180,7 @@ class RatingsStore:
             "annual_run_id": self.config.annual_run_id,
             "rolling_run_id": self.config.rolling_run_id,
             "current_rapm_run_id": self.config.current_rapm_run_id,
+            "matchup_defense_run_id": self.config.matchup_defense_run_id,
             "annual_status": self.annual_manifest["status"],
             "rolling_status": self.rolling_manifest["status"],
             "current_rapm_status": self.current_manifest["status"],
@@ -156,11 +194,85 @@ class RatingsStore:
             "annual_metrics": list(ANNUAL_METRICS),
             "peak_components": list(PEAK_COMPONENTS),
             "current_rapm_metrics": list(CURRENT_METRICS),
+            "matchup_factor_metrics": list(MATCHUP_FACTOR_METRICS),
+            "matchup_factor_status": (
+                self.matchup_manifest["status"]
+                if self.matchup_manifest is not None
+                else None
+            ),
             "caveats": sorted(
                 set(self.annual_manifest.get("caveats", []))
                 | set(self.rolling_manifest.get("caveats", []))
                 | set(self.current_manifest.get("caveats", []))
+                | (
+                    {self.matchup_manifest["caveat"]}
+                    if self.matchup_manifest is not None
+                    and self.matchup_manifest.get("caveat")
+                    else set()
+                )
             ),
+        }
+
+    def matchup_defense_leaderboard(
+        self,
+        season: int,
+        metric: str = "matchup_shotmaking_points_saved_vs_scorer_p100_eb",
+        *,
+        limit: int | None = None,
+        offset: int = 0,
+        minimum_matchup_possessions: int = 0,
+    ) -> dict[str, Any]:
+        if self.matchup is None or self.matchup_manifest is None:
+            raise ValueError("matchup-defense research data is not configured")
+        if metric not in MATCHUP_FACTOR_METRICS:
+            raise ValueError(f"unsupported matchup-defense metric: {metric}")
+        season = int(season)
+        if season not in set(self.matchup["Season"]):
+            raise ValueError(f"unsupported matchup-defense season: {season}")
+        if offset < 0 or minimum_matchup_possessions < 0:
+            raise ValueError(
+                "offset and minimum_matchup_possessions must be nonnegative"
+            )
+        size = self._limit(limit)
+        frame = self.matchup.loc[
+            (self.matchup["Season"] == season)
+            & (self.matchup["matchup_possessions"] >= minimum_matchup_possessions)
+        ].copy()
+        names = pd.concat(
+            [
+                self.annual[["PLAYER_ID", "PLAYER_NAME"]],
+                self.rolling[["PLAYER_ID", "PLAYER_NAME"]],
+                self.current[["player_id", "player_name"]].rename(
+                    columns={"player_id": "PLAYER_ID", "player_name": "PLAYER_NAME"}
+                ),
+            ],
+            ignore_index=True,
+        ).dropna(subset=["PLAYER_NAME"]).drop_duplicates("PLAYER_ID", keep="last")
+        frame = frame.merge(names, on="PLAYER_ID", how="left", validate="one_to_one")
+        frame = frame.sort_values(
+            [metric, "matchup_possessions", "PLAYER_ID"],
+            ascending=[False, False, True],
+            kind="stable",
+        )
+        frame["rank"] = np.arange(1, len(frame) + 1)
+        columns = [
+            "rank",
+            "PLAYER_ID",
+            "PLAYER_NAME",
+            "Season",
+            metric,
+            "matchup_possessions",
+        ]
+        return {
+            "status": "research_only",
+            "run_id": self.config.matchup_defense_run_id,
+            "season": season,
+            "metric": metric,
+            "total": len(frame),
+            "offset": int(offset),
+            "limit": size,
+            "caveat": self.matchup_manifest.get("caveat"),
+            "results": _records(frame.iloc[offset : offset + size][columns]),
         }
 
     def current_leaderboard(
@@ -349,6 +461,13 @@ class RatingsStore:
             if not current.empty
             else available["PLAYER_NAME"].dropna().iloc[-1]
         )
+        matchup = (
+            self.matchup.loc[self.matchup["PLAYER_ID"] == player_id].sort_values(
+                "Season"
+            )
+            if self.matchup is not None
+            else pd.DataFrame()
+        )
         annual_columns = [
             "Season",
             "Poss_Off",
@@ -375,5 +494,18 @@ class RatingsStore:
                 _records(current.drop(columns=["player_id", "player_name"]))[0]
                 if not current.empty
                 else None
+            ),
+            "matchup_defense_factors": (
+                _records(
+                    matchup[
+                        [
+                            "Season",
+                            "matchup_possessions",
+                            *MATCHUP_FACTOR_METRICS,
+                        ]
+                    ]
+                )
+                if not matchup.empty
+                else []
             ),
         }

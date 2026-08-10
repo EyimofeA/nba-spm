@@ -209,6 +209,9 @@ built from predecessor run `matchup_defense_features_v1_86d13d7357`, failed its
 correlation gate in `annual_defense_features_nested_v1_eaeca704eb`. Do not tune
 more subsets on 2022–24. The next challenger must add shot-location and lineup
 context, and matchup points saved must not be described as causal defense.
+The read-only API exposes these six factor residuals under
+`/v1/leaderboards/matchup-defense` and player payloads. Preserve the
+`research_only` label and caveat in any future client.
 
 Win-probability research must use chronological seasons and post-action states.
 External comparisons use the resumable `ingest-espn-win-probability` command,

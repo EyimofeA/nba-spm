@@ -15,9 +15,11 @@ def _store(tmp_path: Path) -> RatingsStore:
     annual_dir = tmp_path / "annual_aio_ratings" / "annual_test"
     rolling_dir = tmp_path / "rolling_rapm_peaks" / "rolling_test"
     current_dir = tmp_path / "rapm" / "current_test"
+    matchup_dir = tmp_path / "matchup_defense" / "matchup_test"
     annual_dir.mkdir(parents=True)
     rolling_dir.mkdir(parents=True)
     current_dir.mkdir(parents=True)
+    matchup_dir.mkdir(parents=True)
     annual = pd.DataFrame(
         {
             "PLAYER_ID": [1, 2, 1],
@@ -82,10 +84,24 @@ def _store(tmp_path: Path) -> RatingsStore:
             "def_possessions": [5990, 810],
         }
     )
+    matchup = pd.DataFrame(
+        {
+            "PLAYER_ID": [1, 2],
+            "Season": [2024, 2024],
+            "matchup_possessions": [2000.0, 500.0],
+            "matchup_fga_suppressed_vs_scorer_p100_eb": [0.1, -0.1],
+            "matchup_shotmaking_points_saved_vs_scorer_p100_eb": [2.0, -1.0],
+            "matchup_three_pa_suppressed_vs_scorer_p100_eb": [0.2, -0.2],
+            "matchup_turnovers_forced_vs_scorer_p100_eb": [0.3, -0.3],
+            "matchup_assists_suppressed_vs_scorer_p100_eb": [0.4, -0.4],
+            "matchup_shooting_fouls_prevented_vs_scorer_p100_eb": [0.5, -0.5],
+        }
+    )
     annual.to_parquet(annual_dir / "ratings.parquet", index=False)
     rolling.to_parquet(rolling_dir / "rolling_ratings.parquet", index=False)
     peaks.to_parquet(rolling_dir / "player_peaks.parquet", index=False)
     current.to_parquet(current_dir / "ratings.parquet", index=False)
+    matchup.to_parquet(matchup_dir / "features.parquet", index=False)
     (annual_dir / "run.json").write_text(
         json.dumps(
             {"status": "research", "estimand": "annual", "caveats": ["annual caveat"]}
@@ -106,8 +122,22 @@ def _store(tmp_path: Path) -> RatingsStore:
             }
         )
     )
+    (matchup_dir / "run.json").write_text(
+        json.dumps(
+            {
+                "status": "validated",
+                "caveat": "Research assignment data is not causal defense.",
+            }
+        )
+    )
     config = RatingsApiConfig(
-        "ratings_api_v1", "annual_test", "rolling_test", "current_test", 2, 10
+        "ratings_api_v1",
+        "annual_test",
+        "rolling_test",
+        "current_test",
+        2,
+        10,
+        matchup_defense_run_id="matchup_test",
     )
     return RatingsStore(config, tmp_path)
 
@@ -157,3 +187,19 @@ def test_current_leaderboard_uses_minimum_side_possessions(tmp_path: Path) -> No
     assert result["seasons"] == [2024, 2025, 2026]
     assert result["total"] == 1
     assert result["results"][0]["player_name"] == "Alpha Guard"
+
+
+def test_matchup_factor_route_is_filtered_and_research_labeled(tmp_path: Path) -> None:
+    store = _store(tmp_path)
+    status, result = dispatch(
+        store,
+        "/v1/leaderboards/matchup-defense?season=2024&minimum_matchup_possessions=1000",
+    )
+    assert status == HTTPStatus.OK
+    assert result["status"] == "research_only"
+    assert result["total"] == 1
+    assert result["results"][0]["PLAYER_NAME"] == "Alpha Guard"
+    assert result["results"][0][
+        "matchup_shotmaking_points_saved_vs_scorer_p100_eb"
+    ] == 2.0
+    assert store.player(1)["matchup_defense_factors"][0]["Season"] == 2024
