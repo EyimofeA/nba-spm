@@ -340,8 +340,11 @@ normal-RAPM windows over 1997–2024. The frozen contract is
 normalization and requires 1,000 offensive and defensive possessions per window
 season for peak eligibility. Numeric window fits checkpoint atomically. Never
 invent names for unresolved legacy IDs 471 and 775; neither is peak eligible.
-The next product task is a read-only query layer for annual ratings, rolling
-ratings, peaks, and decomposition.
+The read-only query layer now lives in `src/nba_impact/api/`. Run
+`python3 -m nba_impact.cli serve-ratings`; its source runs are pinned in
+`configs/api/ratings_v1.json`. See `docs/impact/RATINGS_API.md` for routes and
+the deployment boundary. The next bounded product task is one player trajectory
+view, not a full site.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

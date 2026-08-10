@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from nba_impact.api.ratings import RatingsApiConfig, RatingsStore
+from nba_impact.api.server import serve
 from nba_impact.data.assist_quality_features import build_assist_quality_features
 from nba_impact.data.download import plan_ingest_manifest, run_ingest_manifest
 from nba_impact.data.defensive_tracking_features import build_defensive_tracking_features
@@ -90,6 +92,7 @@ from nba_impact.paths import (
     MANIFEST_ROOT,
     OFFICIAL_BOXSCORE_ROOT,
     PLAYER_NAMES,
+    PROJECT_ROOT,
     REGISTRY_PATH,
     SILVER_ROOT,
     ensure_owned_dirs,
@@ -768,6 +771,13 @@ def command_build_rolling_rapm_peaks(args: argparse.Namespace) -> int:
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_serve_ratings(args: argparse.Namespace) -> int:
+    config = RatingsApiConfig.from_json(args.config)
+    store = RatingsStore(config, args.artifact_root)
+    serve(store, args.host, args.port)
     return 0
 
 
@@ -1676,6 +1686,25 @@ def build_parser() -> argparse.ArgumentParser:
     rolling_peaks.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     rolling_peaks.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     rolling_peaks.set_defaults(func=command_build_rolling_rapm_peaks)
+
+    ratings_api = subparsers.add_parser(
+        "serve-ratings",
+        help="Serve pinned annual, rolling, peak, and player rating data as JSON.",
+    )
+    ratings_api.add_argument(
+        "--config",
+        type=Path,
+        default=PROJECT_ROOT / "configs" / "api" / "ratings_v1.json",
+    )
+    ratings_api.add_argument(
+        "--artifact-root",
+        type=Path,
+        default=ARTIFACT_ROOT / "models",
+        help="Directory containing the annual_aio_ratings and rolling_rapm_peaks families.",
+    )
+    ratings_api.add_argument("--host", default="127.0.0.1")
+    ratings_api.add_argument("--port", type=int, default=8765)
+    ratings_api.set_defaults(func=command_serve_ratings)
 
     compare = subparsers.add_parser(
         "compare-rapm",

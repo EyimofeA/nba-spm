@@ -1447,3 +1447,23 @@ season scoring-level adjustment.
 **Verdict:** Use this artifact for the first all-time peak product. Keep it
 labeled normal RAPM, not AIO, because it has no statistical prior. Next build
 the read-only query layer and player trajectory/decomposition schemas.
+
+## 2026-08-10 — Read-only ratings API v1
+
+- Added a pinned read-only query contract over the annual AIO and rolling normal
+  RAPM peak artifacts. Artifact selection is explicit by run ID, never filesystem
+  recency.
+- Routes expose metadata/caveats, annual leaderboards, three- and five-year peak
+  leaderboards, player search, and a player payload containing annual SPM center,
+  RAPM update, AIO decomposition, rolling history, and component peaks.
+- Added schema/key validation, deterministic ordering, pagination limits,
+  possession filters, JSON null handling, HTTP 400/404 behavior, and permissive
+  local CORS.
+- Observable validation used the real pinned artifacts: the 2024 AIO net endpoint
+  returned Nikola Jokic, Shai Gilgeous-Alexander, and Paul George at the top with
+  a 1,000-possession-side filter; the five-year peak endpoint returned Stephen
+  Curry, LeBron James, and Kevin Garnett. LeBron search and the full player payload
+  also passed.
+- This is a local-development server, not an internet-facing production server.
+  Public hosting still needs a managed runtime, caching/compression, and restricted
+  CORS.
