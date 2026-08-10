@@ -1,0 +1,78 @@
+{
+  "contract_version": "annual_spm_v1",
+  "status": "frozen_research_contract",
+  "estimand": "single_regular_season_normal_rapm_offense_defense_and_net_points_per_100",
+  "grain": "player-season",
+  "population": "NBA regular season",
+  "intended_use": [
+    "descriptive annual player impact",
+    "statistical center for same-season normal RAPM",
+    "next-season player-impact research"
+  ],
+  "target_run": "single_season_rapm_targets_v1_fd876680da",
+  "feature_run": "statistical_features_v2_85160c1780",
+  "reference_feature_run": "statistical_feature_v2_comparison_9b8d0555e0",
+  "frozen_evaluation_run": "single_season_spm_v1_bff6060df6",
+  "training_seasons": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+  "evaluation_seasons": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+  "components": {
+    "offense": {
+      "learner": "histogram_gbm",
+      "additional_features": ["zts_pct_points"]
+    },
+    "defense": {
+      "learner": "ridge",
+      "additional_features": [
+        "dfg_attempts_p100",
+        "dfg_diff_pct_eb",
+        "rim_dfga_p100",
+        "rim_diff_pct_eb",
+        "rim_points_saved_p100",
+        "deflections_p100",
+        "charges_drawn_p100",
+        "contested_2pt_p100",
+        "contested_3pt_p100",
+        "def_loose_balls_recovered_p100"
+      ]
+    },
+    "net": {
+      "definition": "offense plus defense"
+    }
+  },
+  "weighting": "square root of the smaller offensive or defensive possession count",
+  "forbidden_features": [
+    "on/off ratings",
+    "plus-minus",
+    "team ratings",
+    "games played",
+    "minutes",
+    "age",
+    "experience",
+    "height",
+    "listed position"
+  ],
+  "promotion_evidence": {
+    "evaluation": "leave-one-season-out descriptive evaluation on 2017-2024",
+    "offense_mean_weighted_rmse": 0.997174,
+    "offense_mean_correlation": 0.630233,
+    "defense_mean_weighted_rmse": 0.959535,
+    "defense_mean_correlation": 0.496445,
+    "net_mean_weighted_rmse": 1.385854,
+    "net_mean_correlation": 0.599134
+  },
+  "rejected_challengers": [
+    {
+      "run": "single_season_spm_v1_d6de68348c",
+      "change": "add cleaned free-throw assist rate and assist points per adjusted potential assist",
+      "decision": "reject from frozen model",
+      "reason": "offense and net regressed in both 2023 and 2024 despite a small older-fold average gain"
+    }
+  ],
+  "validation_rules": {
+    "descriptive_evaluation": "hold out the complete target season",
+    "next_season_evaluation": "fit the SPM mapping only on seasons before the rated season",
+    "final_leaderboard": "refit on every available labeled season",
+    "rapm_center_scale": 1.0,
+    "rapm_scale_search_allowed": false
+  }
+}

@@ -156,3 +156,30 @@ def test_paired_confirmation_bootstrap_detects_consistent_gain() -> None:
     assert result["observed_mse_delta"] == -3.0
     assert result["ci_95_upper"] == -3.0
     assert result["probability_selected_better"] == 1.0
+
+
+def test_exact_full_prior_comparison_handles_zero_prior_selection(
+    tmp_path: Path,
+) -> None:
+    frame, priors = _synthetic_inputs()
+    priors.loc[:, ["prior_offense_per_100", "prior_defense_per_100"]] *= -100
+    priors["prior_net_per_100"] = (
+        priors["prior_offense_per_100"] + priors["prior_defense_per_100"]
+    )
+    priors_path = tmp_path / "bad_priors.parquet"
+    priors.to_parquet(priors_path, index=False)
+    run = run_prior_informed_rapm_comparison(
+        frame,
+        priors_path,
+        RapmConfig(
+            seasons=tuple(range(2017, 2025)),
+            lambda_off=100.0,
+            lambda_def=100.0,
+            lambda_home=10.0,
+        ),
+        artifact_root=tmp_path,
+        prior_scales=(1.0,),
+    )
+    assert run["metrics"]["selected_candidate"] == "zero_prior"
+    assert run["metrics"]["bootstrap_candidate"] == "prior_scale_1"
+    assert run["status"] == "prior_center_rejected_in_selection"

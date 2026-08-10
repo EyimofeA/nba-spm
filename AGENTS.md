@@ -318,6 +318,17 @@ xRAPM rises from 0.590 to 0.701. Keep the entire predeclared block in the annual
 research model. Do not subset-search it on 2017–24. Confirm on new seasons or
 with a predeclared nested design. Upstream Gabriel data has no declared license
 and remains research-only.
+Annual contract `configs/models/annual_spm_v1.json` freezes this model. Gabriel
+assist-quality data is cleaned in `assist_quality_features_v1_e5d583faed`, but
+its two nonduplicate candidates regress offense and net in both 2023 and 2024
+in run `single_season_spm_v1_d6de68348c`. Keep them out of the frozen model.
+Run `annual_spm_priors_v1_1107680642` creates forward-only SPM(T) priors by
+training the mapping on seasons before T. Run `prior_informed_rapm_v1_e1239679c1`
+uses full SPM centering, not an amplitude grid. It beats zero-prior one-season
+RAPM in all three later 2022–24 next-season game-margin folds; the paired MSE
+95% interval is [-3.270, -0.965]. Treat this as a research challenger because
+those seasons influenced earlier feature work. Next export annual decomposed AIO
+ratings; do not tune the prior center again on 2017–24.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

@@ -369,9 +369,14 @@ def run_prior_informed_rapm_comparison(
         and confirmation_lookup.loc[selected_candidate, "mean_margin_rmse"]
         < confirmation_lookup.loc["zero_prior", "mean_margin_rmse"]
     )
+    bootstrap_candidate = (
+        selected_candidate
+        if selected_candidate != "zero_prior"
+        else _candidate_name(max(prior_scales))
+    )
     paired_bootstrap = paired_confirmation_bootstrap(
         games,
-        selected_candidate=selected_candidate,
+        selected_candidate=bootstrap_candidate,
         confirmation_test_seasons=confirmation_test_seasons,
         repetitions=bootstrap_repetitions,
         seed=bootstrap_seed,
@@ -409,7 +414,10 @@ def run_prior_informed_rapm_comparison(
     run = {
         "run_id": run_id,
         "model_family": "prior_informed_normal_rapm",
-        "estimand": "three_season_lineup_adjusted_descriptive_points_per_100",
+        "estimand": (
+            f"{train_window}_season_lineup_adjusted_descriptive_points_per_100_"
+            "evaluated_on_next_season_game_margins"
+        ),
         "status": status,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "config": {
@@ -461,6 +469,7 @@ def run_prior_informed_rapm_comparison(
         "metrics": {
             "selected_candidate": selected_candidate,
             "selected_prior_scale": selected_scale,
+            "bootstrap_candidate": bootstrap_candidate,
             "selection": selection.to_dict(orient="records"),
             "confirmation": confirmation.to_dict(orient="records"),
             "selected_beats_zero_on_reused_confirmation": selected_beats_zero,

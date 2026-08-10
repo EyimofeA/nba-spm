@@ -107,6 +107,9 @@ def test_v2_stabilizes_small_samples_and_builds_temporal_features(tmp_path: Path
     pd.DataFrame(
         {"PLAYER_ID": [1], "Season": [2024], "rim_points_saved_p100": [1.5]}
     ).to_parquet(tmp_path / "defense.parquet", index=False)
+    pd.DataFrame(
+        {"PLAYER_ID": [1], "Season": [2024], "ft_assists_p100_eb": [0.3]}
+    ).to_parquet(tmp_path / "assist.parquet", index=False)
     annual_v2 = build_statistical_features_v2(
         source,
         annual_v1["features_path"],
@@ -115,6 +118,7 @@ def test_v2_stabilizes_small_samples_and_builds_temporal_features(tmp_path: Path
         pooled_window_seasons=1,
         playtype_features_path=(tmp_path / "playtype.parquet"),
         defensive_tracking_features_path=(tmp_path / "defense.parquet"),
+        assist_quality_features_path=(tmp_path / "assist.parquet"),
     )
     annual = pd.read_parquet(annual_v2["features_path"]).set_index("PLAYER_ID")
     assert annual.loc[1, "PTS_p100"] == pytest.approx(30.0)
@@ -123,5 +127,7 @@ def test_v2_stabilizes_small_samples_and_builds_temporal_features(tmp_path: Path
     assert annual_v2["config"]["pooled_window_seasons"] == 1
     assert annual.loc[1, "zts_pct_points"] == pytest.approx(2.0)
     assert annual.loc[1, "rim_points_saved_p100"] == pytest.approx(1.5)
+    assert annual.loc[1, "ft_assists_p100_eb"] == pytest.approx(0.3)
     assert annual_v2["playtype_feature_names"] == ["zts_pct_points"]
     assert annual_v2["defensive_tracking_feature_names"] == ["rim_points_saved_p100"]
+    assert annual_v2["assist_quality_feature_names"] == ["ft_assists_p100_eb"]

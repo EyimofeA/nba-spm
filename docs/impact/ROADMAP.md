@@ -128,8 +128,11 @@ annual model.
 That task is complete in `defensive_tracking_features_v1_9f66c664eb`. The ten
 feature block improves defensive RMSE/correlation from 1.0578/0.3091 to
 0.9595/0.4964 and wins both metrics in all eight annual folds. Keep the block
-whole; do not subset-search the inspected folds. The next annual AIO task is a
-time-safe, one-season SPM-prior RAPM with model-derived prior precision.
+whole; do not subset-search the inspected folds. Contract
+`configs/models/annual_spm_v1.json` freezes offense histogram GBM plus zTS and
+defense ridge plus the full ten-feature tracking block. Cleaned assist-quality
+features remain research inputs. Run `single_season_spm_v1_d6de68348c` loses
+offense and net accuracy in both 2023 and 2024, so they are not in the contract.
 
 The next feature challenger uses
 [`FACTOR_DECOMPOSITION.md`](FACTOR_DECOMPOSITION.md). The basketball factors are
@@ -160,11 +163,16 @@ statistical rating remains a separately labeled research estimate.
 Do not tune more prior scales on these seasons. A future integration test needs
 genuinely new data or one predeclared sample-size-adaptive shrinkage rule.
 
-The annual integration is the next distinct experiment. Use the annual
-out-of-fold SPM prediction as the prior mean for one-season RAPM. Estimate or
-tune offensive and defensive prior precision inside training seasons. Compare
-SPM alone, zero-prior one-season RAPM, and the posterior on identical
-next-season evidence. Do not reuse the earlier amplitude scale.
+The first annual integration is complete. Run `annual_spm_priors_v1_1107680642`
+fits each SPM(T) mapping only on seasons before T, then predicts the complete
+season-T feature table. Run `prior_informed_rapm_v1_e1239679c1` compares normal
+one-season RAPM(T), SPM(T) alone, and RAPM(T) centered exactly on SPM(T), with no
+amplitude search, on season T+1 game margins. The full center beats normal RAPM
+in all three later 2022–24 tests: mean RMSE is 13.8118 versus 13.8892. The paired
+equal-season game-MSE delta is -2.143 with a 95% bootstrap interval from -3.270
+to -0.965. Prior-only SPM is worse at 14.0128 RMSE. This supports the combined
+model as a research challenger. It is not clean production promotion evidence
+because 2022–24 influenced earlier feature work.
 
 The all-in-one must be decomposable. A user must be able to see why the final
 rating differs from raw RAPM or the box/tracking prior.
@@ -193,7 +201,7 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Build the annual SPM-prior one-season RAPM comparison with model-derived or
-training-tuned prior precision. Then build rolling three-year and five-year
-normal-RAPM peak tables. Use the saved annual defensive disagreements to define
-future defensive feature families; do not tune them on the same 2017–24 table.
+Export decomposed annual AIO ratings from the frozen SPM-centered one-season
+RAPM. Then build rolling three-year and five-year normal-RAPM peak tables. Use
+the saved annual defensive disagreements to define future defensive feature
+families; do not tune them on the same 2017–24 table.

@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from nba_impact.data.assist_quality_features import build_assist_quality_features
 from nba_impact.data.download import plan_ingest_manifest, run_ingest_manifest
 from nba_impact.data.defensive_tracking_features import build_defensive_tracking_features
 from nba_impact.data.event_quality import build_event_snapshot
@@ -38,6 +39,9 @@ from nba_impact.models.external_impact_benchmark import (
 )
 from nba_impact.models.prior_informed_rapm import (
     run_prior_informed_rapm_comparison,
+)
+from nba_impact.models.annual_spm_priors import (
+    build_forward_chained_annual_spm_priors,
 )
 from nba_impact.models.statistical_impact import run_statistical_impact_baseline
 from nba_impact.models.single_season_spm import (
@@ -508,6 +512,7 @@ def command_build_statistical_features_v2(args: argparse.Namespace) -> int:
         pooled_window_seasons=args.pooled_window_seasons,
         playtype_features_path=args.playtype_features,
         defensive_tracking_features_path=args.defensive_tracking_features,
+        assist_quality_features_path=args.assist_quality_features,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -531,6 +536,15 @@ def command_build_defensive_tracking_features(args: argparse.Namespace) -> int:
     run = build_defensive_tracking_features(
         args.dfg_source, args.rim_dfg_source, args.hustle_source,
         args.box_source_dir, artifact_root=args.artifact_root, seasons=args.seasons,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_assist_quality_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_assist_quality_features(
+        args.source, artifact_root=args.artifact_root, seasons=args.seasons
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -701,6 +715,22 @@ def command_fit_single_season_spm(args: argparse.Namespace) -> int:
         minimum_possessions_per_side=args.minimum_possessions,
         additional_offense_features=args.additional_offense_features,
         additional_defense_features=args.additional_defense_features,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_forward_annual_spm_priors(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_forward_chained_annual_spm_priors(
+        args.features,
+        args.targets,
+        args.reference_run,
+        args.contract,
+        artifact_root=args.artifact_root,
+        output_seasons=tuple(args.output_seasons),
+        minimum_training_seasons=args.minimum_training_seasons,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1278,6 +1308,7 @@ def build_parser() -> argparse.ArgumentParser:
     statistical_features_v2.add_argument("--base-features", type=Path, required=True)
     statistical_features_v2.add_argument("--playtype-features", type=Path)
     statistical_features_v2.add_argument("--defensive-tracking-features", type=Path)
+    statistical_features_v2.add_argument("--assist-quality-features", type=Path)
     statistical_features_v2.add_argument(
         "--window-ends",
         type=_season_list,
@@ -1320,6 +1351,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     defensive_tracking.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     defensive_tracking.set_defaults(func=command_build_defensive_tracking_features)
+
+    assist_quality = subparsers.add_parser(
+        "build-assist-quality-features",
+        help="Build corrected annual free-throw-adjusted assist-quality features.",
+    )
+    assist_quality.add_argument("--source", type=Path, required=True)
+    assist_quality.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2014, 2025))
+    )
+    assist_quality.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    assist_quality.set_defaults(func=command_build_assist_quality_features)
 
     statistical_impact = subparsers.add_parser(
         "fit-statistical-impact",
@@ -1555,6 +1597,22 @@ def build_parser() -> argparse.ArgumentParser:
     annual_spm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     annual_spm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     annual_spm.set_defaults(func=command_fit_single_season_spm)
+
+    forward_annual_spm = subparsers.add_parser(
+        "build-forward-annual-spm-priors",
+        help="Fit each annual SPM only on earlier seasons for next-season tests.",
+    )
+    forward_annual_spm.add_argument("--features", type=Path, required=True)
+    forward_annual_spm.add_argument("--targets", type=Path, required=True)
+    forward_annual_spm.add_argument("--reference-run", type=Path, required=True)
+    forward_annual_spm.add_argument("--contract", type=Path, required=True)
+    forward_annual_spm.add_argument(
+        "--output-seasons", type=_season_list, default=tuple(range(2017, 2024))
+    )
+    forward_annual_spm.add_argument("--minimum-training-seasons", type=int, default=3)
+    forward_annual_spm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    forward_annual_spm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    forward_annual_spm.set_defaults(func=command_build_forward_annual_spm_priors)
 
     compare = subparsers.add_parser(
         "compare-rapm",

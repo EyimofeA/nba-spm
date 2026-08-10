@@ -353,6 +353,7 @@ def build_statistical_features_v2(
     pooled_window_seasons: int = 3,
     playtype_features_path: str | Path | None = None,
     defensive_tracking_features_path: str | Path | None = None,
+    assist_quality_features_path: str | Path | None = None,
 ) -> dict:
     if pooled_window_seasons < 1:
         raise ValueError("pooled_window_seasons must be positive.")
@@ -411,6 +412,21 @@ def build_statistical_features_v2(
             defensive[["PLAYER_ID", "Window_End", *defensive_tracking_feature_names]],
             on=["PLAYER_ID", "Window_End"], how="left", validate="one_to_one",
         )
+    assist_quality_feature_names: list[str] = []
+    if assist_quality_features_path is not None:
+        assist = pd.read_parquet(assist_quality_features_path).rename(
+            columns={"Season": "Window_End"}
+        )
+        if assist.duplicated(["PLAYER_ID", "Window_End"]).any():
+            raise ValueError("Assist-quality feature keys are not unique.")
+        assist_quality_feature_names = [
+            column for column in assist.columns
+            if column not in {"PLAYER_ID", "Window_End"}
+        ]
+        features = features.merge(
+            assist[["PLAYER_ID", "Window_End", *assist_quality_feature_names]],
+            on=["PLAYER_ID", "Window_End"], how="left", validate="one_to_one",
+        )
     if features.duplicated(["PLAYER_ID", "Window_End"]).any():
         raise ValueError("V2 feature keys are not unique.")
     new_features = [column for column in features if column not in base.columns]
@@ -447,6 +463,10 @@ def build_statistical_features_v2(
             sha256_file(defensive_tracking_features_path)
             if defensive_tracking_features_path else None
         ),
+        "assist_quality_features_sha256": (
+            sha256_file(assist_quality_features_path)
+            if assist_quality_features_path else None
+        ),
     }
     identity = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()[:10]
     run_id = f"statistical_features_v2_{identity}"
@@ -480,6 +500,7 @@ def build_statistical_features_v2(
         "primary_public_inspired_features": list(PRIMARY_PUBLIC_INSPIRED_FEATURES),
         "playtype_feature_names": playtype_feature_names,
         "defensive_tracking_feature_names": defensive_tracking_feature_names,
+        "assist_quality_feature_names": assist_quality_feature_names,
         "public_benchmark_provenance": {
             "source": "https://craftednba.com/glossary",
             "box_creation_and_offensive_load": "Ben Taylor public formulas as reproduced by CraftedNBA",

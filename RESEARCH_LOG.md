@@ -1339,3 +1339,42 @@ that is less box-score-like; neither comparator is ground truth.
 **Verdict:** Retain the full defensive tracking block in the annual research
 model. Do not search its subsets on these folds. Confirm on new seasons or use a
 predeclared nested historical selection design before production promotion.
+
+## 2026-08-10 — Gabriel assist audit and locked annual AIO integration
+
+**Assist audit:** Gabriel O'Connell's pinned `assist_data` table defines adjusted
+potential assists as potential assists plus 0.88 times free-throw assists. Its
+assist efficiency is adjusted assist points divided by adjusted potential
+assists. It is points per adjusted potential assist, not true shooting. The
+clean builder removes four identical duplicate player-season rows, repairs three
+infinite ratios, and emits 5,791 unique finite player-seasons. The two
+nonduplicate candidates are free-throw assists per 100 and empirical-Bayes assist
+points per adjusted potential assist.
+
+**Assist result:** `single_season_spm_v1_d6de68348c` slightly improves the
+eight-fold average, but offense and net lose both RMSE and correlation in 2023
+and 2024. Do not promote the assist candidates. Contract
+`configs/models/annual_spm_v1.json` freezes `single_season_spm_v1_bff6060df6`:
+offense histogram GBM plus zTS, defense ridge plus all ten canonical defensive
+tracking fields, and net equal to offense plus defense.
+
+**Time-safe method:** Leave-one-season-out SPM is valid for descriptive mapping
+tests but leaks later labels into a next-season experiment. Run
+`annual_spm_priors_v1_1107680642` instead trains each SPM(T) mapping only on
+seasons before T. It creates 3,769 priors for 2017–23 with no duplicate keys or
+nonfinite values. Run `prior_informed_rapm_v1_e1239679c1` fits one-season normal
+RAPM(T) with the fixed 3000/3000/300 penalties. It compares zero center, the
+exact full SPM(T) center, and SPM alone on T+1 regular-season game margins. No
+prior-amplitude grid is used.
+
+**Result:** Full SPM centering wins RMSE in all four 2018–21 selection folds and
+all three 2022–24 later folds. On 2022–24, mean RMSE is 13.8118 for the combined
+model, 13.8892 for normal RAPM, and 14.0128 for SPM alone. Correlation is 0.3656,
+0.3486, and 0.3412 respectively. Across 3,689 matched games, the equal-season
+MSE delta for combined minus normal RAPM is -2.143. The paired game bootstrap
+95% interval is [-3.270, -0.965].
+
+**Verdict:** The annual SPM-centered normal RAPM is the leading research AIO.
+This is not a production promotion because the later seasons already influenced
+feature design. Freeze the specification. The next deliverable is its annual
+offense, defense, net, SPM-center, RAPM-update, and possession-exposure table.
