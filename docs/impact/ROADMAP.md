@@ -220,9 +220,11 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-The read-only ratings API v1 is complete: pinned annual/rolling runs, annual and
-peak leaderboards, player search, and full player decomposition/history
-payloads. Build the first player trajectory view against this API. Keep it to
-one inspectable player page before attempting a full site. Use the saved annual
-defensive disagreements to define future defensive feature families; do not
-tune them on the same 2017–24 table.
+The read-only ratings API v1 and first player trajectory page are complete. The
+page exposes annual AIO decomposition and 3Y/5Y normal-RAPM history without
+pretending the research artifacts are production truth. Do not expand it into a
+full site yet. Return to the highest-value scientific blocker: construct and
+validate current-season possessions from the downloaded event archive, then fit
+a current normal-RAPM baseline. Use the saved annual defensive disagreements to
+define future defensive feature families; do not tune them on the same 2017–24
+table.

@@ -1467,3 +1467,17 @@ the read-only query layer and player trajectory/decomposition schemas.
 - This is a local-development server, not an internet-facing production server.
   Public hosting still needs a managed runtime, caching/compression, and restricted
   CORS.
+
+## 2026-08-10 — First player trajectory product slice
+
+- Replaced the discarded dashboard direction with one focused player page in
+  `web/`. It consumes the pinned ratings API rather than copying model values
+  into frontend code.
+- The page shows annual AIO offense/defense/net, SPM-center plus RAPM-update
+  decomposition, 3Y and 5Y normal-RAPM trajectories, component peak ranks,
+  possession exposure, and the known research caveats.
+- Search and quick-player controls use canonical NBA IDs. LeBron James is the
+  default inspectable case.
+- The Cloudflare-compatible production build and rendered product-shell test
+  pass. This slice remains local: deploying only the page would be broken until
+  the ratings API also has a managed public runtime.

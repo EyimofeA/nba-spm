@@ -346,6 +346,12 @@ The read-only query layer now lives in `src/nba_impact/api/`. Run
 the deployment boundary. The next bounded product task is one player trajectory
 view, not a full site.
 
+The first trajectory page now lives in `web/`. It consumes the pinned API and
+shows annual AIO decomposition plus 3Y/5Y normal-RAPM history and peaks. Keep it
+local until the API has a managed public runtime. Do not grow the frontend yet;
+the next scientific task is a validated current-season possession table and
+current normal RAPM.
+
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`
 entry point from `pyproject.toml` in an equivalently locked environment.
