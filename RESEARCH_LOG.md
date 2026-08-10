@@ -1623,3 +1623,29 @@ RMSE is +0.00024 and mean correlation is -0.00274. The gate fails.
 as research features only. Existing annual aggregates appear near their current
 signal limit. The next defense experiment should start with new matchup-level or
 spatial assignment data, not another subset search on 2014–24.
+
+## 2026-08-10 — Licensed player-matchup archive ingest
+
+**Question:** Is a new matchup-level defensive source available without a slow
+NBA endpoint crawl?
+
+**Audit:** The local Gabriel mirror contains 121 regular-season defensive
+playtype files (`*d.csv`), and all 121 are header-only. Its consolidated tables
+are player-season aggregates, not player-versus-defender matchups.
+
+**Source:** Pinned revision `e829d467...` of
+https://github.com/shufinskiy/nba_data. The repository declares Apache-2.0 and
+publishes NBA Stats matchup archives from 2017–18 through 2024–25. Added manifest
+`configs/ingest/shufinskiy_matchups_2017_2024.json` and `.tar.xz` member
+validation to the resumable downloader.
+
+**Result:** Downloaded and validated all eight regular-season archives: 30.38 MB
+compressed and 1,769,658 game/offensive-player/defender rows. Per-season rows
+range from 181,840 to 232,985. Every archive passes byte size, member name,
+minimum row count, header width, and required field checks. Sidecars record the
+actual SHA-256 values.
+
+**Verdict:** This is the next defensive feature source. Build opponent-quality-
+adjusted, sample-shrunk defender features before any new SPM comparison. Matchup
+assignment is not optical tracking and must not be interpreted as sole causal
+credit.

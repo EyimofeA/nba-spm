@@ -390,6 +390,14 @@ DFG points-saved, rim-share, and contest-mix fields as research-only. The next
 defense lane needs new matchup-level or spatial signal, not another 2014–24
 subset search.
 
+Pinned Apache-2.0 player-matchup data now lives under
+`data/lake/bronze/shufinskiy_nba_data/revision=e829d46/matchups/`. The ingest
+manifest is `configs/ingest/shufinskiy_matchups_2017_2024.json`; see
+`docs/data/MATCHUP_SOURCE.md`. It covers project seasons 2018–25 with 1.77M
+validated rows. `person_id` is offense and `matchups_person_id` is defense.
+Build opponent-quality-adjusted, sample-shrunk features. Do not call matchup
+assignment optical tracking or sole causal credit.
+
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`
 entry point from `pyproject.toml` in an equivalently locked environment.

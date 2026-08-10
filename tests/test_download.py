@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import io
+import tarfile
+
 import pandas as pd
 
 from nba_impact.data.download import (
@@ -27,6 +30,30 @@ def test_validate_csv_contract(tmp_path) -> None:
     result = _validate_file(path, task)
     assert result["rows"] == 2
     assert result["columns"] == ["PLAYER_ID", "year", "value"]
+
+
+def test_validate_tar_xz_member_contract(tmp_path) -> None:
+    path = tmp_path / "matchups.tar.xz"
+    payload = b"game_id,person_id,matchups_person_id\n1,10,20\n2,11,21\n"
+    info = tarfile.TarInfo("matchups.csv")
+    info.size = len(payload)
+    with tarfile.open(path, mode="w:xz") as archive:
+        archive.addfile(info, io.BytesIO(payload))
+    task = DownloadTask(
+        name="matchups",
+        url="https://example.invalid/matchups.tar.xz",
+        destination="matchups.tar.xz",
+        provider="fixture",
+        license="fixture",
+        archive_member="matchups.csv",
+        expected_min_rows=2,
+        required_columns=("game_id", "person_id", "matchups_person_id"),
+    )
+
+    result = _validate_file(path, task)
+
+    assert result["rows"] == 2
+    assert result["archive_member"] == "matchups.csv"
 
 
 def test_ingest_promotes_complete_partial_without_network(tmp_path) -> None:

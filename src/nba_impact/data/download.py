@@ -4,7 +4,9 @@ from __future__ import annotations
 import csv
 import json
 import os
+import tarfile
 import time
+from io import TextIOWrapper
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -26,6 +28,7 @@ class DownloadTask:
     season: int | None = None
     season_type: str | None = None
     source_revision: str | None = None
+    archive_member: str | None = None
     expected_bytes: int | None = None
     expected_sha256: str | None = None
     expected_min_rows: int = 1
@@ -91,6 +94,50 @@ def _validate_csv(path: Path, task: DownloadTask) -> dict:
     return {"rows": rows, "columns": columns, "row_groups": None}
 
 
+def _validate_tar_xz(path: Path, task: DownloadTask) -> dict:
+    if not task.archive_member:
+        raise ValueError(f"{task.name}: archive_member is required for .tar.xz inputs")
+    with tarfile.open(path, mode="r:xz") as archive:
+        try:
+            member = archive.getmember(task.archive_member)
+        except KeyError as exc:
+            raise ValueError(
+                f"{task.name}: archive member {task.archive_member!r} is missing"
+            ) from exc
+        if not member.isfile():
+            raise ValueError(f"{task.name}: archive member is not a regular file")
+        extracted = archive.extractfile(member)
+        if extracted is None:
+            raise ValueError(f"{task.name}: archive member cannot be read")
+        with TextIOWrapper(extracted, encoding="utf-8-sig", newline="") as handle:
+            reader = csv.reader(handle)
+            try:
+                columns = next(reader)
+            except StopIteration as exc:
+                raise ValueError(f"{task.name}: archived CSV is empty") from exc
+            rows = 0
+            malformed_rows = 0
+            width = len(columns)
+            for row in reader:
+                if not row:
+                    continue
+                rows += 1
+                malformed_rows += int(len(row) != width)
+    if rows < task.expected_min_rows:
+        raise ValueError(f"{task.name}: expected at least {task.expected_min_rows} rows, found {rows}")
+    missing = sorted(set(task.required_columns) - set(columns))
+    if missing:
+        raise ValueError(f"{task.name}: missing required columns {missing}")
+    if malformed_rows:
+        raise ValueError(f"{task.name}: {malformed_rows} archived rows do not match the header width")
+    return {
+        "rows": rows,
+        "columns": columns,
+        "row_groups": None,
+        "archive_member": task.archive_member,
+    }
+
+
 def _validate_file(path: Path, task: DownloadTask) -> dict:
     size = path.stat().st_size
     if task.expected_bytes is not None and size != task.expected_bytes:
@@ -100,8 +147,11 @@ def _validate_file(path: Path, task: DownloadTask) -> dict:
         raise ValueError(
             f"{task.name}: SHA-256 mismatch; expected {task.expected_sha256}, found {digest}"
         )
+    destination = task.destination.lower()
     suffix = Path(task.destination).suffix.lower()
-    if suffix == ".parquet":
+    if destination.endswith(".tar.xz"):
+        validation = _validate_tar_xz(path, task)
+    elif suffix == ".parquet":
         validation = _validate_parquet(path, task)
     elif suffix == ".csv":
         validation = _validate_csv(path, task)
