@@ -1566,3 +1566,25 @@ noise alone and a harmful defensive-tracking block. The frozen model lacks enoug
 stable, calibrated defensive separation in 2025. Keep tracking. Design the next
 defensive challenger under nested or forward-only validation and reserve a new
 season for confirmation.
+
+## 2026-08-10 — Nested forward defensive ridge selection
+
+**Question:** Is the frozen defense model under-dispersed because its ridge
+penalty is too strong?
+
+**Contract:** `configs/models/annual_defense_ridge_nested_v1.json` freezes ridge
+alphas 300, 1000, 3000, and 10000 before the run. For outer test seasons 2020–24,
+each alpha is scored on the two immediately prior validation seasons, with model
+training restricted to seasons before each validation year. The selected alpha
+is then refit on all seasons before the outer test. Fixed alpha 3000 is the
+baseline. The gate requires at least four of five RMSE wins, lower mean RMSE,
+and noninferior mean correlation. No 2025 evidence enters selection.
+
+**Result:** Run `annual_defense_ridge_nested_v1_5b06407982` selects alpha 300
+once, 3000 once, and 10000 three times. It beats fixed 3000 on only one of five
+outer folds. Selected-minus-fixed mean RMSE is +0.0015 and mean correlation is
+-0.0004. The predeclared promotion gate fails.
+
+**Verdict:** Keep fixed alpha 3000. Lower regularization does not fix the 2025
+under-dispersion and is not supported by older forward folds. The next defensive
+experiment must add stable signal rather than retune ridge strength.

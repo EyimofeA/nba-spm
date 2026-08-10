@@ -376,6 +376,12 @@ unchanged from 2024 to 2025. Neutralizing DFG/rim/hustle features makes 2025
 performance worse. Keep tracking and target better defensive signal plus
 calibration in the next nested experiment.
 
+Run `annual_defense_ridge_nested_v1_5b06407982` rejects adaptive ridge-alpha
+selection. It uses no 2025 data, wins only one of five 2020–24 forward folds,
+and slightly worsens both mean RMSE and correlation versus fixed alpha 3000.
+Keep alpha 3000. The next defense experiment must test new stable signal, not
+another regularization grid.
+
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`
 entry point from `pyproject.toml` in an equivalently locked environment.

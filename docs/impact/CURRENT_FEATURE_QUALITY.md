@@ -90,6 +90,13 @@ from 0.331 to 0.230. Neutralizing only DFG/rim is worse than neutralizing only
 hustle. Do not remove the block.
 
 Develop the next defensive challenger with nested or forward-only validation
-inside 2014–24. Focus on additional stable defensive signal and calibration,
-not on deleting tracking or filtering low-minute players. Reserve the next
+inside 2014–24. Run `annual_defense_ridge_nested_v1_5b06407982` already tests
+whether the fixed ridge penalty causes the compressed spread. It selects among
+300, 1000, 3000, and 10000 using only the two prior seasons inside each 2020–24
+outer fold. Adaptive selection beats fixed 3000 in only one of five folds and
+slightly worsens mean RMSE (+0.0015) and correlation (-0.0004). It fails the
+predeclared gate. Do not change ridge strength.
+
+Focus next on additional stable defensive signal and calibration, not on deleting
+tracking, filtering low-minute players, or retuning alpha. Reserve the next
 complete season for one untouched confirmation.

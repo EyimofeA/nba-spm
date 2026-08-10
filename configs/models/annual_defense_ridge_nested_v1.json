@@ -1,0 +1,23 @@
+{
+  "contract_version": "annual_defense_ridge_nested_v1",
+  "status": "frozen_before_run",
+  "estimand": "single_regular_season_normal_rapm_defense_points_prevented_per_100",
+  "training_start_season": 2014,
+  "outer_test_seasons": [2020, 2021, 2022, 2023, 2024],
+  "inner_validation_seasons": "two seasons immediately before each outer test",
+  "ridge_alphas": [300.0, 1000.0, 3000.0, 10000.0],
+  "baseline_alpha": 3000.0,
+  "selection_metric": "mean inner-fold possession-weighted RMSE",
+  "weighting": "square root of the smaller offensive or defensive possession count",
+  "features": "frozen defense features from single_season_spm_v1_bff6060df6",
+  "promotion_gate": {
+    "minimum_outer_rmse_wins": 4,
+    "require_lower_mean_outer_rmse": true,
+    "require_noninferior_mean_outer_correlation": true
+  },
+  "forbidden_uses": [
+    "No 2025 target, feature, or metric may select the ridge alpha.",
+    "Do not change the frozen feature list in this experiment.",
+    "Do not interpret single-season RAPM as ground truth."
+  ]
+}
