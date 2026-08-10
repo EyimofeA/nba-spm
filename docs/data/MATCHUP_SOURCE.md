@@ -59,7 +59,7 @@ apart from refreshed ingest summaries.
 
 ## Validated feature layer
 
-Run `matchup_defense_features_v1_86d13d7357` converts all eight archives into
+Run `matchup_defense_features_v1_09829b48c8` converts all eight archives into
 4,409 unique defender-seasons. It reconstructs every recorded point exactly.
 It has no duplicate keys, negative exposures, null feature values, or non-finite
 feature values. Exposure-weighted NBA player-ID coverage is 99.46%–99.95% by
@@ -76,3 +76,14 @@ Do not describe the result as causal points prevented. The assignment can encode
 scheme, help, offensive role, and shot mix. The raw leaderboards put several rim
 centers near the bottom, which is direct evidence that role remains in the
 statistic after scorer-quality adjustment.
+
+The latest panel adds six leave-one-defender-out factor residuals. Each compares
+the observed event rate in a scorer-defender pair with that scorer's rate against
+all other defenders. The factors are shot-attempt suppression, shot-making
+points saved, three-point-attempt suppression, turnovers forced, assists
+suppressed, and shooting fouls prevented. Each season residual is centered to
+floating-point zero and shrunk by matchup exposure or field-goal attempts.
+
+These factor residuals are engineering outputs, not promoted AIO inputs. The
+2022–24 target seasons are already inspected. A new promotion test requires a
+future untouched season or a separately frozen historical protocol.

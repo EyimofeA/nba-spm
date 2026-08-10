@@ -236,6 +236,30 @@ New CraftedNBA-derived features can be implemented and explored there, but they
 cannot earn a strong production claim without new target seasons or a frozen
 historical backtest that was not used during feature design.
 
+## Matchup-defense factor implementation
+
+Run `matchup_defense_features_v1_09829b48c8` implements six positive-good,
+scorer-adjusted defensive factors from 2018–25 primary-defender assignments:
+
+- field-goal attempts suppressed per 100 matchup exposures;
+- two-point-equivalent shot-making points saved per 100;
+- three-point attempts suppressed per 100;
+- turnovers forced above scorer expectation per 100;
+- assists suppressed per 100;
+- shooting fouls prevented per 100.
+
+Each expected rate excludes the defender being scored. The builder centers each
+factor within season. It then shrinks exposure rates with 500 matchup exposures
+and shot-making with 200 field-goal attempts. The fields do not use minutes,
+games, age, height, position, team rating, plus-minus, or on/off.
+
+Same-season descriptive correlation with defensive RAPM is strongest for
+shot-making points saved: 0.407–0.457 in every 2018–24 season. Turnovers forced
+is 0.198–0.234. These are inspected associations, not held-out model gains.
+Attempt suppression has a small negative association, which warns that scheme
+and matchup role remain. Do not combine these fields into the frozen SPM until
+new confirmation data exists.
+
 ## Optional Factor RAPM branch
 
 Factor RAPM can still estimate lineup-adjusted effects on team eFG/TS,

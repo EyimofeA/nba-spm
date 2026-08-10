@@ -40,6 +40,12 @@ MATCHUP_DEFENSE_FEATURES = (
     "matchup_turnovers_forced_p100",
     "matchup_assists_allowed_p100",
     "matchup_shooting_fouls_committed_p100",
+    "matchup_fga_suppressed_vs_scorer_p100_eb",
+    "matchup_shotmaking_points_saved_vs_scorer_p100_eb",
+    "matchup_three_pa_suppressed_vs_scorer_p100_eb",
+    "matchup_turnovers_forced_vs_scorer_p100_eb",
+    "matchup_assists_suppressed_vs_scorer_p100_eb",
+    "matchup_shooting_fouls_prevented_vs_scorer_p100_eb",
 )
 
 
@@ -113,6 +119,43 @@ def compute_matchup_defense_features(
     pair["expected_points"] = pair["expected_ppp"] * pair["pair_possessions"]
     pair["points_saved"] = pair["expected_points"] - pair["pair_points"]
 
+    def residual_vs_scorer(
+        numerator: str,
+        denominator: str,
+        *,
+        actual_minus_expected: bool,
+    ) -> pd.Series:
+        scorer_numerator = pair.groupby("person_id")[numerator].transform("sum")
+        scorer_denominator = pair.groupby("person_id")[denominator].transform("sum")
+        other_numerator = scorer_numerator - pair[numerator]
+        other_denominator = scorer_denominator - pair[denominator]
+        league_rate = float(pair[numerator].sum() / pair[denominator].sum())
+        expected_rate = (
+            other_numerator / other_denominator.where(other_denominator.gt(0))
+        ).fillna(league_rate)
+        residual = pair[numerator] - expected_rate * pair[denominator]
+        return residual if actual_minus_expected else -residual
+
+    pair["fga_suppressed"] = residual_vs_scorer(
+        "fga", "pair_possessions", actual_minus_expected=False
+    )
+    pair["three_pa_suppressed"] = residual_vs_scorer(
+        "three_pa", "pair_possessions", actual_minus_expected=False
+    )
+    pair["turnovers_forced"] = residual_vs_scorer(
+        "turnovers", "pair_possessions", actual_minus_expected=True
+    )
+    pair["assists_suppressed"] = residual_vs_scorer(
+        "assists", "pair_possessions", actual_minus_expected=False
+    )
+    pair["shooting_fouls_prevented"] = residual_vs_scorer(
+        "shooting_fouls", "pair_possessions", actual_minus_expected=False
+    )
+    pair["made_equivalent"] = pair["fgm"] + 0.5 * pair["three_pm"]
+    pair["shotmaking_points_saved"] = 2.0 * residual_vs_scorer(
+        "made_equivalent", "fga", actual_minus_expected=False
+    )
+
     defense = pair.groupby("matchups_person_id", as_index=False).agg(
         matchup_possessions=("pair_possessions", "sum"),
         matchup_points=("pair_points", "sum"),
@@ -125,6 +168,12 @@ def compute_matchup_defense_features(
         turnovers=("turnovers", "sum"),
         assists=("assists", "sum"),
         shooting_fouls=("shooting_fouls", "sum"),
+        fga_suppressed=("fga_suppressed", "sum"),
+        shotmaking_points_saved=("shotmaking_points_saved", "sum"),
+        three_pa_suppressed=("three_pa_suppressed", "sum"),
+        turnovers_forced=("turnovers_forced", "sum"),
+        assists_suppressed=("assists_suppressed", "sum"),
+        shooting_fouls_prevented=("shooting_fouls_prevented", "sum"),
     ).rename(columns={"matchups_person_id": "PLAYER_ID"})
 
     # Leave-one-defender-out expectations are not guaranteed to sum to actual
@@ -157,6 +206,27 @@ def compute_matchup_defense_features(
     defense["matchup_assists_allowed_p100"] = 100.0 * defense["assists"] / possessions
     defense["matchup_shooting_fouls_committed_p100"] = 100.0 * defense["shooting_fouls"] / possessions
 
+    residual_specs = {
+        "fga_suppressed": "matchup_fga_suppressed_vs_scorer_p100_eb",
+        "shotmaking_points_saved": "matchup_shotmaking_points_saved_vs_scorer_p100_eb",
+        "three_pa_suppressed": "matchup_three_pa_suppressed_vs_scorer_p100_eb",
+        "turnovers_forced": "matchup_turnovers_forced_vs_scorer_p100_eb",
+        "assists_suppressed": "matchup_assists_suppressed_vs_scorer_p100_eb",
+        "shooting_fouls_prevented": "matchup_shooting_fouls_prevented_vs_scorer_p100_eb",
+    }
+    residual_centered_sums: dict[str, float] = {}
+    for source, destination in residual_specs.items():
+        centered = defense[source] - (
+            defense[source].sum() / possessions.sum()
+        ) * possessions
+        residual_centered_sums[source] = float(centered.sum())
+        source_reliability = (
+            defense["fga"] / (defense["fga"] + shooting_prior_attempts)
+            if source == "shotmaking_points_saved"
+            else reliability
+        )
+        defense[destination] = source_reliability * 100.0 * centered / possessions
+
     output = defense[["PLAYER_ID", "Season", "matchup_possessions", *MATCHUP_DEFENSE_FEATURES]].copy()
     output["PLAYER_ID"] = output["PLAYER_ID"].astype(int)
     if output[list(MATCHUP_DEFENSE_FEATURES)].isna().any().any():
@@ -175,6 +245,7 @@ def compute_matchup_defense_features(
         "league_points_per_matchup_possession": league_ppp,
         "league_efg_pct": 100.0 * league_efg,
         "centered_points_saved_sum": float(defense["matchup_points_saved_centered"].sum()),
+        "factor_residual_centered_sums": residual_centered_sums,
     }
     return output, audit
 

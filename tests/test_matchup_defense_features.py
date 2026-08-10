@@ -44,6 +44,12 @@ def test_matchup_features_are_centered_and_shrunk() -> None:
     assert abs(
         indexed.loc[10, "matchup_opponent_adjusted_points_saved_p100_eb"]
     ) < abs(indexed.loc[10, "matchup_opponent_adjusted_points_saved_p100"])
+    assert indexed.loc[
+        10, "matchup_shotmaking_points_saved_vs_scorer_p100_eb"
+    ] > 0
+    assert indexed.loc[
+        20, "matchup_shotmaking_points_saved_vs_scorer_p100_eb"
+    ] < 0
     centered_total = (
         features["matchup_opponent_adjusted_points_saved_p100"]
         * features["matchup_possessions"]
@@ -52,6 +58,7 @@ def test_matchup_features_are_centered_and_shrunk() -> None:
     assert abs(centered_total) < 1e-12
     assert features[list(MATCHUP_DEFENSE_FEATURES)].notna().all().all()
     assert quality["point_reconstruction_mismatches"] == 0
+    assert max(abs(value) for value in quality["factor_residual_centered_sums"].values()) < 1e-12
 
 
 def test_matchup_features_reject_point_conservation_failure() -> None:

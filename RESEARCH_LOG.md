@@ -1679,3 +1679,25 @@ but do not promote this block to the frozen SPM. The result is not evidence that
 matchup assignments are useless. It shows that scorer-quality adjustment alone
 does not remove shot-role, scheme, help, and lineup context. Add those controls
 before one new predeclared test. Do not search more subsets on 2022–24.
+
+## 2026-08-10 — Matchup-defense factor residuals
+
+**Question:** Can the matchup panel express defensive mechanisms separately
+instead of using one total points-allowed feature?
+
+**Method:** Run `matchup_defense_features_v1_09829b48c8` adds six scorer-adjusted
+factor residuals. For each scorer-defender pair, the expected event rate uses the
+scorer's results against every other defender. Positive values mean the defender
+suppressed attempts, saved shot-making points, suppressed threes, forced extra
+turnovers, suppressed assists, or prevented shooting fouls. Each factor is
+season-centered and empirical-Bayes shrunk.
+
+**Result:** All six residuals conserve their season centers to numerical
+precision. On same-season 2018–24 defensive RAPM, shot-making points saved has
+correlation 0.407–0.457 in every season. Turnovers forced has 0.198–0.234.
+Attempt and three-point-attempt suppression have small negative correlations.
+
+**Verdict:** The factor layer is usable for explanations and future research.
+The correlations are descriptive and the target seasons are already inspected.
+Do not run a new subset promotion search on them. The negative volume result is
+a warning that assignment, scheme, and shot-location context remain important.

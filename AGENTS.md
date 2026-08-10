@@ -202,9 +202,10 @@ immutable official BoxScoreTraditionalV3 JSON; never relax lineup minute gates
 to hide incomplete boxes.
 
 The licensed matchup-assignment source is pinned in
-`configs/ingest/shufinskiy_matchups_2017_2024.json`. Its validated feature run is
-`matchup_defense_features_v1_86d13d7357`. Treat `matchup_possessions` as audit
-exposure, not a model input. The first opponent-adjusted matchup block failed its
+`configs/ingest/shufinskiy_matchups_2017_2024.json`. Its latest validated factor
+run is `matchup_defense_features_v1_09829b48c8`. Treat `matchup_possessions` as
+audit exposure, not a model input. The first opponent-adjusted matchup block,
+built from predecessor run `matchup_defense_features_v1_86d13d7357`, failed its
 correlation gate in `annual_defense_features_nested_v1_eaeca704eb`. Do not tune
 more subsets on 2022–24. The next challenger must add shot-location and lineup
 context, and matchup points saved must not be described as causal defense.
