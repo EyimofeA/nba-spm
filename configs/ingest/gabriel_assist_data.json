@@ -1,0 +1,27 @@
+{
+  "provider": "gabriel1200/assist_data",
+  "source": "https://github.com/gabriel1200/assist_data",
+  "source_revision": "d375ea283474230ed650f444840095b32a14c4f2",
+  "license": "not-declared-by-upstream",
+  "purpose": "Pinned player-season assist shot-quality and creation inputs for local research.",
+  "tasks": [
+    {
+      "name": "gabriel_assist_ts",
+      "url": "https://raw.githubusercontent.com/gabriel1200/assist_data/d375ea283474230ed650f444840095b32a14c4f2/assist_ts.csv",
+      "destination": "gabriel_assist_data/revision=d375ea2/assist_ts.csv",
+      "provider": "gabriel1200/assist_data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "d375ea283474230ed650f444840095b32a14c4f2",
+      "expected_min_rows": 5000,
+      "required_columns": [
+        "PLAYER_ID",
+        "year",
+        "AST_ADJ",
+        "FT_AST",
+        "SECONDARY_AST",
+        "POTENTIAL_AST",
+        "assist_ts_pct3"
+      ]
+    }
+  ]
+}
