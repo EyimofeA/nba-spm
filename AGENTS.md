@@ -278,6 +278,13 @@ Run `statistical_priors_v1_2c81b23662` creates purged cross-fitted priors for
 2019–24. For window `T`, it trains only on target windows ending by `T-3` and
 scores every feature-covered player. These are same-window retrodictions, not
 forecasts. Never use a saved full-panel model to create a historical prior.
+Run `prior_informed_rapm_v1_122ef63045` compares those priors with zero-prior
+RAPM on five matched chronological folds. Full prior scale wins 2020–22
+selection but does not confirm: the 2023–24 RMSE gain is 0.0033, it wins one of
+two folds, and the paired-game MSE 95% interval crosses zero (-1.12, +0.73).
+Prior-only is worse. Keep zero-prior normal RAPM in production. Do not search
+more prior scales on these seasons; require new data or a predeclared adaptive
+rule.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

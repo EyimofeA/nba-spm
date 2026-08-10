@@ -30,6 +30,9 @@ from nba_impact.models.rapm import (
     run_walk_forward_comparison,
 )
 from nba_impact.models.rapm_lineup_policy import run_rapm_lineup_policy_comparison
+from nba_impact.models.prior_informed_rapm import (
+    run_prior_informed_rapm_comparison,
+)
 from nba_impact.models.statistical_impact import run_statistical_impact_baseline
 from nba_impact.models.statistical_direct_net import (
     run_statistical_direct_net_comparison,
@@ -89,6 +92,18 @@ def _text_list(value: str) -> tuple[str, ...]:
     if not items:
         raise argparse.ArgumentTypeError("provide at least one comma-separated value")
     return items
+
+
+def _float_list(value: str) -> tuple[float, ...]:
+    try:
+        values = tuple(float(item.strip()) for item in value.split(",") if item.strip())
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            "provide comma-separated numeric values"
+        ) from exc
+    if not values:
+        raise argparse.ArgumentTypeError("provide at least one numeric value")
+    return values
 
 
 def command_audit(args: argparse.Namespace) -> int:
@@ -555,6 +570,40 @@ def command_build_statistical_priors(args: argparse.Namespace) -> int:
         args.reference_run,
         artifact_root=args.artifact_root,
         prediction_window_ends=args.window_ends,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_compare_prior_informed_rapm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    test_seasons = tuple(args.test_seasons)
+    seasons = tuple(
+        range(min(test_seasons) - args.train_window, max(test_seasons) + 1)
+    )
+    frame = load_legacy_possessions(
+        args.cache_dir, seasons, game_types=("regular",)
+    )
+    run = run_prior_informed_rapm_comparison(
+        frame,
+        args.priors,
+        RapmConfig(
+            seasons=seasons,
+            lambda_off=args.lambda_off,
+            lambda_def=args.lambda_def,
+            lambda_home=args.lambda_home,
+            game_types=("regular",),
+            data_scope="legacy_regular_prior_informed_comparison",
+        ),
+        artifact_root=args.artifact_root,
+        test_seasons=test_seasons,
+        train_window=args.train_window,
+        prior_scales=args.prior_scales,
+        selection_test_seasons=tuple(args.selection_test_seasons),
+        confirmation_test_seasons=tuple(args.confirmation_test_seasons),
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        bootstrap_seed=args.seed,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1266,6 +1315,36 @@ def build_parser() -> argparse.ArgumentParser:
     statistical_priors.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     statistical_priors.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     statistical_priors.set_defaults(func=command_build_statistical_priors)
+
+    prior_informed_rapm = subparsers.add_parser(
+        "compare-prior-informed-rapm",
+        help="Compare zero-prior, prior-only, and prior-centered normal RAPM.",
+    )
+    prior_informed_rapm.add_argument("--priors", type=Path, required=True)
+    prior_informed_rapm.add_argument(
+        "--test-seasons", type=_season_list, default=(2020, 2021, 2022, 2023, 2024)
+    )
+    prior_informed_rapm.add_argument(
+        "--selection-test-seasons", type=_season_list, default=(2020, 2021, 2022)
+    )
+    prior_informed_rapm.add_argument(
+        "--confirmation-test-seasons", type=_season_list, default=(2023, 2024)
+    )
+    prior_informed_rapm.add_argument("--train-window", type=int, default=3)
+    prior_informed_rapm.add_argument(
+        "--prior-scales", type=_float_list, default=(0.25, 0.5, 0.75, 1.0)
+    )
+    prior_informed_rapm.add_argument("--lambda-off", type=float, default=3000.0)
+    prior_informed_rapm.add_argument("--lambda-def", type=float, default=3000.0)
+    prior_informed_rapm.add_argument("--lambda-home", type=float, default=300.0)
+    prior_informed_rapm.add_argument("--bootstrap-repetitions", type=int, default=2000)
+    prior_informed_rapm.add_argument("--seed", type=int, default=20260810)
+    prior_informed_rapm.add_argument(
+        "--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE
+    )
+    prior_informed_rapm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    prior_informed_rapm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    prior_informed_rapm.set_defaults(func=command_compare_prior_informed_rapm)
 
     compare = subparsers.add_parser(
         "compare-rapm",

@@ -7,6 +7,7 @@ from nba_impact.models.rapm import (
     RapmConfig,
     build_design,
     fit_coefficients,
+    fit_coefficients_with_center,
     load_current_possessions,
     ratings_table,
     run_nested_normal_rapm_tuning,
@@ -129,6 +130,35 @@ def test_centering_preserves_predictions_and_sets_weighted_average_to_zero() -> 
         < 1e-10
     )
     assert np.isfinite(np.asarray(design.X @ beta).ravel() + intercept).all()
+
+
+def test_zero_center_matches_normal_rapm_exactly() -> None:
+    frame = pd.DataFrame(
+        [
+            {
+                "home_poss": bool(i % 2),
+                "pts": float(i % 3),
+                **{f"a{j + 1}": j + 1 for j in range(5)},
+                **{f"h{j + 1}": j + 6 for j in range(5)},
+                "season": 2024,
+                "date": "2024-01-01",
+                "period": 1,
+                "num": i + 1,
+                "gameid": "0020000001",
+            }
+            for i in range(80)
+        ]
+    )
+    design = build_design(frame)
+    config = RapmConfig(
+        seasons=(2024,), lambda_off=10.0, lambda_def=20.0, lambda_home=5.0
+    )
+    baseline_beta, baseline_intercept = fit_coefficients(design, config)
+    centered_beta, centered_intercept = fit_coefficients_with_center(
+        design, config, np.zeros(design.X.shape[1])
+    )
+    np.testing.assert_allclose(centered_beta, baseline_beta, atol=1e-12)
+    assert centered_intercept == baseline_intercept
 
 
 def test_regularization_comparison_is_diagnostic(tmp_path) -> None:

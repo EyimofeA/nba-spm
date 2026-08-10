@@ -1,7 +1,7 @@
 # NBA Impact Roadmap
 
 This is the one file to follow remotely. `RESEARCH_LOG.md` contains evidence and
-dead ends. Updated 2026-08-09. See `docs/README.md` for the document index,
+dead ends. Updated 2026-08-10. See `docs/README.md` for the document index,
 `docs/impact/ROADMAP.md` for the detailed RAPM/all-in-one plan, and
 `docs/modeling/PLAYBOOK.md` for the common statistical modeling procedure.
 
@@ -32,16 +32,20 @@ dead ends. Updated 2026-08-09. See `docs/README.md` for the document index,
 - Cross-fitted statistical priors cover every eligible 2019–24 feature row. For
   window `T`, training labels end by `T-3`. Six-fold prior-only net RMSE is
   1.2513 with 0.5198 correlation.
+- The first matched prior-informed RAPM test did not demonstrate improvement.
+  Full prior scale won 2020–22 selection, but beat zero-prior by only 0.0033
+  margin RMSE on 2023–24, won 1/2 folds, and had a paired-game MSE interval of
+  -1.12 to +0.73. Prior-only was clearly worse. Zero-prior remains production.
 - The old 1997–2024 RAPM archive remains valuable but is stale after 2024.
 
 ## Active next task
 
-Implement and evaluate prior-informed RAPM against zero-prior RAPM and the
-prior-only statistical model on identical chronological windows. The cross-fitted
-2019–24 priors are ready. Tune prior strength only inside older windows. The
-exact Crafted passer challenger still needs canonical height and position
-metadata. Keep on/off as a separately labeled impact-assisted model. WP neural
-work is paused; do not train neural models on the local Mac.
+Build the frozen historical normal-RAPM products: annual, rolling three-year,
+and rolling five-year panels with one shared schema and peak tables. Do not force
+the statistical prior into production after an inconclusive confirmation. Reopen
+prior integration only on genuinely new seasons or with one predeclared
+sample-size-adaptive rule. The exact Crafted passer challenger still needs
+canonical height and position metadata. WP neural work stays paused on the Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
@@ -107,3 +111,4 @@ now would break reproducibility links.
 - Statistical features v2: `statistical_features_v2_8b2566243f`
 - Statistical feature v2 comparison: `statistical_feature_v2_comparison_9b8d0555e0`
 - Cross-fitted statistical priors: `statistical_priors_v1_2c81b23662`
+- Prior-informed RAPM comparison: `prior_informed_rapm_v1_122ef63045`

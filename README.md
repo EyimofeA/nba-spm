@@ -59,6 +59,8 @@ uv run python -m nba_impact.cli compare-statistical-features-v2 \
 uv run python -m nba_impact.cli build-statistical-priors \
   --features artifacts/features/statistical_impact/<v2-run-id>/features.parquet \
   --reference-run artifacts/models/statistical_feature_v2/<run-id>
+uv run python -m nba_impact.cli compare-prior-informed-rapm \
+  --priors artifacts/models/statistical_priors/<run-id>/priors.parquet
 ```
 
 The three-season canonical data rebuild is also resumable:

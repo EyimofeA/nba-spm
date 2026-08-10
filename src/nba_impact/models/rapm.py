@@ -58,9 +58,11 @@ def load_legacy_possessions(
     game_types: tuple[str, ...] = ("regular",),
 ) -> pd.DataFrame:
     frames: list[pd.DataFrame] = []
+    source_paths: list[str] = []
     quarantine_counts: dict[str, dict[str, int]] = {}
     for season in seasons:
         path = Path(cache_dir) / f"matchups_{season}.parquet"
+        source_paths.append(str(path.resolve()))
         frame = pd.read_parquet(path)
         report = audit_possession_frame(frame, path=str(path), expected_season=season)
         if any(issue.code == "empty_partition" for issue in report.issues):
@@ -88,6 +90,7 @@ def load_legacy_possessions(
     if combined.empty:
         raise ValueError(f"No possessions remain for game types {game_types}.")
     combined.attrs["quarantine_counts"] = quarantine_counts
+    combined.attrs["source_paths"] = source_paths
     return combined
 
 
@@ -221,31 +224,80 @@ def fit_coefficients(
     config: RapmConfig,
     row_mask: np.ndarray | None = None,
 ) -> tuple[np.ndarray, float]:
+    center = np.zeros(design.X.shape[1], dtype=np.float64)
+    return fit_coefficients_with_center(design, config, center, row_mask=row_mask)
+
+
+def fit_coefficients_with_center(
+    design: RapmDesign,
+    config: RapmConfig,
+    center: np.ndarray,
+    *,
+    center_scale: float = 1.0,
+    row_mask: np.ndarray | None = None,
+) -> tuple[np.ndarray, float]:
+    """Fit ridge coefficients around a fixed coefficient-space center."""
+    return fit_coefficient_center_path(
+        design,
+        config,
+        center,
+        center_scales=(center_scale,),
+        row_mask=row_mask,
+    )[center_scale]
+
+
+def fit_coefficient_center_path(
+    design: RapmDesign,
+    config: RapmConfig,
+    center: np.ndarray,
+    *,
+    center_scales: tuple[float, ...],
+    row_mask: np.ndarray | None = None,
+) -> dict[float, tuple[np.ndarray, float]]:
+    """Fit several ridge-center scales while reusing one design cross-product."""
+    center = np.asarray(center, dtype=np.float64)
+    if center.shape != (design.X.shape[1],):
+        raise ValueError("RAPM center must match the design column count.")
+    if not np.isfinite(center).all():
+        raise ValueError("RAPM center must contain only finite values.")
+    if not center_scales or any(not 0.0 <= scale <= 1.0 for scale in center_scales):
+        raise ValueError("center_scales must contain values between zero and one.")
+    if len(set(center_scales)) != len(center_scales):
+        raise ValueError("center_scales must be unique.")
     X = design.X if row_mask is None else design.X[row_mask]
     y = design.y if row_mask is None else design.y[row_mask]
-    intercept = float(y.mean())
-    lhs = (X.T @ X).tocsr() + diags(_penalty(config, len(design.players)), format="csr")
-    rhs = X.T @ (y - intercept)
-    try:
-        beta, info = cg(lhs, rhs, rtol=1e-8, maxiter=10_000)
-    except TypeError:
-        beta, info = cg(lhs, rhs, tol=1e-8, maxiter=10_000)
-    if info != 0:
-        beta = spsolve(lhs.tocsc(), rhs)
-    beta = np.asarray(beta)
+    base_intercept = float(y.mean())
+    penalty = _penalty(config, len(design.players))
+    lhs = (X.T @ X).tocsr() + diags(penalty, format="csr")
+    base_rhs = X.T @ (y - base_intercept)
+    center_rhs = penalty * center
+    results: dict[float, tuple[np.ndarray, float]] = {}
+    for center_scale in center_scales:
+        rhs = base_rhs + center_scale * center_rhs
+        try:
+            beta, info = cg(lhs, rhs, rtol=1e-8, maxiter=10_000)
+        except TypeError:
+            beta, info = cg(lhs, rhs, tol=1e-8, maxiter=10_000)
+        if info != 0:
+            beta = spsolve(lhs.tocsc(), rhs)
+        beta = np.asarray(beta)
+        intercept = base_intercept
 
-    # Offense and points-allowed defense are not separately level-identified:
-    # every row contains five of each. Anchor each block to the possession-
-    # weighted average player and adjust the intercept so predictions are exact.
-    n_players = len(design.players)
-    off_counts = np.asarray(X[:, :n_players].sum(axis=0)).ravel()
-    def_counts = np.asarray(X[:, n_players : 2 * n_players].sum(axis=0)).ravel()
-    off_mean = float(np.average(beta[:n_players], weights=off_counts))
-    def_mean = float(np.average(beta[n_players : 2 * n_players], weights=def_counts))
-    beta[:n_players] -= off_mean
-    beta[n_players : 2 * n_players] -= def_mean
-    intercept += 5.0 * (off_mean + def_mean)
-    return beta, intercept
+        # Offense and points-allowed defense are not separately level-identified:
+        # every row contains five of each. Anchor each block to the possession-
+        # weighted average player and adjust the intercept so predictions are exact.
+        n_players = len(design.players)
+        off_counts = np.asarray(X[:, :n_players].sum(axis=0)).ravel()
+        def_counts = np.asarray(X[:, n_players : 2 * n_players].sum(axis=0)).ravel()
+        off_mean = float(np.average(beta[:n_players], weights=off_counts))
+        def_mean = float(
+            np.average(beta[n_players : 2 * n_players], weights=def_counts)
+        )
+        beta[:n_players] -= off_mean
+        beta[n_players : 2 * n_players] -= def_mean
+        intercept += 5.0 * (off_mean + def_mean)
+        results[center_scale] = (beta, intercept)
+    return results
 
 
 def _game_margin_metrics(

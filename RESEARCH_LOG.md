@@ -1181,3 +1181,30 @@ research evidence.
 **Verdict:** The priors are valid inputs for a prior-informed RAPM experiment.
 They are not yet a final all-in-one. Next compare zero-prior RAPM, prior-only
 ratings, and prior-informed RAPM on identical chronological possession windows.
+
+## 2026-08-10 — Prior-informed RAPM does not clear confirmation
+
+**Question:** Does the purged statistical AIO improve three-season normal RAPM
+when used as the ridge center rather than as a standalone rating?
+
+**Method:** Run `prior_informed_rapm_v1_122ef63045` uses matched regular-season
+games and three-season training windows. It maps positive-good offense to the
+offensive coefficient and positive-good defense to the negative points-allowed
+coefficient, centers both blocks by training possession exposure, and compares
+zero-prior, prior-only, and center scales 0.25/0.50/0.75/1.00. Scale selection
+uses test seasons 2020–22. Seasons 2023–24 are a later research check. A
+2,000-draw whole-game bootstrap resamples within season and weights seasons
+equally.
+
+**Result:** Scale 1.0 wins selection (13.8002 RMSE versus 13.8800 zero-prior).
+On 2023–24 it records 13.5263 RMSE versus 13.5296, a 0.00327-point difference,
+and wins one of two folds. The paired MSE delta is -0.195 with 95% interval
+[-1.119, +0.729] and 0.6425 bootstrap probability of improvement. Prior-only is
+worse at 13.7952 RMSE. The comparison covers 2,459 matched confirmation games;
+minimum test lineup-slot prior coverage is 89.51%.
+
+**Verdict:** Improvement is not demonstrated. Keep terminal-lineup zero-prior
+normal RAPM with penalties 3000/3000/300 as production. Keep the statistical
+model separate and labeled as research. Do not tune more scales on these reused
+seasons. Revisit integration only with new seasons or one predeclared
+sample-size-adaptive rule.

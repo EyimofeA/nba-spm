@@ -116,6 +116,18 @@ dependency for the first AIO.
    RAPM evidence, and the amount of shrinkage.
 6. Keep the simplest repeated winner as the production all-in-one.
 
+The first integration gate is complete in run
+`prior_informed_rapm_v1_122ef63045`. Scale 1.0 won selection on 2020–22. On the
+later 2023–24 check it improved mean game-margin RMSE by only 0.00327, won one of
+two folds, and produced an equal-season paired-game MSE delta of -0.195 with a
+95% bootstrap interval from -1.119 to +0.729. The prior-only model was worse
+(13.7952 RMSE) than zero-prior RAPM (13.5296). This does not demonstrate a
+repeatable prior benefit, so zero-prior remains the production RAPM and the
+statistical rating remains a separately labeled research estimate.
+
+Do not tune more prior scales on these seasons. A future integration test needs
+genuinely new data or one predeclared sample-size-adaptive shrinkage rule.
+
 The all-in-one must be decomposable. A user must be able to see why the final
 rating differs from raw RAPM or the box/tracking prior.
 
@@ -143,6 +155,6 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Test the cross-fitted priors in prior-informed RAPM against zero-prior RAPM and
-prior-only predictions on identical chronological windows. Tune prior strength
-inside older windows only. Do not allow a target window to train its own prior.
+Create frozen annual, rolling three-year, and rolling five-year normal-RAPM
+panels plus 1/3/5-year peak tables. Use the current zero-prior terminal-lineup
+specification and publish the window and estimand with every value.
