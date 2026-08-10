@@ -327,8 +327,13 @@ training the mapping on seasons before T. Run `prior_informed_rapm_v1_e1239679c1
 uses full SPM centering, not an amplitude grid. It beats zero-prior one-season
 RAPM in all three later 2022–24 next-season game-margin folds; the paired MSE
 95% interval is [-3.270, -0.965]. Treat this as a research challenger because
-those seasons influenced earlier feature work. Next export annual decomposed AIO
-ratings; do not tune the prior center again on 2017–24.
+those seasons influenced earlier feature work. Do not tune the prior center
+again on 2017–24. Run `annual_aio_ratings_v1_23c4895f8f` exports the resulting
+decomposed ratings for 2017–24. It
+contains raw and centered SPM, zero-prior normal RAPM, final AIO, RAPM update,
+possessions, and rank for 4,341 player-seasons. All prior and name joins pass and
+all component identities close to floating-point precision. Use this artifact
+for annual product work. Next build three-year and five-year peak tables.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

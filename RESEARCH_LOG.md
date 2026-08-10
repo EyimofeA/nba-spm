@@ -1378,3 +1378,34 @@ MSE delta for combined minus normal RAPM is -2.143. The paired game bootstrap
 This is not a production promotion because the later seasons already influenced
 feature design. Freeze the specification. The next deliverable is its annual
 offense, defense, net, SPM-center, RAPM-update, and possession-exposure table.
+
+## 2026-08-10 — Decomposed annual AIO ratings
+
+**Method:** Run `annual_aio_ratings_v1_23c4895f8f` fits the frozen full-SPM-center
+normal RAPM separately for each 2017–24 regular season. Each row records the raw
+SPM value, the possession-weighted centered SPM coefficient, zero-prior normal
+RAPM, final AIO, and the RAPM update equal to final AIO minus centered SPM. It
+also records offensive and defensive possession exposure and within-season net
+rank.
+
+**Quality:** The panel has 4,341 unique player-seasons and 1,270 players. All
+player names and SPM priors match. The minimum lineup-slot prior coverage is
+100%. Offense plus defense equals net, and SPM center plus RAPM update equals
+final AIO, with maximum error below 9e-16. The 2024 input has 1,229 regular-season
+games and remains one game short.
+
+**Distribution check:** The 2024 AIO net distribution spans -6.07 to +6.74 and
+has standard deviation 2.06. It is mildly right-skewed (0.59), not exactly
+normal. Its unweighted player mean is -0.63 because many low-exposure players
+are below average; its possession-weighted mean is effectively zero (-0.002).
+The AIO is wider than zero-prior normal RAPM (standard deviation 1.66) because
+the statistical center restores signal that zero-centered ridge suppresses.
+
+**2024 high-exposure leaders:** Nikola Jokic (+6.74), Shai
+Gilgeous-Alexander (+6.39), Paul George (+6.16), Joel Embiid (+5.49), OG Anunoby
+(+5.16), and Jalen Brunson (+5.15), using at least 1,000 possessions on both
+sides. Treat the precise order as exploratory, not ground truth.
+
+**Verdict:** Use this versioned panel for annual leaderboards and decomposition.
+Do not add uncertainty labels until they are estimated. Build three-year and
+five-year peak tables next.

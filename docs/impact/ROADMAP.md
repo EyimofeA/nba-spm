@@ -177,6 +177,14 @@ because 2022–24 influenced earlier feature work.
 The all-in-one must be decomposable. A user must be able to see why the final
 rating differs from raw RAPM or the box/tracking prior.
 
+Run `annual_aio_ratings_v1_23c4895f8f` is the first decomposed rating panel. It
+contains 4,341 player-seasons for 2017–24 with complete names and prior coverage.
+Each row exposes raw and possession-centered SPM, zero-prior normal RAPM, final
+AIO offense/defense/net, the RAPM update from the centered SPM value, offensive
+and defensive possessions, and annual rank. Component identities hold to
+floating-point precision. The 2024 cache has 1,229 regular-season games, so that
+season remains one game short.
+
 ## Phase 5 — Dynamic careers and peaks
 
 - Produce one-, three-, and five-year peak tables.
@@ -201,7 +209,7 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-Export decomposed annual AIO ratings from the frozen SPM-centered one-season
-RAPM. Then build rolling three-year and five-year normal-RAPM peak tables. Use
+Build rolling three-year and five-year normal-RAPM peak tables. Then add annual
+trajectory and decomposition query schemas for the read-only API. Use
 the saved annual defensive disagreements to define future defensive feature
 families; do not tune them on the same 2017–24 table.

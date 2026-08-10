@@ -43,6 +43,7 @@ from nba_impact.models.prior_informed_rapm import (
 from nba_impact.models.annual_spm_priors import (
     build_forward_chained_annual_spm_priors,
 )
+from nba_impact.models.annual_aio_ratings import build_annual_aio_ratings
 from nba_impact.models.statistical_impact import run_statistical_impact_baseline
 from nba_impact.models.single_season_spm import (
     build_single_season_rapm_targets,
@@ -731,6 +732,23 @@ def command_build_forward_annual_spm_priors(args: argparse.Namespace) -> int:
         artifact_root=args.artifact_root,
         output_seasons=tuple(args.output_seasons),
         minimum_training_seasons=args.minimum_training_seasons,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_annual_aio_ratings(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_annual_aio_ratings(
+        args.cache_dir,
+        args.priors,
+        args.names,
+        artifact_root=args.artifact_root,
+        seasons=tuple(args.seasons),
+        lambda_off=args.lambda_off,
+        lambda_def=args.lambda_def,
+        lambda_home=args.lambda_home,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1613,6 +1631,21 @@ def build_parser() -> argparse.ArgumentParser:
     forward_annual_spm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     forward_annual_spm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     forward_annual_spm.set_defaults(func=command_build_forward_annual_spm_priors)
+
+    annual_aio = subparsers.add_parser(
+        "build-annual-aio-ratings",
+        help="Build decomposed annual ratings from full-SPM-center normal RAPM.",
+    )
+    annual_aio.add_argument("--priors", type=Path, required=True)
+    annual_aio.add_argument("--seasons", type=_season_list, default=tuple(range(2017, 2025)))
+    annual_aio.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    annual_aio.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    annual_aio.add_argument("--lambda-off", type=float, default=3000.0)
+    annual_aio.add_argument("--lambda-def", type=float, default=3000.0)
+    annual_aio.add_argument("--lambda-home", type=float, default=300.0)
+    annual_aio.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    annual_aio.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    annual_aio.set_defaults(func=command_build_annual_aio_ratings)
 
     compare = subparsers.add_parser(
         "compare-rapm",
