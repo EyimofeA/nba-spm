@@ -26,4 +26,3 @@ def normalize_legacy_possessions(frame: pd.DataFrame) -> pd.DataFrame:
         ["season", "date", "gameid", "period", "num"], kind="stable"
     ).reset_index(drop=True)
     return normalized
-

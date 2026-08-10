@@ -26,4 +26,3 @@ AWAY_PLAYER_COLUMNS = ("a1", "a2", "a3", "a4", "a5")
 HOME_PLAYER_COLUMNS = ("h1", "h2", "h3", "h4", "h5")
 PLAYER_COLUMNS = AWAY_PLAYER_COLUMNS + HOME_PLAYER_COLUMNS
 POSSESSION_KEY = ("gameid", "period", "num")
-

@@ -57,7 +57,6 @@ def register_snapshot(path: str | Path, snapshot: dict) -> None:
             ],
         )
 
-
 def register_model_run(path: str | Path, run: dict) -> None:
     registry = initialize_registry(path)
     with duckdb.connect(str(registry)) as connection:
@@ -78,4 +77,3 @@ def register_model_run(path: str | Path, run: dict) -> None:
                 run["artifact_path"],
             ],
         )
-

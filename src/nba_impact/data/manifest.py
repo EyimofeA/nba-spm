@@ -57,4 +57,3 @@ def write_json_atomic(payload: dict, destination: str | Path) -> Path:
     temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
     temporary.replace(output)
     return output
-
