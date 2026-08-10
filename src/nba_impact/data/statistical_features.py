@@ -119,6 +119,10 @@ NATURAL_WEIGHTED_AVERAGES = {
     "OnDefRtg": ("OnDefRtg", "DefPoss"),
 }
 
+SOURCE_COLUMN_ALIASES = {
+    "Offensive Fouls": "Offensive_Fouls",
+}
+
 
 def _safe_ratio(numerator: pd.Series, denominator: pd.Series) -> pd.Series:
     valid_denominator = denominator.where(denominator > 0)
@@ -139,6 +143,9 @@ def _required_source_columns() -> set[str]:
 
 def _load_source(path: Path, season: int) -> tuple[pd.DataFrame, int]:
     frame = pd.read_csv(path, low_memory=False)
+    for canonical, alias in SOURCE_COLUMN_ALIASES.items():
+        if canonical not in frame and alias in frame:
+            frame[canonical] = frame[alias]
     required = {"PLAYER_ID", "OffPoss", "DefPoss"}
     if missing := sorted(required - set(frame.columns)):
         raise ValueError(f"{path} is missing required columns {missing}.")
@@ -243,6 +250,8 @@ def build_statistical_feature_windows(
                 "players": window["PLAYER_ID"].nunique(),
                 "duplicate_keys": int(window.duplicated(["PLAYER_ID", "Window_End"]).sum()),
                 "bounded_ratio_violations": bound_violations,
+                "off_possessions": float(window["OffPoss"].sum()),
+                "def_possessions": float(window["DefPoss"].sum()),
                 "feature_missing_fraction": float(
                     window.drop(columns=["PLAYER_ID", "Window_End", "OffPoss", "DefPoss"])
                     .isna()
@@ -273,6 +282,15 @@ def build_statistical_feature_windows(
     audit_path = output / "audit.parquet"
     features.to_parquet(features_path, index=False)
     audit.to_parquet(audit_path, index=False)
+    latest_exposure_ratio = None
+    latest_season_is_partial = False
+    if window_seasons == 1 and len(audit) >= 3:
+        prior_exposure = audit.iloc[-3:-1][
+            ["off_possessions", "def_possessions"]
+        ].min(axis=1).median()
+        latest_exposure = audit.iloc[-1][["off_possessions", "def_possessions"]].min()
+        latest_exposure_ratio = float(latest_exposure / prior_exposure)
+        latest_season_is_partial = latest_exposure_ratio < 0.9
     run = {
         "run_id": run_id,
         "dataset": "statistical_impact_features",
@@ -281,7 +299,11 @@ def build_statistical_feature_windows(
             if window_seasons == 1
             else f"player_{window_seasons}_season_window"
         ),
-        "status": "validated",
+        "status": (
+            "structurally_validated_partial_latest_season"
+            if latest_season_is_partial
+            else "structurally_validated"
+        ),
         "created_at": datetime.now(timezone.utc).isoformat(),
         "config": config,
         "quality": {
@@ -291,7 +313,14 @@ def build_statistical_feature_windows(
             "duplicate_source_rows_collapsed_on_feature_contract": duplicate_rows_removed,
             "duplicate_keys": 0,
             "bounded_ratio_violations": 0,
+            "latest_season_exposure_ratio_to_prior_two_median": latest_exposure_ratio,
+            "latest_season_is_partial": latest_season_is_partial,
         },
+        "caveats": (
+            ["The latest source season has less than 90% of the prior two-season median possession exposure."]
+            if latest_season_is_partial
+            else []
+        ),
         "feature_groups": {
             "core_rates": list(CORE_RATE_SPECS),
             "tracking_rates": list(TRACKING_RATE_SPECS),

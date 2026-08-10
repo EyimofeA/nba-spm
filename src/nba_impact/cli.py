@@ -51,6 +51,7 @@ from nba_impact.models.annual_spm_priors import (
     build_forward_chained_annual_spm_priors,
 )
 from nba_impact.models.annual_aio_ratings import build_annual_aio_ratings
+from nba_impact.models.current_spm_confirmation import run_current_spm_confirmation
 from nba_impact.models.rolling_rapm_peaks import build_rolling_rapm_peaks
 from nba_impact.models.statistical_impact import run_statistical_impact_baseline
 from nba_impact.models.single_season_spm import (
@@ -794,6 +795,23 @@ def command_build_rolling_rapm_peaks(args: argparse.Namespace) -> int:
         args.player_sheets_dir,
         args.contract,
         artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_confirm_current_spm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_current_spm_confirmation(
+        args.features,
+        args.frozen_spm_run,
+        args.possessions,
+        args.segments,
+        args.names,
+        args.player_games,
+        artifact_root=args.artifact_root,
+        season=args.season,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1715,6 +1733,27 @@ def build_parser() -> argparse.ArgumentParser:
     rolling_peaks.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     rolling_peaks.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     rolling_peaks.set_defaults(func=command_build_rolling_rapm_peaks)
+
+    current_spm = subparsers.add_parser(
+        "confirm-current-spm",
+        help="Score the frozen annual SPM once on a new current-data season.",
+    )
+    current_spm.add_argument("--features", type=Path, required=True)
+    current_spm.add_argument("--frozen-spm-run", type=Path, required=True)
+    current_spm.add_argument(
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    current_spm.add_argument(
+        "--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet"
+    )
+    current_spm.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    current_spm.add_argument(
+        "--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
+    current_spm.add_argument("--season", type=int, default=2025)
+    current_spm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    current_spm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    current_spm.set_defaults(func=command_confirm_current_spm)
 
     ratings_api = subparsers.add_parser(
         "serve-ratings",

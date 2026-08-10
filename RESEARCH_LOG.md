@@ -1508,3 +1508,35 @@ the read-only query layer and player trajectory/decomposition schemas.
   five are Shai Gilgeous-Alexander (+8.78), Nikola Jokić (+8.69), Kawhi Leonard
   (+6.79), Giannis Antetokounmpo (+6.70), and Victor Wembanyama (+5.90). Treat the
   order as a research result.
+
+## 2026-08-10 — Current feature audit and untouched 2025 SPM confirmation
+
+**Question:** Does the frozen 2014–24 annual SPM mapping retain its held-out
+performance on the first new complete season?
+
+**Data:** Rebuilt one-season features through 2025. Run
+`statistical_features_v2_9e7c27e281` has 265 features, 6,360 player-seasons,
+unique keys, and no non-finite or bounded-ratio failures. Playtype and defensive
+tracking sources extend through 2025. The 2026 base sheet has only 81.8% of the
+prior two-season median possession exposure and is marked partial.
+
+**Method:** Applied saved offense and defense models from
+`single_season_spm_v1_bff6060df6` to 2025 without refitting. Built the 2025
+target from 1,226 regular-season games and 247,630 canonical possessions using
+terminal-lineup normal RAPM at 3000/3000/300. All 569 target players match.
+
+**Result:** Run `current_spm_confirmation_v1_9b4cca0b12` produces offense RMSE
+1.102/correlation 0.619, defense 1.154/0.331, and net 1.610/0.500. Every RMSE is
+worse than the worst 2017–24 held-out fold. Defense and net correlation are also
+below the prior held-out range.
+
+**Pipeline checks:** The rebuilt and frozen 2024 selected features and saved
+predictions are numerically identical. Legacy and canonical 2024 annual RAPM
+targets correlate 0.964–0.975. The target change adds about 0.03 RMSE on the same
+2024 out-of-fold predictions, which does not explain the larger 2025 loss.
+
+**Verdict:** Do not promote the frozen annual SPM or publish a 2025 AIO from it.
+Do not tune it on 2025. Use 2025 for failure diagnosis, develop the next defense
+model inside nested or forward-only 2014–24 validation, and reserve a new season
+for confirmation. The historical-range rule was recorded after observing 2025;
+it is a diagnostic comparison, not a predeclared gate.

@@ -46,16 +46,19 @@ dead ends. Updated 2026-08-10. See `docs/README.md` for the document index,
   above 1,000 possessions per side, net correlation is 0.897 with BPM and 0.762
   with xRAPM. xRAPM remains a multi-window external comparator.
 - The old 1997–2024 RAPM archive remains valuable but is stale after 2024.
+- The full 2025 box, playtype, DFG, rim, and hustle panel passes structural QA.
+  The 2026 player sheet is partial at 81.8% of recent possession exposure.
+- Frozen annual SPM missed its untouched 2025 confirmation. Offense/defense/net
+  RMSE is 1.102/1.154/1.610; defense correlation is 0.331. Do not promote or tune
+  this run on 2025.
 
 ## Active next task
 
-Build the annual all-in-one integration. Use annual out-of-fold SPM as the prior
-mean for one-season normal RAPM. Estimate or tune offensive and defensive prior
-precision without an arbitrary amplitude scale. Compare SPM alone, zero-prior
-one-season RAPM, and the posterior on identical next-season evidence. Keep the
-annual defensive disagreement table as the feature diagnostic. Then build
-rolling three-year and five-year normal-RAPM peak tables. WP neural work stays
-paused on the Mac.
+Diagnose the failed 2025 defensive SPM confirmation without changing the frozen
+model. Compare feature drift, target stability, and subgroup errors. Then define
+a nested or forward-only defensive feature experiment. Keep 2025 as inspected
+evidence and reserve the next complete season for one final untouched test. The
+published annual AIO stays at 2017–24. WP neural work stays paused on the Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.

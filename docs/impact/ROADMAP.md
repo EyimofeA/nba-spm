@@ -221,9 +221,13 @@ only after these contracts are stable.
 ## Immediate next task
 
 The read-only API, first player trajectory page, current possession quality gate,
-and frozen 2024–26 normal RAPM are complete. The page now shows that current
-normal RAPM beside annual AIO and historical rolling peaks. Do not expand it into
-a full site yet. Next build current 2025 and 2026 statistical feature panels,
-measure their schema/coverage drift against 2024, and only then extend annual AIO
-beyond 2024. Use the saved annual defensive disagreements to define future
-defensive feature families; do not tune them on the same 2017–24 table.
+and frozen 2024–26 normal RAPM are complete. The 2025 statistical panel is also
+complete. The 2026 player sheet has only 81.8% of the prior two-season median
+possession exposure and is blocked from annual AIO publication.
+
+Frozen run `single_season_spm_v1_bff6060df6` did not pass its first untouched
+2025 check. All three components exceed the worst 2017–24 held-out RMSE; defense
+also falls from a historical mean correlation of 0.496 to 0.331. Do not tune on
+2025. Next diagnose defense with a nested or forward-only design, then predeclare
+one revised model for a future untouched season. Current annual AIO remains
+published only through 2024.

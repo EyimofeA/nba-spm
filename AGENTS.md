@@ -359,6 +359,15 @@ ratings exactly, has no missing player names, and is pinned in the ratings API.
 Next audit and build current 2025/2026 statistical feature panels before extending
 annual AIO beyond 2024.
 
+That audit is complete in `docs/impact/CURRENT_FEATURE_QUALITY.md`. Full 2025
+box, playtype, DFG, rim, and hustle features pass structural QA; 2026 is partial
+and blocked. Run `current_spm_confirmation_v1_9b4cca0b12` scores the frozen
+2014–24 annual SPM on untouched 2025 normal RAPM. All components exceed the
+worst historical held-out RMSE, and defense correlation falls to 0.331. Do not
+promote or tune this frozen model on 2025. Use 2025 only for diagnosis. The next
+model change must use nested or forward-only selection and reserve a new season
+for confirmation.
+
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`
 entry point from `pyproject.toml` in an equivalently locked environment.

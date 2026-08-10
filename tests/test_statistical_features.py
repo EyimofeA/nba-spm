@@ -95,3 +95,25 @@ def test_builder_rejects_conflicting_player_rows(tmp_path) -> None:
             window_ends=(2024,),
             window_seasons=1,
         )
+
+
+def test_builder_maps_new_underscore_schema_and_flags_partial_latest_season(
+    tmp_path,
+) -> None:
+    source = tmp_path / "raw"
+    rows = {}
+    for season, possessions in ((2024, 100.0), (2025, 100.0), (2026, 50.0)):
+        row = _season_row(1, OffPoss=possessions, DefPoss=possessions)
+        row["Offensive_Fouls"] = 3.0
+        rows[season] = [row]
+    _write_sources(source, rows)
+    run = build_statistical_feature_windows(
+        source,
+        artifact_root=tmp_path,
+        window_ends=(2024, 2025, 2026),
+        window_seasons=1,
+    )
+    features = pd.read_parquet(run["features_path"])
+    assert features.loc[features["Window_End"].eq(2025), "offensive_fouls_p100"].iloc[0] == 3.0
+    assert run["status"] == "structurally_validated_partial_latest_season"
+    assert run["quality"]["latest_season_is_partial"] is True
