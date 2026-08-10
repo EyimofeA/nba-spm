@@ -118,6 +118,13 @@ with at least 1,000 possessions per side, net correlation is 0.897 with BPM and
 it is not a one-season label. Defensive SPM versus xRAPM correlation is 0.590.
 The saved disagreement tables use the same high-exposure rule.
 
+Annual playtype run `single_season_spm_v1_fcdb9559f6` adds exact project zTS to
+offense. Mean held-out offense RMSE improves from 1.0060 to 0.9972 and
+correlation from 0.6178 to 0.6302. A larger playtype block is nearly identical
+and is not promoted. The next feature task is a canonical annual DFG,
+rim-defense, and hustle layer; those raw tables exist but are not in the clean
+annual model.
+
 The next feature challenger uses
 [`FACTOR_DECOMPOSITION.md`](FACTOR_DECOMPOSITION.md). The basketball factors are
 feature families and explanation groups. The supervised targets remain direct

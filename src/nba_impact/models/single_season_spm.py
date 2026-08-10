@@ -230,11 +230,15 @@ def fit_single_season_spm(
     artifact_root: str | Path,
     output_seasons: tuple[int, ...] = tuple(range(2017, 2025)),
     minimum_possessions_per_side: float = 1000.0,
+    additional_offense_features: tuple[str, ...] = (),
+    additional_defense_features: tuple[str, ...] = (),
 ) -> dict:
     """Fit season-held-out SPM predictions, a final full-panel model, and disagreements."""
     features = pd.read_parquet(features_path).rename(columns={"Window_End": "Season"})
     targets = pd.read_parquet(targets_path)
     selected = _selected_single_season_features(reference_run_path)
+    selected["offense"] = tuple(dict.fromkeys((*selected["offense"], *additional_offense_features)))
+    selected["defense"] = tuple(dict.fromkeys((*selected["defense"], *additional_defense_features)))
     required = {feature for values in selected.values() for feature in values}
     if missing := sorted(required - set(features.columns)):
         raise ValueError(f"Single-season SPM features are missing {missing}.")
@@ -430,6 +434,8 @@ def fit_single_season_spm(
             "final_fit": "all available labeled seasons",
             "temporal_features_excluded": True,
             "minimum_possessions_per_side": minimum_possessions_per_side,
+            "additional_offense_features": list(additional_offense_features),
+            "additional_defense_features": list(additional_defense_features),
             "source_hashes": {
                 "features": sha256_file(features_path),
                 "targets": sha256_file(targets_path),

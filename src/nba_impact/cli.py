@@ -17,6 +17,7 @@ from nba_impact.data.lineups import build_lineup_stints
 from nba_impact.data.manifest import build_possession_snapshot, write_json_atomic
 from nba_impact.data.official_boxscore import ingest_official_boxscores
 from nba_impact.data.player_game import build_player_games
+from nba_impact.data.playtype_features import build_playtype_features
 from nba_impact.data.possessions import build_possessions
 from nba_impact.data.statistical_features import build_statistical_feature_windows
 from nba_impact.data.statistical_features_v2 import build_statistical_features_v2
@@ -504,6 +505,20 @@ def command_build_statistical_features_v2(args: argparse.Namespace) -> int:
         artifact_root=args.artifact_root,
         window_ends=args.window_ends,
         pooled_window_seasons=args.pooled_window_seasons,
+        playtype_features_path=args.playtype_features,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_playtype_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_playtype_features(
+        args.playtype_source, args.box_source_dir,
+        artifact_root=args.artifact_root, seasons=args.seasons,
+        minimum_minutes=args.minimum_minutes,
+        minimum_player_playtype_possessions=args.minimum_synergy_possessions,
+        minimum_league_row_possessions=args.minimum_league_row_possessions,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -672,6 +687,8 @@ def command_fit_single_season_spm(args: argparse.Namespace) -> int:
         artifact_root=args.artifact_root,
         output_seasons=tuple(args.output_seasons),
         minimum_possessions_per_side=args.minimum_possessions,
+        additional_offense_features=args.additional_offense_features,
+        additional_defense_features=args.additional_defense_features,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1247,6 +1264,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--pooled-window-seasons", type=int, default=3
     )
     statistical_features_v2.add_argument("--base-features", type=Path, required=True)
+    statistical_features_v2.add_argument("--playtype-features", type=Path)
     statistical_features_v2.add_argument(
         "--window-ends",
         type=_season_list,
@@ -1254,6 +1272,24 @@ def build_parser() -> argparse.ArgumentParser:
     )
     statistical_features_v2.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     statistical_features_v2.set_defaults(func=command_build_statistical_features_v2)
+
+    playtype_features = subparsers.add_parser(
+        "build-playtype-features",
+        help="Build annual zTS and playtype points-over-expectation features.",
+    )
+    playtype_features.add_argument("--playtype-source", type=Path, required=True)
+    playtype_features.add_argument(
+        "--box-source-dir", type=Path,
+        default=Path("data/raw/playersheets/year_totals"),
+    )
+    playtype_features.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2014, 2025))
+    )
+    playtype_features.add_argument("--minimum-minutes", type=float, default=250.0)
+    playtype_features.add_argument("--minimum-synergy-possessions", type=float, default=50.0)
+    playtype_features.add_argument("--minimum-league-row-possessions", type=float, default=20.0)
+    playtype_features.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    playtype_features.set_defaults(func=command_build_playtype_features)
 
     statistical_impact = subparsers.add_parser(
         "fit-statistical-impact",
@@ -1480,6 +1516,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--output-seasons", type=_season_list, default=tuple(range(2017, 2025))
     )
     annual_spm.add_argument("--minimum-possessions", type=float, default=1000.0)
+    annual_spm.add_argument(
+        "--additional-offense-features", type=_text_list, default=()
+    )
+    annual_spm.add_argument(
+        "--additional-defense-features", type=_text_list, default=()
+    )
     annual_spm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     annual_spm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     annual_spm.set_defaults(func=command_fit_single_season_spm)

@@ -351,6 +351,7 @@ def build_statistical_features_v2(
     artifact_root: str | Path,
     window_ends: tuple[int, ...] = tuple(range(2016, 2025)),
     pooled_window_seasons: int = 3,
+    playtype_features_path: str | Path | None = None,
 ) -> dict:
     if pooled_window_seasons < 1:
         raise ValueError("pooled_window_seasons must be positive.")
@@ -379,6 +380,21 @@ def build_statistical_features_v2(
         base_window = base.loc[base["Window_End"].eq(end)].copy()
         outputs.append(_engineer_window(base_window, frames, seasonal))
     features = pd.concat(outputs, ignore_index=True)
+    playtype_feature_names: list[str] = []
+    if playtype_features_path is not None:
+        playtype = pd.read_parquet(playtype_features_path).rename(
+            columns={"Season": "Window_End"}
+        )
+        if playtype.duplicated(["PLAYER_ID", "Window_End"]).any():
+            raise ValueError("Playtype feature keys are not unique.")
+        playtype_feature_names = [
+            column for column in playtype.columns
+            if column not in {"PLAYER_ID", "Window_End", "synergy_possessions"}
+        ]
+        features = features.merge(
+            playtype[["PLAYER_ID", "Window_End", *playtype_feature_names]],
+            on=["PLAYER_ID", "Window_End"], how="left", validate="one_to_one",
+        )
     if features.duplicated(["PLAYER_ID", "Window_End"]).any():
         raise ValueError("V2 feature keys are not unique.")
     new_features = [column for column in features if column not in base.columns]
@@ -408,6 +424,9 @@ def build_statistical_features_v2(
         "builder_sha256": sha256_file(Path(__file__)),
         "window_ends": list(window_ends),
         "pooled_window_seasons": pooled_window_seasons,
+        "playtype_features_sha256": (
+            sha256_file(playtype_features_path) if playtype_features_path else None
+        ),
     }
     identity = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()[:10]
     run_id = f"statistical_features_v2_{identity}"
@@ -439,6 +458,7 @@ def build_statistical_features_v2(
         "bounded_feature_violations": bound_violations,
         "public_benchmark_features": list(PUBLIC_BENCHMARK_FEATURES),
         "primary_public_inspired_features": list(PRIMARY_PUBLIC_INSPIRED_FEATURES),
+        "playtype_feature_names": playtype_feature_names,
         "public_benchmark_provenance": {
             "source": "https://craftednba.com/glossary",
             "box_creation_and_offensive_load": "Ben Taylor public formulas as reproduced by CraftedNBA",

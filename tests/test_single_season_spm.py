@@ -48,6 +48,7 @@ def test_single_season_spm_builds_oof_and_final_outputs(tmp_path: Path) -> None:
                     "DefPoss": 2000.0,
                     "f1": signal,
                     "f2": signal**2,
+                    "zts_pct_points": signal / 2,
                 }
             )
             targets.append(
@@ -99,6 +100,7 @@ def test_single_season_spm_builds_oof_and_final_outputs(tmp_path: Path) -> None:
         tmp_path / "raw",
         artifact_root=tmp_path,
         output_seasons=(2017, 2018, 2019, 2020),
+        additional_offense_features=("zts_pct_points",),
     )
     output = Path(run["artifact_path"])
     oof = pd.read_parquet(output / "oof_predictions.parquet")
@@ -108,7 +110,7 @@ def test_single_season_spm_builds_oof_and_final_outputs(tmp_path: Path) -> None:
     assert len(leaderboard) == 16
     assert len(disagreement) == 16
     assert not oof.duplicated(["PLAYER_ID", "Season"]).any()
-    assert run["models"]["offense"]["features"] == ["f1", "f2"]
+    assert run["models"]["offense"]["features"] == ["f1", "f2", "zts_pct_points"]
     assert run["quality"]["xrapm_matched_rows"] == 16
     assert run["quality"]["high_exposure_xrapm_matched_rows"] == 16
     assert run["quality"]["nonfinite_prediction_values"] == 0

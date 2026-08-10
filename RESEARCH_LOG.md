@@ -1277,3 +1277,29 @@ final all-in-one because the target is noisy and the evaluation uses later as
 well as earlier seasons. Next use annual out-of-fold SPM as the prior mean in a
 one-season RAPM comparison. Estimate or tune prior precision inside training
 seasons; do not restore the earlier arbitrary amplitude scale.
+
+## 2026-08-10 — Annual zTS and playtype challenger
+
+**Method:** `playtype_features_v1_db63ed1132` rebuilds 2014–24 zTS from the
+newest local Gabriel O'Connell playtype snapshot and annual box totals. zTS is
+player TS% minus expected TS% from the player's playtype mix. It also calculates
+overall playtype POE, transition share, and transition POE contribution per 75
+total Synergy possessions. Existing thresholds remain 250 minutes, 50 player
+Synergy possessions, and 20 possessions per player-playtype row for the league
+playtype TS calculation. Models and eight leave-one-season-out folds are frozen.
+
+**Quality:** The table has 4,299 unique player-seasons. Every key matches the old
+rounded `zts_results.csv`; zTS correlation exceeds 0.9999998 and maximum absolute
+difference is 0.005 percentage points. Feature run
+`statistical_features_v2_ab9646062b` has no duplicate keys or non-finite values.
+
+**Result:** Baseline offense RMSE/correlation is 1.0060/0.6178. Adding zTS alone
+(`single_season_spm_v1_fcdb9559f6`) improves it to 0.9972/0.6302; net improves
+from 1.4611/0.5314 to 1.4553/0.5383. Adding overall POE, transition share, and
+transition POE (`single_season_spm_v1_1f2125a38b`) records offense
+0.9967/0.6301 and net 1.4558/0.5376. Defense is unchanged.
+
+**Verdict:** Keep zTS in the annual offensive research model. The larger block's
+tiny RMSE gain and slightly worse correlation do not justify promotion. These
+seasons are now inspected, so require new data or a predeclared nested rule for
+promotion. Next canonicalize DFG, rim-defense, and hustle features.

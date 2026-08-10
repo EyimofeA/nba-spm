@@ -303,6 +303,13 @@ correlation is 0.897 with BPM and 0.762 with xRAPM. xRAPM is a multi-window
 comparator. Defense remains the weak lane (0.590 with xRAPM). The next task is
 annual SPM-prior one-season RAPM with calibrated precision, not another arbitrary
 prior scale.
+Run `playtype_features_v1_db63ed1132` rebuilds the project's exact 2014–24 zTS
+and playtype POE table. It matches all 4,299 old zTS player-season keys to
+rounding. `single_season_spm_v1_fcdb9559f6` adds zTS to the frozen annual
+offense model and improves mean held-out offense RMSE from 1.0060 to 0.9972 and
+correlation from 0.6178 to 0.6302. Keep it as research because the folds are
+already inspected. The clean annual pipeline still does not consume separate
+DFG, rim-defense, and hustle tables. Build and QA that layer next.
 
 Run from the repository root with `uv run python -m nba_impact.cli …` so saved
 scikit-learn artifacts use the locked runtime, or install the `nba-impact`

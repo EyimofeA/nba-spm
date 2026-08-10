@@ -242,3 +242,49 @@ Factor RAPM can still estimate lineup-adjusted effects on team eFG/TS,
 turnovers, rebounds, and free throws. Use it for research and explanation after
 historical event data is available. It is not the required label for the first
 all-in-one.
+
+## Exact current annual offense implementation
+
+The annual builder uses one season. Main per-100 rates are stabilized as
+`r*player_rate + (1-r)*league_rate`, where `r = exposure/(exposure+500)`.
+Generic event/opportunity rates use
+`(player_numerator + strength*league_rate)/(player_denominator+strength)`;
+strength is 500 for touches, 150 for drives and turnovers, and 100 otherwise.
+Era-relative fields subtract the possession-weighted season mean.
+
+The active public-inspired block contains
+`shooting_proficiency_2017_eb`, `box_creation_2017_eb_p100`,
+`offensive_load_2017_eb_p100`, `assist_to_load_2017_eb`,
+`turnover_to_load_2017_eb`, `creation_to_load_2017_eb`,
+`behavioral_passer_score_v1`, and `crafted_spacing_stable_v1`.
+
+The passer score is
+`z(Load) + 3*z(AST/Load) - 2*z(TOV/Load) + 0.5*z(Creation/Load)`, with
+possession-weighted z scores clipped to [-4, 4]. It intentionally excludes
+positional and height terms. Spacing is stabilized 3PA per 100 times 1.5 times
+stabilized 3P%, minus league eFG.
+
+Project zTS uses
+`TS = PTS/(2*(FGA+0.44*FTA))`, estimated playtype FTA equal to
+`FT_frequency*playtype_possessions*2`, expected TS equal to the sum of playtype
+share times league playtype TS, and `zTS = player_TS - expected_TS`. It is stored
+in percentage points as `zts_pct_points`.
+
+## Public-source boundary and missing tracking
+
+- MAMBA supplied design candidates: playtype POE, rim points saved, charges,
+  unassisted makes, and assist points created. Its published draft says offense
+  was stronger than defense; it does not specify a complete defensive set.
+- RAPTOR supplied comparison ideas including enhanced assists/rebounds,
+  contested threes, turnover/foul context, fast-break starts, defended shots,
+  positional opponent outcomes, and defensive distance traveled. Only a subset
+  has clean analogues in the current table. RAPTOR on/off is deliberately
+  excluded from the independent prior.
+- LEBRON supplied the role/archetype stabilization idea, not transition POE or a
+  tracking list. Published LEBRON explicitly did not use tracking. Our current
+  league-level empirical Bayes is not yet LEBRON-style archetype stabilization.
+
+Separate local DFG, rim-defense, and hustle tables contain defended-shot volume
+and differential, rim points saved inputs, deflections, charges, contested
+shots, and loose-ball activity. They are not yet canonicalized or used by the
+clean annual SPM. The exact active columns are in each annual SPM `run.json`.
