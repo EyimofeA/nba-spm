@@ -10,6 +10,7 @@ from nba_impact.models.rolling_rapm_peaks import (
     extract_player_peaks,
     fit_rolling_rapm_window,
     load_peak_player_names,
+    run_selection_aware_peak_bootstrap,
 )
 
 
@@ -152,3 +153,62 @@ def test_peak_eligibility_requires_threshold_in_every_window_season() -> None:
     assert player["minimum_season_def_possessions"] == 0
     assert not player["peak_eligible"]
     assert quality["minimum_peak_possessions_per_side_per_season"] == 1
+
+
+def test_selection_aware_peak_bootstrap_reselects_and_checkpoints(tmp_path: Path) -> None:
+    cache = tmp_path / "cache"
+    sheets = tmp_path / "sheets"
+    cache.mkdir()
+    sheets.mkdir()
+    for season in (2022, 2023, 2024):
+        rows = []
+        for game in range(2):
+            for possession in range(8):
+                rows.append(
+                    {
+                        "home_poss": bool(possession % 2),
+                        "pts": float((game + possession) % 3),
+                        **{f"a{i}": i for i in range(1, 6)},
+                        **{f"h{i}": i + 5 for i in range(1, 6)},
+                        "season": season,
+                        "date": f"{season - 1}-11-01",
+                        "period": 1,
+                        "num": possession + 1,
+                        "gameid": f"002{season}{game:04d}",
+                    }
+                )
+        pd.DataFrame(rows).to_parquet(cache / f"matchups_{season}.parquet", index=False)
+        pd.DataFrame(
+            {"PLAYER_ID": range(1, 11), "PLAYER_NAME": [f"P{i}" for i in range(1, 11)]}
+        ).to_csv(sheets / f"{season}.csv", index=False)
+    names = tmp_path / "names.csv"
+    pd.DataFrame(
+        {"PLAYER_ID": range(1, 11), "PLAYER_NAME": [f"P{i}" for i in range(1, 11)]}
+    ).to_csv(names, index=False)
+    contract = tmp_path / "contract.json"
+    contract.write_text(
+        __import__("json").dumps(
+            {
+                "status": "frozen_research_contract",
+                "contract_version": "test",
+                "estimand": "test",
+                "season_range": [2022, 2024],
+                "window_lengths": [3],
+                "model": {"prior": "zero", "lambda_off": 10, "lambda_def": 10, "lambda_home": 2},
+                "peak_eligibility": {
+                    "minimum_offensive_possessions_per_window_season": 1,
+                    "minimum_defensive_possessions_per_window_season": 1,
+                },
+                "caveats": [],
+            }
+        )
+    )
+    run = run_selection_aware_peak_bootstrap(
+        cache, names, sheets, contract, artifact_root=tmp_path / "artifacts", draws=2, seed=4
+    )
+    output = Path(run["artifact_path"])
+    draws = pd.read_parquet(output / "selected_draws" / "draw_0000.parquet")
+    assert not draws.duplicated(["PLAYER_ID", "window_seasons", "peak_component"]).any()
+    summary = pd.read_parquet(output / "selection_aware_peaks.parquet")
+    assert summary["draw_coverage"].eq(2).all()
+    assert summary["uncertainty_status"].eq("selection_aware_bootstrap_complete").all()

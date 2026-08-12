@@ -203,3 +203,16 @@ def test_matchup_factor_route_is_filtered_and_research_labeled(tmp_path: Path) -
         "matchup_shotmaking_points_saved_vs_scorer_p100_eb"
     ] == 2.0
     assert store.player(1)["matchup_defense_factors"][0]["Season"] == 2024
+
+
+def test_v2_wrap_adds_lineage_without_changing_v1_payload(tmp_path: Path) -> None:
+    store = _store(tmp_path)
+    v1_status, v1 = dispatch(store, "/v1/leaderboards/current?metric=net")
+    v2_status, v2 = dispatch(store, "/v2/leaderboards/current?metric=net")
+    assert v1_status == v2_status == HTTPStatus.OK
+    assert v2["contract_version"] == "ratings_api_v2"
+    assert v2["data"]["metric"] == v1["metric"]
+    assert v2["data"]["results"][0]["net_per_100"] == v1["results"][0]["net_per_100"]
+    assert "uncertainty" in v2["data"]["results"][0]
+    assert v2["lineage"]["estimand_id"] == "trailing_observed_lineup_rapm_v1"
+    assert len(v2["lineage"]["row_set_sha256"]) == 64

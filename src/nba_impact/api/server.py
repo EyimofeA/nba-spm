@@ -72,6 +72,25 @@ def dispatch(store: RatingsStore, target: str) -> tuple[int, dict]:
         if player is None:
             return HTTPStatus.NOT_FOUND, {"error": "player_not_found"}
         return HTTPStatus.OK, player
+    if parsed.path == "/v2/meta":
+        return HTTPStatus.OK, store.v2_metadata()
+    if parsed.path.startswith("/v2/leaderboards/"):
+        # Keep v1's query semantics and data shape inside a versioned envelope.
+        v1_target = "/v1" + parsed.path[3:]
+        if parsed.query:
+            v1_target += "?" + parsed.query
+        status, payload = dispatch(store, v1_target)
+        endpoint = parsed.path.rsplit("/", 1)[-1]
+        return status, store.v2_wrap(endpoint, payload)
+    if parsed.path.startswith("/v2/players/"):
+        player = store.player(int(parsed.path.rsplit("/", 1)[-1]))
+        if player is None:
+            return HTTPStatus.NOT_FOUND, {"error": "player_not_found"}
+        return HTTPStatus.OK, {
+            "contract_version": "ratings_api_v2",
+            "lineage": store.v2_metadata()["artifacts"],
+            "data": player,
+        }
     return HTTPStatus.NOT_FOUND, {"error": "route_not_found"}
 
 

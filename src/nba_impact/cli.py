@@ -41,6 +41,10 @@ from nba_impact.models.rapm import (
     run_walk_forward_comparison,
 )
 from nba_impact.models.rapm_lineup_policy import run_rapm_lineup_policy_comparison
+from nba_impact.models.rapm_uncertainty import (
+    RapmUncertaintyConfig,
+    run_rapm_uncertainty,
+)
 from nba_impact.models.external_impact_benchmark import (
     acquire_external_impact_pages,
     build_external_impact_benchmark,
@@ -56,7 +60,10 @@ from nba_impact.models.annual_defense_ridge_nested import run_annual_defense_rid
 from nba_impact.models.annual_defense_features_nested import run_annual_defense_features_nested
 from nba_impact.models.current_spm_confirmation import run_current_spm_confirmation
 from nba_impact.models.current_spm_diagnostics import run_current_spm_diagnostics
-from nba_impact.models.rolling_rapm_peaks import build_rolling_rapm_peaks
+from nba_impact.models.rolling_rapm_peaks import (
+    build_rolling_rapm_peaks,
+    run_selection_aware_peak_bootstrap,
+)
 from nba_impact.models.statistical_impact import run_statistical_impact_baseline
 from nba_impact.models.single_season_spm import (
     build_single_season_rapm_targets,
@@ -108,6 +115,7 @@ from nba_impact.paths import (
     ensure_owned_dirs,
 )
 from nba_impact.registry import register_model_run, register_snapshot
+from nba_impact.research.control_plane import validate_pinned_artifacts
 
 
 def _season_list(value: str) -> tuple[int, ...]:
@@ -164,6 +172,19 @@ def command_audit(args: argparse.Namespace) -> int:
                 f"  {issue['severity']:>8} {issue['code']}: {issue['count']} — {issue['message']}"
             )
     return 0 if snapshot["passed"] else 2
+
+
+def command_validate_research_control(args: argparse.Namespace) -> int:
+    """Validate the release/model gate before new public-impact work begins."""
+    issues = validate_pinned_artifacts(args.contract, args.artifact_root)
+    payload = {
+        "contract": str(args.contract),
+        "artifact_root": str(args.artifact_root),
+        "passed": not issues,
+        "issues": [issue.__dict__ for issue in issues],
+    }
+    print(json.dumps(payload, indent=2))
+    return 0 if not issues else 2
 
 
 def command_ingest(args: argparse.Namespace) -> int:
@@ -453,6 +474,79 @@ def command_fit_current_rapm(args: argparse.Namespace) -> int:
     write_json_atomic(run["config"], Path(run["artifact_path"]) / "config.json")
     write_json_atomic(run["metrics"], Path(run["artifact_path"]) / "metrics.json")
     write_json_atomic(run, Path(run["artifact_path"]) / "run.json")
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_quantify_rapm_uncertainty(args: argparse.Namespace) -> int:
+    """Run the frozen terminal-lineup whole-game RAPM bootstrap."""
+    ensure_owned_dirs()
+    seasons = tuple(args.seasons)
+    if 2027 in seasons:
+        raise ValueError("Season 2027 is reserved and cannot enter this command.")
+    game_types = tuple(item.strip() for item in args.game_types.split(",") if item.strip())
+    if args.source == "legacy":
+        frame = load_legacy_possessions(args.cache_dir, seasons, game_types=game_types)
+        names = pd.read_csv(args.names) if Path(args.names).exists() else None
+        hashes = {
+            str(Path(args.cache_dir) / f"matchups_{season}.parquet"): sha256_file(
+                Path(args.cache_dir) / f"matchups_{season}.parquet"
+            )
+            for season in seasons
+        }
+        data_scope = "legacy_terminal_lineup"
+    else:
+        frame = load_current_possessions(
+            args.possessions,
+            args.segments,
+            lineup_policy="terminal",
+            game_types=game_types,
+        )
+        frame = frame.loc[frame["season"].isin(seasons)].copy()
+        if set(seasons) != set(int(value) for value in frame["season"].unique()):
+            raise ValueError("Requested current uncertainty seasons are not all available.")
+        names = load_current_player_names(args.names, args.player_games)
+        hashes = {
+            "possessions": sha256_file(args.possessions),
+            "segments": sha256_file(args.segments),
+            "player_games": sha256_file(args.player_games),
+        }
+        data_scope = "current_terminal_lineup"
+    config = RapmConfig(
+        seasons=seasons,
+        lambda_off=args.lambda_off,
+        lambda_def=args.lambda_def,
+        lambda_home=args.lambda_home,
+        include_home=True,
+        game_types=game_types,
+        data_scope=data_scope,
+    )
+    uncertainty = RapmUncertaintyConfig(draws=args.draws, seed=args.seed)
+    run = run_rapm_uncertainty(
+        frame,
+        config,
+        uncertainty,
+        artifact_root=args.artifact_root,
+        names=names,
+        source_hashes=hashes,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_quantify_rolling_peak_uncertainty(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_selection_aware_peak_bootstrap(
+        args.cache_dir,
+        args.names,
+        args.player_sheets_dir,
+        args.contract,
+        artifact_root=args.artifact_root,
+        draws=args.draws,
+        seed=args.seed,
+    )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
     return 0
@@ -1204,6 +1298,18 @@ def build_parser() -> argparse.ArgumentParser:
     audit.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     audit.set_defaults(func=command_audit)
 
+    control = subparsers.add_parser(
+        "validate-research-control",
+        help="Reject incomplete pinned lineage before model or release work.",
+    )
+    control.add_argument(
+        "--contract",
+        type=Path,
+        default=PROJECT_ROOT / "research" / "pinned_artifact_contracts.json",
+    )
+    control.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    control.set_defaults(func=command_validate_research_control)
+
     ingest = subparsers.add_parser(
         "ingest", help="Run a resumable HTTP ingestion manifest."
     )
@@ -1400,6 +1506,27 @@ def build_parser() -> argparse.ArgumentParser:
     current_rapm.add_argument("--game-types", default="regular")
     current_rapm.add_argument("--no-home", action="store_true")
     current_rapm.set_defaults(func=command_fit_current_rapm)
+
+    uncertainty = subparsers.add_parser(
+        "quantify-rapm-uncertainty",
+        help="Fit frozen terminal-lineup normal RAPM with whole-game bootstrap intervals.",
+    )
+    uncertainty.add_argument("--source", choices=("legacy", "current"), required=True)
+    uncertainty.add_argument("--seasons", type=_season_list, required=True)
+    uncertainty.add_argument("--draws", type=int, default=1000)
+    uncertainty.add_argument("--seed", type=int, default=20260812)
+    uncertainty.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    uncertainty.add_argument("--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet")
+    uncertainty.add_argument("--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet")
+    uncertainty.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    uncertainty.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
+    uncertainty.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    uncertainty.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    uncertainty.add_argument("--lambda-off", type=float, default=3000.0)
+    uncertainty.add_argument("--lambda-def", type=float, default=3000.0)
+    uncertainty.add_argument("--lambda-home", type=float, default=300.0)
+    uncertainty.add_argument("--game-types", default="regular")
+    uncertainty.set_defaults(func=command_quantify_rapm_uncertainty)
 
     normal_rapm = subparsers.add_parser(
         "tune-normal-rapm",
@@ -1828,6 +1955,20 @@ def build_parser() -> argparse.ArgumentParser:
     rolling_peaks.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     rolling_peaks.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     rolling_peaks.set_defaults(func=command_build_rolling_rapm_peaks)
+
+    peak_uncertainty = subparsers.add_parser(
+        "quantify-rolling-peak-uncertainty",
+        help="Refit and reselect rolling RAPM peaks inside each whole-game bootstrap draw.",
+    )
+    peak_uncertainty.add_argument("--contract", type=Path, required=True)
+    peak_uncertainty.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    peak_uncertainty.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    peak_uncertainty.add_argument("--player-sheets-dir", type=Path, default=LEGACY_PLAYER_SHEETS)
+    peak_uncertainty.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    peak_uncertainty.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    peak_uncertainty.add_argument("--draws", type=int, default=1000)
+    peak_uncertainty.add_argument("--seed", type=int, default=20260812)
+    peak_uncertainty.set_defaults(func=command_quantify_rolling_peak_uncertainty)
 
     current_spm = subparsers.add_parser(
         "confirm-current-spm",

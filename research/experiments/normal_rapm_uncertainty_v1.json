@@ -1,0 +1,43 @@
+{
+  "schema_version": "normal_rapm_uncertainty_contract_v1",
+  "status": "frozen_research_contract",
+  "estimand_id": "trailing_observed_lineup_rapm_v1",
+  "estimand": "Retrospective terminal-lineup adjusted points per 100 possessions.",
+  "model": {
+    "prior": "zero",
+    "lineup_policy": "terminal",
+    "lambda_off": 3000.0,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0
+  },
+  "bootstrap": {
+    "resampling_unit": "whole_game",
+    "stratify_by": "season",
+    "draws": 1000,
+    "seed": 20260812,
+    "checkpoint_unit": "draw",
+    "publication_method": "whole_game_bootstrap"
+  },
+  "analytic_diagnostic": {
+    "method": "CR0 game-cluster sandwich for ridge coefficients",
+    "publication_status": "diagnostic_only",
+    "agreement_gate": {
+      "minimum_offensive_and_defensive_possessions": 2000,
+      "interval_width_ratio_range": [0.8, 1.2],
+      "estimate_or_rank_correlation_minimum": 0.98,
+      "additional_requirement": "no systematic offensive or defensive coverage failure"
+    }
+  },
+  "required_outputs": [
+    "offense estimate, standard error, 80% and 95% interval, probability above zero",
+    "defense estimate, standard error, 80% and 95% interval, probability above zero",
+    "net estimate, standard error, 80% and 95% interval, probability above zero",
+    "bootstrap draw coverage and uncertainty status"
+  ],
+  "invariants": [
+    "offense + defense = net in every point estimate and bootstrap draw",
+    "resampling never splits a game",
+    "players absent from a component in a draw have missing draw values",
+    "Season 2027 is forbidden"
+  ]
+}

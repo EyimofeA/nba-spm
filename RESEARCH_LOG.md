@@ -1732,3 +1732,21 @@ winner's-curse correction remain absent. Keep terminal-lineup, zero-prior normal
 RAPM as the production reference. Preregister precision-aware prior work, but do
 not tune it on the inspected 2025 failure or partial 2026 season. Reserve Season
 2027 for one untouched annual confirmation.
+
+## 2026-08-12 — Research control plane strengthened
+
+**Question:** Can the pinned rating API expose an artifact without complete,
+portable lineage?
+
+**What we did:** Added a machine-readable pinned-artifact contract and a
+`validate-research-control` command. The gate requires an estimand, evidence and
+uncertainty status, season scope/completeness, relative artifact location, code
+and configuration hashes, data-hash status, and a forbidden interpretation for
+every API pin. It rejects incomplete hashes, machine-specific release paths,
+research-only artifacts marked as production, and explicit Season 2027 use.
+
+**Result:** The current four API pins pass the gate. This validates their
+lineage records. It does not add uncertainty or upgrade their scientific status.
+
+**Next:** Freeze and implement game-cluster uncertainty for normal RAPM before
+publishing any rank precision.

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -18,6 +19,7 @@ from nba_impact.models.rapm import (
     load_legacy_possessions,
     ratings_table,
 )
+from nba_impact.models.rapm_uncertainty import _draw_weights, fit_weighted_zero_prior
 
 
 COMPONENTS = ("offense", "defense", "net")
@@ -413,6 +415,203 @@ def build_rolling_rapm_peaks(
         "player_peaks_path": str((output / "player_peaks.parquet").resolve()),
         "artifact_path": str(output.resolve()),
         "caveats": contract["caveats"],
+    }
+    write_json_atomic(run, output / "run.json")
+    return run
+
+
+def run_selection_aware_peak_bootstrap(
+    cache_dir: str | Path,
+    names_path: str | Path,
+    player_sheets_dir: str | Path,
+    contract_path: str | Path,
+    *,
+    artifact_root: str | Path,
+    draws: int = 1000,
+    seed: int = 20260812,
+) -> dict:
+    """Refit eligibility, selection, and rank inside every whole-game draw.
+
+    Stored draw rows are selected player/component peaks only. Intermediate
+    coefficients are intentionally not retained. This is selection-aware
+    uncertainty, not a winner's-curse correction.
+    """
+    if draws < 1:
+        raise ValueError("At least one peak-bootstrap draw is required.")
+    contract = json.loads(Path(contract_path).read_text())
+    if contract.get("status") != "frozen_research_contract":
+        raise ValueError("Rolling peak bootstrap requires a frozen contract.")
+    season_start, season_end = (int(value) for value in contract["season_range"])
+    if 2027 in range(season_start, season_end + 1):
+        raise ValueError("Season 2027 is reserved and cannot enter peak bootstrap.")
+    window_lengths = tuple(int(value) for value in contract["window_lengths"])
+    model = contract["model"]
+    if model.get("prior") != "zero":
+        raise ValueError("Selection-aware normal RAPM peaks require zero prior.")
+    threshold = int(contract["peak_eligibility"]["minimum_offensive_possessions_per_window_season"])
+    all_seasons = tuple(range(season_start, season_end + 1))
+    names, _ = load_peak_player_names(names_path, player_sheets_dir, all_seasons)
+    all_possessions = load_legacy_possessions(cache_dir, all_seasons, game_types=("regular",))
+    identity_payload = {
+        "contract": sha256_file(contract_path),
+        "source_code": sha256_file(Path(__file__)),
+        "frame_hash": hashlib.sha256(
+            pd.util.hash_pandas_object(all_possessions, index=True).to_numpy().tobytes()
+        ).hexdigest(),
+        "draws": draws,
+        "seed": seed,
+    }
+    identity = hashlib.sha256(json.dumps(identity_payload, sort_keys=True).encode()).hexdigest()[:12]
+    run_id = f"rolling_peak_uncertainty_v1_{identity}"
+    output = Path(artifact_root) / "models" / "rolling_peak_uncertainty" / run_id
+    draw_root = output / "selected_draws"
+    draw_root.mkdir(parents=True, exist_ok=True)
+
+    def draw_path(draw: int) -> Path:
+        return draw_root / f"draw_{draw:04d}.parquet"
+
+    for draw in range(draws):
+        path = draw_path(draw)
+        if path.exists():
+            try:
+                existing = pd.read_parquet(path, columns=["draw", "PLAYER_ID", "peak_component"])
+                if existing["draw"].nunique() == 1 and int(existing["draw"].iloc[0]) == draw and not existing.duplicated(["PLAYER_ID", "window_seasons", "peak_component"]).any():
+                    continue
+            except Exception:
+                pass
+        weighted = all_possessions.copy()
+        all_design = build_design(weighted, include_home=True)
+        row_weights, _ = _draw_weights(all_design, seed, draw)
+        weighted["_bootstrap_weight"] = row_weights
+        window_frames: list[pd.DataFrame] = []
+        for length in window_lengths:
+            for window_end in range(season_start + length - 1, season_end + 1):
+                window_start = window_end - length + 1
+                frame = weighted.loc[
+                    weighted["season"].between(window_start, window_end)
+                ].copy()
+                season_means = frame.groupby("season").apply(
+                    lambda group: np.average(group["pts"], weights=group["_bootstrap_weight"]),
+                    include_groups=False,
+                )
+                overall_mean = float(np.average(frame["pts"], weights=frame["_bootstrap_weight"]))
+                frame["pts"] = frame["pts"] - frame["season"].map(season_means) + overall_mean
+                design = build_design(frame, include_home=True)
+                beta, _, _, _, exposure = fit_weighted_zero_prior(
+                    design,
+                    RapmConfig(
+                        seasons=tuple(range(window_start, window_end + 1)),
+                        lambda_off=float(model["lambda_off"]),
+                        lambda_def=float(model["lambda_def"]),
+                        lambda_home=float(model["lambda_home"]),
+                        game_types=("regular",),
+                        data_scope="selection_aware_peak_bootstrap",
+                    ),
+                    frame["_bootstrap_weight"].to_numpy(dtype=float),
+                )
+                ratings = pd.DataFrame(
+                    {
+                        "PLAYER_ID": design.players,
+                        "offense": beta[: len(design.players)] * 100.0,
+                        "defense": -beta[len(design.players) : 2 * len(design.players)] * 100.0,
+                        "Poss_Off": exposure[: len(design.players)],
+                        "Poss_Def": exposure[len(design.players) :],
+                    }
+                )
+                ratings["net"] = ratings["offense"] + ratings["defense"]
+                ratings["window_start"] = window_start
+                ratings["window_end"] = window_end
+                ratings["window_seasons"] = length
+                # Eligibility is recalculated from the sampled possession weights
+                # for every constituent season, not inherited from observed data.
+                sampled = frame.loc[frame["_bootstrap_weight"] > 0].copy()
+                n_players = len(design.players)
+                exposure_rows = []
+                for season in range(window_start, window_end + 1):
+                    season_frame = sampled.loc[sampled["season"] == season]
+                    season_design = build_design(season_frame)
+                    season_weights = season_frame["_bootstrap_weight"].to_numpy(dtype=float)
+                    season_off = np.asarray(season_weights @ season_design.X[:, : len(season_design.players)]).ravel()
+                    season_def = np.asarray(season_weights @ season_design.X[:, len(season_design.players) : 2 * len(season_design.players)]).ravel()
+                    exposure_rows.append(pd.DataFrame({"PLAYER_ID": season_design.players, "season": season, "off": season_off, "def": season_def}))
+                per_season = pd.concat(exposure_rows, ignore_index=True)
+                eligibility = per_season.groupby("PLAYER_ID", as_index=False).agg(
+                    min_off=("off", "min"), min_def=("def", "min")
+                )
+                ratings = ratings.merge(eligibility, on="PLAYER_ID", how="left", validate="one_to_one")
+                ratings["peak_eligible"] = ratings["min_off"].ge(threshold) & ratings["min_def"].ge(threshold)
+                ratings["minimum_side_possessions"] = ratings[["Poss_Off", "Poss_Def"]].min(axis=1)
+                ratings = ratings.merge(names, on="PLAYER_ID", how="left", validate="one_to_one")
+                window_frames.append(ratings)
+        rolling = pd.concat(window_frames, ignore_index=True)
+        selected = extract_player_peaks(rolling)
+        selected["draw"] = draw
+        _write_parquet_atomic(selected, path)
+
+    observed = build_rolling_rapm_peaks(
+        cache_dir, names_path, player_sheets_dir, contract_path, artifact_root=artifact_root
+    )
+    observed_peaks = pd.read_parquet(Path(observed["player_peaks_path"]))
+    selected_draws = pd.concat([pd.read_parquet(draw_path(draw)) for draw in range(draws)], ignore_index=True)
+    key = ["PLAYER_ID", "window_seasons", "peak_component"]
+    observed_columns = [*key, "peak_value", "window_start", "window_end", "all_time_rank"]
+    summary = observed_peaks[observed_columns].rename(columns={"peak_value": "observed_peak_value", "window_start": "observed_window_start", "window_end": "observed_window_end", "all_time_rank": "observed_all_time_rank"}).copy()
+    grouped = selected_draws.groupby(key)
+    summary = summary.merge(
+        grouped["peak_value"].agg(
+            selection_aware_bootstrap_se=lambda values: values.std(ddof=1),
+            selection_aware_ci80_low=lambda values: values.quantile(0.10),
+            selection_aware_ci80_high=lambda values: values.quantile(0.90),
+            selection_aware_ci95_low=lambda values: values.quantile(0.025),
+            selection_aware_ci95_high=lambda values: values.quantile(0.975),
+            selection_aware_probability_above_zero=lambda values: (values > 0).mean(),
+            draw_coverage="count",
+        ).reset_index(),
+        on=key,
+        how="left",
+        validate="one_to_one",
+    )
+    rank_probabilities = (
+        selected_draws.assign(
+            top_10=lambda frame: frame["all_time_rank"].le(10),
+            top_25=lambda frame: frame["all_time_rank"].le(25),
+        )
+        .groupby(key, as_index=False)
+        .agg(probability_top_10=("top_10", "mean"), probability_top_25=("top_25", "mean"))
+    )
+    summary = summary.merge(rank_probabilities, on=key, how="left", validate="one_to_one")
+    ranks = grouped["all_time_rank"].agg(
+        joint_rank_band_low=lambda values: values.quantile(0.025),
+        joint_rank_band_high=lambda values: values.quantile(0.975),
+    ).reset_index()
+    summary = summary.merge(ranks, on=key, how="left", validate="one_to_one")
+    summary["uncertainty_status"] = np.where(
+        summary["draw_coverage"].ge(math.ceil(0.8 * draws)),
+        "selection_aware_bootstrap_complete",
+        "selection_aware_bootstrap_incomplete",
+    )
+    _write_parquet_atomic(summary, output / "selection_aware_peaks.parquet")
+    run = {
+        "run_id": run_id,
+        "model_family": "selection_aware_rolling_normal_rapm_peaks",
+        "estimand_id": "rolling_peak_impact_v1",
+        "status": "research_only_selection_aware_uncertainty",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "config": {"draws": draws, "seed": seed, "contract": str(contract_path)},
+        "source_hashes": identity_payload,
+        "quality": {
+            "draws_requested": draws,
+            "draws_complete": draws,
+            "selected_draw_rows": int(len(selected_draws)),
+            "complete_observed_peak_rows": int(summary["uncertainty_status"].eq("selection_aware_bootstrap_complete").sum()),
+        },
+        "selection_aware_peaks_path": str((output / "selection_aware_peaks.parquet").resolve()),
+        "artifact_path": str(output.resolve()),
+        "caveats": [
+            "Every draw refits windows, applies constituent-season eligibility, and reselects peaks.",
+            "Selection-aware intervals are not winner's-curse correction or true-peak estimates.",
+            "Peak endpoint remains research-only until a preregistered out-of-bag optimism study passes.",
+        ],
     }
     write_json_atomic(run, output / "run.json")
     return run

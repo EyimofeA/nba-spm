@@ -1,0 +1,62 @@
+{
+  "schema_version": "pinned_artifact_contracts_v1",
+  "updated_at": "2026-08-12",
+  "artifacts": [
+    {
+      "api_field": "annual_run_id",
+      "artifact_id": "annual_aio_ratings_v1_23c4895f8f",
+      "artifact_relative_dir": "models/annual_aio_ratings/annual_aio_ratings_v1_23c4895f8f",
+      "estimand_id": "annual_retrospective_impact_v1",
+      "evidence_status": "research_challenger_not_production",
+      "season_scope": "2017-2024",
+      "season_completeness": "2024 has 1,229 regular-season games; this is a derived rating artifact, not a new confirmation set.",
+      "uncertainty_status": "not_estimated_v1",
+      "config_sha256": "09f7b792a76c639638a1b2780b606c815fd232177633fa0e83752e8d256a02a1",
+      "code_sha256": "041745964e0246badc3e878a00c04c603073afcf35c54a0caf295b0d2cedb8d7",
+      "data_hashes_status": "embedded_in_run_config",
+      "forbidden_interpretation": "current latent ability, next-season forecast, or causal player value"
+    },
+    {
+      "api_field": "rolling_run_id",
+      "artifact_id": "rolling_rapm_peaks_v1_a8a612143c",
+      "artifact_relative_dir": "models/rolling_rapm_peaks/rolling_rapm_peaks_v1_a8a612143c",
+      "estimand_id": "rolling_peak_impact_v1",
+      "evidence_status": "research_leaderboard",
+      "season_scope": "1997-2024",
+      "season_completeness": "Regular seasons only; 2024 covers 1,229 games in the legacy cache.",
+      "uncertainty_status": "selection_aware_uncertainty_pending",
+      "config_sha256": "a8e6e5414c92f3c02b2244d368ba27798242ff6ab7a381f60bff3f4436d0f2c5",
+      "code_sha256": "0129a26018218170f79c3a60c0fa2dfb19064fad4f21279f121ed9882ae70043",
+      "data_hashes_status": "embedded_in_run_config",
+      "forbidden_interpretation": "uncertainty-corrected true peak or forecast ability"
+    },
+    {
+      "api_field": "current_rapm_run_id",
+      "artifact_id": "rapm_v0_01b5084f0a",
+      "artifact_relative_dir": "models/rapm/rapm_v0_01b5084f0a",
+      "estimand_id": "trailing_observed_lineup_rapm_v1",
+      "evidence_status": "production_reference_method",
+      "season_scope": "2024-2026",
+      "season_completeness": "2026 is current and partial; failed lineup-quality games are excluded.",
+      "uncertainty_status": "not_estimated_v0",
+      "config_sha256": "6bad3aa2388eb26285c6a6bd9fccef5f02411791cdfc9071282d742c78e328b5",
+      "code_sha256": "f8a3bc638c61a074d63c93ecc7d1405e49a9a17c1336fe04a84c8d8d84b37de6",
+      "data_hashes_status": "embedded_in_run_config",
+      "forbidden_interpretation": "latent current strength or deployable forecast"
+    },
+    {
+      "api_field": "matchup_defense_run_id",
+      "artifact_id": "matchup_defense_features_v1_09829b48c8",
+      "artifact_relative_dir": "features/matchup_defense/matchup_defense_features_v1_09829b48c8",
+      "estimand_id": "matchup_defense_observational_v1",
+      "evidence_status": "research_only",
+      "season_scope": "2018-2025",
+      "season_completeness": "Licensed matchup source covers project seasons 2018-2025; it is an observational feature panel.",
+      "uncertainty_status": "not_estimated_v1",
+      "config_sha256": "e1699019d1c336862ef99c2e437e16579fb432c235961d583263be7f7ffc3c7f",
+      "code_sha256": "24d918952ae0ba66a168cb6754e4b9f4739bdd0efdba1fd98b73112a7fe2dd2e",
+      "data_hashes_status": "embedded_in_run_config",
+      "forbidden_interpretation": "causal defensive responsibility or additive total defense"
+    }
+  ]
+}

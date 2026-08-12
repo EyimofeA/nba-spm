@@ -60,7 +60,7 @@ estimands:
 
   - estimand_id: rolling_peak_impact_v1
     name: Rolling observed RAPM peak
-    status: research_rebuild_required
+    status: research_leaderboard
     unit: points_per_100_possessions
     population: players meeting exposure in every constituent season
     window_definition: fixed three-year or five-year regular-season window

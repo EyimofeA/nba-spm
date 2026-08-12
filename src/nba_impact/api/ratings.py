@@ -10,6 +10,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from nba_impact.research.control_plane import load_pinned_contracts
+
 
 ANNUAL_METRICS = (
     "aio_net",
@@ -64,6 +66,8 @@ class RatingsApiConfig:
     default_limit: int = 25
     maximum_limit: int = 100
     matchup_defense_run_id: str | None = None
+    lineage_contract_path: str | None = None
+    current_uncertainty_run_id: str | None = None
 
     @classmethod
     def from_json(cls, path: str | Path) -> "RatingsApiConfig":
@@ -91,6 +95,15 @@ class RatingsStore:
         self.rolling = pd.read_parquet(self.rolling_dir / "rolling_ratings.parquet")
         self.peaks = pd.read_parquet(self.rolling_dir / "player_peaks.parquet")
         self.current = pd.read_parquet(self.current_dir / "ratings.parquet")
+        self.current_uncertainty: pd.DataFrame | None = None
+        if config.current_uncertainty_run_id is not None:
+            uncertainty_path = (
+                artifact_root
+                / "rapm_uncertainty"
+                / config.current_uncertainty_run_id
+                / "ratings_uncertainty.parquet"
+            )
+            self.current_uncertainty = pd.read_parquet(uncertainty_path)
         self.matchup_manifest: dict[str, Any] | None = None
         self.matchup: pd.DataFrame | None = None
         if config.matchup_defense_run_id is not None:
@@ -109,6 +122,132 @@ class RatingsStore:
             self.matchup_manifest = _read_run(self.matchup_dir / "run.json")
             self.matchup = pd.read_parquet(self.matchup_dir / "features.parquet")
         self._validate()
+
+    def _lineage_contract(self) -> dict[str, Any]:
+        configured = self.config.lineage_contract_path
+        project_root = Path(__file__).resolve().parents[3]
+        path = (
+            (project_root / configured)
+            if configured is not None and not Path(configured).is_absolute()
+            else Path(configured)
+            if configured is not None
+            else project_root / "research" / "pinned_artifact_contracts.json"
+        )
+        return load_pinned_contracts(path)
+
+    @staticmethod
+    def _row_set_hash(frame: pd.DataFrame, keys: list[str]) -> str:
+        canonical = frame.sort_values(keys, kind="stable").reset_index(drop=True)
+        payload = pd.util.hash_pandas_object(canonical, index=False).to_numpy().tobytes()
+        import hashlib
+
+        return hashlib.sha256(payload).hexdigest()
+
+    def _v2_lineage(self, api_field: str, frame: pd.DataFrame, keys: list[str]) -> dict[str, Any]:
+        contract = self._lineage_contract()
+        entry = next(
+            item for item in contract["artifacts"] if item["api_field"] == api_field
+        )
+        return {
+            "estimand_id": entry["estimand_id"],
+            "evidence_status": entry["evidence_status"],
+            "uncertainty_status": entry["uncertainty_status"],
+            "season_scope": entry["season_scope"],
+            "season_completeness": entry["season_completeness"],
+            "model_config_sha256": entry["config_sha256"],
+            "code_sha256": entry["code_sha256"],
+            "data_hashes_status": entry["data_hashes_status"],
+            "row_set_sha256": self._row_set_hash(frame, keys),
+            "forbidden_interpretation": entry["forbidden_interpretation"],
+        }
+
+    @staticmethod
+    def _v2_uncertainty(record: dict[str, Any]) -> dict[str, Any]:
+        status = record.get("uncertainty_status", "not_estimated")
+        method = record.get("uncertainty_method")
+        components: dict[str, Any] = {}
+        for component in ("offense", "defense", "net"):
+            estimate = record.get(f"{component}_estimate")
+            if estimate is None:
+                continue
+            components[component] = {
+                "estimate": estimate,
+                "standard_error": record.get(f"{component}_bootstrap_se"),
+                "analytic_standard_error": record.get(f"{component}_analytic_se"),
+                "interval_80": {
+                    "low": record.get(f"{component}_ci80_low"),
+                    "high": record.get(f"{component}_ci80_high"),
+                },
+                "interval_95": {
+                    "low": record.get(f"{component}_ci95_low"),
+                    "high": record.get(f"{component}_ci95_high"),
+                },
+                "probability_above_zero": record.get(
+                    f"{component}_probability_above_zero"
+                ),
+                "draw_coverage": record.get(f"{component}_draw_coverage"),
+            }
+        return {"status": status, "method": method, "components": components}
+
+    def v2_metadata(self) -> dict[str, Any]:
+        return {
+            "contract_version": "ratings_api_v2",
+            "artifacts": {
+                "annual": self._v2_lineage(
+                    "annual_run_id", self.annual, ["PLAYER_ID", "Season"]
+                ),
+                "rolling_peaks": self._v2_lineage(
+                    "rolling_run_id",
+                    self.peaks,
+                    ["PLAYER_ID", "window_seasons", "peak_component"],
+                ),
+                "current_normal_rapm": self._v2_lineage(
+                    "current_rapm_run_id", self.current, ["player_id"]
+                ),
+                "matchup_defense": (
+                    self._v2_lineage(
+                        "matchup_defense_run_id", self.matchup, ["PLAYER_ID", "Season"]
+                    )
+                    if self.matchup is not None
+                    else None
+                ),
+            },
+        }
+
+    def v2_wrap(self, endpoint: str, payload: dict[str, Any]) -> dict[str, Any]:
+        field = {
+            "annual": "annual_run_id",
+            "peaks": "rolling_run_id",
+            "current": "current_rapm_run_id",
+            "matchup-defense": "matchup_defense_run_id",
+        }.get(endpoint)
+        if field is None:
+            return {"contract_version": "ratings_api_v2", "data": payload}
+        frame, keys = {
+            "annual_run_id": (self.annual, ["PLAYER_ID", "Season"]),
+            "rolling_run_id": (
+                self.peaks,
+                ["PLAYER_ID", "window_seasons", "peak_component"],
+            ),
+            "current_rapm_run_id": (self.current, ["player_id"]),
+            "matchup_defense_run_id": (self.matchup, ["PLAYER_ID", "Season"]),
+        }[field]
+        output = {
+            "contract_version": "ratings_api_v2",
+            "lineage": self._v2_lineage(field, frame, keys),
+            "data": payload,
+        }
+        if endpoint == "current":
+            lookup = (
+                self.current_uncertainty.set_index("player_id").to_dict(orient="index")
+                if self.current_uncertainty is not None
+                else {}
+            )
+            for record in output["data"].get("results", []):
+                record["uncertainty"] = self._v2_uncertainty(
+                    lookup.get(record["player_id"], {"uncertainty_status": output["lineage"]["uncertainty_status"]})
+                )
+        return output
 
     def _validate(self) -> None:
         annual_required = {

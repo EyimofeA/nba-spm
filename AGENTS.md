@@ -47,6 +47,12 @@ listed position remain excluded as general model inputs.
   local execution for small or sequential work. Never exceed four concurrent
   threads, give delegated work non-overlapping scopes, and keep critical-path
   integration with the primary agent. Synthesize and verify every result.
+- Use GPT-5.6 Terra with high reasoning for normal repository work, data QA,
+  implementation, tests, and documented experiment runs. Use GPT-5.6 Sol with
+  xhigh reasoning only for frozen statistical checkpoints: uncertainty
+  mathematics, empirical-Bayes prior specification, and promotion review.
+  Return to Terra after each review. Python, not a language model, computes all
+  numerical results.
 - Keep changes focused and simple. Avoid unrelated edits, unnecessary
   abstractions, and low-signal tests.
 - Test observable behavior and validate user-facing work in the real interface
