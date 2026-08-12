@@ -22,6 +22,7 @@ from nba_impact.models.prior_informed_rapm import (
 )
 from nba_impact.models.rapm import RapmConfig, RapmDesign, _penalty
 from nba_impact.models.rapm import build_design, fit_coefficients, fit_coefficients_with_center
+from nba_impact.models.rapm_uncertainty import game_cluster_sandwich
 from nba_impact.models.rapm_uncertainty import _recenter, _solve
 
 
@@ -155,7 +156,9 @@ def run_precision_aware_prior_comparison(
             design, priors, prior_window_end=prior_end,
             train_mask=train_mask, test_mask=test_mask,
         )
-        earlier = calibration.loc[calibration["window_end"].lt(train_seasons[0])]
+        # Calibration may use earlier *training* windows but never the scored
+        # season or a future window. It is not a test-set tuning input.
+        earlier = calibration.loc[calibration["window_end"].lt(prior_end)]
         off_precision = calibrate_prior_precision(
             earlier, side="offense", label_column="offense_label",
             prior_column="offense_prior", label_variance_column="offense_label_variance",
@@ -198,3 +201,49 @@ def run_precision_aware_prior_comparison(
         repetitions=bootstrap_repetitions, seed=bootstrap_seed,
     ) if (folds["candidate"] == "precision_aware_side_specific_prior").any() else {"status": "invalid_precision_calibration"}
     return folds, pd.DataFrame(calibration_rows), comparison
+
+
+def build_prior_calibration_panel(
+    frame: pd.DataFrame,
+    priors: pd.DataFrame,
+    config: RapmConfig,
+    *,
+    window_ends: tuple[int, ...],
+    window_length: int = 3,
+) -> pd.DataFrame:
+    """Create earlier-fold RAPM labels with analytic measurement variance.
+
+    This is a calibration artifact only. It uses the normal-RAPM point estimator
+    and its CR0 game-cluster covariance as label-noise diagnostics; publication
+    uncertainty remains the whole-game bootstrap.
+    """
+    outputs: list[pd.DataFrame] = []
+    for end in window_ends:
+        seasons = tuple(range(end - window_length + 1, end + 1))
+        subset = frame.loc[frame["season"].isin(seasons)].copy()
+        if set(seasons) != set(int(value) for value in subset["season"].unique()):
+            raise ValueError(f"Calibration window {end} lacks required seasons.")
+        design = build_design(subset, include_home=config.include_home)
+        covariance, beta, _ = game_cluster_sandwich(design, config)
+        n_players = len(design.players)
+        labels = pd.DataFrame(
+            {
+                "PLAYER_ID": design.players,
+                "window_end": end,
+                "offense_label": beta[:n_players] * 100.0,
+                "defense_label": -beta[n_players : 2 * n_players] * 100.0,
+                "offense_label_variance": np.clip(np.diag(covariance)[:n_players] * 10000.0, 0.0, None),
+                "defense_label_variance": np.clip(np.diag(covariance)[n_players : 2 * n_players] * 10000.0, 0.0, None),
+            }
+        )
+        prior = priors.loc[priors["Window_End"].eq(end), [
+            "PLAYER_ID", "prior_offense_per_100", "prior_defense_per_100"
+        ]].rename(columns={
+            "prior_offense_per_100": "offense_prior",
+            "prior_defense_per_100": "defense_prior",
+        })
+        outputs.append(labels.merge(prior, on="PLAYER_ID", how="inner", validate="one_to_one"))
+    result = pd.concat(outputs, ignore_index=True)
+    if result.duplicated(["PLAYER_ID", "window_end"]).any():
+        raise ValueError("Calibration panel must have unique player-window keys.")
+    return result

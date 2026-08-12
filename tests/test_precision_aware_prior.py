@@ -8,6 +8,7 @@ from nba_impact.models.precision_aware_prior import (
     PriorPrecision,
     calibrate_prior_precision,
     fit_precision_aware_center,
+    run_precision_aware_prior_comparison,
 )
 from nba_impact.models.rapm import RapmConfig, build_design
 
@@ -48,3 +49,33 @@ def test_precision_fit_requires_earlier_identified_side_precision() -> None:
     assert np.isfinite(beta).all()
     assert penalty[0] == pytest.approx(2.0)
     assert penalty[len(design.players)] == pytest.approx(1.0)
+
+
+def test_four_model_runner_uses_only_earlier_calibration_windows() -> None:
+    rows = []
+    for season in range(2017, 2023):
+        for game in range(2):
+            for possession in range(10):
+                rows.append({
+                    "home_poss": bool(possession % 2), "pts": float((game + possession) % 3),
+                    **{f"a{j}": j for j in range(1, 6)}, **{f"h{j}": j + 5 for j in range(1, 6)},
+                    "season": season, "date": f"{season-1}-11-01", "period": 1,
+                    "num": possession, "gameid": f"{season}_{game}",
+                })
+    players = list(range(1, 21))
+    priors = pd.DataFrame([
+        {"PLAYER_ID": p, "Window_End": end, "prior_offense_per_100": p / 20, "prior_defense_per_100": p / 30, "prior_net_per_100": p / 12}
+        for end in range(2018, 2022) for p in players
+    ])
+    calibration = pd.DataFrame([
+        {"PLAYER_ID": p, "window_end": end, "offense_label": p / 20 + (p % 3) * .1, "offense_prior": p / 20,
+         "offense_label_variance": .001, "defense_label": p / 30 + (p % 3) * .1, "defense_prior": p / 30,
+         "defense_label_variance": .001}
+        for end in range(2017, 2021) for p in players
+    ])
+    folds, calibrations, _ = run_precision_aware_prior_comparison(
+        pd.DataFrame(rows), priors, calibration, RapmConfig(tuple(range(2017, 2023)), lambda_off=20, lambda_def=20),
+        test_seasons=(2021, 2022), train_window=3, selection_seasons=(2021,), diagnostic_seasons=(2022,), bootstrap_repetitions=10,
+    )
+    assert set(folds["candidate"]) == {"zero_prior", "fixed_center_prior", "statistical_prior_only", "precision_aware_side_specific_prior"}
+    assert (calibrations["calibration_latest_window"] < calibrations["prior_window_end"]).all()
