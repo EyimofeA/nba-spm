@@ -1,0 +1,53 @@
+schema_version: experiment_preregistration_v1
+experiment_id: precision_aware_prior_rapm_v1
+status: preregistered_not_run
+created_at: 2026-08-12
+estimand_id: annual_retrospective_impact_v1
+
+hypothesis: >-
+  A statistical prior should receive more weight when its cross-fitted uncertainty
+  is low and a player's possession evidence is weak. Side-specific precision
+  should outperform one global prior-center scale without making high-exposure
+  players stale.
+candidate_change: >-
+  Replace the fixed global prior-center scale with offense-specific and
+  defense-specific empirical-Bayes precisions estimated only inside each training
+  fold. Keep the RAPM design, terminal-lineup policy, and ridge penalties fixed.
+
+comparators:
+  - zero_prior_normal_rapm
+  - statistical_prior_only
+  - fixed_center_scale_selected_inside_training
+  - precision_aware_side_specific_prior
+
+data_contract:
+  development_seasons: [2014, 2015, 2016, 2017]
+  selection_seasons: [2018, 2019, 2020, 2021]
+  reused_diagnostic_seasons: [2022, 2023, 2024]
+  inspected_failure_seasons: [2025]
+  infrastructure_only_seasons: [2026]
+  untouched_confirmation_seasons: [2027]
+  scoring_rows: identical held-out games for every comparator
+  information_cutoff: priors and precision estimates must be generated without the scored season
+
+evaluation:
+  primary_metric: equal-season-weighted held-out game-margin RMSE
+  unit_of_independence: whole game, stratified by season
+  interval: paired whole-game bootstrap on candidate-minus-zero-prior loss
+  guardrails:
+    - mean game-margin correlation cannot decline by more than 0.01
+    - every fold must use identical games and lineup coverage
+    - report low-exposure and high-exposure player diagnostics separately
+    - report offense and defense update calibration separately
+    - no future-season inputs or target-derived feature selection
+
+promotion_gate:
+  minimum_game_margin_rmse_improvement: 0.05
+  paired_interval_requirement: 95_percent_interval_excludes_zero_in_favor_of_candidate
+  fold_consistency: no material loss concentrated in one confirmation season
+  final_requirement: pass the untouched complete 2027 confirmation without redesign
+
+stopping_rules:
+  - Do not run until prior uncertainty is estimated only from training data.
+  - Do not tune the candidate after inspecting 2025, 2026, or 2027 outcomes.
+  - Keep zero-prior normal RAPM as production when the practical and uncertainty gates fail.

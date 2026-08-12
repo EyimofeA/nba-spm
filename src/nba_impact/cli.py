@@ -1,0 +1,2175 @@
+"""Command line entry point for the new data/model spine."""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+import pandas as pd
+
+from nba_impact.api.ratings import RatingsApiConfig, RatingsStore
+from nba_impact.api.server import serve
+from nba_impact.data.assist_quality_features import build_assist_quality_features
+from nba_impact.data.download import plan_ingest_manifest, run_ingest_manifest
+from nba_impact.data.defensive_tracking_features import build_defensive_tracking_features
+from nba_impact.data.event_quality import build_event_snapshot
+from nba_impact.data.event_state import build_event_states
+from nba_impact.data.espn_win_probability import ingest_espn_win_probability
+from nba_impact.data.game_dim import build_game_dimension
+from nba_impact.data.lineups import build_lineup_stints
+from nba_impact.data.matchup_defense_features import build_matchup_defense_features
+from nba_impact.data.manifest import (
+    build_possession_snapshot,
+    sha256_file,
+    write_json_atomic,
+)
+from nba_impact.data.official_boxscore import ingest_official_boxscores
+from nba_impact.data.player_game import build_player_games
+from nba_impact.data.playtype_features import build_playtype_features
+from nba_impact.data.possessions import build_possessions
+from nba_impact.data.statistical_features import build_statistical_feature_windows
+from nba_impact.data.statistical_features_v2 import build_statistical_features_v2
+from nba_impact.models.rapm import (
+    RapmConfig,
+    load_current_possessions,
+    load_current_player_names,
+    load_legacy_possessions,
+    run_nested_normal_rapm_tuning,
+    run_rapm,
+    run_regularization_comparison,
+    run_walk_forward_comparison,
+)
+from nba_impact.models.rapm_lineup_policy import run_rapm_lineup_policy_comparison
+from nba_impact.models.external_impact_benchmark import (
+    acquire_external_impact_pages,
+    build_external_impact_benchmark,
+)
+from nba_impact.models.prior_informed_rapm import (
+    run_prior_informed_rapm_comparison,
+)
+from nba_impact.models.annual_spm_priors import (
+    build_forward_chained_annual_spm_priors,
+)
+from nba_impact.models.annual_aio_ratings import build_annual_aio_ratings
+from nba_impact.models.annual_defense_ridge_nested import run_annual_defense_ridge_nested
+from nba_impact.models.annual_defense_features_nested import run_annual_defense_features_nested
+from nba_impact.models.current_spm_confirmation import run_current_spm_confirmation
+from nba_impact.models.current_spm_diagnostics import run_current_spm_diagnostics
+from nba_impact.models.rolling_rapm_peaks import build_rolling_rapm_peaks
+from nba_impact.models.statistical_impact import run_statistical_impact_baseline
+from nba_impact.models.single_season_spm import (
+    build_single_season_rapm_targets,
+    fit_single_season_spm,
+)
+from nba_impact.models.statistical_direct_net import (
+    run_statistical_direct_net_comparison,
+)
+from nba_impact.models.statistical_feature_ablation import (
+    fit_optimized_statistical_aio,
+    run_statistical_feature_ablation,
+)
+from nba_impact.models.statistical_model_comparison import (
+    run_statistical_model_comparison,
+)
+from nba_impact.models.statistical_priors import (
+    build_cross_fitted_statistical_priors,
+)
+from nba_impact.models.statistical_feature_v2 import (
+    run_statistical_feature_v2_comparison,
+)
+from nba_impact.models.inpredictable_benchmark import (
+    run_inpredictable_surface_benchmark,
+)
+from nba_impact.models.win_probability import run_win_probability
+from nba_impact.models.win_probability_ablation import run_win_probability_elo_ablation
+from nba_impact.models.win_probability_benchmark import (
+    run_espn_win_probability_benchmark,
+)
+from nba_impact.models.win_probability_lineup import run_win_probability_lineup_ablation
+from nba_impact.models.win_probability_mlp import run_win_probability_mlp_comparison
+from nba_impact.models.win_probability_possession import (
+    run_win_probability_possession_ablation,
+)
+from nba_impact.models.win_probability_stage1 import (
+    run_win_probability_stage1_comparison,
+)
+from nba_impact.paths import (
+    ARTIFACT_ROOT,
+    BRONZE_ROOT,
+    LEGACY_PLAYER_SHEETS,
+    LEGACY_POSSESSION_CACHE,
+    MANIFEST_ROOT,
+    OFFICIAL_BOXSCORE_ROOT,
+    PLAYER_NAMES,
+    PROJECT_ROOT,
+    REGISTRY_PATH,
+    SILVER_ROOT,
+    ensure_owned_dirs,
+)
+from nba_impact.registry import register_model_run, register_snapshot
+
+
+def _season_list(value: str) -> tuple[int, ...]:
+    seasons = tuple(int(item.strip()) for item in value.split(",") if item.strip())
+    if not seasons:
+        raise argparse.ArgumentTypeError("provide at least one comma-separated season")
+    return seasons
+
+
+def _text_list(value: str) -> tuple[str, ...]:
+    items = tuple(item.strip() for item in value.split(",") if item.strip())
+    if not items:
+        raise argparse.ArgumentTypeError("provide at least one comma-separated value")
+    return items
+
+
+def _float_list(value: str) -> tuple[float, ...]:
+    try:
+        values = tuple(float(item.strip()) for item in value.split(",") if item.strip())
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            "provide comma-separated numeric values"
+        ) from exc
+    if not values:
+        raise argparse.ArgumentTypeError("provide at least one numeric value")
+    return values
+
+
+def command_audit(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    seasons = list(args.seasons)
+    snapshot = build_possession_snapshot(args.cache_dir, seasons)
+    destination = Path(args.output or MANIFEST_ROOT / f"{snapshot['snapshot_id']}.json")
+    write_json_atomic(snapshot, destination)
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "path": str(destination),
+            },
+            indent=2,
+        )
+    )
+    for item in snapshot["files"]:
+        quality = item["quality"]
+        print(
+            f"{item['season']}: rows={quality['row_count']:,} games={quality['game_count']:,} "
+            f"dates={quality['date_min']}..{quality['date_max']} passed={quality['passed']}"
+        )
+        for issue in quality["issues"]:
+            print(
+                f"  {issue['severity']:>8} {issue['code']}: {issue['count']} — {issue['message']}"
+            )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_ingest(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    if args.dry_run:
+        plan = plan_ingest_manifest(args.manifest, root=args.root)
+        print(json.dumps(plan, indent=2))
+        return 0
+    summary = run_ingest_manifest(args.manifest, root=args.root)
+    print(
+        json.dumps(
+            {key: summary[key] for key in ("succeeded", "failed", "completed_at")},
+            indent=2,
+        )
+    )
+    return 0
+
+
+def command_audit_events(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_event_snapshot(args.root)
+    destination = Path(args.output or MANIFEST_ROOT / f"{snapshot['snapshot_id']}.json")
+    write_json_atomic(snapshot, destination)
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "files": len(snapshot["files"]),
+                "path": str(destination),
+            },
+            indent=2,
+        )
+    )
+    for item in snapshot["files"]:
+        print(
+            f"{item['source']:<12} {item['season']} {item['season_type']:<8} "
+            f"rows={item['row_count']:,} games={item['game_count']:,} passed={item['passed']}"
+        )
+    for item in snapshot["reconciliation"]:
+        if not item["passed"]:
+            print(
+                f"  reconcile {item['season']} {item['season_type']} {item['source']}: "
+                f"missing={item['missing_games']} extra={item['extra_games']}"
+            )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_game_dim(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_game_dimension(args.root, args.output, args.manifest_dir)
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "rows": snapshot["row_count"],
+                "season_labels": snapshot["season_labels"],
+                "coverage": snapshot["source_coverage"],
+                "issues": snapshot["issues"],
+                "path": snapshot["path"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_event_states(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_event_states(
+        args.root, args.game_dim, args.output, args.manifest_dir
+    )
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "rows": snapshot["row_count"],
+                "games": snapshot["game_count"],
+                "issues": snapshot["issues"],
+                "warnings": snapshot["warnings"],
+                "path": snapshot["path"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_player_games(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_player_games(
+        args.box,
+        args.espn,
+        args.game_dim,
+        args.output,
+        args.manifest_dir,
+        official_box_dir=args.official_box_dir,
+    )
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "rows": snapshot["row_count"],
+                "games": snapshot["game_count"],
+                "espn_games": snapshot["espn_game_count"],
+                "issues": snapshot["issues"],
+                "path": snapshot["path"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_ingest_official_boxscores(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    quality = pd.read_parquet(args.quality)
+    failed = quality.loc[~quality["passed"]].copy()
+    if args.seasons:
+        failed = failed.loc[failed["season_label"].isin(args.seasons)]
+    snapshot = ingest_official_boxscores(
+        failed["game_id"].astype(str).tolist(),
+        args.output_root,
+        args.manifest_dir,
+        max_attempts=args.max_attempts,
+        minimum_delay_seconds=args.minimum_delay_seconds,
+    )
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "requested_games": snapshot["requested_game_count"],
+                "downloaded_games": snapshot["downloaded_game_count"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_lineups(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_lineup_stints(
+        args.root,
+        args.player_games,
+        args.game_dim,
+        args.output,
+        args.quality_output,
+        args.manifest_dir,
+        minute_tolerance_seconds=args.minute_tolerance_seconds,
+        max_quarantine_fraction=args.max_quarantine_fraction,
+    )
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "stints": snapshot["row_count"],
+                "passed_games": snapshot["passed_game_count"],
+                "quarantined_games": snapshot["quarantined_game_count"],
+                "quarantine_fraction": snapshot["quarantine_fraction"],
+                "source_counts": snapshot["source_counts"],
+                "issues": snapshot["issues"],
+                "path": snapshot["path"],
+                "quality_path": snapshot["quality_path"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_possessions(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_possessions(
+        args.root,
+        args.event_states,
+        args.game_dim,
+        args.player_games,
+        args.lineup_quality,
+        args.output,
+        args.segments_output,
+        args.manifest_dir,
+    )
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "rows": snapshot["row_count"],
+                "segments": snapshot["segment_row_count"],
+                "games": snapshot["game_count"],
+                "coverage_rate": snapshot["coverage_rate"],
+                "point_reconciliation": snapshot["point_reconciliation"],
+                "issues": snapshot["issues"],
+                "warnings": snapshot["warnings"],
+                "path": snapshot["path"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_fit_rapm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    seasons = tuple(args.seasons)
+    game_types = tuple(
+        item.strip() for item in args.game_types.split(",") if item.strip()
+    )
+    frame = load_legacy_possessions(args.cache_dir, seasons, game_types=game_types)
+    names = pd.read_csv(args.names) if Path(args.names).exists() else None
+    config = RapmConfig(
+        seasons=seasons,
+        lambda_off=args.lambda_off,
+        lambda_def=args.lambda_def,
+        lambda_home=args.lambda_home,
+        include_home=not args.no_home,
+        game_types=game_types,
+    )
+    run = run_rapm(frame, config, artifact_root=args.artifact_root, names=names)
+    run["dataset_snapshot_id"] = args.snapshot_id
+    write_json_atomic(run, Path(run["artifact_path"]) / "run.json")
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_fit_current_rapm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    game_types = tuple(
+        item.strip() for item in args.game_types.split(",") if item.strip()
+    )
+    frame = load_current_possessions(
+        args.possessions,
+        args.segments,
+        lineup_policy=args.lineup_policy,
+        game_types=game_types,
+    )
+    seasons = tuple(sorted(int(value) for value in frame["season"].unique()))
+    names = load_current_player_names(args.names, args.player_games)
+    config = RapmConfig(
+        seasons=seasons,
+        lambda_off=args.lambda_off,
+        lambda_def=args.lambda_def,
+        lambda_home=args.lambda_home,
+        include_home=not args.no_home,
+        game_types=game_types,
+        data_scope=f"current_cdn_{args.lineup_policy}_lineup",
+    )
+    run = run_rapm(frame, config, artifact_root=args.artifact_root, names=names)
+    ratings_path = Path(run["artifact_path"]) / "ratings.parquet"
+    ratings = pd.read_parquet(ratings_path, columns=["player_name"])
+    run["status"] = (
+        "research_frozen_baseline"
+        if args.lineup_policy == "terminal"
+        else "research_lineup_sensitivity"
+    )
+    run["config"]["lineup_policy"] = args.lineup_policy
+    run["config"]["possessions_path"] = str(args.possessions.resolve())
+    run["config"]["segments_path"] = str(args.segments.resolve())
+    run["config"]["source_hashes"] = {
+        "possessions": sha256_file(args.possessions),
+        "segments": sha256_file(args.segments),
+        "player_games": sha256_file(args.player_games),
+        "legacy_names": sha256_file(args.names) if Path(args.names).exists() else None,
+    }
+    run["metrics"]["missing_player_names"] = int(ratings["player_name"].isna().sum())
+    run["caveats"] = [
+        "The estimand is descriptive and uses observed lineups, not a pregame forecast.",
+        "Source games that fail lineup quality gates are excluded rather than repaired.",
+        "The latest-season retrodiction contains players absent from earlier training seasons.",
+        "Uncertainty is not estimated in this version.",
+    ]
+    run["dataset_snapshot_id"] = args.snapshot_id
+    write_json_atomic(run["config"], Path(run["artifact_path"]) / "config.json")
+    write_json_atomic(run["metrics"], Path(run["artifact_path"]) / "metrics.json")
+    write_json_atomic(run, Path(run["artifact_path"]) / "run.json")
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def _lambda_pairs(value: str) -> tuple[tuple[float, float], ...]:
+    pairs: list[tuple[float, float]] = []
+    try:
+        for item in value.split(","):
+            offense, defense = item.strip().split(":", maxsplit=1)
+            pairs.append((float(offense), float(defense)))
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            "use comma-separated offense:def pairs"
+        ) from exc
+    if not pairs or any(offense <= 0 or defense <= 0 for offense, defense in pairs):
+        raise argparse.ArgumentTypeError("lambda pairs must be positive")
+    return tuple(pairs)
+
+
+def _penalty_triples(value: str) -> tuple[tuple[float, float, float], ...]:
+    triples: list[tuple[float, float, float]] = []
+    try:
+        for item in value.split(","):
+            offense, defense, home = item.strip().split(":", maxsplit=2)
+            triples.append((float(offense), float(defense), float(home)))
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            "use comma-separated offense:defense:home triples"
+        ) from exc
+    if not triples or any(min(triple) <= 0 for triple in triples):
+        raise argparse.ArgumentTypeError("penalty triples must be positive")
+    return tuple(triples)
+
+
+def command_tune_normal_rapm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    frame = load_current_possessions(
+        args.possessions,
+        args.segments,
+        lineup_policy="terminal",
+        game_types=("regular",),
+    )
+    seasons = (2024, 2025, 2026)
+    frame = frame.loc[frame["season"].isin(seasons)].copy()
+    names = pd.read_csv(args.names) if Path(args.names).exists() else None
+    run = run_nested_normal_rapm_tuning(
+        frame,
+        RapmConfig(seasons=seasons, data_scope="current_cdn_normal_rapm"),
+        args.penalty_candidates,
+        selection_train_seasons=(2024,),
+        selection_test_season=2025,
+        confirmation_train_seasons=(2024, 2025),
+        confirmation_test_season=2026,
+        artifact_root=args.artifact_root,
+        names=names,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_fit_statistical_impact(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_statistical_impact_baseline(
+        args.features,
+        args.targets,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_statistical_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_statistical_feature_windows(
+        args.source_dir,
+        artifact_root=args.artifact_root,
+        window_ends=args.window_ends,
+        window_seasons=args.window_seasons,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_statistical_features_v2(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_statistical_features_v2(
+        args.source_dir,
+        args.base_features,
+        artifact_root=args.artifact_root,
+        window_ends=args.window_ends,
+        pooled_window_seasons=args.pooled_window_seasons,
+        playtype_features_path=args.playtype_features,
+        defensive_tracking_features_path=args.defensive_tracking_features,
+        assist_quality_features_path=args.assist_quality_features,
+        matchup_defense_features_path=args.matchup_defense_features,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_playtype_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_playtype_features(
+        args.playtype_source, args.box_source_dir,
+        artifact_root=args.artifact_root, seasons=args.seasons,
+        minimum_minutes=args.minimum_minutes,
+        minimum_player_playtype_possessions=args.minimum_synergy_possessions,
+        minimum_league_row_possessions=args.minimum_league_row_possessions,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_defensive_tracking_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_defensive_tracking_features(
+        args.dfg_source, args.rim_dfg_source, args.hustle_source,
+        args.box_source_dir, artifact_root=args.artifact_root, seasons=args.seasons,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_matchup_defense_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_matchup_defense_features(
+        args.archive_root,
+        args.box_source_dir,
+        artifact_root=args.artifact_root,
+        seasons=args.seasons,
+        defender_prior_possessions=args.defender_prior_possessions,
+        shooting_prior_attempts=args.shooting_prior_attempts,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_assist_quality_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_assist_quality_features(
+        args.source, artifact_root=args.artifact_root, seasons=args.seasons
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_compare_statistical_models(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_statistical_model_comparison(
+        args.features,
+        args.targets,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_compare_statistical_direct_net(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_statistical_direct_net_comparison(
+        args.features,
+        args.targets,
+        args.component_run,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_ablate_statistical_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_statistical_feature_ablation(
+        args.features,
+        args.targets,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_fit_optimized_statistical_aio(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = fit_optimized_statistical_aio(
+        args.features,
+        args.targets,
+        args.ablation_run,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_compare_statistical_features_v2(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_statistical_feature_v2_comparison(
+        args.features,
+        args.targets,
+        args.baseline_run,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_statistical_priors(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_cross_fitted_statistical_priors(
+        args.features,
+        args.targets,
+        args.reference_run,
+        artifact_root=args.artifact_root,
+        prediction_window_ends=args.window_ends,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_compare_prior_informed_rapm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    test_seasons = tuple(args.test_seasons)
+    seasons = tuple(
+        range(min(test_seasons) - args.train_window, max(test_seasons) + 1)
+    )
+    frame = load_legacy_possessions(
+        args.cache_dir, seasons, game_types=("regular",)
+    )
+    run = run_prior_informed_rapm_comparison(
+        frame,
+        args.priors,
+        RapmConfig(
+            seasons=seasons,
+            lambda_off=args.lambda_off,
+            lambda_def=args.lambda_def,
+            lambda_home=args.lambda_home,
+            game_types=("regular",),
+            data_scope="legacy_regular_prior_informed_comparison",
+        ),
+        artifact_root=args.artifact_root,
+        test_seasons=test_seasons,
+        train_window=args.train_window,
+        prior_scales=args.prior_scales,
+        selection_test_seasons=tuple(args.selection_test_seasons),
+        confirmation_test_seasons=tuple(args.confirmation_test_seasons),
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        bootstrap_seed=args.seed,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_ingest_external_impact(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    manifest = acquire_external_impact_pages(
+        args.raw_root,
+        seasons=tuple(args.seasons),
+    )
+    print(json.dumps(manifest, indent=2))
+    return 0
+
+
+def command_benchmark_external_impact(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_external_impact_benchmark(
+        args.priors,
+        args.features,
+        args.names,
+        args.raw_root,
+        artifact_root=args.artifact_root,
+        window_ends=tuple(args.window_ends),
+        minimum_window_possessions_per_side=args.minimum_possessions,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_single_season_rapm_targets(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_single_season_rapm_targets(
+        args.cache_dir,
+        artifact_root=args.artifact_root,
+        seasons=tuple(args.seasons),
+        lambda_off=args.lambda_off,
+        lambda_def=args.lambda_def,
+        lambda_home=args.lambda_home,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_fit_single_season_spm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = fit_single_season_spm(
+        args.features,
+        args.targets,
+        args.reference_run,
+        args.names,
+        args.external_raw_root,
+        artifact_root=args.artifact_root,
+        output_seasons=tuple(args.output_seasons),
+        minimum_possessions_per_side=args.minimum_possessions,
+        additional_offense_features=args.additional_offense_features,
+        additional_defense_features=args.additional_defense_features,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_forward_annual_spm_priors(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_forward_chained_annual_spm_priors(
+        args.features,
+        args.targets,
+        args.reference_run,
+        args.contract,
+        artifact_root=args.artifact_root,
+        output_seasons=tuple(args.output_seasons),
+        minimum_training_seasons=args.minimum_training_seasons,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_annual_aio_ratings(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_annual_aio_ratings(
+        args.cache_dir,
+        args.priors,
+        args.names,
+        artifact_root=args.artifact_root,
+        seasons=tuple(args.seasons),
+        lambda_off=args.lambda_off,
+        lambda_def=args.lambda_def,
+        lambda_home=args.lambda_home,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_rolling_rapm_peaks(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_rolling_rapm_peaks(
+        args.cache_dir,
+        args.names,
+        args.player_sheets_dir,
+        args.contract,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_confirm_current_spm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_current_spm_confirmation(
+        args.features,
+        args.frozen_spm_run,
+        args.possessions,
+        args.segments,
+        args.names,
+        args.player_games,
+        artifact_root=args.artifact_root,
+        season=args.season,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_diagnose_current_spm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_current_spm_diagnostics(
+        args.confirmation_run,
+        args.current_features,
+        args.reference_features,
+        args.frozen_spm_run,
+        args.possessions,
+        args.segments,
+        artifact_root=args.artifact_root,
+        season=args.season,
+        comparison_season=args.comparison_season,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_run_annual_defense_ridge_nested(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_annual_defense_ridge_nested(
+        args.features,
+        args.targets,
+        args.frozen_spm_run,
+        args.contract,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_run_annual_defense_features_nested(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_annual_defense_features_nested(
+        args.features,
+        args.targets,
+        args.frozen_spm_run,
+        args.contract,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_serve_ratings(args: argparse.Namespace) -> int:
+    config = RatingsApiConfig.from_json(args.config)
+    store = RatingsStore(config, args.artifact_root)
+    serve(store, args.host, args.port)
+    return 0
+
+
+def command_compare_rapm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    seasons = tuple(args.seasons)
+    game_types = tuple(
+        item.strip() for item in args.game_types.split(",") if item.strip()
+    )
+    frame = load_legacy_possessions(args.cache_dir, seasons, game_types=game_types)
+    config = RapmConfig(
+        seasons=seasons,
+        lambda_home=args.lambda_home,
+        include_home=not args.no_home,
+        game_types=game_types,
+    )
+    run = run_regularization_comparison(
+        frame,
+        config,
+        args.lambda_pairs,
+        artifact_root=args.artifact_root,
+    )
+    run["dataset_snapshot_id"] = args.snapshot_id
+    write_json_atomic(run, Path(run["artifact_path"]) / "run.json")
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_walk_forward_rapm(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    test_seasons = tuple(args.test_seasons)
+    season_start = min(test_seasons) - args.train_window
+    seasons = tuple(range(season_start, max(test_seasons) + 1))
+    game_types = tuple(
+        item.strip() for item in args.game_types.split(",") if item.strip()
+    )
+    frame = load_legacy_possessions(args.cache_dir, seasons, game_types=game_types)
+    config = RapmConfig(
+        seasons=seasons,
+        lambda_home=args.lambda_home,
+        include_home=not args.no_home,
+        game_types=game_types,
+    )
+    run = run_walk_forward_comparison(
+        frame,
+        config,
+        args.lambda_pairs,
+        test_seasons,
+        train_window=args.train_window,
+        artifact_root=args.artifact_root,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        seed=args.seed,
+    )
+    run["dataset_snapshot_id"] = args.snapshot_id
+    write_json_atomic(run, Path(run["artifact_path"]) / "run.json")
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_fit_win_probability(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_win_probability(
+        args.event_states,
+        train_season_labels=args.train_seasons,
+        test_season_labels=args.test_seasons,
+        artifact_root=args.artifact_root,
+        interval_seconds=args.interval_seconds,
+    )
+    run["dataset_snapshot_id"] = args.snapshot_id
+    write_json_atomic(run, Path(run["artifact_path"]) / "run.json")
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_compare_win_probability(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_win_probability_elo_ablation(
+        args.event_states,
+        args.game_dim,
+        train_season_labels=args.train_seasons,
+        test_season_labels=args.test_seasons,
+        artifact_root=args.artifact_root,
+        interval_seconds=args.interval_seconds,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        seed=args.seed,
+    )
+    run["dataset_snapshot_id"] = args.snapshot_id
+    write_json_atomic(run, Path(run["artifact_path"]) / "run.json")
+    register_model_run(args.registry, run)
+    summary = {
+        "run_id": run["run_id"],
+        "status": run["status"],
+        "variants": run["metrics"]["nonterminal_variants"],
+        "paired_game_bootstrap": run["metrics"]["paired_game_bootstrap"],
+        "artifact_path": run["artifact_path"],
+    }
+    print(json.dumps(summary, indent=2))
+    return 0
+
+
+def command_ingest_espn_win_probability(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = ingest_espn_win_probability(
+        args.game_dim,
+        season_labels=args.seasons,
+        raw_root=args.raw_root,
+        index_output=args.output,
+        manifest_dir=args.manifest_dir,
+        max_workers=args.max_workers,
+    )
+    register_snapshot(args.registry, snapshot)
+    print(json.dumps(snapshot, indent=2))
+    return 0 if snapshot["games_ready"] == snapshot["games_expected"] else 2
+
+
+def command_benchmark_win_probability(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_espn_win_probability_benchmark(
+        args.event_states,
+        args.game_dim,
+        args.espn_index,
+        args.model_run,
+        artifact_root=args.artifact_root,
+        clock_tolerance_seconds=args.clock_tolerance_seconds,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        seed=args.seed,
+    )
+    register_model_run(args.registry, run)
+    print(
+        json.dumps(
+            {
+                "run_id": run["run_id"],
+                "coverage": run["coverage"],
+                "metrics": run["metrics"],
+                "paired_game_bootstrap": run["paired_game_bootstrap"],
+                "checkpoints": run["checkpoints"],
+                "artifact_path": run["artifact_path"],
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
+def command_compare_wp_lineup_strength(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_win_probability_lineup_ablation(
+        args.event_states,
+        args.game_dim,
+        args.player_games,
+        args.possessions,
+        args.segments,
+        args.legacy_cache,
+        args.espn_index,
+        artifact_root=args.artifact_root,
+        train_season=args.train_season,
+        test_season=args.test_season,
+        include_espn=not args.skip_espn,
+        interval_seconds=args.interval_seconds,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        seed=args.seed,
+    )
+    register_model_run(args.registry, run)
+    metrics = run["metrics"]
+    print(
+        json.dumps(
+            {
+                "run_id": run["run_id"],
+                "variants": metrics["variants"],
+                "paired_game_bootstrap": metrics["paired_game_bootstrap"],
+                "team_context_paired_game_bootstrap": metrics[
+                    "team_context_paired_game_bootstrap"
+                ],
+                "starter_free_context_vs_starter_context": metrics[
+                    "starter_free_context_vs_starter_context"
+                ],
+                "starter_free_context_vs_elo": metrics["starter_free_context_vs_elo"],
+                "espn_game_start": metrics["espn_game_start"],
+                "espn_game_start_paired": metrics["espn_game_start_paired"],
+                "starter_rating_coverage": metrics["starter_rating_coverage"],
+                "artifact_path": run["artifact_path"],
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
+def command_benchmark_inpredictable(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_inpredictable_surface_benchmark(
+        args.model_run, artifact_root=args.artifact_root, max_workers=args.max_workers
+    )
+    register_model_run(args.registry, run)
+    print(
+        json.dumps(
+            {
+                "run_id": run["run_id"],
+                "metrics": run["metrics"],
+                "artifact_path": run["artifact_path"],
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
+def command_compare_wp_possession(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_win_probability_possession_ablation(
+        args.possessions,
+        args.game_dim,
+        artifact_root=args.artifact_root,
+        train_season=args.train_season,
+        test_season=args.test_season,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        seed=args.seed,
+    )
+    register_model_run(args.registry, run)
+    print(
+        json.dumps(
+            {
+                "run_id": run["run_id"],
+                "variants": run["metrics"]["variants"],
+                "paired_game_bootstrap": run["metrics"]["paired_game_bootstrap"],
+                "close_last_2m_margin_le_3": run["metrics"][
+                    "close_last_2m_margin_le_3"
+                ],
+                "possession_effects": run["metrics"]["possession_effects"],
+                "artifact_path": run["artifact_path"],
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
+def command_compare_wp_stage1(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_win_probability_stage1_comparison(
+        args.event_states,
+        args.game_dim,
+        artifact_root=args.artifact_root,
+        interval_seconds=args.interval_seconds,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        seed=args.seed,
+    )
+    register_model_run(args.registry, run)
+    print(
+        json.dumps(
+            {
+                "run_id": run["run_id"],
+                "folds": run["metrics"]["folds"],
+                "pooled_paired_vs_logistic": run["metrics"][
+                    "pooled_paired_vs_logistic"
+                ],
+                "artifact_path": run["artifact_path"],
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
+def command_compare_wp_mlp(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_win_probability_mlp_comparison(
+        args.event_states,
+        args.game_dim,
+        artifact_root=args.artifact_root,
+        interval_seconds=args.interval_seconds,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_compare_rapm_lineups(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_rapm_lineup_policy_comparison(
+        args.possessions,
+        args.segments,
+        artifact_root=args.artifact_root,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        seed=args.seed,
+    )
+    register_model_run(args.registry, run)
+    print(
+        json.dumps(
+            {
+                "run_id": run["run_id"],
+                **run["metrics"],
+                "artifact_path": run["artifact_path"],
+            },
+            indent=2,
+        )
+    )
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="nba-impact")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    audit = subparsers.add_parser(
+        "audit-possessions", help="Audit and register legacy possession partitions."
+    )
+    audit.add_argument("--seasons", type=_season_list, default=tuple(range(1997, 2026)))
+    audit.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    audit.add_argument("--output", type=Path)
+    audit.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    audit.set_defaults(func=command_audit)
+
+    ingest = subparsers.add_parser(
+        "ingest", help="Run a resumable HTTP ingestion manifest."
+    )
+    ingest.add_argument("--manifest", type=Path, required=True)
+    ingest.add_argument("--root", type=Path, default=BRONZE_ROOT)
+    ingest.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Report verified and remaining files without downloading.",
+    )
+    ingest.set_defaults(func=command_ingest)
+
+    event_audit = subparsers.add_parser(
+        "audit-events", help="Audit and reconcile downloaded event sources."
+    )
+    event_audit.add_argument(
+        "--root", type=Path, default=BRONZE_ROOT / "nba_data_archive"
+    )
+    event_audit.add_argument("--output", type=Path)
+    event_audit.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    event_audit.set_defaults(func=command_audit_events)
+
+    game_dim = subparsers.add_parser(
+        "build-game-dim", help="Build the canonical silver game dimension."
+    )
+    game_dim.add_argument("--root", type=Path, default=BRONZE_ROOT / "nba_data_archive")
+    game_dim.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    game_dim.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    game_dim.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    game_dim.set_defaults(func=command_build_game_dim)
+
+    event_states = subparsers.add_parser(
+        "build-event-states",
+        help="Build canonical post-action score states from V3 events.",
+    )
+    event_states.add_argument(
+        "--root", type=Path, default=BRONZE_ROOT / "nba_data_archive"
+    )
+    event_states.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    event_states.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    event_states.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    event_states.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    event_states.set_defaults(func=command_build_event_states)
+
+    player_games = subparsers.add_parser(
+        "build-player-games",
+        help="Build canonical player-game boxes and exact starter seeds.",
+    )
+    player_games.add_argument(
+        "--box",
+        type=Path,
+        default=BRONZE_ROOT / "llimllib_nba_data" / "player_game_logs.parquet",
+    )
+    player_games.add_argument(
+        "--espn",
+        type=Path,
+        default=BRONZE_ROOT / "llimllib_nba_data" / "espn" / "player_box.parquet",
+    )
+    player_games.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    player_games.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
+    player_games.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    player_games.add_argument(
+        "--official-box-dir", type=Path, default=OFFICIAL_BOXSCORE_ROOT
+    )
+    player_games.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    player_games.set_defaults(func=command_build_player_games)
+
+    official_boxes = subparsers.add_parser(
+        "ingest-official-boxscores",
+        help="Repair quarantined player-game boxes from NBA Stats V3.",
+    )
+    official_boxes.add_argument(
+        "--quality", type=Path, default=SILVER_ROOT / "lineup_game_quality.parquet"
+    )
+    official_boxes.add_argument("--seasons", type=_text_list, default=())
+    official_boxes.add_argument(
+        "--output-root", type=Path, default=OFFICIAL_BOXSCORE_ROOT
+    )
+    official_boxes.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    official_boxes.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    official_boxes.add_argument("--max-attempts", type=int, default=20)
+    official_boxes.add_argument("--minimum-delay-seconds", type=float, default=0.6)
+    official_boxes.set_defaults(func=command_ingest_official_boxscores)
+
+    lineups = subparsers.add_parser(
+        "build-lineups",
+        help="Reconstruct and minute-reconcile current five-player lineup stints.",
+    )
+    lineups.add_argument("--root", type=Path, default=BRONZE_ROOT / "nba_data_archive")
+    lineups.add_argument(
+        "--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
+    lineups.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    lineups.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "lineup_stints.parquet"
+    )
+    lineups.add_argument(
+        "--quality-output",
+        type=Path,
+        default=SILVER_ROOT / "lineup_game_quality.parquet",
+    )
+    lineups.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    lineups.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    lineups.add_argument("--minute-tolerance-seconds", type=float, default=5.0)
+    lineups.add_argument("--max-quarantine-fraction", type=float, default=0.005)
+    lineups.set_defaults(func=command_build_lineups)
+
+    possessions = subparsers.add_parser(
+        "build-possessions",
+        help="Build current possessions and ordinal lineup segments.",
+    )
+    possessions.add_argument(
+        "--root", type=Path, default=BRONZE_ROOT / "nba_data_archive"
+    )
+    possessions.add_argument(
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    possessions.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    possessions.add_argument(
+        "--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
+    possessions.add_argument(
+        "--lineup-quality",
+        type=Path,
+        default=SILVER_ROOT / "lineup_game_quality.parquet",
+    )
+    possessions.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    possessions.add_argument(
+        "--segments-output",
+        type=Path,
+        default=SILVER_ROOT / "possession_lineup_segments.parquet",
+    )
+    possessions.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    possessions.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    possessions.set_defaults(func=command_build_possessions)
+
+    rapm = subparsers.add_parser(
+        "fit-rapm", help="Fit the independent zero-prior RAPM baseline."
+    )
+    rapm.add_argument("--seasons", type=_season_list, required=True)
+    rapm.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    rapm.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    rapm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    rapm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    rapm.add_argument("--snapshot-id")
+    rapm.add_argument("--lambda-off", type=float, default=3000.0)
+    rapm.add_argument("--lambda-def", type=float, default=3000.0)
+    rapm.add_argument("--lambda-home", type=float, default=300.0)
+    rapm.add_argument("--game-types", default="regular")
+    rapm.add_argument("--no-home", action="store_true")
+    rapm.set_defaults(func=command_fit_rapm)
+
+    current_rapm = subparsers.add_parser(
+        "fit-current-rapm",
+        help="Fit current RAPM from canonical CDN possessions and ordinal lineups.",
+    )
+    current_rapm.add_argument(
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    current_rapm.add_argument(
+        "--segments",
+        type=Path,
+        default=SILVER_ROOT / "possession_lineup_segments.parquet",
+    )
+    current_rapm.add_argument(
+        "--lineup-policy", choices=("start", "terminal"), default="start"
+    )
+    current_rapm.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    current_rapm.add_argument(
+        "--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
+    current_rapm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    current_rapm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    current_rapm.add_argument("--snapshot-id")
+    current_rapm.add_argument("--lambda-off", type=float, default=3000.0)
+    current_rapm.add_argument("--lambda-def", type=float, default=3000.0)
+    current_rapm.add_argument("--lambda-home", type=float, default=300.0)
+    current_rapm.add_argument("--game-types", default="regular")
+    current_rapm.add_argument("--no-home", action="store_true")
+    current_rapm.set_defaults(func=command_fit_current_rapm)
+
+    normal_rapm = subparsers.add_parser(
+        "tune-normal-rapm",
+        help="Select normal RAPM penalties on 2024-25 and confirm on 2025-26.",
+    )
+    normal_rapm.add_argument(
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    normal_rapm.add_argument(
+        "--segments",
+        type=Path,
+        default=SILVER_ROOT / "possession_lineup_segments.parquet",
+    )
+    normal_rapm.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    normal_rapm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    normal_rapm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    normal_rapm.add_argument(
+        "--penalty-candidates",
+        type=_penalty_triples,
+        default=_penalty_triples(
+            "1000:1000:100,1000:1000:300,1000:1000:1000,"
+            "2000:2000:100,2000:2000:300,2000:2000:1000,"
+            "3000:3000:100,3000:3000:300,3000:3000:1000,"
+            "4500:4500:100,4500:4500:300,4500:4500:1000,"
+            "6000:6000:100,6000:6000:300,6000:6000:1000,"
+            "1000:3000:300,2000:4500:300,3000:6000:300,"
+            "4500:2000:300,6000:3000:300"
+        ),
+    )
+    normal_rapm.set_defaults(func=command_tune_normal_rapm)
+
+    statistical_features = subparsers.add_parser(
+        "build-statistical-features",
+        help="Build pooled three-season box and tracking features.",
+    )
+    statistical_features.add_argument(
+        "--source-dir",
+        type=Path,
+        default=Path("data/raw/playersheets/year_totals"),
+    )
+    statistical_features.add_argument(
+        "--window-ends",
+        type=_season_list,
+        default=tuple(range(2016, 2025)),
+    )
+    statistical_features.add_argument("--window-seasons", type=int, default=3)
+    statistical_features.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    statistical_features.set_defaults(func=command_build_statistical_features)
+
+    statistical_features_v2 = subparsers.add_parser(
+        "build-statistical-features-v2",
+        help="Add stabilized, era-relative, temporal, role, and interaction features.",
+    )
+    statistical_features_v2.add_argument(
+        "--source-dir",
+        type=Path,
+        default=Path("data/raw/playersheets/year_totals"),
+    )
+    statistical_features_v2.add_argument(
+        "--pooled-window-seasons", type=int, default=3
+    )
+    statistical_features_v2.add_argument("--base-features", type=Path, required=True)
+    statistical_features_v2.add_argument("--playtype-features", type=Path)
+    statistical_features_v2.add_argument("--defensive-tracking-features", type=Path)
+    statistical_features_v2.add_argument("--assist-quality-features", type=Path)
+    statistical_features_v2.add_argument("--matchup-defense-features", type=Path)
+    statistical_features_v2.add_argument(
+        "--window-ends",
+        type=_season_list,
+        default=tuple(range(2016, 2025)),
+    )
+    statistical_features_v2.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    statistical_features_v2.set_defaults(func=command_build_statistical_features_v2)
+
+    playtype_features = subparsers.add_parser(
+        "build-playtype-features",
+        help="Build annual zTS and playtype points-over-expectation features.",
+    )
+    playtype_features.add_argument("--playtype-source", type=Path, required=True)
+    playtype_features.add_argument(
+        "--box-source-dir", type=Path,
+        default=Path("data/raw/playersheets/year_totals"),
+    )
+    playtype_features.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2014, 2025))
+    )
+    playtype_features.add_argument("--minimum-minutes", type=float, default=250.0)
+    playtype_features.add_argument("--minimum-synergy-possessions", type=float, default=50.0)
+    playtype_features.add_argument("--minimum-league-row-possessions", type=float, default=20.0)
+    playtype_features.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    playtype_features.set_defaults(func=command_build_playtype_features)
+
+    defensive_tracking = subparsers.add_parser(
+        "build-defensive-tracking-features",
+        help="Build annual DFG, rim-defense, and hustle features.",
+    )
+    defensive_tracking.add_argument("--dfg-source", type=Path, required=True)
+    defensive_tracking.add_argument("--rim-dfg-source", type=Path, required=True)
+    defensive_tracking.add_argument("--hustle-source", type=Path, required=True)
+    defensive_tracking.add_argument(
+        "--box-source-dir", type=Path,
+        default=Path("data/raw/playersheets/year_totals"),
+    )
+    defensive_tracking.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2014, 2025))
+    )
+    defensive_tracking.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    defensive_tracking.set_defaults(func=command_build_defensive_tracking_features)
+
+    matchup_defense = subparsers.add_parser(
+        "build-matchup-defense-features",
+        help="Build opponent-adjusted annual primary-defender matchup features.",
+    )
+    matchup_defense.add_argument(
+        "--archive-root",
+        type=Path,
+        default=(
+            BRONZE_ROOT
+            / "shufinskiy_nba_data"
+            / "revision=e829d46"
+            / "matchups"
+        ),
+    )
+    matchup_defense.add_argument(
+        "--box-source-dir", type=Path, default=LEGACY_PLAYER_SHEETS
+    )
+    matchup_defense.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2018, 2026))
+    )
+    matchup_defense.add_argument(
+        "--defender-prior-possessions", type=float, default=500.0
+    )
+    matchup_defense.add_argument(
+        "--shooting-prior-attempts", type=float, default=200.0
+    )
+    matchup_defense.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    matchup_defense.set_defaults(func=command_build_matchup_defense_features)
+
+    assist_quality = subparsers.add_parser(
+        "build-assist-quality-features",
+        help="Build corrected annual free-throw-adjusted assist-quality features.",
+    )
+    assist_quality.add_argument("--source", type=Path, required=True)
+    assist_quality.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2014, 2025))
+    )
+    assist_quality.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    assist_quality.set_defaults(func=command_build_assist_quality_features)
+
+    statistical_impact = subparsers.add_parser(
+        "fit-statistical-impact",
+        help="Fit the first purged three-season normal-RAPM statistical baseline.",
+    )
+    statistical_impact.add_argument(
+        "--features",
+        type=Path,
+        default=Path("rapm/data/spm_features_windows.parquet"),
+    )
+    statistical_impact.add_argument(
+        "--targets",
+        type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    statistical_impact.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    statistical_impact.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    statistical_impact.set_defaults(func=command_fit_statistical_impact)
+
+    statistical_models = subparsers.add_parser(
+        "compare-statistical-models",
+        help="Compare ridge, elastic net, and histogram GBM on purged folds.",
+    )
+    statistical_models.add_argument("--features", type=Path, required=True)
+    statistical_models.add_argument(
+        "--targets",
+        type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    statistical_models.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    statistical_models.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    statistical_models.set_defaults(func=command_compare_statistical_models)
+
+    statistical_direct_net = subparsers.add_parser(
+        "compare-statistical-direct-net",
+        help="Compare direct nonlinear net RAPM with decomposed predictions.",
+    )
+    statistical_direct_net.add_argument("--features", type=Path, required=True)
+    statistical_direct_net.add_argument("--component-run", type=Path, required=True)
+    statistical_direct_net.add_argument(
+        "--targets",
+        type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    statistical_direct_net.add_argument(
+        "--artifact-root", type=Path, default=ARTIFACT_ROOT
+    )
+    statistical_direct_net.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    statistical_direct_net.set_defaults(func=command_compare_statistical_direct_net)
+
+    statistical_ablation = subparsers.add_parser(
+        "ablate-statistical-features",
+        help="Ablate feature families with frozen offense and defense models.",
+    )
+    statistical_ablation.add_argument("--features", type=Path, required=True)
+    statistical_ablation.add_argument(
+        "--targets",
+        type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    statistical_ablation.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    statistical_ablation.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    statistical_ablation.set_defaults(func=command_ablate_statistical_features)
+
+    optimized_statistical_aio = subparsers.add_parser(
+        "fit-optimized-statistical-aio",
+        help="Fit frozen optimized offense and defense statistical AIO models.",
+    )
+    optimized_statistical_aio.add_argument("--features", type=Path, required=True)
+    optimized_statistical_aio.add_argument("--ablation-run", type=Path, required=True)
+    optimized_statistical_aio.add_argument(
+        "--targets",
+        type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    optimized_statistical_aio.add_argument(
+        "--artifact-root", type=Path, default=ARTIFACT_ROOT
+    )
+    optimized_statistical_aio.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    optimized_statistical_aio.set_defaults(func=command_fit_optimized_statistical_aio)
+
+    statistical_features_v2_comparison = subparsers.add_parser(
+        "compare-statistical-features-v2",
+        help="Select v2 feature blocks with the frozen offense and defense learners.",
+    )
+    statistical_features_v2_comparison.add_argument("--features", type=Path, required=True)
+    statistical_features_v2_comparison.add_argument("--baseline-run", type=Path, required=True)
+    statistical_features_v2_comparison.add_argument(
+        "--targets",
+        type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    statistical_features_v2_comparison.add_argument(
+        "--artifact-root", type=Path, default=ARTIFACT_ROOT
+    )
+    statistical_features_v2_comparison.add_argument(
+        "--registry", type=Path, default=REGISTRY_PATH
+    )
+    statistical_features_v2_comparison.set_defaults(
+        func=command_compare_statistical_features_v2
+    )
+
+    statistical_priors = subparsers.add_parser(
+        "build-statistical-priors",
+        help="Build purged cross-fitted statistical priors for historical RAPM windows.",
+    )
+    statistical_priors.add_argument("--features", type=Path, required=True)
+    statistical_priors.add_argument("--reference-run", type=Path, required=True)
+    statistical_priors.add_argument(
+        "--targets",
+        type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    statistical_priors.add_argument(
+        "--window-ends", type=_season_list, default=None
+    )
+    statistical_priors.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    statistical_priors.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    statistical_priors.set_defaults(func=command_build_statistical_priors)
+
+    prior_informed_rapm = subparsers.add_parser(
+        "compare-prior-informed-rapm",
+        help="Compare zero-prior, prior-only, and prior-centered normal RAPM.",
+    )
+    prior_informed_rapm.add_argument("--priors", type=Path, required=True)
+    prior_informed_rapm.add_argument(
+        "--test-seasons", type=_season_list, default=(2020, 2021, 2022, 2023, 2024)
+    )
+    prior_informed_rapm.add_argument(
+        "--selection-test-seasons", type=_season_list, default=(2020, 2021, 2022)
+    )
+    prior_informed_rapm.add_argument(
+        "--confirmation-test-seasons", type=_season_list, default=(2023, 2024)
+    )
+    prior_informed_rapm.add_argument("--train-window", type=int, default=3)
+    prior_informed_rapm.add_argument(
+        "--prior-scales", type=_float_list, default=(0.25, 0.5, 0.75, 1.0)
+    )
+    prior_informed_rapm.add_argument("--lambda-off", type=float, default=3000.0)
+    prior_informed_rapm.add_argument("--lambda-def", type=float, default=3000.0)
+    prior_informed_rapm.add_argument("--lambda-home", type=float, default=300.0)
+    prior_informed_rapm.add_argument("--bootstrap-repetitions", type=int, default=2000)
+    prior_informed_rapm.add_argument("--seed", type=int, default=20260810)
+    prior_informed_rapm.add_argument(
+        "--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE
+    )
+    prior_informed_rapm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    prior_informed_rapm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    prior_informed_rapm.set_defaults(func=command_compare_prior_informed_rapm)
+
+    external_ingest = subparsers.add_parser(
+        "ingest-external-impact",
+        help="Download versioned Basketball Reference BPM and xRAPM pages.",
+    )
+    external_ingest.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2017, 2025))
+    )
+    external_ingest.add_argument(
+        "--raw-root", type=Path, default=BRONZE_ROOT / "external_impact"
+    )
+    external_ingest.set_defaults(func=command_ingest_external_impact)
+
+    external_benchmark = subparsers.add_parser(
+        "benchmark-external-impact",
+        help="Compare three-season statistical priors with BPM and xRAPM.",
+    )
+    external_benchmark.add_argument("--priors", type=Path, required=True)
+    external_benchmark.add_argument("--features", type=Path, required=True)
+    external_benchmark.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    external_benchmark.add_argument(
+        "--raw-root", type=Path, default=BRONZE_ROOT / "external_impact"
+    )
+    external_benchmark.add_argument(
+        "--window-ends", type=_season_list, default=(2019, 2020, 2021, 2022, 2023, 2024)
+    )
+    external_benchmark.add_argument("--minimum-possessions", type=float, default=3000.0)
+    external_benchmark.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    external_benchmark.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    external_benchmark.set_defaults(func=command_benchmark_external_impact)
+
+    annual_rapm_targets = subparsers.add_parser(
+        "build-single-season-rapm-targets",
+        help="Fit one zero-prior normal RAPM target table per regular season.",
+    )
+    annual_rapm_targets.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2014, 2025))
+    )
+    annual_rapm_targets.add_argument(
+        "--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE
+    )
+    annual_rapm_targets.add_argument("--lambda-off", type=float, default=3000.0)
+    annual_rapm_targets.add_argument("--lambda-def", type=float, default=3000.0)
+    annual_rapm_targets.add_argument("--lambda-home", type=float, default=300.0)
+    annual_rapm_targets.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    annual_rapm_targets.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    annual_rapm_targets.set_defaults(func=command_build_single_season_rapm_targets)
+
+    annual_spm = subparsers.add_parser(
+        "fit-single-season-spm",
+        help="Fit season-held-out and final single-season statistical plus-minus.",
+    )
+    annual_spm.add_argument("--features", type=Path, required=True)
+    annual_spm.add_argument("--targets", type=Path, required=True)
+    annual_spm.add_argument("--reference-run", type=Path, required=True)
+    annual_spm.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    annual_spm.add_argument(
+        "--external-raw-root", type=Path, default=BRONZE_ROOT / "external_impact"
+    )
+    annual_spm.add_argument(
+        "--output-seasons", type=_season_list, default=tuple(range(2017, 2025))
+    )
+    annual_spm.add_argument("--minimum-possessions", type=float, default=1000.0)
+    annual_spm.add_argument(
+        "--additional-offense-features", type=_text_list, default=()
+    )
+    annual_spm.add_argument(
+        "--additional-defense-features", type=_text_list, default=()
+    )
+    annual_spm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    annual_spm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    annual_spm.set_defaults(func=command_fit_single_season_spm)
+
+    forward_annual_spm = subparsers.add_parser(
+        "build-forward-annual-spm-priors",
+        help="Fit each annual SPM only on earlier seasons for next-season tests.",
+    )
+    forward_annual_spm.add_argument("--features", type=Path, required=True)
+    forward_annual_spm.add_argument("--targets", type=Path, required=True)
+    forward_annual_spm.add_argument("--reference-run", type=Path, required=True)
+    forward_annual_spm.add_argument("--contract", type=Path, required=True)
+    forward_annual_spm.add_argument(
+        "--output-seasons", type=_season_list, default=tuple(range(2017, 2024))
+    )
+    forward_annual_spm.add_argument("--minimum-training-seasons", type=int, default=3)
+    forward_annual_spm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    forward_annual_spm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    forward_annual_spm.set_defaults(func=command_build_forward_annual_spm_priors)
+
+    annual_aio = subparsers.add_parser(
+        "build-annual-aio-ratings",
+        help="Build decomposed annual ratings from full-SPM-center normal RAPM.",
+    )
+    annual_aio.add_argument("--priors", type=Path, required=True)
+    annual_aio.add_argument("--seasons", type=_season_list, default=tuple(range(2017, 2025)))
+    annual_aio.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    annual_aio.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    annual_aio.add_argument("--lambda-off", type=float, default=3000.0)
+    annual_aio.add_argument("--lambda-def", type=float, default=3000.0)
+    annual_aio.add_argument("--lambda-home", type=float, default=300.0)
+    annual_aio.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    annual_aio.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    annual_aio.set_defaults(func=command_build_annual_aio_ratings)
+
+    rolling_peaks = subparsers.add_parser(
+        "build-rolling-rapm-peaks",
+        help="Build independent three-year and five-year normal-RAPM peaks.",
+    )
+    rolling_peaks.add_argument("--contract", type=Path, required=True)
+    rolling_peaks.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    rolling_peaks.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    rolling_peaks.add_argument(
+        "--player-sheets-dir", type=Path, default=LEGACY_PLAYER_SHEETS
+    )
+    rolling_peaks.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    rolling_peaks.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    rolling_peaks.set_defaults(func=command_build_rolling_rapm_peaks)
+
+    current_spm = subparsers.add_parser(
+        "confirm-current-spm",
+        help="Score the frozen annual SPM once on a new current-data season.",
+    )
+    current_spm.add_argument("--features", type=Path, required=True)
+    current_spm.add_argument("--frozen-spm-run", type=Path, required=True)
+    current_spm.add_argument(
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    current_spm.add_argument(
+        "--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet"
+    )
+    current_spm.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    current_spm.add_argument(
+        "--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
+    current_spm.add_argument("--season", type=int, default=2025)
+    current_spm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    current_spm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    current_spm.set_defaults(func=command_confirm_current_spm)
+
+    current_spm_diagnostics = subparsers.add_parser(
+        "diagnose-current-spm",
+        help="Diagnose a frozen current-season SPM miss without model tuning.",
+    )
+    current_spm_diagnostics.add_argument("--confirmation-run", type=Path, required=True)
+    current_spm_diagnostics.add_argument("--current-features", type=Path, required=True)
+    current_spm_diagnostics.add_argument("--reference-features", type=Path, required=True)
+    current_spm_diagnostics.add_argument("--frozen-spm-run", type=Path, required=True)
+    current_spm_diagnostics.add_argument(
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    current_spm_diagnostics.add_argument(
+        "--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet"
+    )
+    current_spm_diagnostics.add_argument("--season", type=int, default=2025)
+    current_spm_diagnostics.add_argument("--comparison-season", type=int, default=2024)
+    current_spm_diagnostics.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    current_spm_diagnostics.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    current_spm_diagnostics.set_defaults(func=command_diagnose_current_spm)
+
+    defense_ridge_nested = subparsers.add_parser(
+        "run-annual-defense-ridge-nested",
+        help="Select annual defensive ridge regularization on past seasons only.",
+    )
+    defense_ridge_nested.add_argument("--features", type=Path, required=True)
+    defense_ridge_nested.add_argument("--targets", type=Path, required=True)
+    defense_ridge_nested.add_argument("--frozen-spm-run", type=Path, required=True)
+    defense_ridge_nested.add_argument(
+        "--contract",
+        type=Path,
+        default=PROJECT_ROOT / "configs" / "models" / "annual_defense_ridge_nested_v1.json",
+    )
+    defense_ridge_nested.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    defense_ridge_nested.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    defense_ridge_nested.set_defaults(func=command_run_annual_defense_ridge_nested)
+
+    defense_features_nested = subparsers.add_parser(
+        "run-annual-defense-features-nested",
+        help="Select predeclared annual defense feature blocks on past seasons only.",
+    )
+    defense_features_nested.add_argument("--features", type=Path, required=True)
+    defense_features_nested.add_argument("--targets", type=Path, required=True)
+    defense_features_nested.add_argument("--frozen-spm-run", type=Path, required=True)
+    defense_features_nested.add_argument(
+        "--contract",
+        type=Path,
+        default=PROJECT_ROOT / "configs" / "models" / "annual_defense_features_nested_v1.json",
+    )
+    defense_features_nested.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    defense_features_nested.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    defense_features_nested.set_defaults(func=command_run_annual_defense_features_nested)
+
+    ratings_api = subparsers.add_parser(
+        "serve-ratings",
+        help="Serve pinned annual, rolling, peak, and player rating data as JSON.",
+    )
+    ratings_api.add_argument(
+        "--config",
+        type=Path,
+        default=PROJECT_ROOT / "configs" / "api" / "ratings_v1.json",
+    )
+    ratings_api.add_argument(
+        "--artifact-root",
+        type=Path,
+        default=ARTIFACT_ROOT / "models",
+        help="Directory containing the annual_aio_ratings and rolling_rapm_peaks families.",
+    )
+    ratings_api.add_argument("--host", default="127.0.0.1")
+    ratings_api.add_argument("--port", type=int, default=8765)
+    ratings_api.set_defaults(func=command_serve_ratings)
+
+    compare = subparsers.add_parser(
+        "compare-rapm",
+        help="Compare fixed RAPM penalties on one chronological diagnostic fold.",
+    )
+    compare.add_argument("--seasons", type=_season_list, required=True)
+    compare.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    compare.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    compare.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    compare.add_argument("--snapshot-id")
+    compare.add_argument(
+        "--lambda-pairs",
+        type=_lambda_pairs,
+        default=_lambda_pairs(
+            "500:500,1000:1000,2000:2000,3000:3000,6000:6000,2000:4500"
+        ),
+    )
+    compare.add_argument("--lambda-home", type=float, default=300.0)
+    compare.add_argument("--game-types", default="regular")
+    compare.add_argument("--no-home", action="store_true")
+    compare.set_defaults(func=command_compare_rapm)
+
+    walk = subparsers.add_parser(
+        "walk-forward-rapm",
+        help="Compare RAPM candidates across chronological outer seasons.",
+    )
+    walk.add_argument("--test-seasons", type=_season_list, required=True)
+    walk.add_argument("--train-window", type=int, default=3)
+    walk.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    walk.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    walk.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    walk.add_argument("--snapshot-id")
+    walk.add_argument(
+        "--lambda-pairs",
+        type=_lambda_pairs,
+        default=_lambda_pairs("3000:3000,2000:4500,1000:1000"),
+    )
+    walk.add_argument("--lambda-home", type=float, default=300.0)
+    walk.add_argument("--bootstrap-repetitions", type=int, default=2000)
+    walk.add_argument("--seed", type=int, default=7)
+    walk.add_argument("--game-types", default="regular")
+    walk.add_argument("--no-home", action="store_true")
+    walk.set_defaults(func=command_walk_forward_rapm)
+
+    win_probability = subparsers.add_parser(
+        "fit-win-probability",
+        help="Fit the chronological state-only win-probability baseline.",
+    )
+    win_probability.add_argument(
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    win_probability.add_argument(
+        "--train-seasons", type=_text_list, default=("2024-25",)
+    )
+    win_probability.add_argument(
+        "--test-seasons", type=_text_list, default=("2025-26",)
+    )
+    win_probability.add_argument("--interval-seconds", type=int, default=30)
+    win_probability.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    win_probability.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    win_probability.add_argument("--snapshot-id")
+    win_probability.set_defaults(func=command_fit_win_probability)
+
+    wp_compare = subparsers.add_parser(
+        "compare-win-probability",
+        help="Compare state-only WP with time-safe pregame Elo.",
+    )
+    wp_compare.add_argument(
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    wp_compare.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    wp_compare.add_argument("--train-seasons", type=_text_list, default=("2024-25",))
+    wp_compare.add_argument("--test-seasons", type=_text_list, default=("2025-26",))
+    wp_compare.add_argument("--interval-seconds", type=int, default=30)
+    wp_compare.add_argument("--bootstrap-repetitions", type=int, default=5000)
+    wp_compare.add_argument("--seed", type=int, default=7)
+    wp_compare.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    wp_compare.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    wp_compare.add_argument("--snapshot-id")
+    wp_compare.set_defaults(func=command_compare_win_probability)
+
+    espn_ingest = subparsers.add_parser(
+        "ingest-espn-win-probability",
+        help="Cache ESPN play-level win probabilities for canonical games.",
+    )
+    espn_ingest.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    espn_ingest.add_argument("--seasons", type=_text_list, default=("2025-26",))
+    espn_ingest.add_argument(
+        "--raw-root", type=Path, default=BRONZE_ROOT / "espn_win_probability"
+    )
+    espn_ingest.add_argument(
+        "--output",
+        type=Path,
+        default=SILVER_ROOT / "espn_win_probability_index.parquet",
+    )
+    espn_ingest.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    espn_ingest.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    espn_ingest.add_argument("--max-workers", type=int, default=4)
+    espn_ingest.set_defaults(func=command_ingest_espn_win_probability)
+
+    wp_benchmark = subparsers.add_parser(
+        "benchmark-win-probability",
+        help="Compare the local WP model with ESPN on identical matched play states.",
+    )
+    wp_benchmark.add_argument(
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    wp_benchmark.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    wp_benchmark.add_argument(
+        "--espn-index",
+        type=Path,
+        default=SILVER_ROOT / "espn_win_probability_index.parquet",
+    )
+    wp_benchmark.add_argument("--model-run", type=Path, required=True)
+    wp_benchmark.add_argument("--clock-tolerance-seconds", type=float, default=1.0)
+    wp_benchmark.add_argument("--bootstrap-repetitions", type=int, default=5000)
+    wp_benchmark.add_argument("--seed", type=int, default=7)
+    wp_benchmark.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    wp_benchmark.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    wp_benchmark.set_defaults(func=command_benchmark_win_probability)
+
+    wp_lineup = subparsers.add_parser(
+        "compare-wp-lineup-strength",
+        help="Compare Elo WP with leakage-safe prior-season starter RAPM strength.",
+    )
+    wp_lineup.add_argument(
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    wp_lineup.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    wp_lineup.add_argument(
+        "--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
+    wp_lineup.add_argument(
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    wp_lineup.add_argument(
+        "--segments",
+        type=Path,
+        default=SILVER_ROOT / "possession_lineup_segments.parquet",
+    )
+    wp_lineup.add_argument("--legacy-cache", type=Path, default=LEGACY_POSSESSION_CACHE)
+    wp_lineup.add_argument(
+        "--espn-index",
+        type=Path,
+        default=SILVER_ROOT / "espn_win_probability_index.parquet",
+    )
+    wp_lineup.add_argument("--train-season", default="2024-25")
+    wp_lineup.add_argument("--test-season", default="2025-26")
+    wp_lineup.add_argument("--skip-espn", action="store_true")
+    wp_lineup.add_argument("--interval-seconds", type=int, default=30)
+    wp_lineup.add_argument("--bootstrap-repetitions", type=int, default=5000)
+    wp_lineup.add_argument("--seed", type=int, default=7)
+    wp_lineup.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    wp_lineup.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    wp_lineup.set_defaults(func=command_compare_wp_lineup_strength)
+
+    wp_possession = subparsers.add_parser(
+        "compare-wp-possession",
+        help="Compare pregame-context WP with leakage-safe possession-start control.",
+    )
+    wp_possession.add_argument(
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    wp_possession.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    wp_possession.add_argument("--train-season", default="2024-25")
+    wp_possession.add_argument("--test-season", default="2025-26")
+    wp_possession.add_argument("--bootstrap-repetitions", type=int, default=5000)
+    wp_possession.add_argument("--seed", type=int, default=7)
+    wp_possession.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    wp_possession.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    wp_possession.set_defaults(func=command_compare_wp_possession)
+
+    wp_stage1 = subparsers.add_parser(
+        "compare-wp-stage1",
+        help="Compare frozen logistic, spline GAM, and histogram GBM on two outer folds.",
+    )
+    wp_stage1.add_argument(
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    wp_stage1.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    wp_stage1.add_argument("--interval-seconds", type=int, default=30)
+    wp_stage1.add_argument("--bootstrap-repetitions", type=int, default=5000)
+    wp_stage1.add_argument("--seed", type=int, default=7)
+    wp_stage1.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    wp_stage1.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    wp_stage1.set_defaults(func=command_compare_wp_stage1)
+
+    wp_mlp = subparsers.add_parser(
+        "compare-wp-mlp",
+        help="Compare a fixed five-seed 64x64 feed-forward MLP with logistic.",
+    )
+    wp_mlp.add_argument(
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    wp_mlp.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    wp_mlp.add_argument("--interval-seconds", type=int, default=30)
+    wp_mlp.add_argument("--bootstrap-repetitions", type=int, default=5000)
+    wp_mlp.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    wp_mlp.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    wp_mlp.set_defaults(func=command_compare_wp_mlp)
+
+    rapm_lineups = subparsers.add_parser(
+        "compare-rapm-lineups",
+        help="Compare start, terminal, and fractional lineup assignment on identical possessions.",
+    )
+    rapm_lineups.add_argument(
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    rapm_lineups.add_argument(
+        "--segments",
+        type=Path,
+        default=SILVER_ROOT / "possession_lineup_segments.parquet",
+    )
+    rapm_lineups.add_argument("--bootstrap-repetitions", type=int, default=5000)
+    rapm_lineups.add_argument("--seed", type=int, default=7)
+    rapm_lineups.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    rapm_lineups.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    rapm_lineups.set_defaults(func=command_compare_rapm_lineups)
+
+    inp = subparsers.add_parser(
+        "benchmark-inpredictable",
+        help="Compare the local neutral WP surface with Inpredictable's public calculator.",
+    )
+    inp.add_argument("--model-run", type=Path, required=True)
+    inp.add_argument("--max-workers", type=int, default=4)
+    inp.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    inp.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    inp.set_defaults(func=command_benchmark_inpredictable)
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+    return int(args.func(args))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

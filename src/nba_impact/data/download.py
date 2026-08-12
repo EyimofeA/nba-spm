@@ -1,0 +1,320 @@
+"""Manifest-driven, resumable HTTP ingestion with atomic Parquet validation."""
+from __future__ import annotations
+
+import csv
+import json
+import os
+import tarfile
+import time
+from io import TextIOWrapper
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+
+import pyarrow.parquet as pq
+import requests
+from tenacity import Retrying, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter
+
+from .manifest import sha256_file, write_json_atomic
+
+
+@dataclass(frozen=True)
+class DownloadTask:
+    name: str
+    url: str
+    destination: str
+    provider: str
+    license: str
+    season: int | None = None
+    season_type: str | None = None
+    source_revision: str | None = None
+    archive_member: str | None = None
+    expected_bytes: int | None = None
+    expected_sha256: str | None = None
+    expected_min_rows: int = 1
+    required_columns: tuple[str, ...] = ()
+    max_attempts: int = 20
+    connect_timeout_seconds: int = 30
+    read_timeout_seconds: int = 300
+    retry_initial_seconds: int = 2
+    retry_max_seconds: int = 300
+
+    @classmethod
+    def from_dict(cls, payload: dict) -> "DownloadTask":
+        data = dict(payload)
+        data["required_columns"] = tuple(data.get("required_columns", ()))
+        return cls(**data)
+
+
+class TransientDownloadError(RuntimeError):
+    pass
+
+
+def load_tasks(path: str | Path) -> tuple[dict, list[DownloadTask]]:
+    manifest = json.loads(Path(path).read_text())
+    return manifest, [DownloadTask.from_dict(item) for item in manifest["tasks"]]
+
+
+def _validate_parquet(path: Path, task: DownloadTask) -> dict:
+    parquet = pq.ParquetFile(path)
+    rows = int(parquet.metadata.num_rows)
+    columns = parquet.schema_arrow.names
+    if rows < task.expected_min_rows:
+        raise ValueError(f"{task.name}: expected at least {task.expected_min_rows} rows, found {rows}")
+    missing = sorted(set(task.required_columns) - set(columns))
+    if missing:
+        raise ValueError(f"{task.name}: missing required columns {missing}")
+    return {"rows": rows, "columns": columns, "row_groups": parquet.num_row_groups}
+
+
+def _validate_csv(path: Path, task: DownloadTask) -> dict:
+    rows = 0
+    malformed_rows = 0
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.reader(handle)
+        try:
+            columns = next(reader)
+        except StopIteration as exc:
+            raise ValueError(f"{task.name}: CSV is empty") from exc
+        if not columns or any(not column.strip() for column in columns):
+            raise ValueError(f"{task.name}: CSV header contains empty column names")
+        width = len(columns)
+        for row in reader:
+            if not row:
+                continue
+            rows += 1
+            malformed_rows += int(len(row) != width)
+    if rows < task.expected_min_rows:
+        raise ValueError(f"{task.name}: expected at least {task.expected_min_rows} rows, found {rows}")
+    missing = sorted(set(task.required_columns) - set(columns))
+    if missing:
+        raise ValueError(f"{task.name}: missing required columns {missing}")
+    if malformed_rows:
+        raise ValueError(f"{task.name}: {malformed_rows} CSV rows do not match the header width")
+    return {"rows": rows, "columns": columns, "row_groups": None}
+
+
+def _validate_tar_xz(path: Path, task: DownloadTask) -> dict:
+    if not task.archive_member:
+        raise ValueError(f"{task.name}: archive_member is required for .tar.xz inputs")
+    with tarfile.open(path, mode="r:xz") as archive:
+        try:
+            member = archive.getmember(task.archive_member)
+        except KeyError as exc:
+            raise ValueError(
+                f"{task.name}: archive member {task.archive_member!r} is missing"
+            ) from exc
+        if not member.isfile():
+            raise ValueError(f"{task.name}: archive member is not a regular file")
+        extracted = archive.extractfile(member)
+        if extracted is None:
+            raise ValueError(f"{task.name}: archive member cannot be read")
+        with TextIOWrapper(extracted, encoding="utf-8-sig", newline="") as handle:
+            reader = csv.reader(handle)
+            try:
+                columns = next(reader)
+            except StopIteration as exc:
+                raise ValueError(f"{task.name}: archived CSV is empty") from exc
+            rows = 0
+            malformed_rows = 0
+            width = len(columns)
+            for row in reader:
+                if not row:
+                    continue
+                rows += 1
+                malformed_rows += int(len(row) != width)
+    if rows < task.expected_min_rows:
+        raise ValueError(f"{task.name}: expected at least {task.expected_min_rows} rows, found {rows}")
+    missing = sorted(set(task.required_columns) - set(columns))
+    if missing:
+        raise ValueError(f"{task.name}: missing required columns {missing}")
+    if malformed_rows:
+        raise ValueError(f"{task.name}: {malformed_rows} archived rows do not match the header width")
+    return {
+        "rows": rows,
+        "columns": columns,
+        "row_groups": None,
+        "archive_member": task.archive_member,
+    }
+
+
+def _validate_file(path: Path, task: DownloadTask) -> dict:
+    size = path.stat().st_size
+    if task.expected_bytes is not None and size != task.expected_bytes:
+        raise ValueError(f"{task.name}: expected {task.expected_bytes} bytes, found {size}")
+    digest = sha256_file(path)
+    if task.expected_sha256 is not None and digest != task.expected_sha256:
+        raise ValueError(
+            f"{task.name}: SHA-256 mismatch; expected {task.expected_sha256}, found {digest}"
+        )
+    destination = task.destination.lower()
+    suffix = Path(task.destination).suffix.lower()
+    if destination.endswith(".tar.xz"):
+        validation = _validate_tar_xz(path, task)
+    elif suffix == ".parquet":
+        validation = _validate_parquet(path, task)
+    elif suffix == ".csv":
+        validation = _validate_csv(path, task)
+    else:
+        raise ValueError(f"{task.name}: unsupported destination format {suffix!r}")
+    return {**validation, "sha256": digest}
+
+
+def _download_once(session: requests.Session, task: DownloadTask, destination: Path) -> dict:
+    partial = destination.with_suffix(destination.suffix + ".partial")
+    if partial.exists():
+        try:
+            validation = _validate_file(partial, task)
+        except Exception:
+            pass
+        else:
+            partial.replace(destination)
+            return validation
+    existing = partial.stat().st_size if partial.exists() else 0
+    headers = {
+        "User-Agent": "nba-impact-lab/0.1 (+research; resumable downloader)",
+        "Accept-Encoding": "identity",
+    }
+    if existing:
+        headers["Range"] = f"bytes={existing}-"
+    timeout = (task.connect_timeout_seconds, task.read_timeout_seconds)
+    with session.get(task.url, headers=headers, stream=True, timeout=timeout) as response:
+        if response.status_code in {408, 425, 429, 500, 502, 503, 504}:
+            raise TransientDownloadError(f"{task.name}: transient HTTP {response.status_code}")
+        response.raise_for_status()
+        append = existing > 0 and response.status_code == 206
+        mode = "ab" if append else "wb"
+        if existing and not append:
+            existing = 0
+        with partial.open(mode) as handle:
+            for chunk in response.iter_content(chunk_size=1024 * 1024):
+                if chunk:
+                    handle.write(chunk)
+            handle.flush()
+            os.fsync(handle.fileno())
+    validation = _validate_file(partial, task)
+    partial.replace(destination)
+    return validation
+
+
+def _download_with_retries(
+    session: requests.Session, task: DownloadTask, destination: Path
+) -> dict:
+    if task.max_attempts < 1:
+        raise ValueError(f"{task.name}: max_attempts must be positive")
+    retrying = Retrying(
+        retry=retry_if_exception_type((requests.RequestException, TransientDownloadError)),
+        wait=wait_exponential_jitter(
+            initial=task.retry_initial_seconds,
+            max=task.retry_max_seconds,
+        ),
+        stop=stop_after_attempt(task.max_attempts),
+        reraise=True,
+    )
+    for attempt in retrying:
+        with attempt:
+            return _download_once(session, task, destination)
+    raise RuntimeError(f"{task.name}: retry loop ended without a result")
+
+
+def ingest_task(
+    task: DownloadTask,
+    *,
+    root: str | Path,
+    session: requests.Session | None = None,
+) -> dict:
+    root_path = Path(root)
+    destination = root_path / task.destination
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    started = time.monotonic()
+    if destination.exists():
+        validation = _validate_file(destination, task)
+        status = "verified_existing"
+    else:
+        validation = _download_with_retries(session or requests.Session(), task, destination)
+        status = "downloaded"
+    result = {
+        **asdict(task),
+        "required_columns": list(task.required_columns),
+        "status": status,
+        "path": str(destination.resolve()),
+        "bytes": destination.stat().st_size,
+        "sha256": validation.pop("sha256", None) or sha256_file(destination),
+        "retrieved_at": datetime.now(timezone.utc).isoformat(),
+        "elapsed_seconds": round(time.monotonic() - started, 3),
+        **validation,
+    }
+    write_json_atomic(result, destination.with_suffix(destination.suffix + ".manifest.json"))
+    return result
+
+
+def run_ingest_manifest(manifest_path: str | Path, *, root: str | Path) -> dict:
+    manifest, tasks = load_tasks(manifest_path)
+    results: list[dict] = []
+    failures: list[dict] = []
+    session = requests.Session()
+    for task in tasks:
+        try:
+            result = ingest_task(task, root=root, session=session)
+            results.append(result)
+            print(
+                f"{result['status']:>17} {task.name:<34} "
+                f"{result['bytes'] / 1_000_000:7.2f} MB {result['rows']:>9,} rows"
+            )
+        except Exception as exc:
+            failure = {"name": task.name, "error": f"{type(exc).__name__}: {exc}"}
+            failures.append(failure)
+            print(f"{'failed':>17} {task.name:<34} {failure['error']}")
+    summary = {
+        "manifest": str(Path(manifest_path).resolve()),
+        "provider": manifest.get("provider"),
+        "completed_at": datetime.now(timezone.utc).isoformat(),
+        "succeeded": len(results),
+        "failed": len(failures),
+        "results": results,
+        "failures": failures,
+    }
+    summary_path = Path(root) / "_ingest_runs" / f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
+    write_json_atomic(summary, summary_path)
+    if failures:
+        raise RuntimeError(f"{len(failures)} download task(s) failed; see {summary_path}")
+    return summary
+
+
+def plan_ingest_manifest(manifest_path: str | Path, *, root: str | Path) -> dict:
+    """Report verified and missing tasks without making network requests."""
+    manifest, tasks = load_tasks(manifest_path)
+    root_path = Path(root)
+    results: list[dict] = []
+    remaining_bytes = 0
+    for task in tasks:
+        destination = root_path / task.destination
+        status = "missing"
+        error = None
+        if destination.exists():
+            try:
+                _validate_file(destination, task)
+            except Exception as exc:
+                status = "invalid_existing"
+                error = f"{type(exc).__name__}: {exc}"
+            else:
+                status = "verified_existing"
+        if status != "verified_existing" and task.expected_bytes is not None:
+            remaining_bytes += task.expected_bytes
+        results.append(
+            {
+                "name": task.name,
+                "status": status,
+                "path": str(destination.resolve()),
+                "expected_bytes": task.expected_bytes,
+                "error": error,
+            }
+        )
+    return {
+        "manifest": str(Path(manifest_path).resolve()),
+        "provider": manifest.get("provider"),
+        "tasks": len(tasks),
+        "verified": sum(item["status"] == "verified_existing" for item in results),
+        "remaining_bytes": remaining_bytes,
+        "results": results,
+    }

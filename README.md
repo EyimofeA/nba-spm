@@ -7,8 +7,13 @@ NBA player-impact modeling workspace. Three sub-projects live side by side:
 - **RAPM** (`rapm/`) — ridge regression on play-by-play possessions, with
   optional SPM priors and playoff / meta-column variants.
 - **zTS** (`zts/`) — playtype-adjusted relative True Shooting.
+- **NBA Impact** (`src/nba_impact/`) — canonical current events, lineups,
+  possessions, RAPM, and win-probability research with external benchmarks.
 
 See [`AGENTS.md`](./AGENTS.md) for the full layout, data flow, and rules.
+Follow [`ROADMAP.md`](./ROADMAP.md) for the active queue and
+[`docs/README.md`](./docs/README.md) for the documentation index. The frozen WP
+model card is in [`docs/win_probability/MODEL_CARD.md`](./docs/win_probability/MODEL_CARD.md).
 Sub-projects have their own charters in [`rapm/AGENTS.md`](./rapm/AGENTS.md)
 and [`zts/AGENTS.md`](./zts/AGENTS.md).
 
@@ -18,6 +23,76 @@ Python 3.11+ is assumed.
 
 ```bash
 pip install -r requirements.txt
+```
+
+The clean package can also be installed with `pip install -e .`. Its current
+WP benchmark is resumable and compares identical play states:
+
+```bash
+uv run python -m nba_impact.cli ingest-espn-win-probability --seasons 2025-26
+uv run python -m nba_impact.cli benchmark-win-probability \
+  --model-run artifacts/models/win_probability_ablation/<run-id>
+uv run python -m nba_impact.cli compare-wp-lineup-strength
+uv run python -m nba_impact.cli compare-wp-possession
+uv run python -m nba_impact.cli compare-wp-stage1
+uv run python -m nba_impact.cli compare-wp-mlp
+uv run python -m nba_impact.cli compare-rapm-lineups
+uv run python -m nba_impact.cli tune-normal-rapm
+uv run python -m nba_impact.cli build-statistical-features
+uv run python -m nba_impact.cli fit-statistical-impact \
+  --features artifacts/features/statistical_impact/<run-id>/features.parquet
+uv run python -m nba_impact.cli compare-statistical-models \
+  --features artifacts/features/statistical_impact/<run-id>/features.parquet
+uv run python -m nba_impact.cli compare-statistical-direct-net \
+  --features artifacts/features/statistical_impact/<run-id>/features.parquet \
+  --component-run artifacts/models/statistical_model_comparison/<run-id>
+uv run python -m nba_impact.cli ablate-statistical-features \
+  --features artifacts/features/statistical_impact/<run-id>/features.parquet
+uv run python -m nba_impact.cli fit-optimized-statistical-aio \
+  --features artifacts/features/statistical_impact/<run-id>/features.parquet \
+  --ablation-run artifacts/models/statistical_feature_ablation/<run-id>
+uv run python -m nba_impact.cli build-statistical-features-v2 \
+  --base-features artifacts/features/statistical_impact/<v1-run-id>/features.parquet
+uv run python -m nba_impact.cli compare-statistical-features-v2 \
+  --features artifacts/features/statistical_impact/<v2-run-id>/features.parquet \
+  --baseline-run artifacts/models/statistical_aio/<run-id>
+uv run python -m nba_impact.cli build-statistical-priors \
+  --features artifacts/features/statistical_impact/<v2-run-id>/features.parquet \
+  --reference-run artifacts/models/statistical_feature_v2/<run-id>
+uv run python -m nba_impact.cli compare-prior-informed-rapm \
+  --priors artifacts/models/statistical_priors/<run-id>/priors.parquet
+uv run python -m nba_impact.cli ingest-external-impact
+uv run python -m nba_impact.cli benchmark-external-impact \
+  --priors artifacts/models/statistical_priors/<run-id>/priors.parquet \
+  --features artifacts/features/statistical_impact/<v2-run-id>/features.parquet
+uv run python -m nba_impact.cli build-statistical-features \
+  --window-ends 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024 \
+  --window-seasons 1
+uv run python -m nba_impact.cli build-statistical-features-v2 \
+  --base-features artifacts/features/statistical_impact/<annual-v1>/features.parquet \
+  --window-ends 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024 \
+  --pooled-window-seasons 1
+uv run python -m nba_impact.cli build-single-season-rapm-targets
+uv run python -m nba_impact.cli fit-single-season-spm \
+  --features artifacts/features/statistical_impact/<annual-v2>/features.parquet \
+  --targets artifacts/models/single_season_rapm_targets/<run-id>/targets.parquet \
+  --reference-run artifacts/models/statistical_feature_v2/<run-id>
+```
+
+The three-season canonical data rebuild is also resumable:
+
+```bash
+uv run python -m nba_impact.cli ingest \
+  --manifest configs/ingest/nba_data_archive_2023.json
+uv run python -m nba_impact.cli build-game-dim
+uv run python -m nba_impact.cli build-event-states
+uv run python -m nba_impact.cli build-player-games
+uv run python -m nba_impact.cli build-lineups
+# Only when lineup QA identifies bad historical boxes:
+uv run python -m nba_impact.cli ingest-official-boxscores --seasons 2023-24
+uv run python -m nba_impact.cli build-player-games
+uv run python -m nba_impact.cli build-lineups
+uv run python -m nba_impact.cli build-possessions
 ```
 
 ### Regenerate the SPM prior

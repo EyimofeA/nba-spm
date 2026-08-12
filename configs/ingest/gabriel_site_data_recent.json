@@ -1,0 +1,229 @@
+{
+  "provider": "gabriel1200/site_Data",
+  "source": "https://github.com/gabriel1200/site_Data",
+  "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+  "license": "not-declared-by-upstream",
+  "purpose": "Pinned recent aggregate NBA features and contract tables; raw research inputs, not canonical truth.",
+  "tasks": [
+    {
+      "name": "gabriel_playtype_master",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/playtype.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/playtype.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 1000,
+      "required_columns": ["Player", "year", "playtype"]
+    },
+    {
+      "name": "gabriel_tracking_regular",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/tracking.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/tracking.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 1000,
+      "required_columns": ["PLAYER_ID", "PLAYER", "year", "type"]
+    },
+    {
+      "name": "gabriel_tracking_playoffs",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/tracking_ps.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/tracking_playoffs.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 100,
+      "required_columns": ["PLAYER_ID", "PLAYER", "year", "type"]
+    },
+    {
+      "name": "gabriel_player_shooting_regular",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/player_shooting.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/player_shooting.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 1000,
+      "required_columns": ["PLAYER_ID", "PLAYER", "year", "shot_type"]
+    },
+    {
+      "name": "gabriel_player_shooting_playoffs",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/player_shooting_p.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/player_shooting_playoffs.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 100,
+      "required_columns": ["PLAYER_ID", "PLAYER", "year", "shot_type"]
+    },
+    {
+      "name": "gabriel_dfg_regular",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/dfg.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/dfg.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 100,
+      "required_columns": ["PLAYER", "year", "DFGA"]
+    },
+    {
+      "name": "gabriel_dfg_playoffs",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/dfg_p.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/dfg_playoffs.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 50,
+      "required_columns": ["PLAYER", "year", "DFGA"]
+    },
+    {
+      "name": "gabriel_rim_dfg_regular",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/rimdfg.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/rimdfg.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 100,
+      "required_columns": ["PLAYER", "year", "DFGA"]
+    },
+    {
+      "name": "gabriel_rim_dfg_playoffs",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/rimdfg_p.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/rimdfg_playoffs.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 50,
+      "required_columns": ["PLAYER", "year", "DFGA"]
+    },
+    {
+      "name": "gabriel_shotzone_regular",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/shotzone.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/shotzone.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 1000,
+      "required_columns": ["Name", "EntityId", "year", "Minutes"]
+    },
+    {
+      "name": "gabriel_shotzone_playoffs",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/shotzone_ps.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/shotzone_playoffs.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 100,
+      "required_columns": ["Name", "EntityId", "year", "Minutes"]
+    },
+    {
+      "name": "gabriel_hustle_regular",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/hustle.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/hustle.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 100,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME", "year"]
+    },
+    {
+      "name": "gabriel_hustle_playoffs",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/hustle_ps.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/hustle_playoffs.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 50,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME", "year"]
+    },
+    {
+      "name": "gabriel_passing_regular",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/passing.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/passing.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 100,
+      "required_columns": ["nba_id", "Name", "year"]
+    },
+    {
+      "name": "gabriel_passing_playoffs",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/passing_ps.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/passing_playoffs.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 50,
+      "required_columns": ["nba_id", "Name", "year"]
+    },
+    {
+      "name": "gabriel_lebron_crosswalk",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/lebron_master.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/lebron_master.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 1000,
+      "required_columns": ["Season", "Player", "NBA ID", "bref_id", "year"]
+    },
+    {
+      "name": "gabriel_salaries",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/nba_salaries.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/contracts/nba_salaries.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 100,
+      "required_columns": ["Player", "Team", "Guaranteed"]
+    },
+    {
+      "name": "gabriel_contract_options",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/nba_options.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/contracts/nba_options.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 100,
+      "required_columns": ["Player", "Team"]
+    },
+    {
+      "name": "gabriel_cap_holds",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/nba_cap_holds.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/contracts/nba_cap_holds.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 20,
+      "required_columns": ["Player", "Team"]
+    },
+    {
+      "name": "gabriel_dead_money",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/nba_dead_money.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/contracts/nba_dead_money.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 1,
+      "required_columns": ["Player", "Team"]
+    },
+    {
+      "name": "gabriel_cap_summary",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/nba_summary.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/contracts/nba_summary.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 20,
+      "required_columns": ["CAP", "Team"]
+    },
+    {
+      "name": "gabriel_cap_history",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/cap.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/contracts/cap.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 5,
+      "required_columns": ["Season", "Salary Cap", "Luxury Tax", "year"]
+    }
+  ]
+}

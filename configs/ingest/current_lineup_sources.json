@@ -1,0 +1,74 @@
+{
+  "provider": "cdechoch/nba-data-archive + llimllib/nba_data",
+  "purpose": "Current NBA substitution events, starter seeds, and ESPN Net Points/WPA benchmarks.",
+  "tasks": [
+    {
+      "name": "cdnnba_2024_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/cdnnba/2024.parquet",
+      "destination": "nba_data_archive/cdnnba/season=2024/regular.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2024,
+      "season_type": "regular",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d",
+      "expected_min_rows": 100000,
+      "required_columns": ["gameId", "actionNumber", "period", "clock", "actionType", "personId", "teamId"]
+    },
+    {
+      "name": "cdnnba_2024_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/cdnnba/po_2024.parquet",
+      "destination": "nba_data_archive/cdnnba/season=2024/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2024,
+      "season_type": "playoffs",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d",
+      "expected_min_rows": 10000,
+      "required_columns": ["gameId", "actionNumber", "period", "clock", "actionType", "personId", "teamId"]
+    },
+    {
+      "name": "cdnnba_2025_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/cdnnba/2025.parquet",
+      "destination": "nba_data_archive/cdnnba/season=2025/regular.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2025,
+      "season_type": "regular",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d",
+      "expected_min_rows": 100000,
+      "required_columns": ["gameId", "actionNumber", "period", "clock", "actionType", "personId", "teamId"]
+    },
+    {
+      "name": "cdnnba_2025_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d/per_season/cdnnba/po_2025.parquet",
+      "destination": "nba_data_archive/cdnnba/season=2025/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2025,
+      "season_type": "playoffs",
+      "source_revision": "53a0ab77b3fa4d1b3f388c48d4ce6de21f4a121d",
+      "expected_min_rows": 10000,
+      "required_columns": ["gameId", "actionNumber", "period", "clock", "actionType", "personId", "teamId"]
+    },
+    {
+      "name": "espn_player_box_all",
+      "url": "https://raw.githubusercontent.com/llimllib/nba_data/3519bb36e8f70a8bb61bfbf4b6c37e1fbb0f9c2c/data/espn/player_box.parquet",
+      "destination": "llimllib_nba_data/espn/player_box.parquet",
+      "provider": "llimllib/nba_data (ESPN Analytics mirror)",
+      "license": "not_declared_research_only",
+      "source_revision": "3519bb36e8f70a8bb61bfbf4b6c37e1fbb0f9c2c",
+      "expected_min_rows": 100000,
+      "required_columns": ["season", "game_id", "player_id", "team", "home", "starter", "minutes_played", "played", "oNetPts", "dNetPts", "tNetPts", "oWPA", "dWPA", "tWPA"]
+    },
+    {
+      "name": "nba_player_game_logs_all",
+      "url": "https://raw.githubusercontent.com/llimllib/nba_data/3519bb36e8f70a8bb61bfbf4b6c37e1fbb0f9c2c/data/player_game_logs.parquet",
+      "destination": "llimllib_nba_data/player_game_logs.parquet",
+      "provider": "llimllib/nba_data (NBA Stats mirror)",
+      "license": "not_declared_research_only",
+      "source_revision": "3519bb36e8f70a8bb61bfbf4b6c37e1fbb0f9c2c",
+      "expected_min_rows": 90000,
+      "required_columns": ["gameId", "teamId", "personId", "firstName", "familyName", "position", "minutes"]
+    }
+  ]
+}
