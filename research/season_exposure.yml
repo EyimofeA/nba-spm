@@ -1,0 +1,38 @@
+schema_version: season_exposure_v1
+updated_at: 2026-08-12
+policy: A season is not independent confirmation after its targets or leaderboards influence a model decision.
+
+season_groups:
+  - seasons: [2014, 2015, 2016, 2017]
+    status: development_heavy
+    permitted_use: mechanism development, implementation checks, and inner training
+    prohibited_claim: untouched confirmation
+
+  - seasons: [2018, 2019, 2020, 2021]
+    status: selection_heavy
+    permitted_use: nested historical selection and replication
+    prohibited_claim: untouched confirmation for already-developed AIO feature families
+
+  - seasons: [2022, 2023, 2024]
+    status: heavily_reused_confirmation
+    permitted_use: diagnostics and explicitly reused challenger evidence
+    prohibited_claim: independent promotion evidence
+
+  - seasons: [2025]
+    status: inspected_failure
+    permitted_use: frozen-model failure analysis and data QA
+    prohibited_claim: feature or hyperparameter selection followed by confirmation on the same season
+
+  - seasons: [2026]
+    status: current_partial_and_exposed
+    permitted_use: infrastructure, current descriptive RAPM, and data-completeness checks
+    prohibited_claim: complete annual AIO confirmation
+
+  - seasons: [2027]
+    status: reserved_untouched
+    permitted_use: one preregistered annual confirmation after the 2026-27 season is complete
+    prohibited_claim: any development, debugging, feature selection, or model selection before the locked test
+
+notes:
+  - This is a conservative project-level map. An experiment may claim a narrower clean slice only when its ledger proves that the exact target and feature family were not inspected.
+  - Random seeds and possession rows do not create new independent basketball seasons.

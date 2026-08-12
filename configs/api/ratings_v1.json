@@ -1,7 +1,7 @@
 {
   "contract_version": "ratings_api_v1",
   "annual_run_id": "annual_aio_ratings_v1_23c4895f8f",
-  "rolling_run_id": "rolling_rapm_peaks_v1_584adf4f3d",
+  "rolling_run_id": "rolling_rapm_peaks_v1_a8a612143c",
   "current_rapm_run_id": "rapm_v0_01b5084f0a",
   "matchup_defense_run_id": "matchup_defense_features_v1_09829b48c8",
   "default_limit": 25,

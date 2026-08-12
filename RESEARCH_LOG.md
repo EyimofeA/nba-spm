@@ -1701,3 +1701,34 @@ Attempt and three-point-attempt suppression have small negative correlations.
 The correlations are descriptive and the target seasons are already inspected.
 Do not run a new subset promotion search on them. The negative volume result is
 a warning that assignment, scheme, and shot-location context remain important.
+
+## 2026-08-12 — Research control plane and rolling-peak eligibility repair
+
+**Question:** Which recommendations from the supplied GPT Pro static diagnosis
+survive contact with the live checkout, and is its peak-eligibility concern real?
+
+**Evidence boundary:** The source diagnosis did not mount local artifacts or run
+tests. Its numerical claims remain documented claims. The live checkout started
+at commit `6c00463e`; its baseline suite passed 98 tests. The accepted governance
+decisions are recorded in `research/estimands.yml`,
+`research/season_exposure.yml`, and `research/pinned_artifact_audit.csv`.
+
+**Verified bug:** The rolling-peak contract required at least 1,000 offensive and
+defensive possessions in every constituent season. The implementation instead
+required only 3,000 or 5,000 total-window possessions per side. This allowed a
+player to miss or fall below the threshold in a constituent season.
+
+**Repair and result:** The builder now counts offense and defense by player and
+season and requires both per-season minima to meet the threshold. Rebuilt run
+`rolling_rapm_peaks_v1_a8a612143c` fits the same 50 windows and 36,530 rating
+rows. It removes 8,715 falsely eligible player-windows and produces 5,505
+player/component peak rows. There are 1,088 eligible three-year players and 747
+eligible five-year players. Net peaks correlate 0.956 among the 747 eligible in
+both. Component identity error remains below `9e-16`; peak keys and names pass.
+
+**Verdict:** Retire `rolling_rapm_peaks_v1_584adf4f3d` and pin the Ratings API to
+the corrected run. Keep peaks research-only because selection uncertainty and
+winner's-curse correction remain absent. Keep terminal-lineup, zero-prior normal
+RAPM as the production reference. Preregister precision-aware prior work, but do
+not tune it on the inspected 2025 failure or partial 2026 season. Reserve Season
+2027 for one untouched annual confirmation.

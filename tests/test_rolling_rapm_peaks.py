@@ -115,3 +115,40 @@ def test_season_scoring_environment_does_not_change_player_ratings() -> None:
         challenger[["offense", "defense", "net"]],
         atol=1e-10,
     )
+
+
+def test_peak_eligibility_requires_threshold_in_every_window_season() -> None:
+    rows = []
+    for season in (2022, 2023, 2024):
+        home = [1, 2, 3, 4, 5] if season != 2023 else [11, 2, 3, 4, 5]
+        away = [6, 7, 8, 9, 10]
+        for possession in range(4):
+            rows.append(
+                {
+                    "home_poss": bool(possession % 2),
+                    "pts": 1.0,
+                    **{f"a{i + 1}": value for i, value in enumerate(away)},
+                    **{f"h{i + 1}": value for i, value in enumerate(home)},
+                    "season": season,
+                    "date": f"{season - 1}-11-01",
+                    "period": 1,
+                    "num": possession + 1,
+                    "gameid": f"002{season}001",
+                }
+            )
+
+    ratings, quality = fit_rolling_rapm_window(
+        pd.DataFrame(rows),
+        RapmConfig(seasons=(2022, 2023, 2024), lambda_off=50, lambda_def=50),
+        window_start=2022,
+        window_end=2024,
+        minimum_possessions_per_window_season=1,
+    )
+    player = ratings.loc[ratings["PLAYER_ID"].eq(1)].iloc[0]
+
+    assert player["Poss_Off"] >= 3
+    assert player["Poss_Def"] >= 3
+    assert player["minimum_season_off_possessions"] == 0
+    assert player["minimum_season_def_possessions"] == 0
+    assert not player["peak_eligible"]
+    assert quality["minimum_peak_possessions_per_side_per_season"] == 1

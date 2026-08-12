@@ -39,7 +39,7 @@ saved. Every response is labeled `research_only` and includes the source caveat.
 The pinned run IDs live in `configs/api/ratings_v1.json`:
 
 - annual: `annual_aio_ratings_v1_23c4895f8f`
-- rolling/peaks: `rolling_rapm_peaks_v1_584adf4f3d`
+- rolling/peaks: `rolling_rapm_peaks_v1_a8a612143c`
 - current normal RAPM: `rapm_v0_01b5084f0a`
 - matchup-defense factors: `matchup_defense_features_v1_09829b48c8`
 

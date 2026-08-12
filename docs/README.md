@@ -18,6 +18,7 @@ Start at the repository root:
   feature families, public benchmark formulas, and AIO explanation contract;
 - [`modeling/PLAYBOOK.md`](modeling/PLAYBOOK.md) — NBA statistical modeling procedure;
 - [`modeling/EVIDENCE_POLICY.md`](modeling/EVIDENCE_POLICY.md) — evidence and claim standards;
+- [`planning/RESEARCH_DIAGNOSIS_2026-08-11.md`](planning/RESEARCH_DIAGNOSIS_2026-08-11.md) — accepted GPT Pro findings, live-repo corrections, and staged roadmap;
 - [`win_probability/MODEL_CARD.md`](win_probability/MODEL_CARD.md) — frozen WP specification and results;
 - [`win_probability/ARCHITECTURES.md`](win_probability/ARCHITECTURES.md) — paused WP architecture research.
 

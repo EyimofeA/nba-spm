@@ -1,0 +1,92 @@
+schema_version: estimand_registry_v1
+updated_at: 2026-08-12
+flagship_estimand_id: annual_retrospective_impact_v1
+
+estimands:
+  - estimand_id: annual_retrospective_impact_v1
+    name: Retrospective single-season player impact
+    status: provisional_public_flagship
+    unit: points_per_100_possessions
+    population: NBA regular-season players
+    window_definition: one complete regular season
+    information_cutoff_rule: complete-season possessions and observed lineups
+    target_definition: lineup-adjusted team point differential attributed to players
+    intended_use: describe impact during the named season
+    forbidden_interpretation: current latent ability, next-season forecast, or causal player value
+
+  - estimand_id: trailing_observed_lineup_rapm_v1
+    name: Trailing-window observed-lineup RAPM
+    status: production_reference_method
+    unit: points_per_100_possessions
+    population: NBA regular-season players in the stated trailing window
+    window_definition: explicit trailing seasons or dates
+    information_cutoff_rule: observed possessions and terminal lineups through the stated date
+    target_definition: lineup-adjusted scoring in the observed window
+    intended_use: descriptive RAPM evidence and current-data monitoring
+    forbidden_interpretation: latent current strength or deployable forecast
+
+  - estimand_id: current_latent_strength_v1
+    name: Current latent player strength
+    status: not_implemented
+    unit: points_per_100_possessions
+    population: active NBA players at an explicit date
+    window_definition: filtered state as of a stated date
+    information_cutoff_rule: only data available by that date
+    target_definition: latent ability after separating observation noise and time change
+    intended_use: current player comparison and roster scenarios
+    forbidden_interpretation: retrospective season impact
+
+  - estimand_id: next_season_strength_forecast_v1
+    name: Next-season player-strength forecast
+    status: not_implemented
+    unit: points_per_100_possessions
+    population: players eligible for the forecast season
+    window_definition: forecast horizon stated in the artifact
+    information_cutoff_rule: no information after the forecast date
+    target_definition: next-season player impact under a frozen target construction
+    intended_use: future team and player prediction
+    forbidden_interpretation: same-season descriptive rating
+
+  - estimand_id: playoff_possession_value_v1
+    name: Playoff possession value
+    status: not_implemented
+    unit: points_per_100_possessions
+    population: NBA playoff players and possessions
+    window_definition: stated postseason or held-out playoff seasons
+    information_cutoff_rule: explicit retrospective or pre-series cutoff
+    target_definition: playoff scoring impact conditional on opponent and lineup context
+    intended_use: playoff translation research
+    forbidden_interpretation: unshrunk player-specific playoff talent
+
+  - estimand_id: rolling_peak_impact_v1
+    name: Rolling observed RAPM peak
+    status: research_rebuild_required
+    unit: points_per_100_possessions
+    population: players meeting exposure in every constituent season
+    window_definition: fixed three-year or five-year regular-season window
+    information_cutoff_rule: complete observed window
+    target_definition: maximum eligible rolling normal-RAPM estimate
+    intended_use: descriptive career and peak research
+    forbidden_interpretation: uncertainty-corrected true peak or forecast ability
+
+  - estimand_id: post_action_home_win_probability_v1
+    name: Post-action home win probability
+    status: frozen_infrastructure_baseline
+    unit: probability
+    population: nonterminal NBA game states
+    window_definition: one game state after a completed action
+    information_cutoff_rule: state and pregame inputs available at that action
+    target_definition: probability that the home team wins the game
+    intended_use: calibrated game-state probability and later credit research
+    forbidden_interpretation: player credit, causal action value, or pregame forecast by itself
+
+  - estimand_id: matchup_defense_observational_v1
+    name: Observational matchup-defense residual
+    status: research_only
+    unit: points_saved_per_100_assigned_matchup_possessions
+    population: defenders with licensed matchup coverage
+    window_definition: one regular season
+    information_cutoff_rule: complete-season matchup aggregates
+    target_definition: scorer-adjusted empirical-Bayes matchup scoring residual
+    intended_use: defense research and diagnostics
+    forbidden_interpretation: causal defensive responsibility or additive total defense

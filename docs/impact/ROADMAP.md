@@ -194,16 +194,17 @@ season remains one game short.
   present interpolation as new evidence.
 - Add career and peak views in the style of NBA RAPM peak datasets.
 
-The rolling normal-RAPM peak table is complete in
-`rolling_rapm_peaks_v1_584adf4f3d`. It independently fits 26 three-year and 24
-five-year regular-season windows over 1997–2024. The model uses zero-prior
-3000/3000/300 ridge, terminal lineups, a home term, and season scoring-environment
-normalization. Published peaks require at least 1,000 offensive and defensive
-possessions per window season. The output contains 36,530 rolling ratings and
-7,866 player/component peaks with no duplicate keys or missing peak names.
-Three-year and five-year peak values have 0.963 correlation for 1,223 players
-eligible in both. The two unresolved archive IDs, 471 and 775, occur only in
-1997, are not peak eligible, and remain explicitly unnamed rather than guessed.
+The corrected rolling peak artifact is `rolling_rapm_peaks_v1_a8a612143c`.
+It enforces at least 1,000 offensive and defensive possessions in every
+constituent season. The old total-window rule falsely admitted 8,715
+player-windows and its artifact `rolling_rapm_peaks_v1_584adf4f3d` is retired.
+The replacement fits 26 three-year and 24 five-year windows over 1997–2024. It
+contains 36,530 rolling ratings and 5,505 player/component peaks: 1,088 players
+have a three-year peak, 747 have a five-year peak, and all 747 appear in both.
+Their three-year and five-year net peaks correlate 0.956. Component identities
+hold to floating-point precision and peak names are complete. The model remains
+zero-prior 3000/3000/300 ridge with terminal lineups, a home term, and season
+scoring-environment normalization. Peak uncertainty is still absent.
 
 ## Phase 6 — Product contract
 

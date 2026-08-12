@@ -1,7 +1,7 @@
 # NBA Impact Roadmap
 
 This is the one file to follow remotely. `RESEARCH_LOG.md` contains evidence and
-dead ends. Updated 2026-08-10. See `docs/README.md` for the document index,
+dead ends. Updated 2026-08-12. See `docs/README.md` for the document index,
 `docs/impact/ROADMAP.md` for the detailed RAPM/all-in-one plan, and
 `docs/modeling/PLAYBOOK.md` for the common statistical modeling procedure.
 
@@ -54,31 +54,35 @@ dead ends. Updated 2026-08-10. See `docs/README.md` for the document index,
 
 ## Active next task
 
-Build canonical opponent-adjusted defender features from the new licensed
-player-matchup archives. Eight regular seasons and 1.77M rows now pass ingest QA.
-Existing aggregate interactions fail nested forward promotion, as does ridge
-retuning. Keep the frozen model, alpha 3000, and published annual AIO through
-2024. Keep 2025 as inspected evidence and reserve the next complete season for
-one final untouched test. WP neural work stays paused on the Mac.
+Freeze the scientific control plane before another AIO feature search. The
+estimand registry, conservative season-exposure map, pinned-artifact audit, and
+precision-aware prior preregistration now live in `research/`. Corrected rolling
+peaks are pinned as `rolling_rapm_peaks_v1_a8a612143c`. Next, add whole-game
+RAPM uncertainty and expose its status through the artifact/API contract. Keep
+zero-prior normal RAPM as the production reference. Keep the annual AIO and
+matchup factors research-only. Reserve Season 2027 as the next untouched annual
+confirmation. WP neural work stays paused on the Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
 
 ## Ordered queue
 
-1. **RAPM:** normal RAPM is the terminal-lineup, zero-prior ridge with penalties
-   3000/3000/300. Keep fractional attribution research-only.
-2. **All-in-one:** improve and compare box/tracking/playtype feature groups for
-   offense and defense. Keep independent and on/off-assisted variants distinct.
-3. **Dynamic impact:** create annual time-decayed/player-state trajectories and
+1. **Evidence:** complete artifact lineage and uncertainty status for every
+   pinned API rating. Keep Season 2027 untouched.
+2. **RAPM:** add whole-game uncertainty to the terminal-lineup, zero-prior
+   3000/3000/300 reference, then propagate it through peaks and the API.
+3. **All-in-one:** implement the preregistered precision-aware prior challenger.
+   Do not start another broad feature subset search on reused seasons.
+4. **Dynamic impact:** create annual time-decayed/player-state trajectories and
    peak 1/3/5-year views in the style of NBA RAPM peaks.
-4. **WP-RAPM / credit:** value possession-start-to-end WP change only after the WP
+5. **WP-RAPM / credit:** value possession-start-to-end WP change only after the WP
    and lineup assignment are validated; compare Net Points and TD/Shapley ideas.
-5. **Product:** stable DuckDB/API contract first, then a restrained player explorer.
+6. **Product:** stable DuckDB/API contract first, then a restrained player explorer.
    Do not rebuild the deleted UI before metric contracts are frozen.
-6. **Later data:** injuries/availability, contracts, salaries, draft, roster stints,
+7. **Later data:** injuries/availability, contracts, salaries, draft, roster stints,
    travel, and historical team schedules.
-7. **WP later:** revisit only for playoff calibration or a cloud-trained causal
+8. **WP later:** revisit only for playoff calibration or a cloud-trained causal
    sequence experiment after the impact platform is useful.
 
 ## Research rules
@@ -129,3 +133,4 @@ now would break reproducibility links.
 - External BPM/xRAPM benchmark: `external_impact_benchmark_v1_bab43a4087`
 - Annual normal RAPM targets: `single_season_rapm_targets_v1_fd876680da`
 - Annual SPM and disagreements: `single_season_spm_v1_51adc53061`
+- Corrected rolling normal-RAPM peaks: `rolling_rapm_peaks_v1_a8a612143c`

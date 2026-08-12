@@ -9,6 +9,9 @@ index. For the detailed impact plan, read `docs/impact/ROADMAP.md`; for shared
 model rules, read `docs/modeling/PLAYBOOK.md`. For WP inputs, evidence, and
 rejected variants, read `docs/win_probability/MODEL_CARD.md`; for nonlinear
 candidates and their promotion gates, read `docs/win_probability/ARCHITECTURES.md`.
+Before changing a public model claim, read `research/estimands.yml` and
+`research/season_exposure.yml`. Season 2027 is reserved as untouched annual
+confirmation. Do not use it for development, debugging, or model selection.
 Treat the older untracked `PROJECT.md` and
 `IDEAS.md` as historical RAPM context, not the current task queue.
 

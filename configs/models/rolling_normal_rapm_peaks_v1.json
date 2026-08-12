@@ -17,7 +17,7 @@
   "peak_eligibility": {
     "minimum_offensive_possessions_per_window_season": 1000,
     "minimum_defensive_possessions_per_window_season": 1000,
-    "rule": "both possession counts must be at least window length times 1000"
+    "rule": "offensive and defensive possession counts must each be at least 1000 in every constituent season"
   },
   "peak_components": ["offense", "defense", "net"],
   "tie_break": [

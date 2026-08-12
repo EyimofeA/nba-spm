@@ -72,6 +72,54 @@ def load_peak_player_names(
     return combined, hashes
 
 
+def _player_season_exposure(
+    frame: pd.DataFrame,
+    player_ids: np.ndarray,
+    seasons: tuple[int, ...],
+) -> pd.DataFrame:
+    """Count each player's offensive and defensive possessions in every season."""
+    away_players = frame.loc[:, [f"a{index}" for index in range(1, 6)]].to_numpy(
+        dtype=np.int64, copy=False
+    )
+    home_players = frame.loc[:, [f"h{index}" for index in range(1, 6)]].to_numpy(
+        dtype=np.int64, copy=False
+    )
+    home_offense = frame["home_poss"].to_numpy(dtype=bool, copy=False)
+    offense_players = np.where(home_offense[:, None], home_players, away_players)
+    defense_players = np.where(home_offense[:, None], away_players, home_players)
+    repeated_seasons = np.repeat(
+        pd.to_numeric(frame["season"], errors="raise").to_numpy(dtype=np.int64), 5
+    )
+    index = pd.MultiIndex.from_product(
+        [np.asarray(player_ids, dtype=np.int64), seasons],
+        names=["PLAYER_ID", "season"],
+    )
+
+    def counts(players: np.ndarray) -> pd.Series:
+        return (
+            pd.DataFrame(
+                {
+                    "PLAYER_ID": players.ravel(),
+                    "season": repeated_seasons,
+                }
+            )
+            .value_counts(sort=False)
+            .reindex(index, fill_value=0)
+            .astype(np.int64)
+        )
+
+    exposure = pd.DataFrame(
+        {
+            "season_off_possessions": counts(offense_players),
+            "season_def_possessions": counts(defense_players),
+        }
+    ).reset_index()
+    exposure["season_side_possessions"] = exposure[
+        ["season_off_possessions", "season_def_possessions"]
+    ].min(axis=1)
+    return exposure
+
+
 def fit_rolling_rapm_window(
     frame: pd.DataFrame,
     config: RapmConfig,
@@ -111,8 +159,19 @@ def fit_rolling_rapm_window(
     ratings["window_end"] = window_end
     ratings["window_seasons"] = window_seasons
     ratings["minimum_side_possessions"] = ratings[["Poss_Off", "Poss_Def"]].min(axis=1)
-    threshold = minimum_possessions_per_window_season * window_seasons
-    ratings["peak_eligible"] = ratings["minimum_side_possessions"].ge(threshold)
+    seasons = tuple(range(window_start, window_end + 1))
+    exposure = _player_season_exposure(frame, design.players, seasons)
+    minimums = exposure.groupby("PLAYER_ID", as_index=False).agg(
+        minimum_season_off_possessions=("season_off_possessions", "min"),
+        minimum_season_def_possessions=("season_def_possessions", "min"),
+        minimum_season_side_possessions=("season_side_possessions", "min"),
+    )
+    ratings = ratings.merge(minimums, on="PLAYER_ID", validate="one_to_one")
+    threshold = minimum_possessions_per_window_season
+    ratings["peak_eligible"] = (
+        ratings["minimum_season_off_possessions"].ge(threshold)
+        & ratings["minimum_season_def_possessions"].ge(threshold)
+    )
     for component in COMPONENTS:
         rank = ratings.loc[ratings["peak_eligible"], component].rank(
             method="min", ascending=False
@@ -127,7 +186,7 @@ def fit_rolling_rapm_window(
         "possession_rows": len(frame),
         "players": len(ratings),
         "peak_eligible_players": int(ratings["peak_eligible"].sum()),
-        "minimum_peak_possessions_per_side": threshold,
+        "minimum_peak_possessions_per_side_per_season": threshold,
         "intercept_per_possession": float(intercept),
         "season_scoring_environment_per_100": {
             str(int(key)): float((value - overall_mean) * 100.0)
@@ -318,6 +377,10 @@ def build_rolling_rapm_peaks(
             "season_range": [season_start, season_end],
             "window_lengths": list(window_lengths),
             "minimum_possessions_per_window_season": minimum_per_season,
+            "peak_eligibility_rule": (
+                "minimum offensive and defensive possessions must each meet the "
+                "threshold in every constituent season"
+            ),
             "lambda_off": float(model["lambda_off"]),
             "lambda_def": float(model["lambda_def"]),
             "lambda_home": float(model["lambda_home"]),
