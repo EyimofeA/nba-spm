@@ -908,6 +908,7 @@ def command_compare_precision_aware_prior(args: argparse.Namespace) -> int:
         "run_id": run_id,
         "model_family": "precision_aware_side_specific_prior_rapm",
         "estimand_id": "annual_retrospective_impact_v1",
+        "estimand": "regular-season held-out game-margin prediction from trailing three-season normal RAPM",
         "status": "research_challenger_unreviewed",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "config": {
