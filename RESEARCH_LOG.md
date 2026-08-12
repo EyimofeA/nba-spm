@@ -1771,3 +1771,17 @@ missing rather than being treated as zero evidence.
 
 **Next:** Let the 2022-24 three-year historical pilot finish. Do not publish
 rank precision until synthetic coverage and the historical run also pass.
+
+## 2026-08-12 — Normal RAPM uncertainty: historical 2022-24 pilot complete
+
+**Result:** The three-year terminal-lineup normal RAPM run completed 1,000
+season-stratified whole-game draws across 3,689 games, 728,269 possessions, and
+818 players. Component identity holds to `4.4e-16`. For the 451 players with at
+least 2,000 possessions on each side, median analytic/bootstrap 95% width ratios
+are 1.004 (offense), 1.004 (defense), and 1.006 (net). There are 704 players with
+complete joint draw coverage.
+
+**Interpretation:** This passes the stated analytic/bootstrap-width diagnostic.
+It does not establish empirical coverage or justify rank precision by itself.
+Bootstrap intervals remain the publication method. The selection-aware rolling
+peak run has started separately and remains research-only.
