@@ -17,7 +17,7 @@ candidate_change: >-
 comparators:
   - zero_prior_normal_rapm
   - statistical_prior_only
-  - fixed_center_scale_selected_inside_training
+  - fixed_center_prior_rapm
   - precision_aware_side_specific_prior
 
 data_contract:
@@ -29,6 +29,15 @@ data_contract:
   untouched_confirmation_seasons: [2027]
   scoring_rows: identical held-out games for every comparator
   information_cutoff: priors and precision estimates must be generated without the scored season
+  precision_calibration: >-
+    For each side, estimate tau squared only from earlier-fold cross-fitted
+    residuals after subtracting RAPM label variance. A boundary-zero estimate is
+    unidentified and invalidates the precision-aware candidate; do not replace it
+    with an arbitrary large penalty or an amplitude scale.
+  loss_scale: >-
+    In the unstandardized possession SSE objective, the player penalty is
+    sigma squared divided by tau squared. Estimate sigma squared only on training
+    possessions and retain the fixed 300 home-court penalty.
 
 evaluation:
   primary_metric: equal-season-weighted held-out game-margin RMSE
