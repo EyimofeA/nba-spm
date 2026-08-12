@@ -1750,3 +1750,24 @@ lineage records. It does not add uncertainty or upgrade their scientific status.
 
 **Next:** Freeze and implement game-cluster uncertainty for normal RAPM before
 publishing any rank precision.
+
+## 2026-08-12 — Normal RAPM uncertainty: 2025 pilot complete
+
+**Question:** Does the frozen terminal-lineup zero-prior normal RAPM have
+reproducible game-level uncertainty on a complete annual slice?
+
+**What we did:** Fit 2025 regular-season terminal-lineup normal RAPM with fixed
+3000/3000/300 penalties. Resampled complete games with replacement within the
+season for 1,000 deterministic, atomically checkpointed draws. Estimated a CR0
+game-cluster ridge sandwich only as a diagnostic.
+
+**Result:** The run covers 1,226 lineup-quality-passing games and 569 players.
+It completed all 1,000 draws. Component identity holds to `4.4e-16`. For players
+with at least 2,000 possessions on each side, median analytic/bootstrap 95%
+interval-width ratios are 1.011 (offense), 1.011 (defense), and 1.009 (net).
+The bootstrap remains the publication method. Only 521 players have complete
+offense/defense/net coverage in every draw; players absent from a draw remain
+missing rather than being treated as zero evidence.
+
+**Next:** Let the 2022-24 three-year historical pilot finish. Do not publish
+rank precision until synthetic coverage and the historical run also pass.

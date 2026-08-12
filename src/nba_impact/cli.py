@@ -116,6 +116,7 @@ from nba_impact.paths import (
 )
 from nba_impact.registry import register_model_run, register_snapshot
 from nba_impact.research.control_plane import validate_pinned_artifacts
+from nba_impact.research.release import build_local_release_bundle
 
 
 def _season_list(value: str) -> tuple[int, ...]:
@@ -185,6 +186,17 @@ def command_validate_research_control(args: argparse.Namespace) -> int:
     }
     print(json.dumps(payload, indent=2))
     return 0 if not issues else 2
+
+
+def command_build_local_release(args: argparse.Namespace) -> int:
+    release = build_local_release_bundle(
+        args.api_config,
+        args.artifact_root,
+        args.contract,
+        release_root=args.release_root,
+    )
+    print(json.dumps(release, indent=2))
+    return 0
 
 
 def command_ingest(args: argparse.Namespace) -> int:
@@ -1309,6 +1321,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
     control.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     control.set_defaults(func=command_validate_research_control)
+
+    release = subparsers.add_parser(
+        "build-local-release",
+        help="Build a validated local bundle of schemas and derived ratings only.",
+    )
+    release.add_argument(
+        "--api-config", type=Path, default=PROJECT_ROOT / "configs" / "api" / "ratings_v2.json"
+    )
+    release.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    release.add_argument(
+        "--contract", type=Path, default=PROJECT_ROOT / "research" / "pinned_artifact_contracts.json"
+    )
+    release.add_argument("--release-root", type=Path, default=ARTIFACT_ROOT / "releases")
+    release.set_defaults(func=command_build_local_release)
 
     ingest = subparsers.add_parser(
         "ingest", help="Run a resumable HTTP ingestion manifest."

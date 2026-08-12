@@ -118,7 +118,14 @@ def validate_release_manifest(path: str | Path) -> list[ControlPlaneIssue]:
             issues.append(ControlPlaneIssue("absolute_release_path", f"Release manifest contains absolute path: {value}"))
             break
     for artifact in release.get("artifacts", []):
-        if artifact.get("evidence_status") in _PRODUCTION_STATUSES and str(artifact.get("run_status", "")).startswith("research"):
+        if artifact.get("evidence_status") in _PRODUCTION_STATUSES and str(
+            artifact.get("run_status", "")
+        ).lower() in {
+            "research_only",
+            "research_challenger",
+            "research_lineup_sensitivity",
+            "research_diagnostic_unverified",
+        }:
             issues.append(ControlPlaneIssue("research_exposed_as_production", "Research artifact exposed as production."))
         if 2027 in _declared_seasons(artifact):
             issues.append(ControlPlaneIssue("reserved_season_leakage", "Release artifact declares Season 2027."))
