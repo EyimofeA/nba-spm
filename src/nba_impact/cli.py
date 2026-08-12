@@ -940,6 +940,10 @@ def command_compare_precision_aware_prior(args: argparse.Namespace) -> int:
                 folds.groupby("test_season")["games"].nunique().eq(1).all()
             ),
         },
+        "metrics": {
+            "folds": folds.to_dict(orient="records"),
+            "promotion_gate": gate,
+        },
         "promotion_gate": gate,
         "caveats": [
             "This is a preregistered research challenger, not a production replacement.",
