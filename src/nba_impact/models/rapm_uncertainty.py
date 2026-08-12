@@ -200,13 +200,12 @@ def _draw_weights(design: RapmDesign, seed: int, draw: int) -> tuple[np.ndarray,
     counts: dict[str, int] = {}
     for season in sorted(int(value) for value in np.unique(design.seasons)):
         rows = np.flatnonzero(design.seasons == season)
-        games = np.array(sorted(np.unique(design.game_ids[rows])), dtype=object)
+        games, inverse = np.unique(design.game_ids[rows], return_inverse=True)
         rng = np.random.default_rng(np.random.SeedSequence([seed, draw, season]))
-        sampled = rng.choice(games, size=len(games), replace=True)
-        selected, multiplicity = np.unique(sampled, return_counts=True)
-        counts[str(season)] = int(len(sampled))
-        for game, repetitions in zip(selected, multiplicity):
-            row_weights[rows[design.game_ids[rows] == game]] = int(repetitions)
+        sampled_indices = rng.integers(0, len(games), size=len(games), endpoint=False)
+        multiplicity = np.bincount(sampled_indices, minlength=len(games))
+        counts[str(season)] = int(len(games))
+        row_weights[rows] = multiplicity[inverse]
     return row_weights, counts
 
 
