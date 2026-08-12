@@ -465,7 +465,12 @@ def run_selection_aware_peak_bootstrap(
     run_id = f"rolling_peak_uncertainty_v1_{identity}"
     output = Path(artifact_root) / "models" / "rolling_peak_uncertainty" / run_id
     draw_root = output / "selected_draws"
+    window_root = output / "window_draws"
     draw_root.mkdir(parents=True, exist_ok=True)
+    window_root.mkdir(parents=True, exist_ok=True)
+    # The global design is invariant across draws. Only its row multiplicities
+    # change, so building it once removes repeated 1997-2024 sparse assembly.
+    all_design = build_design(all_possessions, include_home=True)
 
     def draw_path(draw: int) -> Path:
         return draw_root / f"draw_{draw:04d}.parquet"
@@ -480,13 +485,24 @@ def run_selection_aware_peak_bootstrap(
             except Exception:
                 pass
         weighted = all_possessions.copy()
-        all_design = build_design(weighted, include_home=True)
         row_weights, _ = _draw_weights(all_design, seed, draw)
         weighted["_bootstrap_weight"] = row_weights
         window_frames: list[pd.DataFrame] = []
         for length in window_lengths:
             for window_end in range(season_start + length - 1, season_end + 1):
                 window_start = window_end - length + 1
+                checkpoint = (
+                    window_root
+                    / f"draw_{draw:04d}"
+                    / f"{length}y_end_{window_end}.parquet"
+                )
+                if checkpoint.exists():
+                    ratings = pd.read_parquet(checkpoint)
+                    required = {"PLAYER_ID", "window_start", "window_end", "peak_eligible"}
+                    if not required.issubset(ratings.columns):
+                        raise ValueError(f"Invalid peak-window checkpoint {checkpoint}.")
+                    window_frames.append(ratings)
+                    continue
                 frame = weighted.loc[
                     weighted["season"].between(window_start, window_end)
                 ].copy()
@@ -542,6 +558,8 @@ def run_selection_aware_peak_bootstrap(
                 ratings["peak_eligible"] = ratings["min_off"].ge(threshold) & ratings["min_def"].ge(threshold)
                 ratings["minimum_side_possessions"] = ratings[["Poss_Off", "Poss_Def"]].min(axis=1)
                 ratings = ratings.merge(names, on="PLAYER_ID", how="left", validate="one_to_one")
+                checkpoint.parent.mkdir(parents=True, exist_ok=True)
+                _write_parquet_atomic(ratings, checkpoint)
                 window_frames.append(ratings)
         rolling = pd.concat(window_frames, ignore_index=True)
         selected = extract_player_peaks(rolling)
