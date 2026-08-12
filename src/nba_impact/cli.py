@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -51,6 +53,9 @@ from nba_impact.models.external_impact_benchmark import (
 )
 from nba_impact.models.prior_informed_rapm import (
     run_prior_informed_rapm_comparison,
+)
+from nba_impact.models.precision_aware_prior import (
+    run_precision_aware_prior_comparison,
 )
 from nba_impact.models.annual_spm_priors import (
     build_forward_chained_annual_spm_priors,
@@ -814,6 +819,135 @@ def command_compare_prior_informed_rapm(args: argparse.Namespace) -> int:
         bootstrap_repetitions=args.bootstrap_repetitions,
         bootstrap_seed=args.seed,
     )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_compare_precision_aware_prior(args: argparse.Namespace) -> int:
+    """Run and retain the preregistered four-model prior comparison."""
+    ensure_owned_dirs()
+    test_seasons = tuple(args.test_seasons)
+    selection_seasons = tuple(args.selection_seasons)
+    diagnostic_seasons = tuple(args.diagnostic_seasons)
+    if 2027 in test_seasons:
+        raise ValueError("Season 2027 is reserved and cannot enter this comparison.")
+    seasons = tuple(range(min(test_seasons) - args.train_window, max(test_seasons) + 1))
+    frame = load_legacy_possessions(args.cache_dir, seasons, game_types=("regular",))
+    priors = pd.read_parquet(args.priors)
+    calibration = pd.read_parquet(args.calibration)
+    config = RapmConfig(
+        seasons=seasons,
+        lambda_off=args.lambda_off,
+        lambda_def=args.lambda_def,
+        lambda_home=args.lambda_home,
+        game_types=("regular",),
+        data_scope="legacy_regular_precision_aware_prior_comparison",
+    )
+    folds, calibration_rows, paired_bootstrap = run_precision_aware_prior_comparison(
+        frame,
+        priors,
+        calibration,
+        config,
+        test_seasons=test_seasons,
+        train_window=args.train_window,
+        selection_seasons=selection_seasons,
+        diagnostic_seasons=diagnostic_seasons,
+        bootstrap_repetitions=args.bootstrap_repetitions,
+        bootstrap_seed=args.seed,
+    )
+    expected = {
+        "zero_prior",
+        "statistical_prior_only",
+        "fixed_center_prior",
+        "precision_aware_side_specific_prior",
+    }
+    by_season = folds.groupby("test_season")["candidate"].agg(set)
+    invalid = {
+        int(season): sorted(expected - candidates)
+        for season, candidates in by_season.items()
+        if candidates != expected
+    }
+    if invalid:
+        raise ValueError(f"Each scored season must include exactly four models: {invalid}")
+    zero = folds.loc[folds["candidate"].eq("zero_prior"), [
+        "test_season", "margin_rmse", "margin_correlation"
+    ]].rename(columns={
+        "margin_rmse": "zero_margin_rmse",
+        "margin_correlation": "zero_margin_correlation",
+    })
+    comparison = folds.merge(zero, on="test_season", validate="many_to_one")
+    comparison["rmse_improvement_vs_zero"] = (
+        comparison["zero_margin_rmse"] - comparison["margin_rmse"]
+    )
+    comparison["correlation_change_vs_zero"] = (
+        comparison["margin_correlation"] - comparison["zero_margin_correlation"]
+    )
+    diagnostic_candidate = comparison.loc[
+        comparison["test_season"].isin(diagnostic_seasons)
+        & comparison["candidate"].eq("precision_aware_side_specific_prior")
+    ]
+    gate = {
+        "minimum_rmse_improvement": 0.05,
+        "observed_mean_rmse_improvement": float(
+            diagnostic_candidate["rmse_improvement_vs_zero"].mean()
+        ),
+        "mean_correlation_change": float(
+            diagnostic_candidate["correlation_change_vs_zero"].mean()
+        ),
+        "paired_bootstrap": paired_bootstrap,
+        "status": "unreviewed_research_result",
+    }
+    run_id = f"precision_aware_prior_rapm_v1_{uuid.uuid4().hex[:10]}"
+    output = Path(args.artifact_root) / "models" / "precision_aware_prior_rapm" / run_id
+    output.mkdir(parents=True, exist_ok=False)
+    folds.to_parquet(output / "folds.parquet", index=False)
+    calibration_rows.to_parquet(output / "precision_calibration.parquet", index=False)
+    comparison.to_parquet(output / "fold_comparison.parquet", index=False)
+    run = {
+        "run_id": run_id,
+        "model_family": "precision_aware_side_specific_prior_rapm",
+        "estimand_id": "annual_retrospective_impact_v1",
+        "status": "research_challenger_unreviewed",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "config": {
+            "contract_path": str(args.contract),
+            "test_seasons": list(test_seasons),
+            "selection_seasons": list(selection_seasons),
+            "diagnostic_seasons": list(diagnostic_seasons),
+            "train_window": args.train_window,
+            "rapm": {
+                "lambda_off": args.lambda_off,
+                "lambda_def": args.lambda_def,
+                "lambda_home": args.lambda_home,
+            },
+            "bootstrap_repetitions": args.bootstrap_repetitions,
+            "bootstrap_seed": args.seed,
+            "source_hashes": {
+                "contract": sha256_file(args.contract),
+                "priors": sha256_file(args.priors),
+                "calibration": sha256_file(args.calibration),
+                "source_code": sha256_file(
+                    PROJECT_ROOT / "src/nba_impact/models/precision_aware_prior.py"
+                ),
+            },
+        },
+        "quality": {
+            "folds": int(len(folds)),
+            "all_scored_seasons_have_exactly_four_models": True,
+            "identical_game_count_by_candidate_and_season": (
+                folds.groupby("test_season")["games"].nunique().eq(1).all()
+            ),
+        },
+        "promotion_gate": gate,
+        "caveats": [
+            "This is a preregistered research challenger, not a production replacement.",
+            "Season 2027 remains untouched confirmation and is not part of this run.",
+            "A promotion decision requires the separate frozen review after results exist.",
+        ],
+        "artifact_path": str(output.resolve()),
+    }
+    write_json_atomic(run, output / "run.json")
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
     return 0
@@ -1864,6 +1998,38 @@ def build_parser() -> argparse.ArgumentParser:
     prior_informed_rapm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     prior_informed_rapm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     prior_informed_rapm.set_defaults(func=command_compare_prior_informed_rapm)
+
+    precision_aware_prior = subparsers.add_parser(
+        "compare-precision-aware-prior",
+        help="Run the frozen four-model precision-aware RAPM prior comparison.",
+    )
+    precision_aware_prior.add_argument("--priors", type=Path, required=True)
+    precision_aware_prior.add_argument("--calibration", type=Path, required=True)
+    precision_aware_prior.add_argument(
+        "--contract", type=Path,
+        default=Path("research/experiments/precision_aware_prior_rapm_v1.yml"),
+    )
+    precision_aware_prior.add_argument(
+        "--test-seasons", type=_season_list, default=(2021, 2022, 2023, 2024)
+    )
+    precision_aware_prior.add_argument(
+        "--selection-seasons", type=_season_list, default=(2021, 2022)
+    )
+    precision_aware_prior.add_argument(
+        "--diagnostic-seasons", type=_season_list, default=(2023, 2024)
+    )
+    precision_aware_prior.add_argument("--train-window", type=int, default=3)
+    precision_aware_prior.add_argument("--lambda-off", type=float, default=3000.0)
+    precision_aware_prior.add_argument("--lambda-def", type=float, default=3000.0)
+    precision_aware_prior.add_argument("--lambda-home", type=float, default=300.0)
+    precision_aware_prior.add_argument("--bootstrap-repetitions", type=int, default=2000)
+    precision_aware_prior.add_argument("--seed", type=int, default=20260812)
+    precision_aware_prior.add_argument(
+        "--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE
+    )
+    precision_aware_prior.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    precision_aware_prior.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    precision_aware_prior.set_defaults(func=command_compare_precision_aware_prior)
 
     external_ingest = subparsers.add_parser(
         "ingest-external-impact",
