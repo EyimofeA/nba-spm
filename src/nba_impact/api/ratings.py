@@ -36,6 +36,7 @@ CURRENT_METRICS = {
     "offense": "offense_per_100",
     "defense": "defense_per_100",
 }
+UNCERTAINTY_METRICS = ("net", "offense", "defense")
 MATCHUP_FACTOR_METRICS = (
     "matchup_fga_suppressed_vs_scorer_p100_eb",
     "matchup_shotmaking_points_saved_vs_scorer_p100_eb",
@@ -68,6 +69,7 @@ class RatingsApiConfig:
     matchup_defense_run_id: str | None = None
     lineage_contract_path: str | None = None
     current_uncertainty_run_id: str | None = None
+    normal_rapm_uncertainty_run_ids: dict[str, str] | None = None
 
     @classmethod
     def from_json(cls, path: str | Path) -> "RatingsApiConfig":
@@ -95,6 +97,9 @@ class RatingsStore:
         self.rolling = pd.read_parquet(self.rolling_dir / "rolling_ratings.parquet")
         self.peaks = pd.read_parquet(self.rolling_dir / "player_peaks.parquet")
         self.current = pd.read_parquet(self.current_dir / "ratings.parquet")
+        # Kept for wire compatibility only.  A single uncertainty run must not
+        # be joined to the 2024--26 current-rating artifact unless it has the
+        # identical season scope.  Scoped uncertainty runs are loaded below.
         self.current_uncertainty: pd.DataFrame | None = None
         if config.current_uncertainty_run_id is not None:
             uncertainty_path = (
@@ -104,6 +109,16 @@ class RatingsStore:
                 / "ratings_uncertainty.parquet"
             )
             self.current_uncertainty = pd.read_parquet(uncertainty_path)
+        self.normal_rapm_uncertainty: dict[str, pd.DataFrame] = {}
+        self.normal_rapm_uncertainty_manifests: dict[str, dict[str, Any]] = {}
+        for scope, run_id in (config.normal_rapm_uncertainty_run_ids or {}).items():
+            run_dir = artifact_root / "rapm_uncertainty" / run_id
+            self.normal_rapm_uncertainty[scope] = pd.read_parquet(
+                run_dir / "ratings_uncertainty.parquet"
+            )
+            self.normal_rapm_uncertainty_manifests[scope] = _read_run(
+                run_dir / "run.json"
+            )
         self.matchup_manifest: dict[str, Any] | None = None
         self.matchup: pd.DataFrame | None = None
         if config.matchup_defense_run_id is not None:
@@ -190,6 +205,14 @@ class RatingsStore:
         return {"status": status, "method": method, "components": components}
 
     def v2_metadata(self) -> dict[str, Any]:
+        uncertainty_artifacts = {
+            scope: self._v2_lineage(
+                f"normal_rapm_uncertainty_{scope}_run_id",
+                frame,
+                ["player_id"],
+            )
+            for scope, frame in self.normal_rapm_uncertainty.items()
+        }
         return {
             "contract_version": "ratings_api_v2",
             "artifacts": {
@@ -211,6 +234,7 @@ class RatingsStore:
                     if self.matchup is not None
                     else None
                 ),
+                "normal_rapm_uncertainty": uncertainty_artifacts,
             },
         }
 
@@ -306,6 +330,34 @@ class RatingsStore:
                 raise ValueError(f"Matchup feature artifact lacks columns: {missing}")
             if self.matchup.duplicated(["PLAYER_ID", "Season"]).any():
                 raise ValueError("Matchup feature keys are not unique.")
+        uncertainty_required = {
+            "player_id",
+            "player_name",
+            "off_possessions",
+            "def_possessions",
+            "uncertainty_method",
+            "uncertainty_status",
+        }
+        for component in UNCERTAINTY_METRICS:
+            uncertainty_required |= {
+                f"{component}_estimate",
+                f"{component}_bootstrap_se",
+                f"{component}_ci80_low",
+                f"{component}_ci80_high",
+                f"{component}_ci95_low",
+                f"{component}_ci95_high",
+                f"{component}_probability_above_zero",
+                f"{component}_draw_coverage",
+            }
+        for scope, frame in self.normal_rapm_uncertainty.items():
+            if missing := sorted(uncertainty_required - set(frame.columns)):
+                raise ValueError(
+                    f"Normal RAPM uncertainty artifact {scope!r} lacks columns: {missing}"
+                )
+            if frame["player_id"].duplicated().any():
+                raise ValueError(
+                    f"Normal RAPM uncertainty player IDs are not unique for {scope!r}."
+                )
 
     def _limit(self, limit: int | None) -> int:
         value = self.config.default_limit if limit is None else int(limit)
@@ -455,6 +507,72 @@ class RatingsStore:
             "offset": int(offset),
             "limit": size,
             "results": _records(frame.iloc[offset : offset + size][columns]),
+        }
+
+    def normal_rapm_uncertainty_leaderboard(
+        self,
+        scope: str,
+        metric: str = "net",
+        *,
+        limit: int | None = None,
+        offset: int = 0,
+        minimum_possessions: int = 0,
+    ) -> dict[str, Any]:
+        """Return one scope-matched bootstrap uncertainty leaderboard.
+
+        This intentionally does not reuse the current-rating endpoint: the
+        resampled runs have their own frozen season scope and source lineage.
+        """
+        if scope not in self.normal_rapm_uncertainty:
+            raise ValueError(f"unsupported normal RAPM uncertainty scope: {scope}")
+        if metric not in UNCERTAINTY_METRICS:
+            raise ValueError(f"unsupported normal RAPM uncertainty metric: {metric}")
+        if offset < 0 or minimum_possessions < 0:
+            raise ValueError("offset and minimum_possessions must be nonnegative")
+        size = self._limit(limit)
+        frame = self.normal_rapm_uncertainty[scope]
+        manifest = self.normal_rapm_uncertainty_manifests[scope]
+        component = metric
+        frame = frame.loc[
+            frame[["off_possessions", "def_possessions"]].min(axis=1)
+            >= minimum_possessions
+        ].copy()
+        estimate = f"{component}_estimate"
+        frame = frame.sort_values(
+            [estimate, "off_possessions", "player_id"],
+            ascending=[False, False, True],
+            kind="stable",
+        )
+        frame["rank"] = np.arange(1, len(frame) + 1)
+        columns = [
+            "rank",
+            "player_id",
+            "player_name",
+            "off_possessions",
+            "def_possessions",
+            "offense_estimate",
+            "defense_estimate",
+            "net_estimate",
+            "uncertainty_method",
+            "uncertainty_status",
+        ]
+        results = []
+        for row in _records(frame.iloc[offset : offset + size]):
+            record = {column: row[column] for column in columns}
+            record["uncertainty"] = self._v2_uncertainty(row)
+            results.append(record)
+        return {
+            "scope": scope,
+            "run_id": self.config.normal_rapm_uncertainty_run_ids[scope],
+            "status": manifest["status"],
+            "estimand_id": manifest["estimand_id"],
+            "seasons": manifest["config"]["seasons"],
+            "metric": metric,
+            "total": len(frame),
+            "offset": int(offset),
+            "limit": size,
+            "caveats": manifest.get("caveats", []),
+            "results": results,
         }
 
     def annual_leaderboard(
@@ -607,6 +725,10 @@ class RatingsStore:
             if self.matchup is not None
             else pd.DataFrame()
         )
+        uncertainty = {
+            scope: frame.loc[frame["player_id"] == player_id]
+            for scope, frame in self.normal_rapm_uncertainty.items()
+        }
         annual_columns = [
             "Season",
             "Poss_Off",
@@ -647,4 +769,21 @@ class RatingsStore:
                 if not matchup.empty
                 else []
             ),
+            "normal_rapm_uncertainty": {
+                scope: (
+                    {
+                        "run_id": self.config.normal_rapm_uncertainty_run_ids[scope],
+                        "status": self.normal_rapm_uncertainty_manifests[scope]["status"],
+                        "seasons": self.normal_rapm_uncertainty_manifests[scope]["config"]["seasons"],
+                        "rating": {
+                            "off_possessions": int(frame.iloc[0]["off_possessions"]),
+                            "def_possessions": int(frame.iloc[0]["def_possessions"]),
+                            "uncertainty": self._v2_uncertainty(frame.iloc[0].to_dict()),
+                        },
+                    }
+                    if not frame.empty
+                    else None
+                )
+                for scope, frame in uncertainty.items()
+            },
         }

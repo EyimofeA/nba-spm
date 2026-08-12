@@ -16,10 +16,12 @@ def _store(tmp_path: Path) -> RatingsStore:
     rolling_dir = tmp_path / "rolling_rapm_peaks" / "rolling_test"
     current_dir = tmp_path / "rapm" / "current_test"
     matchup_dir = tmp_path / "matchup_defense" / "matchup_test"
+    uncertainty_dir = tmp_path / "rapm_uncertainty" / "uncertainty_test"
     annual_dir.mkdir(parents=True)
     rolling_dir.mkdir(parents=True)
     current_dir.mkdir(parents=True)
     matchup_dir.mkdir(parents=True)
+    uncertainty_dir.mkdir(parents=True)
     annual = pd.DataFrame(
         {
             "PLAYER_ID": [1, 2, 1],
@@ -97,11 +99,36 @@ def _store(tmp_path: Path) -> RatingsStore:
             "matchup_shooting_fouls_prevented_vs_scorer_p100_eb": [0.5, -0.5],
         }
     )
+    uncertainty = pd.DataFrame(
+        {
+            "player_id": [1, 3],
+            "player_name": ["Alpha Guard", "Current Rookie"],
+            "off_possessions": [5000, 800],
+            "def_possessions": [4990, 810],
+            "uncertainty_method": ["whole_game_bootstrap", "whole_game_bootstrap"],
+            "uncertainty_status": ["complete", "complete"],
+        }
+    )
+    for component, estimates in {
+        "offense": [4.0, 1.0],
+        "defense": [1.0, 2.0],
+        "net": [5.0, 3.0],
+    }.items():
+        uncertainty[f"{component}_estimate"] = estimates
+        uncertainty[f"{component}_analytic_se"] = [0.5, 0.8]
+        uncertainty[f"{component}_bootstrap_se"] = [0.6, 0.9]
+        uncertainty[f"{component}_ci80_low"] = [value - 1 for value in estimates]
+        uncertainty[f"{component}_ci80_high"] = [value + 1 for value in estimates]
+        uncertainty[f"{component}_ci95_low"] = [value - 2 for value in estimates]
+        uncertainty[f"{component}_ci95_high"] = [value + 2 for value in estimates]
+        uncertainty[f"{component}_probability_above_zero"] = [1.0, 0.9]
+        uncertainty[f"{component}_draw_coverage"] = [1000, 1000]
     annual.to_parquet(annual_dir / "ratings.parquet", index=False)
     rolling.to_parquet(rolling_dir / "rolling_ratings.parquet", index=False)
     peaks.to_parquet(rolling_dir / "player_peaks.parquet", index=False)
     current.to_parquet(current_dir / "ratings.parquet", index=False)
     matchup.to_parquet(matchup_dir / "features.parquet", index=False)
+    uncertainty.to_parquet(uncertainty_dir / "ratings_uncertainty.parquet", index=False)
     (annual_dir / "run.json").write_text(
         json.dumps(
             {"status": "research", "estimand": "annual", "caveats": ["annual caveat"]}
@@ -130,6 +157,17 @@ def _store(tmp_path: Path) -> RatingsStore:
             }
         )
     )
+    (uncertainty_dir / "run.json").write_text(
+        json.dumps(
+            {
+                "run_id": "uncertainty_test",
+                "status": "research_uncertainty_complete",
+                "estimand_id": "trailing_observed_lineup_rapm_v1",
+                "config": {"seasons": [2025]},
+                "caveats": ["bootstrap caveat"],
+            }
+        )
+    )
     config = RatingsApiConfig(
         "ratings_api_v1",
         "annual_test",
@@ -138,6 +176,7 @@ def _store(tmp_path: Path) -> RatingsStore:
         2,
         10,
         matchup_defense_run_id="matchup_test",
+        normal_rapm_uncertainty_run_ids={"single_season_2025": "uncertainty_test"},
     )
     return RatingsStore(config, tmp_path)
 
@@ -216,3 +255,23 @@ def test_v2_wrap_adds_lineage_without_changing_v1_payload(tmp_path: Path) -> Non
     assert "uncertainty" in v2["data"]["results"][0]
     assert v2["lineage"]["estimand_id"] == "trailing_observed_lineup_rapm_v1"
     assert len(v2["lineage"]["row_set_sha256"]) == 64
+
+
+def test_v2_scoped_uncertainty_never_reuses_current_rating_scope(tmp_path: Path) -> None:
+    store = _store(tmp_path)
+    status, result = dispatch(
+        store,
+        "/v2/leaderboards/normal-rapm-uncertainty?scope=single_season_2025&minimum_possessions=1000",
+    )
+    assert status == HTTPStatus.OK
+    assert result["contract_version"] == "ratings_api_v2"
+    assert result["data"]["seasons"] == [2025]
+    assert result["data"]["total"] == 1
+    row = result["data"]["results"][0]
+    assert row["uncertainty"]["components"]["net"]["interval_95"] == {
+        "low": 3.0,
+        "high": 7.0,
+    }
+    player = store.player(1)
+    assert player is not None
+    assert player["normal_rapm_uncertainty"]["single_season_2025"]["seasons"] == [2025]

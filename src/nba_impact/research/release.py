@@ -52,6 +52,10 @@ def build_local_release_bundle(
                     store.peaks, ["PLAYER_ID", "window_seasons", "peak_component"]
                 ),
                 "current": store._row_set_hash(store.current, ["player_id"]),
+                "normal_rapm_uncertainty": {
+                    scope: store._row_set_hash(frame, ["player_id"])
+                    for scope, frame in store.normal_rapm_uncertainty.items()
+                },
             },
             sort_keys=True,
         ).encode()
@@ -69,12 +73,23 @@ def build_local_release_bundle(
     _write_parquet_atomic(store.rolling, ratings / "rolling_normal_rapm.parquet")
     _write_parquet_atomic(store.peaks, ratings / "rolling_peaks.parquet")
     _write_parquet_atomic(store.current, ratings / "current_normal_rapm.parquet")
+    for scope, frame in store.normal_rapm_uncertainty.items():
+        _write_parquet_atomic(
+            frame, ratings / f"normal_rapm_uncertainty_{scope}.parquet"
+        )
     if store.matchup is not None:
         _write_parquet_atomic(store.matchup, ratings / "matchup_defense_research.parquet")
     schema = {
         "schema_version": "ratings_api_v2",
         "metadata_example": store.v2_metadata(),
-        "routes": ["/v2/meta", "/v2/leaderboards/annual", "/v2/leaderboards/current", "/v2/leaderboards/peaks", "/v2/players/{player_id}"],
+        "routes": [
+            "/v2/meta",
+            "/v2/leaderboards/annual",
+            "/v2/leaderboards/current",
+            "/v2/leaderboards/peaks",
+            "/v2/leaderboards/normal-rapm-uncertainty?scope={scope}",
+            "/v2/players/{player_id}",
+        ],
     }
     write_json_atomic(schema, output / "ratings_api_v2_schema.json")
     write_json_atomic(contracts, output / "pinned_artifact_contracts.json")

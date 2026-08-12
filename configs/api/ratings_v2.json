@@ -6,5 +6,9 @@
   "matchup_defense_run_id": "matchup_defense_features_v1_09829b48c8",
   "default_limit": 25,
   "maximum_limit": 100,
+  "normal_rapm_uncertainty_run_ids": {
+    "single_season_2025": "normal_rapm_uncertainty_v1_626ef1600b83",
+    "trailing_2022_2024": "normal_rapm_uncertainty_v1_e8278899ae3a"
+  },
   "lineage_contract_path": "research/pinned_artifact_contracts.json"
 }

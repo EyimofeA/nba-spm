@@ -1,4 +1,4 @@
-# Ratings API v1
+# Ratings API
 
 This local, read-only JSON API is the data contract for future player pages. It
 pins explicit model runs; it never selects an artifact because it has the newest
@@ -12,7 +12,7 @@ python3 -m nba_impact.cli serve-ratings
 
 Default address: `http://127.0.0.1:8765`.
 
-## Routes
+## Stable v1 routes
 
 | Route | Purpose |
 |---|---|
@@ -45,6 +45,23 @@ The pinned run IDs live in `configs/api/ratings_v1.json`:
 
 These are research artifacts, not production truth. `/v1/meta` returns their
 caveats so a frontend cannot silently hide that status.
+
+## Versioned v2 uncertainty routes
+
+`/v2` preserves the underlying v1 results inside a versioned envelope and adds
+lineage: estimand, evidence status, uncertainty status, model/config hashes,
+row-set hash, and an explicit forbidden interpretation.
+
+| Route | Purpose |
+|---|---|
+| `GET /v2/meta` | Lineage for every pinned artifact, including scoped uncertainty pilots |
+| `GET /v2/leaderboards/normal-rapm-uncertainty?scope=single_season_2025&metric=net` | 2025 normal-RAPM estimates with whole-game bootstrap intervals |
+| `GET /v2/leaderboards/normal-rapm-uncertainty?scope=trailing_2022_2024&minimum_possessions=2000` | 2022–24 legacy-cache uncertainty pilot |
+| `GET /v2/players/{player_id}` | Existing player record plus scope-matched uncertainty summaries |
+
+These two pilots are deliberately separate from `/v1/leaderboards/current`:
+their scope does not match the current 2024–26 run. Their intervals quantify
+resampled-game variation, not latent ability, causal value, or precise rank.
 
 ## Deployment boundary
 

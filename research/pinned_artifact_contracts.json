@@ -57,6 +57,34 @@
       "code_sha256": "24d918952ae0ba66a168cb6754e4b9f4739bdd0efdba1fd98b73112a7fe2dd2e",
       "data_hashes_status": "embedded_in_run_config",
       "forbidden_interpretation": "causal defensive responsibility or additive total defense"
+    },
+    {
+      "api_field": "normal_rapm_uncertainty_single_season_2025_run_id",
+      "artifact_id": "normal_rapm_uncertainty_v1_626ef1600b83",
+      "artifact_relative_dir": "models/rapm_uncertainty/normal_rapm_uncertainty_v1_626ef1600b83",
+      "estimand_id": "trailing_observed_lineup_rapm_v1",
+      "evidence_status": "research_uncertainty_complete",
+      "season_scope": "2025 regular season",
+      "season_completeness": "1,226 lineup-quality-passing regular-season games; this is a retrospective uncertainty pilot, not a current rating.",
+      "uncertainty_status": "whole_game_bootstrap_complete_v1",
+      "config_sha256": "d4954530dac29e436fa06b4537255933b8546d873ea4ab035bec833833058f7c",
+      "code_sha256": "bc69ca34ede2493907e6fc75e41fc8e9cc9f701ea5f1011e8f04c4a8c2d6d193",
+      "data_hashes_status": "embedded_in_run_manifest",
+      "forbidden_interpretation": "current 2024-26 rating, latent ability, causal value, or exact rank precision"
+    },
+    {
+      "api_field": "normal_rapm_uncertainty_trailing_2022_2024_run_id",
+      "artifact_id": "normal_rapm_uncertainty_v1_e8278899ae3a",
+      "artifact_relative_dir": "models/rapm_uncertainty/normal_rapm_uncertainty_v1_e8278899ae3a",
+      "estimand_id": "trailing_observed_lineup_rapm_v1",
+      "evidence_status": "research_uncertainty_complete",
+      "season_scope": "2022-2024 regular seasons",
+      "season_completeness": "3,689 legacy-cache regular-season games; 2024 is limited to the legacy cache's 1,229 regular games.",
+      "uncertainty_status": "whole_game_bootstrap_complete_v1",
+      "config_sha256": "85c1e707717aecce2f2de30c0b7c0aef6420be13779a3861ec9316ba9a5ecaf1",
+      "code_sha256": "bc69ca34ede2493907e6fc75e41fc8e9cc9f701ea5f1011e8f04c4a8c2d6d193",
+      "data_hashes_status": "embedded_in_run_manifest",
+      "forbidden_interpretation": "current 2024-26 rating, latent ability, causal value, or exact rank precision"
     }
   ]
 }
