@@ -14,7 +14,14 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import diags
 
+from nba_impact.models.prior_informed_rapm import (
+    _fit_prior_only_nuisance,
+    _record_candidate,
+    build_prior_center,
+    paired_confirmation_bootstrap,
+)
 from nba_impact.models.rapm import RapmConfig, RapmDesign, _penalty
+from nba_impact.models.rapm import build_design, fit_coefficients, fit_coefficients_with_center
 from nba_impact.models.rapm_uncertainty import _recenter, _solve
 
 
@@ -106,3 +113,88 @@ def fit_precision_aware_center(
         raw_beta, off_counts, def_counts, n_players, intercept=intercept
     )
     return beta, intercept, penalty
+
+
+def run_precision_aware_prior_comparison(
+    frame: pd.DataFrame,
+    priors: pd.DataFrame,
+    calibration: pd.DataFrame,
+    config: RapmConfig,
+    *,
+    test_seasons: tuple[int, ...],
+    train_window: int,
+    selection_seasons: tuple[int, ...],
+    diagnostic_seasons: tuple[int, ...],
+    bootstrap_repetitions: int = 2000,
+    bootstrap_seed: int = 20260812,
+) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
+    """Run the four preregistered models on identical future game rows.
+
+    ``calibration`` is an earlier-fold-only panel in coefficient units with
+    columns ``window_end``, ``offense_label``, ``offense_prior``,
+    ``offense_label_variance`` and defensive equivalents.  The runner rejects
+    any fold whose precision calibration is not strictly older than its RAPM
+    training window.
+    """
+    if set(selection_seasons) & set(diagnostic_seasons):
+        raise ValueError("Selection and diagnostic seasons must be disjoint.")
+    if set(test_seasons) != set(selection_seasons) | set(diagnostic_seasons):
+        raise ValueError("Test seasons must equal selection plus diagnostic seasons.")
+    design = build_design(frame, include_home=config.include_home)
+    rows: list[dict] = []
+    games: list[pd.DataFrame] = []
+    calibration_rows: list[dict] = []
+    for test_season in test_seasons:
+        train_seasons = tuple(range(test_season - train_window, test_season))
+        train_mask = np.isin(design.seasons, train_seasons)
+        test_mask = design.seasons == test_season
+        if not train_mask.any() or not test_mask.any():
+            raise ValueError(f"Missing train/test possessions for {test_season}.")
+        prior_end = train_seasons[-1]
+        center, coverage = build_prior_center(
+            design, priors, prior_window_end=prior_end,
+            train_mask=train_mask, test_mask=test_mask,
+        )
+        earlier = calibration.loc[calibration["window_end"].lt(train_seasons[0])]
+        off_precision = calibrate_prior_precision(
+            earlier, side="offense", label_column="offense_label",
+            prior_column="offense_prior", label_variance_column="offense_label_variance",
+        )
+        def_precision = calibrate_prior_precision(
+            earlier, side="defense", label_column="defense_label",
+            prior_column="defense_prior", label_variance_column="defense_label_variance",
+        )
+        calibration_rows.append({
+            "test_season": test_season, "calibration_latest_window": int(earlier["window_end"].max()) if not earlier.empty else None,
+            **{f"offense_{k}": v for k, v in off_precision.__dict__.items()},
+            **{f"defense_{k}": v for k, v in def_precision.__dict__.items()}, **coverage,
+        })
+        fitted: dict[str, tuple[np.ndarray, float]] = {
+            "zero_prior": fit_coefficients(design, config, train_mask),
+            "fixed_center_prior": fit_coefficients_with_center(design, config, center, row_mask=train_mask),
+            "statistical_prior_only": _fit_prior_only_nuisance(design, center, train_mask),
+        }
+        residual = design.y[train_mask] - np.asarray(design.X[train_mask] @ fitted["fixed_center_prior"][0]).ravel() - fitted["fixed_center_prior"][1]
+        sigma_squared = float(np.mean(residual**2))
+        if off_precision.status == "identified" and def_precision.status == "identified":
+            fitted["precision_aware_side_specific_prior"] = fit_precision_aware_center(
+                design, config, center, sigma_squared=sigma_squared,
+                offense_precision=off_precision, defense_precision=def_precision,
+                row_mask=train_mask,
+            )[:2]
+        for candidate, (beta, intercept) in fitted.items():
+            metric, game = _record_candidate(
+                design, beta, intercept, candidate=candidate, test_season=test_season,
+                train_seasons=train_seasons, prior_window_end=prior_end,
+                train_mask=train_mask, test_mask=test_mask,
+            )
+            metric["sigma_squared"] = sigma_squared
+            rows.append(metric); games.append(game)
+    folds = pd.DataFrame(rows)
+    game_frame = pd.concat(games, ignore_index=True)
+    comparison = paired_confirmation_bootstrap(
+        game_frame, selected_candidate="precision_aware_side_specific_prior",
+        confirmation_test_seasons=diagnostic_seasons,
+        repetitions=bootstrap_repetitions, seed=bootstrap_seed,
+    ) if (folds["candidate"] == "precision_aware_side_specific_prior").any() else {"status": "invalid_precision_calibration"}
+    return folds, pd.DataFrame(calibration_rows), comparison
