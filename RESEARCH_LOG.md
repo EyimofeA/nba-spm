@@ -1785,3 +1785,27 @@ complete joint draw coverage.
 It does not establish empirical coverage or justify rank precision by itself.
 Bootstrap intervals remain the publication method. The selection-aware rolling
 peak run has started separately and remains research-only.
+
+## 2026-08-12 — Error quantification audit for normal RAPM
+
+**Question:** Does the uncertainty contract retain the RAPM covariance that is
+needed for net ratings and rank claims?
+
+**External check:** Squared Statistics' RAPM error analysis derives a ridge
+posterior covariance, shows that offensive-defensive covariance is required for
+a net interval, and demonstrates that a marginal player leader can be
+statistically indistinguishable from many other players. It also warns against
+extrapolating to unobserved lineups. Source: "Exercising Error: Quantifying
+Statistical Tests Under RAPM (Part IV)," 2019-10-03,
+https://squared2020.com/2019/10/03/exercising-error-quantifying-statistical-tests-under-rapm-part-iv/
+
+**Decision:** Keep the analytic game-cluster ridge sandwich as a diagnostic,
+not as the public method. Continue to use whole-game bootstrap draws as the
+publication method, retain joint offense/defense draws before forming net and
+ranks, and do not publish exact rank precision from marginal intervals.
+
+**New automated check:** The uncertainty test suite now simulates correlated
+game-level shocks around a known regularized, recentered RAPM estimand. It
+checks directional 80% and 95% coverage for offense and joint net intervals.
+This is a regression test of the resampling implementation, not a claim that
+the simulator is an NBA data-generating process or a full calibration study.

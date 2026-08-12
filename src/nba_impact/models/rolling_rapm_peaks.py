@@ -550,7 +550,20 @@ def run_selection_aware_peak_bootstrap(
                     season_off = np.asarray(season_weights @ season_design.X[:, : len(season_design.players)]).ravel()
                     season_def = np.asarray(season_weights @ season_design.X[:, len(season_design.players) : 2 * len(season_design.players)]).ravel()
                     exposure_rows.append(pd.DataFrame({"PLAYER_ID": season_design.players, "season": season, "off": season_off, "def": season_def}))
+                # Reindex onto the full player-by-season grid. A player absent
+                # from one sampled constituent season has zero evidence in that
+                # season; omitting that row would incorrectly let ``min`` look
+                # only at seasons where the player appeared.
                 per_season = pd.concat(exposure_rows, ignore_index=True)
+                full_player_season_index = pd.MultiIndex.from_product(
+                    [design.players, range(window_start, window_end + 1)],
+                    names=["PLAYER_ID", "season"],
+                )
+                per_season = (
+                    per_season.set_index(["PLAYER_ID", "season"])
+                    .reindex(full_player_season_index, fill_value=0.0)
+                    .reset_index()
+                )
                 eligibility = per_season.groupby("PLAYER_ID", as_index=False).agg(
                     min_off=("off", "min"), min_def=("def", "min")
                 )

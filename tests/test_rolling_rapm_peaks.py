@@ -164,12 +164,13 @@ def test_selection_aware_peak_bootstrap_reselects_and_checkpoints(tmp_path: Path
         rows = []
         for game in range(2):
             for possession in range(8):
+                home = [6, 7, 8, 9, 10] if season != 2023 else [11, 7, 8, 9, 10]
                 rows.append(
                     {
                         "home_poss": bool(possession % 2),
                         "pts": float((game + possession) % 3),
                         **{f"a{i}": i for i in range(1, 6)},
-                        **{f"h{i}": i + 5 for i in range(1, 6)},
+                        **{f"h{i}": value for i, value in enumerate(home, start=1)},
                         "season": season,
                         "date": f"{season - 1}-11-01",
                         "period": 1,
@@ -209,6 +210,11 @@ def test_selection_aware_peak_bootstrap_reselects_and_checkpoints(tmp_path: Path
     output = Path(run["artifact_path"])
     draws = pd.read_parquet(output / "selected_draws" / "draw_0000.parquet")
     assert not draws.duplicated(["PLAYER_ID", "window_seasons", "peak_component"]).any()
+    window = pd.read_parquet(output / "window_draws" / "draw_0000" / "3y_end_2024.parquet")
+    # Players 6 and 11 are absent from one of the three constituent seasons.
+    # The bootstrap must represent that absence as zero exposure, not drop the
+    # season from the eligibility minimum.
+    assert not window.loc[window["PLAYER_ID"].isin([6, 11]), "peak_eligible"].any()
     summary = pd.read_parquet(output / "selection_aware_peaks.parquet")
     assert summary["draw_coverage"].eq(2).all()
     assert summary["uncertainty_status"].eq("selection_aware_bootstrap_complete").all()
