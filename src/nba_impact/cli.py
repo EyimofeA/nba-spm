@@ -935,7 +935,7 @@ def command_compare_precision_aware_prior(args: argparse.Namespace) -> int:
         "quality": {
             "folds": int(len(folds)),
             "all_scored_seasons_have_exactly_four_models": True,
-            "identical_game_count_by_candidate_and_season": (
+            "identical_game_count_by_candidate_and_season": bool(
                 folds.groupby("test_season")["games"].nunique().eq(1).all()
             ),
         },
