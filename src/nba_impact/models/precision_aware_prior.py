@@ -47,8 +47,9 @@ def calibrate_prior_precision(
     """Robustly estimate latent prior error after removing label noise.
 
     Inputs must contain only *earlier* cross-fitted folds. Values are in RAPM
-    coefficient units, not points per 100. A median/MAD scale limits one noisy
-    historical player or season from setting the global side precision.
+    coefficient units (points per possession), which is also the unit of the
+    unstandardized possession-SSE objective. A median/MAD scale limits one
+    noisy historical player or season from setting the global side precision.
     """
     values = calibration[[label_column, prior_column, label_variance_column]].copy()
     values = values.apply(pd.to_numeric, errors="coerce").dropna()
@@ -230,10 +231,14 @@ def build_prior_calibration_panel(
             {
                 "PLAYER_ID": design.players,
                 "window_end": end,
-                "offense_label": beta[:n_players] * 100.0,
-                "defense_label": -beta[n_players : 2 * n_players] * 100.0,
-                "offense_label_variance": np.clip(np.diag(covariance)[:n_players] * 10000.0, 0.0, None),
-                "defense_label_variance": np.clip(np.diag(covariance)[n_players : 2 * n_players] * 10000.0, 0.0, None),
+                # Keep calibration in coefficient units. The ridge likelihood
+                # is possession-scale SSE, so multiplying labels and variance
+                # by 100/10,000 would make sigma_squared / tau_squared
+                # dimensionally incoherent and misstate the prior penalty.
+                "offense_label": beta[:n_players],
+                "defense_label": -beta[n_players : 2 * n_players],
+                "offense_label_variance": np.clip(np.diag(covariance)[:n_players], 0.0, None),
+                "defense_label_variance": np.clip(np.diag(covariance)[n_players : 2 * n_players], 0.0, None),
             }
         )
         prior = priors.loc[priors["Window_End"].eq(end), [
@@ -242,6 +247,9 @@ def build_prior_calibration_panel(
             "prior_offense_per_100": "offense_prior",
             "prior_defense_per_100": "defense_prior",
         })
+        prior[["offense_prior", "defense_prior"]] = (
+            prior[["offense_prior", "defense_prior"]] / 100.0
+        )
         outputs.append(labels.merge(prior, on="PLAYER_ID", how="inner", validate="one_to_one"))
     result = pd.concat(outputs, ignore_index=True)
     if result.duplicated(["PLAYER_ID", "window_end"]).any():

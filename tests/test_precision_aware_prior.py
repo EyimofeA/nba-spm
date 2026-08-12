@@ -6,6 +6,7 @@ import pytest
 
 from nba_impact.models.precision_aware_prior import (
     PriorPrecision,
+    build_prior_calibration_panel,
     calibrate_prior_precision,
     fit_precision_aware_center,
     run_precision_aware_prior_comparison,
@@ -79,3 +80,42 @@ def test_four_model_runner_uses_only_earlier_calibration_windows() -> None:
     )
     assert set(folds["candidate"]) == {"zero_prior", "fixed_center_prior", "statistical_prior_only", "precision_aware_side_specific_prior"}
     assert (calibrations["calibration_latest_window"] < calibrations["prior_window_end"]).all()
+
+
+def test_calibration_panel_keeps_labels_and_priors_in_coefficient_units(monkeypatch) -> None:
+    frame = pd.DataFrame(
+        [
+            {
+                "home_poss": bool(i % 2), "pts": float(i % 3),
+                **{f"a{j}": j for j in range(1, 6)}, **{f"h{j}": j + 5 for j in range(1, 6)},
+                "season": 2024, "date": "2024-01-01", "period": 1, "num": i, "gameid": "g",
+            }
+            for i in range(30)
+        ]
+    )
+    design = build_design(frame)
+    n_players = len(design.players)
+
+    def fake_sandwich(_design, _config):
+        beta = np.concatenate([np.full(n_players, 0.02), np.full(n_players, -0.03), [0.0]])
+        return np.eye(2 * n_players + 1) * 0.0004, beta, 0.0
+
+    monkeypatch.setattr(
+        "nba_impact.models.precision_aware_prior.game_cluster_sandwich", fake_sandwich
+    )
+    priors = pd.DataFrame(
+        {
+            "PLAYER_ID": design.players,
+            "Window_End": 2024,
+            "prior_offense_per_100": 2.5,
+            "prior_defense_per_100": 1.5,
+        }
+    )
+    panel = build_prior_calibration_panel(
+        frame, priors, RapmConfig((2024,)), window_ends=(2024,), window_length=1
+    )
+    assert panel["offense_label"].eq(0.02).all()
+    assert panel["defense_label"].eq(0.03).all()
+    assert panel["offense_label_variance"].eq(0.0004).all()
+    assert panel["offense_prior"].eq(0.025).all()
+    assert panel["defense_prior"].eq(0.015).all()
