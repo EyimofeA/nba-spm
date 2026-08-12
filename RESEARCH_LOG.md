@@ -1809,3 +1809,17 @@ game-level shocks around a known regularized, recentered RAPM estimand. It
 checks directional 80% and 95% coverage for offense and joint net intervals.
 This is a regression test of the resampling implementation, not a claim that
 the simulator is an NBA data-generating process or a full calibration study.
+
+## 2026-08-12 — Precision-aware prior promotion review
+
+**Result:** `precision_aware_prior_rapm_v1_c4b0878571` is invalid for the
+preregistered promotion gate. The run scored 2021-24, not the frozen
+2018-21 selection and 2022-24 diagnostic schedule. The available three-year
+cross-fitted prior/calibration history cannot provide the fourth model in the
+omitted earlier seasons.
+
+**Descriptive result:** It also loses on its non-preregistered 2023-24 slice:
+mean RMSE improvement is -0.1425 points per game, correlation changes by
+-0.0210, and candidate-minus-zero MSE has a paired 95% interval of
+[+0.675, +7.502]. Zero-prior normal RAPM remains the reference. Do not retune
+this candidate on these outcomes.
