@@ -277,6 +277,21 @@ assignment and zero-prior ridge penalties 3000/3000/300. Run
 on untouched 2025–26 confirmation. Fractional attribution is research-only even
 though `rapm_lineup_policy_v2_911d8bfce1` found a small pooled gain. Do not make
 it part of the active model unless later evidence changes the decision.
+The first dynamic baseline is documented in
+`docs/impact/DYNAMIC_TRAJECTORIES.md`. It is a no-future-leakage, filtered
+time-decayed average of annual normal-RAPM observations, not a full latent-state
+model. Run `time_decayed_trajectory_v1_4706719bfb` selects 0.80 annual decay
+with no possession exponent and beats the latest annual rating on both its
+2018–21 selection and 2022–23 later diagnostic. Keep it research-only: no
+annual interpolation, current-season claim, or API promotion until uncertainty
+and a current canonical annual input are available.
+Expected-possession residual RAPM is a separate challenger documented in
+`docs/impact/EXPECTED_POSSESSION_RAPM.md`. Snapshot
+`possession_start_context_ebcae214e662d404` has 787,579 player-neutral
+possession-start states. Start score is reconstructed from completed prior
+canonical possessions. Expected-points features must exclude player/team/lineup
+identity and every current-possession action or outcome; cross-fit predictions
+chronologically before any residual-RAPM fit.
 For statistical impact ridge, fit offense and defense as separate three-season
 targets and add them for net. Run `statistical_impact_v2_48f6ad776f` shows that
 a direct net target gives the same advanced-feature result and loses the useful

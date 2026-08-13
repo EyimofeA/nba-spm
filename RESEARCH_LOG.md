@@ -1915,3 +1915,46 @@ slightly. Only 41.5% of test shots used a lineup observed in training.
 for future exact-guarding data, but do not bootstrap this pilot, fit individual
 defender rankings, merge it into the AIO, or publish a defense leaderboard. Move
 the active model task to dynamic time-decayed impact trajectories.
+
+## 2026-08-14 — Time-decay baseline passes forward proxy checks
+
+**Question:** Can a small, no-future-leakage smoothing rule predict the next
+annual normal-RAPM observation better than the latest annual value alone?
+
+**Method:** Built `time_decayed_trajectory_v1_4706719bfb` from 2014--24 annual
+zero-prior normal-RAPM targets. For each observed player-season it applies an
+exponentially decayed filter using only that season and earlier observations,
+separately on offense and defense; net is their exact sum. A frozen twelve-cell
+grid varied annual decay (0.50, 0.65, 0.80, 0.90) and the possession exponent
+(0.0, 0.5, 1.0). Selection used 2018--21 origins to predict the next annual
+target; 2022--23 origins are later diagnostics. Players need 1,000 possessions
+per side in the target season. One source row with zero defensive possessions is
+explicitly excluded.
+
+**Result:** Decay 0.80 and exponent 0.0 won selection. Equal-season next-year
+net RMSE improves from 1.9481 to 1.7166 in selection and from 2.0285 to 1.7758
+in later diagnostics. Net correlation is 0.419 and 0.435, respectively.
+
+**Decision:** Retain this as a research trajectory baseline. It is not a full
+latent-state model, has no trajectory intervals, and uses a legacy target
+archive ending in 2024. Do not interpolate missing seasons, expose it in the
+API, or call it current NBA strength. A later state-space model must beat this
+baseline on a frozen forward test.
+
+## 2026-08-14 — Expected-possession residual RAPM: causal state is ready
+
+**Question:** Can normal RAPM be challenged with actual-minus-expected possession
+points, without leaking the current possession or fitting away player effects?
+
+**Data result:** `build-possession-start-context` created
+`possession_start_context_ebcae214e662d404`: 787,579 canonical possessions
+across 3,907 games. Start scores are reconstructed from completed prior canonical
+possessions, rather than an incomplete cross-source action-number join. The
+contract provides only period/time, score differential, home/away side, and
+prior-possession context; it forbids player/team/lineup identity and all current
+possession actions or outcomes as expected-points inputs.
+
+**Decision:** The data contract is ready. Do not fit residual RAPM until expected
+points are cross-fitted chronologically and player-neutral. The first model is a
+simple Poisson or multinomial baseline; compare residual RAPM with normal RAPM
+on identical games using equal-season margin RMSE and paired whole-game error.

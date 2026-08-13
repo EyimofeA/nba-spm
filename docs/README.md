@@ -24,6 +24,10 @@ Start at the repository root:
   feature families, public benchmark formulas, and AIO explanation contract;
 - [`impact/SHOT_DEFENSE_MODEL.md`](impact/SHOT_DEFENSE_MODEL.md) — exact
   shot/lineup panel, identification boundary, and null team-defense pilot;
+- [`impact/DYNAMIC_TRAJECTORIES.md`](impact/DYNAMIC_TRAJECTORIES.md) — filtered
+  time-decay baseline, forward evaluation, and latent-state boundary;
+- [`impact/EXPECTED_POSSESSION_RAPM.md`](impact/EXPECTED_POSSESSION_RAPM.md) —
+  causal possession-start context and residual-RAPM challenger contract;
 - [`modeling/PLAYBOOK.md`](modeling/PLAYBOOK.md) — NBA statistical modeling procedure;
 - [`modeling/EVIDENCE_POLICY.md`](modeling/EVIDENCE_POLICY.md) — evidence and claim standards;
 - [`planning/RESEARCH_DIAGNOSIS_2026-08-11.md`](planning/RESEARCH_DIAGNOSIS_2026-08-11.md) — accepted GPT Pro findings, live-repo corrections, and staged roadmap;

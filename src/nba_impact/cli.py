@@ -30,6 +30,7 @@ from nba_impact.data.manifest import (
 from nba_impact.data.official_boxscore import ingest_official_boxscores
 from nba_impact.data.player_game import build_player_games
 from nba_impact.data.playtype_features import build_playtype_features
+from nba_impact.data.possession_context import build_possession_start_context
 from nba_impact.data.role_context import build_role_context_features
 from nba_impact.data.shot_defense import build_shot_defense_events
 from nba_impact.data.possessions import build_possessions
@@ -51,6 +52,9 @@ from nba_impact.models.rapm_uncertainty import (
     run_rapm_uncertainty,
 )
 from nba_impact.models.shot_defense_pilot import run_shot_defense_team_pilot
+from nba_impact.models.time_decayed_trajectory import (
+    build_time_decayed_trajectory,
+)
 from nba_impact.models.external_impact_benchmark import (
     acquire_external_impact_pages,
     build_external_impact_benchmark,
@@ -438,6 +442,27 @@ def command_build_possessions(args: argparse.Namespace) -> int:
                 "point_reconciliation": snapshot["point_reconciliation"],
                 "issues": snapshot["issues"],
                 "warnings": snapshot["warnings"],
+                "path": snapshot["path"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_possession_start_context(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_possession_start_context(
+        args.possessions, args.output, args.manifest_dir
+    )
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "rows": snapshot["row_count"],
+                "games": snapshot["game_count"],
                 "path": snapshot["path"],
             },
             indent=2,
@@ -1075,6 +1100,23 @@ def command_build_single_season_rapm_targets(args: argparse.Namespace) -> int:
         lambda_off=args.lambda_off,
         lambda_def=args.lambda_def,
         lambda_home=args.lambda_home,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_time_decayed_trajectory(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_time_decayed_trajectory(
+        args.targets,
+        args.names,
+        artifact_root=args.artifact_root,
+        candidate_decays=tuple(args.candidate_decays),
+        candidate_exposure_powers=tuple(args.candidate_exposure_powers),
+        selection_origins=tuple(args.selection_origins),
+        diagnostic_origins=tuple(args.diagnostic_origins),
+        minimum_side_possessions=args.minimum_side_possessions,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1727,6 +1769,20 @@ def build_parser() -> argparse.ArgumentParser:
     possessions.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     possessions.set_defaults(func=command_build_possessions)
 
+    possession_context = subparsers.add_parser(
+        "build-possession-start-context",
+        help="Build player-neutral context known before each canonical possession.",
+    )
+    possession_context.add_argument(
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    possession_context.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "possession_start_context.parquet"
+    )
+    possession_context.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    possession_context.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    possession_context.set_defaults(func=command_build_possession_start_context)
+
     shot_defense = subparsers.add_parser(
         "build-shot-defense-events",
         help="Build research-only official FGAs with exact ordinal 5v5 lineups.",
@@ -2235,6 +2291,29 @@ def build_parser() -> argparse.ArgumentParser:
     annual_rapm_targets.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     annual_rapm_targets.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     annual_rapm_targets.set_defaults(func=command_build_single_season_rapm_targets)
+
+    trajectories = subparsers.add_parser(
+        "build-time-decayed-trajectories",
+        help="Build a no-future-leakage time-decayed annual normal-RAPM baseline.",
+    )
+    trajectories.add_argument("--targets", type=Path, required=True)
+    trajectories.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    trajectories.add_argument(
+        "--candidate-decays", type=_float_list, default=(0.50, 0.65, 0.80, 0.90)
+    )
+    trajectories.add_argument(
+        "--candidate-exposure-powers", type=_float_list, default=(0.0, 0.5, 1.0)
+    )
+    trajectories.add_argument(
+        "--selection-origins", type=_season_list, default=(2018, 2019, 2020, 2021)
+    )
+    trajectories.add_argument(
+        "--diagnostic-origins", type=_season_list, default=(2022, 2023)
+    )
+    trajectories.add_argument("--minimum-side-possessions", type=float, default=1000.0)
+    trajectories.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    trajectories.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    trajectories.set_defaults(func=command_build_time_decayed_trajectory)
 
     annual_spm = subparsers.add_parser(
         "fit-single-season-spm",

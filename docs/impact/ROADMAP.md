@@ -256,6 +256,17 @@ publish defender coefficients or merge the block into the AIO without exact
 event-level guarding assignments. Move the active research queue to annual
 time-decayed impact trajectories.
 
+The first no-future-leakage filtered trajectory baseline is now complete in
+`time_decayed_trajectory_v1_4706719bfb`. Decay 0.80 with equal initial annual
+weights lowers next-year annual normal-RAPM proxy RMSE by 11.9% in selection and
+12.5% in later diagnostics. It is a research baseline rather than a latent-state
+model: the input archive ends in 2024 and the trajectory has no intervals.
+
+`possession_start_context_ebcae214e662d404` also makes the expected-possession
+residual-RAPM challenger feasible. It has 787,579 player-neutral canonical
+possession-start states, with score reconstructed only from completed prior
+possessions. Freeze cross-fitted expected points before fitting any player model.
+
 The API now also exposes the validated 2018–25 matchup-defense factor panel. It
 labels the route `research_only`, requires an explicit pinned run, and returns
 the observational-data caveat. This is a data/research surface, not a promoted

@@ -1,5 +1,5 @@
 schema_version: estimand_registry_v1
-updated_at: 2026-08-13
+updated_at: 2026-08-14
 flagship_estimand_id: annual_retrospective_impact_v1
 
 estimands:
@@ -35,6 +35,17 @@ estimands:
     target_definition: latent ability after separating observation noise and time change
     intended_use: current player comparison and roster scenarios
     forbidden_interpretation: retrospective season impact
+
+  - estimand_id: filtered_time_decayed_normal_rapm_proxy_v1
+    name: Filtered time-decayed normal-RAPM trajectory
+    status: research_baseline
+    unit: points_per_100_possessions
+    population: players with an annual normal-RAPM observation in the named season
+    window_definition: named season plus exponentially decayed earlier observed player-seasons
+    information_cutoff_rule: only annual normal-RAPM estimates through the named season
+    target_definition: exposure-weighted filtered average of current and earlier annual normal-RAPM observations
+    intended_use: current-strength research and non-interpolated trajectory display
+    forbidden_interpretation: fully estimated latent ability, retrospective annual impact, causal player value, or forecast certainty
 
   - estimand_id: next_season_strength_forecast_v1
     name: Next-season player-strength forecast
@@ -79,6 +90,17 @@ estimands:
     target_definition: probability that the home team wins the game
     intended_use: calibrated game-state probability and later credit research
     forbidden_interpretation: player credit, causal action value, or pregame forecast by itself
+
+  - estimand_id: expected_possession_residual_rapm_v1
+    name: Expected-possession residual RAPM
+    status: data_contract_ready
+    unit: residual_points_per_100_possessions
+    population: canonical NBA possessions with a causally reconstructed start state
+    window_definition: explicit regular-season or chronological evaluation sample
+    information_cutoff_rule: only player-neutral information known before the possession begins
+    target_definition: terminal-lineup RAPM fit to out-of-fold actual minus expected possession points
+    intended_use: context-residual RAPM research against normal RAPM on identical games
+    forbidden_interpretation: optical-tracking EPV, player-aware expected points, causal player value, or production rating before validation
 
   - estimand_id: matchup_defense_observational_v1
     name: Observational matchup-defense residual

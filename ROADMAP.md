@@ -1,7 +1,7 @@
 # NBA Impact Roadmap
 
 This is the one file to follow remotely. `RESEARCH_LOG.md` contains evidence and
-dead ends. Updated 2026-08-13. See `docs/README.md` for the document index,
+dead ends. Updated 2026-08-14. See `docs/README.md` for the document index,
 `docs/impact/ROADMAP.md` for the detailed RAPM/all-in-one plan, and
 `docs/modeling/PLAYBOOK.md` for the common statistical modeling procedure.
 
@@ -55,40 +55,50 @@ dead ends. Updated 2026-08-13. See `docs/README.md` for the document index,
 - Frozen annual SPM missed its untouched 2025 confirmation. Offense/defense/net
   RMSE is 1.102/1.154/1.610; defense correlation is 0.331. Do not promote or tune
   this run on 2025.
+- The first filtered time-decay trajectory baseline improves next-season annual
+  normal-RAPM proxy RMSE from 1.9481 to 1.7166 in 2018–21 selection and from
+  2.0285 to 1.7758 on 2022–23 later diagnostics. It is research-only, lacks
+  trajectory intervals, and uses the stale 2014–24 legacy annual targets.
 
 ## Active next task
 
-Build the first annual time-decayed impact trajectory. The scientific control
-plane, canonical identity/provenance spine, two normal-RAPM uncertainty pilots,
-and Ratings API v2 are implemented. The exact shot/ordinal-lineup defense panel
-is also complete, but its defense-team pilot improved held-out combined log loss
-by only 0.089% against a frozen 0.5% gate. Keep it as a documented null; do not
-fit player defender rankings without exact guarding assignments. Keep zero-prior
-normal RAPM as the production reference. Keep annual AIO, matchup factors, and
-peaks research-only. Peak ranks are descriptive only; a 1,000-draw
-selection-aware refit was stopped after 65 draws because its cost is not
-justified now. Reserve Season 2027 as the next untouched annual confirmation.
-WP neural work stays paused on the Mac.
+Fit the first cross-fitted, player-neutral expected-points baseline on the new
+possession-start contract—without fitting residual RAPM yet. The scientific
+control plane, canonical identity/provenance spine, two normal-RAPM uncertainty
+pilots, Ratings API v2, first filtered time-decay trajectory baseline, and
+expected-possession data contract are implemented. The exact shot/ordinal-lineup
+defense panel is also complete, but its defense-team pilot improved held-out
+combined log loss by only 0.089% against a frozen 0.5% gate. Keep it as a
+documented null; do not fit player defender rankings without exact guarding
+assignments. Keep zero-prior normal RAPM as the production reference. Keep
+annual AIO, matchup factors, trajectories, and peaks research-only. Peak ranks
+are descriptive only; a 1,000-draw selection-aware refit was stopped after 65
+draws because its cost is not justified now. Reserve Season 2027 as the next
+untouched annual confirmation. WP neural work stays paused on the Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
 
 ## Ordered queue
 
-1. **Dynamic impact:** create annual time-decayed/player-state trajectories and
-   peak 1/3/5-year views in the style of NBA RAPM peaks.
-2. **All-in-one:** keep the annual statistical model research-only and design its
+1. **Expected possession:** cross-fit a player-neutral expected-points baseline
+   chronologically. Prove no post-start outcome leakage before a residual-RAPM
+   fit; compare it only on identical games with normal RAPM.
+2. **Dynamic impact:** extend the filtered baseline only after annual normal-RAPM
+   inputs are rebuilt from canonical current data; then test an uncertainty-aware
+   state-space model against it.
+3. **All-in-one:** keep the annual statistical model research-only and design its
    next comparison against the dynamic target. Do not start another broad
    feature subset search on reused seasons.
-3. **Defense:** retain the validated shot/lineup panel, but wait for exact
+4. **Defense:** retain the validated shot/lineup panel, but wait for exact
    guarding data before individual defender modeling.
-4. **WP-RAPM / credit:** value possession-start-to-end WP change only after the WP
+5. **WP-RAPM / credit:** value possession-start-to-end WP change only after the WP
    and lineup assignment are validated; compare Net Points and TD/Shapley ideas.
-5. **Product:** stable DuckDB/API contract first, then a restrained player explorer.
+6. **Product:** stable DuckDB/API contract first, then a restrained player explorer.
    Do not rebuild the deleted UI before metric contracts are frozen.
-6. **Later data:** injuries/availability, contracts, salaries, draft, roster stints,
+7. **Later data:** injuries/availability, contracts, salaries, draft, roster stints,
    travel, and historical team schedules.
-7. **WP later:** revisit only for playoff calibration or a cloud-trained causal
+8. **WP later:** revisit only for playoff calibration or a cloud-trained causal
    sequence experiment after the impact platform is useful.
 
 ## Research rules

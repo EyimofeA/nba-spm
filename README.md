@@ -73,6 +73,8 @@ uv run python -m nba_impact.cli build-statistical-features-v2 \
   --window-ends 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024 \
   --pooled-window-seasons 1
 uv run python -m nba_impact.cli build-single-season-rapm-targets
+uv run python -m nba_impact.cli build-time-decayed-trajectories \
+  --targets artifacts/models/single_season_rapm_targets/<run-id>/targets.parquet
 uv run python -m nba_impact.cli fit-single-season-spm \
   --features artifacts/features/statistical_impact/<annual-v2>/features.parquet \
   --targets artifacts/models/single_season_rapm_targets/<run-id>/targets.parquet \
@@ -100,6 +102,7 @@ uv run python -m nba_impact.cli ingest-official-boxscores --seasons 2023-24
 uv run python -m nba_impact.cli build-player-games
 uv run python -m nba_impact.cli build-lineups
 uv run python -m nba_impact.cli build-possessions
+uv run python -m nba_impact.cli build-possession-start-context
 ```
 
 ### Regenerate the SPM prior
