@@ -291,7 +291,10 @@ Expected-possession residual RAPM is a separate challenger documented in
 possession-start states. Start score is reconstructed from completed prior
 canonical possessions. Expected-points features must exclude player/team/lineup
 identity and every current-possession action or outcome; cross-fit predictions
-chronologically before any residual-RAPM fit.
+chronologically before any residual-RAPM fit. The first Poisson baseline
+`expected_possession_points_v1_c9581a23b1` improves deviance by only about 0.05%
+in both folds. Treat it as a null and do not fit residual RAPM until a richer
+causal state clears the documented prospective gate.
 For statistical impact ridge, fit offense and defense as separate three-season
 targets and add them for net. Run `statistical_impact_v2_48f6ad776f` shows that
 a direct net target gives the same advanced-feature result and loses the useful

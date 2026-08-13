@@ -62,31 +62,33 @@ dead ends. Updated 2026-08-14. See `docs/README.md` for the document index,
 
 ## Active next task
 
-Fit the first cross-fitted, player-neutral expected-points baseline on the new
-possession-start contract—without fitting residual RAPM yet. The scientific
-control plane, canonical identity/provenance spine, two normal-RAPM uncertainty
-pilots, Ratings API v2, first filtered time-decay trajectory baseline, and
-expected-possession data contract are implemented. The exact shot/ordinal-lineup
-defense panel is also complete, but its defense-team pilot improved held-out
-combined log loss by only 0.089% against a frozen 0.5% gate. Keep it as a
-documented null; do not fit player defender rankings without exact guarding
-assignments. Keep zero-prior normal RAPM as the production reference. Keep
-annual AIO, matchup factors, trajectories, and peaks research-only. Peak ranks
-are descriptive only; a 1,000-draw selection-aware refit was stopped after 65
-draws because its cost is not justified now. Reserve Season 2027 as the next
-untouched annual confirmation. WP neural work stays paused on the Mac.
+Build canonical current annual normal-RAPM targets for 2023--25, then attach
+them to the filtered trajectory baseline. The scientific control plane,
+canonical identity/provenance spine, two normal-RAPM uncertainty pilots, Ratings
+API v2, first filtered time-decay trajectory baseline, and expected-possession
+data contract are implemented. The player-neutral expected-points pilot improves
+cross-fitted Poisson deviance by only about 0.05%; residual RAPM is deferred
+until a richer causal state passes its prospective gate. The exact
+shot/ordinal-lineup defense panel is also complete, but its defense-team pilot
+improved held-out combined log loss by only 0.089% against a frozen 0.5% gate.
+Keep both as documented nulls; do not fit player defender rankings without exact
+guarding assignments. Keep zero-prior normal RAPM as the production reference.
+Keep annual AIO, matchup factors, trajectories, and peaks research-only. Peak
+ranks are descriptive only; a 1,000-draw selection-aware refit was stopped
+after 65 draws because its cost is not justified now. Reserve Season 2027 as the
+next untouched annual confirmation. WP neural work stays paused on the Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
 
 ## Ordered queue
 
-1. **Expected possession:** cross-fit a player-neutral expected-points baseline
-   chronologically. Prove no post-start outcome leakage before a residual-RAPM
-   fit; compare it only on identical games with normal RAPM.
-2. **Dynamic impact:** extend the filtered baseline only after annual normal-RAPM
-   inputs are rebuilt from canonical current data; then test an uncertainty-aware
-   state-space model against it.
+1. **Dynamic impact:** build canonical current annual normal-RAPM targets for
+   2023--25, then extend and validate the filtered trajectory baseline with those
+   targets. Test an uncertainty-aware state-space model only afterward.
+2. **Expected possession:** retain the player-neutral start-state baseline as a
+   null. Reopen only when a richer causal state clears its prospective expected-
+   points gate; then compare residual RAPM only on identical games.
 3. **All-in-one:** keep the annual statistical model research-only and design its
    next comparison against the dynamic target. Do not start another broad
    feature subset search on reused seasons.

@@ -102,6 +102,17 @@ estimands:
     intended_use: context-residual RAPM research against normal RAPM on identical games
     forbidden_interpretation: optical-tracking EPV, player-aware expected points, causal player value, or production rating before validation
 
+  - estimand_id: player_neutral_expected_possession_points_v1
+    name: Player-neutral expected possession points
+    status: research_null
+    unit: expected_points_per_possession
+    population: canonical NBA regular-season possessions with a causally reconstructed start state
+    window_definition: chronological whole-season cross-fit
+    information_cutoff_rule: only player-neutral information known before the possession begins
+    target_definition: cross-fitted expected points from period, time, score, home side, and prior-possession state
+    intended_use: test whether start-state context materially supports a later residual-RAPM challenger
+    forbidden_interpretation: optical-tracking EPV, player/team/lineup effect, player value, or residual-RAPM result
+
   - estimand_id: matchup_defense_observational_v1
     name: Observational matchup-defense residual
     status: research_only

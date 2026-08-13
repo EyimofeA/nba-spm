@@ -103,6 +103,7 @@ uv run python -m nba_impact.cli build-player-games
 uv run python -m nba_impact.cli build-lineups
 uv run python -m nba_impact.cli build-possessions
 uv run python -m nba_impact.cli build-possession-start-context
+uv run python -m nba_impact.cli build-expected-possession-points
 ```
 
 ### Regenerate the SPM prior

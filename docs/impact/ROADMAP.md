@@ -265,7 +265,10 @@ model: the input archive ends in 2024 and the trajectory has no intervals.
 `possession_start_context_ebcae214e662d404` also makes the expected-possession
 residual-RAPM challenger feasible. It has 787,579 player-neutral canonical
 possession-start states, with score reconstructed only from completed prior
-possessions. Freeze cross-fitted expected points before fitting any player model.
+possessions. The first cross-fitted Poisson baseline
+`expected_possession_points_v1_c9581a23b1` improves deviance by only about 0.05%
+in both folds. Keep it as a null and do not fit residual RAPM until richer causal
+state information clears the prospective expected-points gate.
 
 The API now also exposes the validated 2018–25 matchup-defense factor panel. It
 labels the route `research_only`, requires an explicit pinned run, and returns

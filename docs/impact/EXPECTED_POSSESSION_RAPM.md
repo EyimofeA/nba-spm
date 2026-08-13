@@ -1,6 +1,6 @@
 # Expected-Possession Residual RAPM
 
-Status: **data contract ready; player model not yet fit**.
+Status: **expected-points baseline complete; residual RAPM deferred**.
 
 ## Goal
 
@@ -59,11 +59,36 @@ Expected shot outcome remains useful for a separate shot-quality decomposition.
 It does not replace possession residuals because it omits turnovers, offensive
 rebounds, free throws, and many transition outcomes.
 
+## Expected-points baseline result
+
+Run `expected_possession_points_v1_c9581a23b1` cross-fits a player-neutral
+Poisson baseline on regular-season possessions. The 2024 fold trains on 2023;
+the 2025 fold trains on 2023--24. It uses exactly the allowed start-state inputs
+above and makes 497,177 out-of-fold predictions across 2,454 games.
+
+| Test season | RMSE, constant | RMSE, context | Poisson deviance, constant | Poisson deviance, context |
+|---|---:|---:|---:|---:|
+| 2024 | 1.19587 | 1.19556 | 1.63493 | 1.63425 |
+| 2025 | 1.19306 | 1.19258 | 1.62078 | 1.61978 |
+
+The context direction is favorable in both folds, and mean bias stays below one
+hundredth of a point per possession. But the average gain is only 0.00039 RMSE
+and 0.00084 Poisson deviance—roughly five hundredths of one percent. This is far
+too small to justify a residual-RAPM refit: it would mostly subtract a near
+constant from the normal-RAPM target.
+
 ## Frozen next experiment
 
-Use cross-fitted, player-neutral expected points from a simple multinomial or
-Poisson baseline trained chronologically. Fit the residual RAPM only after every
-prediction is out of fold. Compare it with normal RAPM on identical held-out
-games, using equal-season margin RMSE, correlation, calibration, and a paired
+Do not fit residual RAPM from this baseline. Reopen the lane only with a new,
+causal context family—such as validated transition/halfcourt state or richer
+event context—and predeclare this prospective gate before looking at results:
+
+- at least 0.25% mean Poisson-deviance improvement over the constant baseline
+  in both chronological folds;
+- small mean calibration bias in both folds;
+- player-neutral, out-of-fold predictions for every possession sent to RAPM.
+
+Only then fit residual RAPM and compare it with normal RAPM on identical games,
+using equal-season margin RMSE, correlation, calibration, and a paired
 whole-game interval. Do not add nonlinear or player-aware features until that
 baseline passes.

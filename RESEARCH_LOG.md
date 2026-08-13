@@ -1958,3 +1958,24 @@ possession actions or outcomes as expected-points inputs.
 points are cross-fitted chronologically and player-neutral. The first model is a
 simple Poisson or multinomial baseline; compare residual RAPM with normal RAPM
 on identical games using equal-season margin RMSE and paired whole-game error.
+
+## 2026-08-14 — Possession-start expected points is a useful null
+
+**Method:** `expected_possession_points_v1_c9581a23b1` fits a player-neutral
+Poisson expected-points model using only the frozen possession-start fields. It
+uses whole-season chronological cross-fitting: train 2023 and test 2024, then
+train 2023--24 and test 2025. No player, team, lineup, current-possession event,
+or current-possession outcome is an input. The run yields 497,177 out-of-fold
+regular-season predictions over 2,454 games.
+
+**Result:** Context beats a training-mean constant in both folds, but only
+slightly. 2024 RMSE is 1.19556 versus 1.19587 and Poisson deviance is 1.63425
+versus 1.63493; 2025 RMSE is 1.19258 versus 1.19306 and deviance is 1.61978
+versus 1.62078. Mean context improvement is 0.00039 RMSE and 0.00084 deviance.
+Mean bias remains under 0.01 points per possession and both fits converge.
+
+**Decision:** Do not fit residual RAPM. The contextual change is too close to a
+constant subtraction to justify another RAPM evaluation. A prospective reopening
+gate now requires at least 0.25% mean Poisson-deviance improvement in both
+chronological folds, small bias, and player-neutral out-of-fold predictions. New
+causal context—not extra model complexity—is needed before retrying.

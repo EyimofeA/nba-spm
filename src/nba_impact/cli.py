@@ -55,6 +55,9 @@ from nba_impact.models.shot_defense_pilot import run_shot_defense_team_pilot
 from nba_impact.models.time_decayed_trajectory import (
     build_time_decayed_trajectory,
 )
+from nba_impact.models.expected_possession_points import (
+    build_expected_possession_points,
+)
 from nba_impact.models.external_impact_benchmark import (
     acquire_external_impact_pages,
     build_external_impact_benchmark,
@@ -1117,6 +1120,20 @@ def command_build_time_decayed_trajectory(args: argparse.Namespace) -> int:
         selection_origins=tuple(args.selection_origins),
         diagnostic_origins=tuple(args.diagnostic_origins),
         minimum_side_possessions=args.minimum_side_possessions,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_expected_possession_points(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_expected_possession_points(
+        args.context,
+        artifact_root=args.artifact_root,
+        test_seasons=tuple(args.test_seasons),
+        alpha=args.alpha,
+        max_iter=args.max_iter,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -2314,6 +2331,20 @@ def build_parser() -> argparse.ArgumentParser:
     trajectories.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     trajectories.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     trajectories.set_defaults(func=command_build_time_decayed_trajectory)
+
+    expected_possession = subparsers.add_parser(
+        "build-expected-possession-points",
+        help="Cross-fit player-neutral expected points from possession-start context.",
+    )
+    expected_possession.add_argument(
+        "--context", type=Path, default=SILVER_ROOT / "possession_start_context.parquet"
+    )
+    expected_possession.add_argument("--test-seasons", type=_season_list, default=(2024, 2025))
+    expected_possession.add_argument("--alpha", type=float, default=0.01)
+    expected_possession.add_argument("--max-iter", type=int, default=300)
+    expected_possession.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    expected_possession.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    expected_possession.set_defaults(func=command_build_expected_possession_points)
 
     annual_spm = subparsers.add_parser(
         "fit-single-season-spm",
