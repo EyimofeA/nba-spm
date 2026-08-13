@@ -15,6 +15,8 @@ Start at the repository root:
   player/team IDs, aliases, and observed player-team stints;
 - [`data/ROLE_CONTEXT_SOURCE.md`](data/ROLE_CONTEXT_SOURCE.md) — pinned
   dribble-context inputs and their research-only contract;
+- [`data/EVENT_SOURCE_COVERAGE.md`](data/EVENT_SOURCE_COVERAGE.md) — current
+  event-source coverage and downstream source-selection guards;
 - [`impact/ROADMAP.md`](impact/ROADMAP.md) — detailed RAPM and all-in-one plan;
 - [`impact/CURRENT_FEATURE_QUALITY.md`](impact/CURRENT_FEATURE_QUALITY.md) —
   2025/2026 statistical-feature coverage, drift, and frozen-SPM confirmation;

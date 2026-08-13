@@ -1874,3 +1874,17 @@ research-only player-season table from counts: 6,326 rows covering 1,590 IDs
 in 2014–25, with no duplicate keys or infinite values. It excludes incomplete
 2026 and deliberately drops source age, games, minutes, teams, and upstream
 percentage display fields.
+
+## 2026-08-13 — Current event-source coverage contract
+
+**Finding:** NBA Stats V3 is locally complete for 2023–25: each regular season
+has 1,230 games and the playoff slices have 82, 84, and 85 games respectively.
+CDN NBA is complete through 2024 but has only 60 of 85 2025 playoff games;
+PBPStats ends after 2024; 2024 playoff shot-detail and matchup slices are
+absent.
+
+**Decision:** V3 is the primary raw event source for 2023–25. CDN remains a
+possession-tag validation source and must use `orderNumber`, not
+`actionNumber`. No model may substitute any absent source slice with zero rows
+or silently join a regular-only table as playoff-complete. The documented
+coverage is a data-availability claim, not a licence grant.
