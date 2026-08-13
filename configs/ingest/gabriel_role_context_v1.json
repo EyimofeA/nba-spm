@@ -1,0 +1,29 @@
+{
+  "provider": "gabriel1200/site_Data",
+  "source": "https://github.com/gabriel1200/site_Data",
+  "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+  "license": "not-declared-by-upstream",
+  "purpose": "Pinned player-season shooting-context inputs for exploratory continuous-role research. These are raw aggregate inputs, not canonical truth or production model features.",
+  "tasks": [
+    {
+      "name": "gabriel_shooting_by_dribble_count",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/dribbleshot.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/role_context/shooting_by_dribble_count.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 30000,
+      "required_columns": ["PLAYER_ID", "PLAYER", "dribbles", "year", "FGA", "FREQ%"]
+    },
+    {
+      "name": "gabriel_jump_shot_dribble_context",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd/jumpdribble.csv",
+      "destination": "gabriel_site_data/revision=bc583cb/role_context/jump_shot_dribble_context.csv",
+      "provider": "gabriel1200/site_Data",
+      "license": "not-declared-by-upstream",
+      "source_revision": "bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd",
+      "expected_min_rows": 25000,
+      "required_columns": ["PLAYER_ID", "PLAYER", "dribbles", "year", "FGA"]
+    }
+  ]
+}

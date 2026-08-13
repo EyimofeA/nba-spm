@@ -1845,3 +1845,26 @@ eligibility, or interpreting ranks. Therefore rolling peak tables remain
 descriptive and have no rank intervals. Justin Jacobs-style public peak tables
 are suitable external descriptive comparators, not a replacement for missing
 selection-aware uncertainty.
+
+## 2026-08-13 — Pin role-context bronze inputs; do not promote them yet
+
+**Question:** What small, current data addition can support future continuous
+role research without reopening the frozen all-in-one feature search?
+
+**What we did:** Audited the latest pinned `gabriel1200/site_Data` revision
+(`bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd`). The existing core archive and
+the repository's current aggregate-source manifest already verify, so no broad
+redownload was warranted. Added a separate resumable manifest for two additive
+player-season-dribble-bucket inputs: shooting by dribble count (31,376 rows,
+1,692 IDs) and jump-shot dribble context (28,435 rows, 1,656 IDs). Both cover
+2014–26 and have unique `(PLAYER_ID, year, dribbles)` keys.
+
+**Data-quality finding:** the jump-shot source provides populated makes and
+attempts for every year but leaves supplied percentage and team display fields
+blank in 2014–24. A future silver transform must derive shares from counts and
+carry explicit missingness; it must not fill those fields with zero.
+
+**Decision:** Keep both assets bronze and research-only. Do not add them to the
+frozen AIO or interpret them as a rating. The next valid use is a time-safe
+silver role table followed by a preregistered chronological role-block
+experiment against the frozen baseline.

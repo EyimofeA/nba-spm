@@ -13,6 +13,8 @@ Start at the repository root:
   archive contract and local coverage;
 - [`data/IDENTITY_DIMENSIONS.md`](data/IDENTITY_DIMENSIONS.md) — canonical
   player/team IDs, aliases, and observed player-team stints;
+- [`data/ROLE_CONTEXT_SOURCE.md`](data/ROLE_CONTEXT_SOURCE.md) — pinned
+  dribble-context inputs and their research-only contract;
 - [`impact/ROADMAP.md`](impact/ROADMAP.md) — detailed RAPM and all-in-one plan;
 - [`impact/CURRENT_FEATURE_QUALITY.md`](impact/CURRENT_FEATURE_QUALITY.md) —
   2025/2026 statistical-feature coverage, drift, and frozen-SPM confirmation;
