@@ -1866,5 +1866,11 @@ carry explicit missingness; it must not fill those fields with zero.
 
 **Decision:** Keep both assets bronze and research-only. Do not add them to the
 frozen AIO or interpret them as a rating. The next valid use is a time-safe
-silver role table followed by a preregistered chronological role-block
-experiment against the frozen baseline.
+role table followed by a preregistered chronological role-block experiment
+against the frozen baseline.
+
+**Follow-through:** `build-role-context-features` now produces that
+research-only player-season table from counts: 6,326 rows covering 1,590 IDs
+in 2014–25, with no duplicate keys or infinite values. It excludes incomplete
+2026 and deliberately drops source age, games, minutes, teams, and upstream
+percentage display fields.

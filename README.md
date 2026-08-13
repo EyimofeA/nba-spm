@@ -86,6 +86,9 @@ uv run python -m nba_impact.cli ingest \
   --manifest configs/ingest/nba_data_archive_2023.json
 uv run python -m nba_impact.cli ingest \
   --manifest configs/ingest/gabriel_role_context_v1.json
+uv run python -m nba_impact.cli build-role-context-features \
+  --shooting-by-dribble-source data/lake/bronze/gabriel_site_data/revision=bc583cb/role_context/shooting_by_dribble_count.csv \
+  --jump-shot-by-dribble-source data/lake/bronze/gabriel_site_data/revision=bc583cb/role_context/jump_shot_dribble_context.csv
 uv run python -m nba_impact.cli build-game-dim
 uv run python -m nba_impact.cli build-event-states
 uv run python -m nba_impact.cli build-player-games

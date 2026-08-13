@@ -29,10 +29,20 @@ Any silver transform must derive within-player shares from counts, retain an
 explicit missingness indicator for upstream display fields, and never coerce
 their missing values to zero.
 
-## Intended next use
+## Derived research table
 
-Build a time-safe silver table with source player IDs and count-derived
-features such as zero-dribble share, multi-dribble share, and per-bucket
-efficiency. Evaluate that role block only in a preregistered chronological
-experiment against the frozen AIO baseline. It must not be merged into the
-published rating pipeline based on face validity or leaderboard appeal.
+`build-role-context-features` creates one research-only player-season artifact
+with source `PLAYER_ID`, `Season`, count totals, zero/one-to-two/three-plus
+dribble shares, and bucket field-goal percentages. It drops source age, games,
+minutes, team display labels, and upstream percentage columns. The default
+2014–25 scope deliberately excludes incomplete 2026 infrastructure data.
+
+```bash
+uv run python -m nba_impact.cli build-role-context-features \
+  --shooting-by-dribble-source data/lake/bronze/gabriel_site_data/revision=bc583cb/role_context/shooting_by_dribble_count.csv \
+  --jump-shot-by-dribble-source data/lake/bronze/gabriel_site_data/revision=bc583cb/role_context/jump_shot_dribble_context.csv
+```
+
+Evaluate this role block only in a preregistered chronological experiment
+against the frozen AIO baseline. It must not be merged into the published
+rating pipeline based on face validity or leaderboard appeal.

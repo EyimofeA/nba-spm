@@ -30,6 +30,7 @@ from nba_impact.data.manifest import (
 from nba_impact.data.official_boxscore import ingest_official_boxscores
 from nba_impact.data.player_game import build_player_games
 from nba_impact.data.playtype_features import build_playtype_features
+from nba_impact.data.role_context import build_role_context_features
 from nba_impact.data.possessions import build_possessions
 from nba_impact.data.statistical_features import build_statistical_feature_windows
 from nba_impact.data.statistical_features_v2 import build_statistical_features_v2
@@ -734,6 +735,18 @@ def command_build_assist_quality_features(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     run = build_assist_quality_features(
         args.source, artifact_root=args.artifact_root, seasons=args.seasons
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_role_context_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_role_context_features(
+        args.shooting_by_dribble_source,
+        args.jump_shot_by_dribble_source,
+        artifact_root=args.artifact_root,
+        seasons=args.seasons,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -1884,6 +1897,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     assist_quality.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     assist_quality.set_defaults(func=command_build_assist_quality_features)
+
+    role_context = subparsers.add_parser(
+        "build-role-context-features",
+        help="Build research-only annual shooting-context features by dribble bucket.",
+    )
+    role_context.add_argument("--shooting-by-dribble-source", type=Path, required=True)
+    role_context.add_argument("--jump-shot-by-dribble-source", type=Path, required=True)
+    role_context.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2014, 2026))
+    )
+    role_context.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    role_context.set_defaults(func=command_build_role_context_features)
 
     statistical_impact = subparsers.add_parser(
         "fit-statistical-impact",
