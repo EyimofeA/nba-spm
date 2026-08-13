@@ -89,6 +89,8 @@ uv run python -m nba_impact.cli ingest \
 uv run python -m nba_impact.cli build-role-context-features \
   --shooting-by-dribble-source data/lake/bronze/gabriel_site_data/revision=bc583cb/role_context/shooting_by_dribble_count.csv \
   --jump-shot-by-dribble-source data/lake/bronze/gabriel_site_data/revision=bc583cb/role_context/jump_shot_dribble_context.csv
+uv run python -m nba_impact.cli build-shot-defense-events
+uv run python -m nba_impact.cli run-shot-defense-pilot
 uv run python -m nba_impact.cli build-game-dim
 uv run python -m nba_impact.cli build-event-states
 uv run python -m nba_impact.cli build-player-games

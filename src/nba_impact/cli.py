@@ -31,6 +31,7 @@ from nba_impact.data.official_boxscore import ingest_official_boxscores
 from nba_impact.data.player_game import build_player_games
 from nba_impact.data.playtype_features import build_playtype_features
 from nba_impact.data.role_context import build_role_context_features
+from nba_impact.data.shot_defense import build_shot_defense_events
 from nba_impact.data.possessions import build_possessions
 from nba_impact.data.statistical_features import build_statistical_feature_windows
 from nba_impact.data.statistical_features_v2 import build_statistical_features_v2
@@ -49,6 +50,7 @@ from nba_impact.models.rapm_uncertainty import (
     RapmUncertaintyConfig,
     run_rapm_uncertainty,
 )
+from nba_impact.models.shot_defense_pilot import run_shot_defense_team_pilot
 from nba_impact.models.external_impact_benchmark import (
     acquire_external_impact_pages,
     build_external_impact_benchmark,
@@ -442,6 +444,47 @@ def command_build_possessions(args: argparse.Namespace) -> int:
         )
     )
     return 0 if snapshot["passed"] else 2
+
+
+def command_build_shot_defense_events(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_shot_defense_events(
+        args.root,
+        args.event_states,
+        args.game_dim,
+        args.segments,
+        args.output,
+        args.manifest_dir,
+        seasons=args.seasons,
+    )
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "rows": snapshot["row_count"],
+                "games": snapshot["game_count"],
+                "seasons": snapshot["seasons"],
+                "path": snapshot["path"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_run_shot_defense_pilot(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_shot_defense_team_pilot(
+        args.panel,
+        artifact_root=args.artifact_root,
+        season=args.season,
+        train_fraction=args.train_fraction,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
 
 
 def command_fit_rapm(args: argparse.Namespace) -> int:
@@ -1683,6 +1726,47 @@ def build_parser() -> argparse.ArgumentParser:
     possessions.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
     possessions.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     possessions.set_defaults(func=command_build_possessions)
+
+    shot_defense = subparsers.add_parser(
+        "build-shot-defense-events",
+        help="Build research-only official FGAs with exact ordinal 5v5 lineups.",
+    )
+    shot_defense.add_argument(
+        "--root", type=Path, default=BRONZE_ROOT / "nba_data_archive"
+    )
+    shot_defense.add_argument(
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    shot_defense.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    shot_defense.add_argument(
+        "--segments",
+        type=Path,
+        default=SILVER_ROOT / "possession_lineup_segments.parquet",
+    )
+    shot_defense.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "shot_defense_events.parquet"
+    )
+    shot_defense.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    shot_defense.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    shot_defense.add_argument(
+        "--seasons", type=_season_list, default=(2023, 2024, 2025)
+    )
+    shot_defense.set_defaults(func=command_build_shot_defense_events)
+
+    shot_defense_pilot = subparsers.add_parser(
+        "run-shot-defense-pilot",
+        help="Run the cost-bounded defense-team shot-model feasibility gate.",
+    )
+    shot_defense_pilot.add_argument(
+        "--panel", type=Path, default=SILVER_ROOT / "shot_defense_events.parquet"
+    )
+    shot_defense_pilot.add_argument("--season", type=int, default=2024)
+    shot_defense_pilot.add_argument("--train-fraction", type=float, default=0.70)
+    shot_defense_pilot.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    shot_defense_pilot.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    shot_defense_pilot.set_defaults(func=command_run_shot_defense_pilot)
 
     rapm = subparsers.add_parser(
         "fit-rapm", help="Fit the independent zero-prior RAPM baseline."

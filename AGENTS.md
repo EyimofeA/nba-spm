@@ -222,6 +222,14 @@ The read-only API exposes these six factor residuals under
 `/v1/leaderboards/matchup-defense` and player payloads. Preserve the
 `research_only` label and caveat in any future client.
 
+Observed-lineup shot-defense research is documented in
+`docs/impact/SHOT_DEFENSE_MODEL.md`. The validated event panel has exact zones
+and ordinal five-player lineups but no exact primary-defender label. Run
+`shot_defense_team_pilot_v1_a1d8880794` improved combined held-out log loss by
+only 0.089%, below its frozen 0.5% gate, and is `research_null`. Do not fit
+individual defender rankings or merge this block into the AIO without exact
+event-level guarding data.
+
 Win-probability research must use chronological seasons and post-action states.
 External comparisons use the resumable `ingest-espn-win-probability` command,
 then `benchmark-win-probability`, which scores ESPN and the local model only on

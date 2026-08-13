@@ -1,5 +1,5 @@
 schema_version: estimand_registry_v1
-updated_at: 2026-08-12
+updated_at: 2026-08-13
 flagship_estimand_id: annual_retrospective_impact_v1
 
 estimands:
@@ -90,3 +90,14 @@ estimands:
     target_definition: scorer-adjusted empirical-Bayes matchup scoring residual
     intended_use: defense research and diagnostics
     forbidden_interpretation: causal defensive responsibility or additive total defense
+
+  - estimand_id: observed_lineup_shot_defense_v1
+    name: Observed-lineup shot-defense association
+    status: research_null
+    unit: conditional_shot_probability
+    population: NBA regular-season field-goal attempts with exact ordinal lineups
+    window_definition: explicit complete regular-season sample
+    information_cutoff_rule: shot context, zone, and on-court lineup known at the shot event
+    target_definition: shot-zone mix and make probability associated with the observed defensive unit
+    intended_use: shot-defense data QA and model-feasibility research
+    forbidden_interpretation: primary-defender impact, causal player defense, possession defense, or additive five-player credit

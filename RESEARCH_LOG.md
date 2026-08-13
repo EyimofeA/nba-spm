@@ -1888,3 +1888,30 @@ possession-tag validation source and must use `orderNumber`, not
 `actionNumber`. No model may substitute any absent source slice with zero rows
 or silently join a regular-only table as playoff-complete. The documented
 coverage is a data-availability claim, not a licence grant.
+
+## 2026-08-13 — Two-part shot-defense design revised; team pilot is null
+
+**Sol checkpoint:** The proposed primary-defender, exact-zone, exact-lineup
+model is not identified by the available licensed matchup aggregates. Only
+about 36--37% of matched scorer-games exactly reconcile official makes and
+attempts, allocated matchup attempts exceed official shots by about 9--11%, and
+87% of shooter-games allocate attempts to multiple defenders. The revised
+estimand is observed defensive-unit association with shot-zone mix and make
+probability. Primary-defender and causal player-defense claims are forbidden.
+
+**Data result:** `build-shot-defense-events` produced 654,376 regular-season
+shots across 3,681 games in 2023--25. It aligns official shots to V3, CDN
+`orderNumber`, stable event `actionId`, and exact ordinal five-player lineups.
+All output gates passed: unique shot IDs, valid identities, known zones, finite
+model fields, and 99.75% exact segment coverage.
+
+**Pilot result:** `shot_defense_team_pilot_v1_a1d8880794` compared sparse L2
+logistic zone and make models with and without defense-team context on a strict
+chronological 2024-season split. Combined held-out log loss improved by 0.0893%
+(2.04882 to 2.04699), below the frozen 0.5% practical gate. Make Brier improved
+slightly. Only 41.5% of test shots used a lineup observed in training.
+
+**Decision:** Classify the model `research_null`. Keep the validated event panel
+for future exact-guarding data, but do not bootstrap this pilot, fit individual
+defender rankings, merge it into the AIO, or publish a defense leaderboard. Move
+the active model task to dynamic time-decayed impact trajectories.

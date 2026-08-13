@@ -247,6 +247,15 @@ these inspected seasons. Build the next defender model from shot-location and
 lineup-context controls, then reserve a future complete season for confirmation.
 Current annual AIO remains published only through 2024.
 
+A Sol mathematical review rejected the proposed primary-defender plus exact
+zone/lineup specification as unidentified with the available game-level matchup
+aggregates. The replacement observed-lineup event panel is validated, but its
+cost-bounded defense-team pilot improved combined held-out log loss by only
+0.089% against a frozen 0.5% gate. It is a documented research null. Do not
+publish defender coefficients or merge the block into the AIO without exact
+event-level guarding assignments. Move the active research queue to annual
+time-decayed impact trajectories.
+
 The API now also exposes the validated 2018–25 matchup-defense factor panel. It
 labels the route `research_only`, requires an explicit pinned run, and returns
 the observational-data caveat. This is a data/research surface, not a promoted
