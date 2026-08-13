@@ -206,6 +206,15 @@ hold to floating-point precision and peak names are complete. The model remains
 zero-prior 3000/3000/300 ridge with terminal lineups, a home term, and season
 scoring-environment normalization. Peak uncertainty is still absent.
 
+The attempted selection-aware bootstrap was stopped after 65 of 1,000 draws by
+user decision. It requires 50 full historical RAPM refits per draw and adds too
+little value for the current product stage. Do not expose rank intervals for
+this endpoint. A fixed-window analytic covariance can support later standard
+errors, but it does not quantify the error from selecting the maximum across
+many correlated windows. Use external peak datasets, including Justin Jacobs'
+published tables, as descriptive comparators rather than as a replacement for
+that missing selection analysis.
+
 ## Phase 6 — Product contract
 
 Freeze Parquet/DuckDB schemas first. Then add a thin read-only API for:

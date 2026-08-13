@@ -19,6 +19,7 @@ from nba_impact.data.event_quality import build_event_snapshot
 from nba_impact.data.event_state import build_event_states
 from nba_impact.data.espn_win_probability import ingest_espn_win_probability
 from nba_impact.data.game_dim import build_game_dimension
+from nba_impact.data.identity import build_identity_dimensions
 from nba_impact.data.lineups import build_lineup_stints
 from nba_impact.data.matchup_defense_features import build_matchup_defense_features
 from nba_impact.data.manifest import (
@@ -316,6 +317,31 @@ def command_build_player_games(args: argparse.Namespace) -> int:
                 "espn_games": snapshot["espn_game_count"],
                 "issues": snapshot["issues"],
                 "path": snapshot["path"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_identity_dimensions(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_identity_dimensions(
+        args.game_dim,
+        args.player_games,
+        args.output_dir,
+        args.manifest_dir,
+        event_states_path=args.event_states,
+    )
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed": snapshot["passed"],
+                "row_counts": snapshot["row_counts"],
+                "issues": snapshot["issues"],
+                "artifacts": snapshot["artifacts"],
             },
             indent=2,
         )
@@ -1551,6 +1577,24 @@ def build_parser() -> argparse.ArgumentParser:
     )
     player_games.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     player_games.set_defaults(func=command_build_player_games)
+
+    identity_dimensions = subparsers.add_parser(
+        "build-identity-dimensions",
+        help="Build canonical player/team aliases and observed player-team stints.",
+    )
+    identity_dimensions.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    identity_dimensions.add_argument(
+        "--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
+    identity_dimensions.add_argument(
+        "--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet"
+    )
+    identity_dimensions.add_argument("--output-dir", type=Path, default=SILVER_ROOT)
+    identity_dimensions.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    identity_dimensions.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    identity_dimensions.set_defaults(func=command_build_identity_dimensions)
 
     official_boxes = subparsers.add_parser(
         "ingest-official-boxscores",

@@ -24,7 +24,7 @@
       "evidence_status": "research_leaderboard",
       "season_scope": "1997-2024",
       "season_completeness": "Regular seasons only; 2024 covers 1,229 games in the legacy cache.",
-      "uncertainty_status": "selection_aware_uncertainty_pending",
+      "uncertainty_status": "not_estimated_descriptive_peak_v1",
       "config_sha256": "a8e6e5414c92f3c02b2244d368ba27798242ff6ab7a381f60bff3f4436d0f2c5",
       "code_sha256": "0129a26018218170f79c3a60c0fa2dfb19064fad4f21279f121ed9882ae70043",
       "data_hashes_status": "embedded_in_run_config",

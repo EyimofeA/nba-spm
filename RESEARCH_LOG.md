@@ -1823,3 +1823,25 @@ mean RMSE improvement is -0.1425 points per game, correlation changes by
 -0.0210, and candidate-minus-zero MSE has a paired 95% interval of
 [+0.675, +7.502]. Zero-prior normal RAPM remains the reference. Do not retune
 this candidate on these outcomes.
+
+## 2026-08-13 — Stop all-time peak bootstrap; retain analytic RAPM covariance
+
+**Decision:** Stop `rolling_peak_uncertainty_v1_af2fd07f284e` after 65 of the
+planned 1,000 draws. Each draw refits all 50 historical three-year and five-year
+windows. The local runtime cost is disproportionate to the current product
+value. Completed checkpoints remain local and resumable, but are incomplete and
+must not enter an artifact, API response, or research result.
+
+**What remains useful:** For one fixed normal-RAPM fit, the analytic
+game-cluster ridge sandwich supplies offense, defense, and joint-net standard
+errors quickly. It already agrees closely with our whole-game bootstrap pilots
+for high-exposure players: median 95% interval-width ratios are 1.009--1.011 in
+2025 and 1.004--1.006 in 2022--24. This supports using analytic covariance as a
+fast fixed-window diagnostic.
+
+**Boundary:** Analytic covariance does not include the extra uncertainty from
+choosing a player's maximum among many correlated windows, reapplying
+eligibility, or interpreting ranks. Therefore rolling peak tables remain
+descriptive and have no rank intervals. Justin Jacobs-style public peak tables
+are suitable external descriptive comparators, not a replacement for missing
+selection-aware uncertainty.

@@ -24,6 +24,10 @@ dead ends. Updated 2026-08-12. See `docs/README.md` for the document index,
   parked as a research sensitivity despite its small pooled gain.
 - Normal RAPM keeps penalties 3000/3000/300. A 4500/4500/1000 selection winner
   lost on the untouched 2025–26 confirmation season.
+- Two normal-RAPM uncertainty pilots show that analytic game-cluster intervals
+  closely match whole-game bootstrap widths for high-exposure players. The
+  expensive all-time peak bootstrap is stopped by user decision; peak ranks stay
+  descriptive with no rank intervals.
 - The first three-year statistical ridge baseline now compares box, advanced,
   and advanced-plus-on/off feature sets across three purged chronological folds.
 - Frozen feature engineering improves the statistical AIO's reused 2024 net
@@ -54,13 +58,13 @@ dead ends. Updated 2026-08-12. See `docs/README.md` for the document index,
 
 ## Active next task
 
-Freeze the scientific control plane before another AIO feature search. The
-estimand registry, conservative season-exposure map, pinned-artifact audit, and
-precision-aware prior preregistration now live in `research/`. Corrected rolling
-peaks are pinned as `rolling_rapm_peaks_v1_a8a612143c`. Next, add whole-game
-RAPM uncertainty and expose its status through the artifact/API contract. Keep
-zero-prior normal RAPM as the production reference. Keep the annual AIO and
-matchup factors research-only. Reserve Season 2027 as the next untouched annual
+Build the canonical identity and provenance spine: `player_dim`, aliases,
+player-team stints, game/team dimensions, and source manifests. The scientific
+control plane, two normal-RAPM uncertainty pilots, and Ratings API v2 are now
+implemented. Keep zero-prior normal RAPM as the production reference. Keep
+annual AIO, matchup factors, and peaks research-only. Peak ranks are descriptive
+only; a 1,000-draw selection-aware refit was stopped after 65 draws because its
+cost is not justified now. Reserve Season 2027 as the next untouched annual
 confirmation. WP neural work stays paused on the Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
