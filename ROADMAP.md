@@ -65,9 +65,14 @@ dead ends. Updated 2026-08-14. See `docs/README.md` for the document index,
 
 ## Active next task
 
-Freeze the next all-in-one challenger specification: a side-specific,
-precision-aware SPM prior in one-season normal RAPM. This needs a Sol
-mathematical review before implementation. The scientific control plane,
+The side-specific precision-aware SPM-prior contract has passed Sol review with
+a revision: it now uses heteroskedastic earlier-window variance calibration, not
+pooled variance subtraction. Its frozen historical 2018--21 schedule is
+currently blocked because the cross-fitted prior history starts in 2019. The
+frozen three-season feature contract cannot produce the planned 2018--21
+selection folds. Do not rerun the invalid 2021--24 experiment. The active task
+is to specify a separate pre-2016 prior contract or defer this challenger. The
+scientific control plane,
 canonical identity/provenance spine, two normal-RAPM uncertainty pilots, Ratings
 API v2, first filtered time-decay trajectory baseline, and expected-possession
 data contract are implemented. The player-neutral expected-points pilot improves
@@ -87,9 +92,10 @@ Slow-network policy: each immutable file resumes from `.partial`, retries up to
 
 ## Ordered queue
 
-1. **All-in-one:** freeze and review the side-specific precision-aware prior
-   contract, then compare it against zero-prior normal RAPM on predeclared
-   identical-game folds. Do not tune arbitrary prior amplitudes.
+1. **All-in-one:** specify a separate pre-2016 prior contract, or defer the
+   reviewed precision-aware prior challenger. The frozen three-season contract
+   cannot fill its 2018--21 selection horizon. Do not tune amplitudes or reuse
+   the invalid 2021--24 run.
 2. **Dynamic impact:** retain the 2014--26 filtered trajectory as the simple
    baseline. Design, then test, an uncertainty-aware state-space challenger only
    after the all-in-one comparison is controlled.

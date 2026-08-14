@@ -29,6 +29,23 @@ def test_calibration_removes_label_variance_and_does_not_make_width_negative() -
     assert result.status == "boundary_zero"
 
 
+def test_calibration_uses_heteroskedastic_label_variance_not_a_pooled_subtraction() -> None:
+    rng = np.random.default_rng(42)
+    label_variance = np.concatenate([np.full(100, 0.0001), np.full(100, 0.04)])
+    latent = rng.normal(0.0, 0.02, size=len(label_variance))
+    observed = latent + rng.normal(0.0, np.sqrt(label_variance))
+    result = calibrate_prior_precision(
+        pd.DataFrame({"label": observed, "prior": 0.0, "label_var": label_variance}),
+        side="offense",
+        label_column="label",
+        prior_column="prior",
+        label_variance_column="label_var",
+    )
+    assert result.status == "identified"
+    assert result.tau_squared == pytest.approx(0.0004, abs=0.0004)
+    assert result.calibration_rows == 200
+
+
 def test_precision_fit_requires_earlier_identified_side_precision() -> None:
     frame = pd.DataFrame(
         [

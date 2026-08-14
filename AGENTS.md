@@ -339,6 +339,13 @@ final annual AIO design. Final integration should use calibrated SPM directly as
 the prior mean. Possessions and collinearity enter through `X'X`; offensive and
 defensive prior precision belongs in the ridge penalty and must be estimated or
 tuned without a separate amplitude multiplier.
+Precision-aware prior contract: `docs/impact/PRECISION_AWARE_PRIOR.md` and
+`research/experiments/precision_aware_prior_rapm_v1.yml` supersede the old
+pooled-variance calibration. Use an earlier-window heteroskedastic
+RAPM-minus-SPM variance model in coefficient units and `lambda = sigma^2/tau^2`.
+The available prior history begins in 2019, so it cannot yet support the frozen
+2018--21 selection schedule. Do not rerun the prior experiment or tune it on
+2021--26 until that coverage gap is resolved.
 Run `external_impact_benchmark_v1_bab43a4087` minutes-weights annual BPM and
 xRAPM over the same 2019–24 three-season windows as SPM. Source-to-source name
 matching is at least 99.43% per season and SPM-to-external coverage is at least

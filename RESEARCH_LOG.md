@@ -2007,3 +2007,34 @@ the later diagnostic remains favorable at 2.0549 to 1.8086.
 The 2025--26 endpoint is descriptive. It does not use Season 2027 or create new
 confirmation evidence. The next model task is a separately reviewed,
 side-specific precision-aware SPM-prior challenger, not more trajectory tuning.
+
+## 2026-08-14 — Sol review revises the precision-aware AIO contract
+
+**Question:** Is the proposed side-specific empirical-Bayes SPM prior coherent
+enough to run as the next normal-RAPM challenger?
+
+**Sol review:** `lambda = sigma_squared / tau_squared` is coherent only when
+the RAPM likelihood, SPM center, residual scale, and prior variance all use the
+same coefficient units and unweighted possession-SSE objective. The original
+pooled calculation of `tau_squared` was not sufficient: game-cluster RAPM label
+variance differs by player-window and is not exact classical measurement error.
+
+**Revision:** `PRECISION_AWARE_PRIOR.md` and the experiment contract now require
+a heteroskedastic profile likelihood for earlier cross-fitted residuals,
+`RAPM-minus-SPM ~ Normal(mean, tau_squared + label_variance_proxy)`. The
+candidate replaces the player-side 3000 penalty with the resulting MAP penalty;
+the home penalty stays 300. A zero-boundary or failed precision estimate
+invalidates the candidate. The training zero-prior residual MSE supplies
+`sigma_squared`; there is no per-100 conversion or amplitude grid.
+
+**Feasibility audit:** The frozen three-season statistical feature panel begins
+at window end 2016. Its non-overlap purge makes 2019 the first cross-fitted SPM
+prior. Since scored season `Y` uses the prior ending `Y - 1`, three strictly
+earlier calibration windows first exist only for `Y = 2023`. The frozen
+2018--21 selection schedule is therefore impossible under this feature
+contract. The prior 2021--24 run is invalid for promotion and is not rerun.
+
+**Decision:** Do not inspect or tune another AIO result. Do not weaken the
+calibration horizon to force an earlier score. A new pre-2016 prior contract is
+a separate research design; otherwise retain the schedule block and move to the
+next controlled research lane.

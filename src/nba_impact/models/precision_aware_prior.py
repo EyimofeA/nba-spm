@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
+from scipy.optimize import minimize_scalar
 from scipy.sparse import diags
 
 from nba_impact.models.prior_informed_rapm import (
@@ -33,6 +34,9 @@ class PriorPrecision:
     residual_scale_squared: float
     mean_label_variance: float
     status: str
+    mean_residual: float = float("nan")
+    calibration_rows: int = 0
+    estimation_method: str = "heteroskedastic_profile_likelihood_v1"
 
 
 def calibrate_prior_precision(
@@ -44,34 +48,81 @@ def calibrate_prior_precision(
     label_variance_column: str,
     minimum_rows: int = 50,
 ) -> PriorPrecision:
-    """Robustly estimate latent prior error after removing label noise.
+    """Estimate a side-specific prior-error variance with heteroskedastic noise.
 
     Inputs must contain only *earlier* cross-fitted folds. Values are in RAPM
     coefficient units (points per possession), which is also the unit of the
-    unstandardized possession-SSE objective. A median/MAD scale limits one
-    noisy historical player or season from setting the global side precision.
+    unstandardized possession-SSE objective.
+
+    We use a profile likelihood for ``residual_i ~ N(mean, tau_squared + v_i)``
+    instead of subtracting one pooled analytic variance from a pooled residual
+    scale. This preserves player-window heteroskedasticity. ``v_i`` is a
+    game-cluster label-variance *proxy*, not a claim of exact classical
+    measurement error: ridge bias and lineup connectivity remain caveats.
     """
     values = calibration[[label_column, prior_column, label_variance_column]].copy()
     values = values.apply(pd.to_numeric, errors="coerce").dropna()
     values = values.loc[values[label_variance_column].ge(0)]
     if len(values) < minimum_rows:
-        return PriorPrecision(side, float("nan"), float("nan"), float("nan"), "insufficient_earlier_fold_rows")
+        return PriorPrecision(
+            side,
+            float("nan"),
+            float("nan"),
+            float("nan"),
+            "insufficient_earlier_fold_rows",
+            calibration_rows=int(len(values)),
+        )
     residual = (values[label_column] - values[prior_column]).to_numpy(dtype=float)
-    center = float(np.median(residual))
-    # A nonzero systematic residual is a mean-calibration failure, not a width
-    # parameter to hide. The caller must either correct the cross-fitted mean or
-    # reject the candidate.
-    mad_scale = float(1.4826 * np.median(np.abs(residual - center)))
-    robust_residual_variance = mad_scale**2
-    mean_label_variance = float(values[label_variance_column].mean())
-    tau_squared = max(0.0, robust_residual_variance - mean_label_variance)
-    status = "identified" if tau_squared > 0 else "boundary_zero"
+    label_variance = values[label_variance_column].to_numpy(dtype=float)
+    mean_label_variance = float(label_variance.mean())
+    lower = 1e-12
+    upper = max(
+        float(np.var(residual, ddof=0)) * 100.0,
+        float(label_variance.max()) * 10.0,
+        lower * 10.0,
+    )
+
+    def negative_log_likelihood(log_tau_squared: float) -> float:
+        tau_squared = float(np.exp(log_tau_squared))
+        variance = label_variance + tau_squared
+        inverse_variance = 1.0 / variance
+        mean = float(np.sum(inverse_variance * residual) / inverse_variance.sum())
+        return float(0.5 * np.sum(np.log(variance) + (residual - mean) ** 2 / variance))
+
+    result = minimize_scalar(
+        negative_log_likelihood,
+        bounds=(float(np.log(lower)), float(np.log(upper))),
+        method="bounded",
+        options={"xatol": 1e-10},
+    )
+    if not result.success or not np.isfinite(result.fun):
+        return PriorPrecision(
+            side,
+            float("nan"),
+            float("nan"),
+            mean_label_variance,
+            "calibration_optimization_failed",
+            calibration_rows=int(len(values)),
+        )
+    estimated_tau_squared = float(np.exp(result.x))
+    variance = label_variance + estimated_tau_squared
+    inverse_variance = 1.0 / variance
+    mean_residual = float(np.sum(inverse_variance * residual) / inverse_variance.sum())
+    residual_scale_squared = float(np.mean((residual - mean_residual) ** 2))
+    if estimated_tau_squared <= lower * 1.01:
+        tau_squared = 0.0
+        status = "boundary_zero"
+    else:
+        tau_squared = estimated_tau_squared
+        status = "identified"
     return PriorPrecision(
         side=side,
         tau_squared=tau_squared,
-        residual_scale_squared=robust_residual_variance,
+        residual_scale_squared=residual_scale_squared,
         mean_label_variance=mean_label_variance,
         status=status,
+        mean_residual=mean_residual,
+        calibration_rows=int(len(values)),
     )
 
 
@@ -178,7 +229,15 @@ def run_precision_aware_prior_comparison(
             "fixed_center_prior": fit_coefficients_with_center(design, config, center, row_mask=train_mask),
             "statistical_prior_only": _fit_prior_only_nuisance(design, center, train_mask),
         }
-        residual = design.y[train_mask] - np.asarray(design.X[train_mask] @ fitted["fixed_center_prior"][0]).ravel() - fitted["fixed_center_prior"][1]
+        # This is the variance estimate for the same unweighted possession-SSE
+        # likelihood that the ridge solver minimizes. Do not convert it to
+        # points-per-100 or fit it on the scored season.
+        zero_beta, zero_intercept = fitted["zero_prior"]
+        residual = (
+            design.y[train_mask]
+            - np.asarray(design.X[train_mask] @ zero_beta).ravel()
+            - zero_intercept
+        )
         sigma_squared = float(np.mean(residual**2))
         if off_precision.status == "identified" and def_precision.status == "identified":
             fitted["precision_aware_side_specific_prior"] = fit_precision_aware_center(
@@ -193,7 +252,8 @@ def run_precision_aware_prior_comparison(
                 train_mask=train_mask, test_mask=test_mask,
             )
             metric["sigma_squared"] = sigma_squared
-            rows.append(metric); games.append(game)
+            rows.append(metric)
+            games.append(game)
     folds = pd.DataFrame(rows)
     game_frame = pd.concat(games, ignore_index=True)
     comparison = paired_confirmation_bootstrap(

@@ -1,6 +1,6 @@
 schema_version: experiment_preregistration_v1
 experiment_id: precision_aware_prior_rapm_v1
-status: invalid_not_preregistered_schedule
+status: revised_pending_historical_prior_coverage
 created_at: 2026-08-12
 estimand_id: annual_retrospective_impact_v1
 
@@ -31,13 +31,24 @@ data_contract:
   information_cutoff: priors and precision estimates must be generated without the scored season
   precision_calibration: >-
     For each side, estimate tau squared only from earlier-fold cross-fitted
-    residuals after subtracting RAPM label variance. A boundary-zero estimate is
-    unidentified and invalidates the precision-aware candidate; do not replace it
-    with an arbitrary large penalty or an amplitude scale.
+    RAPM-minus-SPM residuals with a heteroskedastic profile likelihood:
+    residual_i follows Normal(mean, tau_squared + v_i), where v_i is the
+    game-cluster RAPM label-variance proxy in the same coefficient units. Do not
+    subtract one pooled variance from a pooled residual scale. A boundary-zero
+    or optimizer-failure estimate is unidentified and invalidates the candidate;
+    do not replace it with an arbitrary large penalty or amplitude scale.
+  prior_mean_identification: >-
+    Recenter each side's SPM center using the RAPM training exposure weights.
+    The global residual mean is recorded as a diagnostic because side-level
+    location is not identified separately from the RAPM intercept; it must not
+    be used to retune a player prior after seeing scored-season outcomes.
   loss_scale: >-
     In the unstandardized possession SSE objective, the player penalty is
-    sigma squared divided by tau squared. Estimate sigma squared only on training
-    possessions and retain the fixed 300 home-court penalty.
+    sigma squared divided by tau squared. Estimate sigma squared as the mean
+    squared residual of the zero-prior training fit under the same unweighted
+    possession-SSE objective; never convert it to points per 100. The candidate
+    replaces the 3000 player-side penalty with this MAP penalty and retains the
+    fixed 300 home-court penalty.
 
 evaluation:
   primary_metric: equal-season-weighted held-out game-margin RMSE
@@ -57,12 +68,15 @@ promotion_gate:
   final_requirement: pass the untouched complete 2027 confirmation without redesign
 
 stopping_rules:
-  - Do not run until prior uncertainty is estimated only from training data.
+  - Do not run until at least three strictly earlier cross-fitted prior windows
+    exist for every scored fold and prior uncertainty is estimated only from
+    those windows.
   - Do not tune the candidate after inspecting 2025, 2026, or 2027 outcomes.
   - Keep zero-prior normal RAPM as production when the practical and uncertainty gates fail.
 
 result_note: >-
-  Run precision_aware_prior_rapm_v1_c4b0878571 used only 2021-2024 because
-  the available three-year cross-fitted prior/calibration history cannot supply
-  the fourth model for 2018-2020. It is invalid for this preregistered
-  promotion gate. Descriptively, it also loses to zero-prior RAPM on 2023-2024.
+  Run precision_aware_prior_rapm_v1_c4b0878571 is invalid. It used only
+  2021-2024 because the available three-year cross-fitted prior/calibration
+  history could not supply the four-model candidate for 2018-2020. Its old
+  pooled variance subtraction is superseded by this revised contract. It is
+  descriptive only and must not be used for selection or promotion.
