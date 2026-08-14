@@ -62,6 +62,11 @@ dead ends. Updated 2026-08-14. See `docs/README.md` for the document index,
   improves the historical annual proxy RMSE from 1.9481 to 1.7166 in selection
   and from 2.0549 to 1.8086 on the later diagnostic. It is research-only and
   has no trajectory intervals or new annual confirmation.
+- The causal state-space challenger has a complete 6,942-row annual
+  observation-variance panel. On exact matched player-season rows, it improves
+  net RMSE versus frozen 0.80 time decay by 0.125 in selection and 0.106 in the
+  later diagnostic. It remains research-only until a new untouched annual
+  confirmation exists.
 
 ## Active next task
 
@@ -96,10 +101,10 @@ Slow-network policy: each immutable file resumes from `.partial`, retries up to
    reviewed precision-aware prior challenger. The frozen three-season contract
    cannot fill its 2018--21 selection horizon. Do not tune amplitudes or reuse
    the invalid 2021--24 run.
-2. **Dynamic impact:** retain the 2014--26 filtered trajectory as the simple
-   baseline. The causal state-space challenger is implemented but awaits its
-   resumable annual observation-variance panel. Run no score until all 2014--26
-   rows are present, then compare it on the frozen historical schedule.
+2. **Dynamic impact:** retain the 2014--26 state-space filter as the leading
+   research challenger and frozen 0.80 time decay as its baseline. Do not retune
+   either from the reused historical result. Await an untouched annual
+   confirmation before any API or public-rating promotion.
 3. **Expected possession:** retain the player-neutral start-state baseline as a
    null. Reopen only when a richer causal state clears its prospective expected-
    points gate; then compare residual RAPM only on identical games.

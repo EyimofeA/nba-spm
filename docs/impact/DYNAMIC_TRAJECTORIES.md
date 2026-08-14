@@ -84,7 +84,7 @@ last target, remains directionally positive (2.0549 to 1.8086). The 2025--26
 extension is descriptive only: Season 2027 remains untouched, so it is not a
 new annual confirmation.
 
-## State-space challenger in progress
+## State-space challenger
 
 `dynamic_state_space.py` implements a causal, side-specific AR(1) filter. It
 treats annual normal RAPM as a noisy observation and uses analytic game-cluster
@@ -93,9 +93,26 @@ future player-seasons, fits offense and defense separately, and defines net as
 their exact sum.
 
 The variance input is resumable by season because dense analytic covariance is
-more expensive than an annual point estimate. It is not a bootstrap run. Do not
-score or publish the challenger until every 2014--26 target has a validated
-variance row and the frozen historical comparison completes.
+more expensive than an annual point estimate. It is not a bootstrap run.
+`annual_rapm_observation_variance_v1_03f6a17336` completes all 6,942 annual
+player-seasons from 2014--26 with no duplicate keys. Each newly built annual
+fit reproduces its frozen point estimate to numerical precision.
+
+`annual_state_space_trajectory_v1_f150bcde08` selects `phi = 0.90` and process
+standard deviation `0.25` only on 2018--21 origins. It is then compared with
+the frozen 0.80, equal-initial-weight time-decay filter on the exact same
+eligible player-season rows:
+
+| Scope | State-space RMSE | Time-decay RMSE | Difference |
+|---|---:|---:|---:|
+| Selection, 2018--21 origins | 1.5917 | 1.7166 | -0.1249 |
+| Later diagnostic, 2022--23 origins | 1.7031 | 1.8086 | -0.1055 |
+
+The direction is consistent in every evaluated origin. This is an encouraging
+research result, not a promotion: the annual target is a noisy proxy, both
+scopes reuse historical seasons, and Season 2027 remains untouched. Do not
+retune the candidate or expose it in the API until a separate confirmation
+contract is approved.
 
 ## Boundaries
 

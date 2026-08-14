@@ -267,6 +267,16 @@ gates pass. Historical selection improves next-year normal-RAPM proxy RMSE by
 baseline, not a latent-state model: it has no trajectory intervals and Season
 2027 remains untouched confirmation data.
 
+The first causal state-space challenger is also complete:
+`annual_state_space_trajectory_v1_f150bcde08`. It filters offense and defense
+separately with an AR(1) state process and uses game-cluster ridge covariance as
+an annual observation-noise diagnostic. The 2014--26 input has 6,942 validated
+player-seasons. It selects `phi=0.90`, process standard deviation `0.25` only
+on 2018--21 and beats frozen 0.80 time decay on exact matched rows by 0.1249
+selection and 0.1055 later-diagnostic net-RMSE points. Treat it as a research
+leader, not a production rating; no further tuning or API exposure is allowed
+before a separate untouched annual confirmation.
+
 `possession_start_context_ebcae214e662d404` also makes the expected-possession
 residual-RAPM challenger feasible. It has 787,579 player-neutral canonical
 possession-start states, with score reconstructed only from completed prior

@@ -287,6 +287,13 @@ annual targets through 2022–23 and canonical terminal-lineup targets from
 passes its 2023–24 compatibility gate (net correlation 0.975). Keep it
 research-only: no interpolation, current-season claim, or API promotion until
 an uncertainty-aware challenger and a new annual confirmation are available.
+`annual_state_space_trajectory_v1_f150bcde08` is the first such challenger. It
+uses an annual, side-specific causal AR(1) filter with game-cluster ridge
+observation-variance diagnostics. The complete 2014–26 variance panel has
+6,942 rows. It beats the frozen 0.80 time-decay baseline by 0.125 selection and
+0.106 diagnostic net-RMSE points on exact matched player-seasons. This is reused
+historical evidence only: do not tune it further, call it production, expose it
+in the API, or use Season 2027 before a new confirmation contract is approved.
 Expected-possession residual RAPM is a separate challenger documented in
 `docs/impact/EXPECTED_POSSESSION_RAPM.md`. Snapshot
 `possession_start_context_ebcae214e662d404` has 787,579 player-neutral

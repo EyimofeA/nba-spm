@@ -378,12 +378,17 @@ def build_state_space_trajectory(
     candidates = []
     for phi in candidate_phis:
         for process_sd in candidate_process_sds:
-            trajectory = build_causal_state_space_filter(values, variance, phi=phi, process_sd=process_sd)
+            trajectory = build_causal_state_space_filter(targets, variance, phi=phi, process_sd=process_sd)
             metrics = _forward_metrics(trajectory, values, origins=selection_origins, model="state_space", prediction_column="filtered_net", minimum_side_possessions=minimum_side_possessions)
             candidates.append({"phi": phi, "process_sd": process_sd, "mean_net_rmse": float(metrics["net_rmse"].mean()), "mean_net_correlation": float(metrics["net_correlation"].mean())})
     candidate_table = pd.DataFrame(candidates).sort_values(["mean_net_rmse", "phi", "process_sd"], kind="stable").reset_index(drop=True)
     chosen = candidate_table.iloc[0]
-    trajectory = build_causal_state_space_filter(values, variance, phi=float(chosen.phi), process_sd=float(chosen.process_sd))
+    trajectory = build_causal_state_space_filter(
+        targets,
+        variance,
+        phi=float(chosen.phi),
+        process_sd=float(chosen.process_sd),
+    )
     baseline = _forward_metrics(trajectory, values, origins=selection_origins, model="latest_annual", prediction_column="annual_net", minimum_side_possessions=minimum_side_possessions)
     selection = _forward_metrics(trajectory, values, origins=selection_origins, model="state_space", prediction_column="filtered_net", minimum_side_possessions=minimum_side_possessions)
     diagnostic_baseline = _forward_metrics(trajectory, values, origins=diagnostic_origins, model="latest_annual", prediction_column="annual_net", minimum_side_possessions=minimum_side_possessions)

@@ -2038,3 +2038,30 @@ contract. The prior 2021--24 run is invalid for promotion and is not rerun.
 calibration horizon to force an earlier score. A new pre-2016 prior contract is
 a separate research design; otherwise retain the schedule block and move to the
 next controlled research lane.
+
+## 2026-08-14 — Annual state-space trajectory beats frozen time decay
+
+**Question:** Does a small causal state-space filter improve next-year annual
+normal-RAPM proxy prediction over the frozen 0.80 time-decay baseline?
+
+**Method:** Built `annual_rapm_observation_variance_v1_03f6a17336` by deriving
+side-specific CR0 game-cluster ridge covariance diagnostics for every annual
+normal-RAPM target from 2014--26. The result has 6,942 player-seasons, no
+duplicate keys, and each newly computed annual fit reproduces its frozen
+offense/defense point estimate within 9e-16. `annual_state_space_trajectory_v1_f150bcde08`
+then fit causal side-specific AR(1) filters. The 16-cell `phi`/process-SD grid
+selected `phi=0.90`, process SD 0.25 using only 2018--21 origins. Offense plus
+defense equals net in every row. The challenger and frozen 0.80 time decay are
+scored on identical, at-least-1,000-per-side-possession player-season rows.
+
+**Result:** State space reduces mean next-year net RMSE from 1.7166 to 1.5917
+in selection (-0.1249) and from 1.8086 to 1.7031 in the later 2022--23
+diagnostic (-0.1055). It wins every individual origin. Mean net correlation is
+0.427 in selection and 0.440 in diagnostics. The annual-latest baseline is
+weaker still (1.9481 selection and 2.0549 diagnostic RMSE).
+
+**Decision:** Keep state space as the leading dynamic-impact research
+challenger and time decay as the frozen baseline. Do not tune after this result,
+publish latent-strength claims, expose it in the API, or use Season 2027. The
+observation covariance is a fast ridge diagnostic, not public rating
+uncertainty; confirmation needs a separately approved untouched annual season.

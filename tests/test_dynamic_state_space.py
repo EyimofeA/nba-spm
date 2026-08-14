@@ -10,6 +10,7 @@ from nba_impact.models import dynamic_state_space
 from nba_impact.models.dynamic_state_space import (
     build_annual_observation_variance,
     build_causal_state_space_filter,
+    build_state_space_trajectory,
     _paired_forward_comparison,
 )
 from nba_impact import cli
@@ -76,6 +77,34 @@ def test_paired_comparison_requires_identical_scored_rows() -> None:
             origins=(2018, 2019),
             minimum_side_possessions=1000.0,
         )
+
+
+def test_state_space_builds_matched_time_decay_comparison(tmp_path) -> None:
+    targets, variance = _inputs()
+    targets_path = tmp_path / "targets.parquet"
+    variance_path = tmp_path / "variance.parquet"
+    names_path = tmp_path / "names.csv"
+    baseline_path = tmp_path / "time_decay.parquet"
+    targets.to_parquet(targets_path, index=False)
+    variance.to_parquet(variance_path, index=False)
+    pd.DataFrame({"PLAYER_ID": [1, 2], "PLAYER_NAME": ["One", "Two"]}).to_csv(names_path, index=False)
+    baseline = build_causal_state_space_filter(targets, variance, phi=0.8, process_sd=0.5)
+    baseline.to_parquet(baseline_path, index=False)
+
+    run = build_state_space_trajectory(
+        targets_path,
+        variance_path,
+        names_path,
+        baseline_path,
+        artifact_root=tmp_path / "artifacts",
+        candidate_phis=(0.8,),
+        candidate_process_sds=(0.5,),
+        selection_origins=(2018,),
+        diagnostic_origins=(2019,),
+    )
+
+    assert Path(run["paired_time_decay_comparison_path"]).exists()
+    assert run["metrics"]["selection_state_space_minus_time_decay_rmse"] == 0.0
 
 
 def test_annual_variance_honors_requested_legacy_seasons_and_skips_current(
