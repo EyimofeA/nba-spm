@@ -121,12 +121,20 @@ def build_annual_observation_variance(
         table.to_parquet(checkpoint.with_suffix(".parquet.partial"), index=False)
         checkpoint.with_suffix(".parquet.partial").replace(checkpoint)
         quality.append({"season": season, "source": source, "games": int(frame["gameid"].nunique()), "players": int(n_players), "maximum_point_estimate_difference": max_difference})
-    output_frame = pd.concat(rows, ignore_index=True)
+    # A narrow resumed batch must not hide earlier valid checkpoints from the
+    # aggregate artifact.  The aggregate is always the complete set currently
+    # on disk; `missing_seasons` says whether that set is publishable.
+    checkpoint_rows = [
+        pd.read_parquet(checkpoint_dir / f"season={season}.parquet")
+        for season in available_seasons
+        if (checkpoint_dir / f"season={season}.parquet").exists()
+    ]
+    output_frame = pd.concat(checkpoint_rows, ignore_index=True)
     output_frame.to_parquet(output / "observation_variance.parquet", index=False)
     pd.DataFrame(quality).to_parquet(output / "season_quality.parquet", index=False)
     missing_seasons = sorted(set(available_seasons) - set(output_frame["Season"]))
     max_difference = [item["maximum_point_estimate_difference"] for item in quality if item["maximum_point_estimate_difference"] is not None]
-    run = {"run_id": run_id, "model_family": "annual_normal_rapm_observation_variance", "status": "research_measurement_input_complete" if not missing_seasons else "research_measurement_input_partial", "created_at": datetime.now(timezone.utc).isoformat(), "config": {"transition_season": transition_season, "target_sha256": sha256_file(targets_path), "legacy_cache_dir": str(Path(legacy_cache_dir).resolve()), "current_possessions_sha256": sha256_file(current_possessions_path), "current_segments_sha256": sha256_file(current_segments_path), "builder_sha256": sha256_file(Path(__file__))}, "quality": {"rows": int(len(output_frame)), "duplicate_keys": int(output_frame.duplicated(["PLAYER_ID", "Season"]).sum()), "maximum_point_estimate_difference": float(max(max_difference)) if max_difference else None, "missing_seasons": missing_seasons}, "metrics": {"season_quality": quality}, "artifact_path": str(output.resolve()), "observation_variance_path": str((output / "observation_variance.parquet").resolve()), "caveats": ["CR0 covariance is a fast observation-noise diagnostic, not publication uncertainty.", "Ridge bias and lineup connectivity remain outside this variance input.", "Season checkpoints are resumable; do not run the state-space model until all annual seasons are present." ]}
+    run = {"run_id": run_id, "model_family": "annual_normal_rapm_observation_variance", "estimand_id": "annual_rapm_observation_noise_diagnostic_v1", "estimand": "game_cluster_ridge_covariance_proxy_for_annual_normal_rapm_observation_noise", "status": "research_measurement_input_complete" if not missing_seasons else "research_measurement_input_partial", "created_at": datetime.now(timezone.utc).isoformat(), "config": {"transition_season": transition_season, "target_sha256": sha256_file(targets_path), "legacy_cache_dir": str(Path(legacy_cache_dir).resolve()), "current_possessions_sha256": sha256_file(current_possessions_path), "current_segments_sha256": sha256_file(current_segments_path), "builder_sha256": sha256_file(Path(__file__))}, "quality": {"rows": int(len(output_frame)), "duplicate_keys": int(output_frame.duplicated(["PLAYER_ID", "Season"]).sum()), "maximum_point_estimate_difference": float(max(max_difference)) if max_difference else None, "missing_seasons": missing_seasons}, "metrics": {"season_quality": quality}, "artifact_path": str(output.resolve()), "observation_variance_path": str((output / "observation_variance.parquet").resolve()), "caveats": ["CR0 covariance is a fast observation-noise diagnostic, not publication uncertainty.", "Ridge bias and lineup connectivity remain outside this variance input.", "Season checkpoints are resumable; do not run the state-space model until all annual seasons are present." ]}
     write_json_atomic(run, output / "run.json")
     return run
 
@@ -230,23 +238,109 @@ def build_causal_state_space_filter(
     return output
 
 
-def _forward_metrics(trajectory: pd.DataFrame, targets: pd.DataFrame, *, origins: tuple[int, ...], model: str, minimum_side_possessions: float) -> pd.DataFrame:
-    rows: list[dict] = []
-    eligible = targets.loc[targets[["Poss_Off", "Poss_Def"]].min(axis=1).ge(minimum_side_possessions)]
+def _forward_predictions(
+    trajectory: pd.DataFrame,
+    targets: pd.DataFrame,
+    *,
+    origins: tuple[int, ...],
+    prediction_column: str,
+    minimum_side_possessions: float,
+) -> pd.DataFrame:
+    """Return the exact player-season next-year forecast rows used for scoring."""
+    rows: list[pd.DataFrame] = []
+    eligible = targets.loc[
+        targets[["Poss_Off", "Poss_Def"]].min(axis=1).ge(minimum_side_possessions)
+    ]
     for origin in origins:
-        predictions = trajectory.loc[trajectory["Season"].eq(origin)]
-        actual = eligible.loc[eligible["Season"].eq(origin + 1)]
-        merged = predictions.merge(actual, on="PLAYER_ID", suffixes=("_origin", "_next"), validate="one_to_one")
-        prediction = merged["annual_net"] if model == "latest_annual" else merged["filtered_net"]
-        target = merged["target_net"].to_numpy(dtype=float)
-        values = prediction.to_numpy(dtype=float)
+        predictions = trajectory.loc[trajectory["Season"].eq(origin), ["PLAYER_ID", prediction_column]]
+        actual = eligible.loc[
+            eligible["Season"].eq(origin + 1), ["PLAYER_ID", "target_net"]
+        ]
+        merged = predictions.merge(actual, on="PLAYER_ID", how="inner", validate="one_to_one")
+        merged["origin_season"] = origin
+        merged["target_season"] = origin + 1
+        rows.append(
+            merged.rename(columns={prediction_column: "prediction", "target_net": "target"})
+        )
+    return pd.concat(rows, ignore_index=True)
+
+
+def _forward_metrics(
+    trajectory: pd.DataFrame,
+    targets: pd.DataFrame,
+    *,
+    origins: tuple[int, ...],
+    model: str,
+    prediction_column: str,
+    minimum_side_possessions: float,
+) -> pd.DataFrame:
+    rows: list[dict] = []
+    forecasts = _forward_predictions(
+        trajectory,
+        targets,
+        origins=origins,
+        prediction_column=prediction_column,
+        minimum_side_possessions=minimum_side_possessions,
+    )
+    for origin, merged in forecasts.groupby("origin_season", sort=True):
+        target = merged["target"].to_numpy(dtype=float)
+        values = merged["prediction"].to_numpy(dtype=float)
         rows.append({
             "model": model,
-            "origin_season": origin,
-            "target_season": origin + 1,
+            "origin_season": int(origin),
+            "target_season": int(origin + 1),
             "players": int(len(merged)),
             "net_rmse": float(np.sqrt(np.mean((target - values) ** 2))) if len(merged) else np.nan,
             "net_correlation": float(np.corrcoef(target, values)[0, 1]) if len(merged) >= 2 and np.std(target) > 0 and np.std(values) > 0 else np.nan,
+        })
+    return pd.DataFrame(rows)
+
+
+def _paired_forward_comparison(
+    challenger: pd.DataFrame,
+    baseline: pd.DataFrame,
+    targets: pd.DataFrame,
+    *,
+    origins: tuple[int, ...],
+    minimum_side_possessions: float,
+) -> pd.DataFrame:
+    """Score the challenger and baseline on exactly the same eligible rows."""
+    left = _forward_predictions(
+        challenger,
+        targets,
+        origins=origins,
+        prediction_column="filtered_net",
+        minimum_side_possessions=minimum_side_possessions,
+    )
+    right = _forward_predictions(
+        baseline,
+        targets,
+        origins=origins,
+        prediction_column="filtered_net",
+        minimum_side_possessions=minimum_side_possessions,
+    )
+    keys = ["PLAYER_ID", "origin_season", "target_season"]
+    if set(map(tuple, left[keys].to_numpy())) != set(map(tuple, right[keys].to_numpy())):
+        raise ValueError("State-space and time-decay trajectories do not score identical player-season rows.")
+    paired = left.merge(right, on=keys, suffixes=("_state_space", "_time_decay"), validate="one_to_one")
+    if not np.allclose(paired["target_state_space"], paired["target_time_decay"]):
+        raise AssertionError("Paired trajectory forecasts disagree about the annual target.")
+    rows: list[dict] = []
+    for origin, group in paired.groupby("origin_season", sort=True):
+        target = group["target_state_space"].to_numpy(dtype=float)
+        state = group["prediction_state_space"].to_numpy(dtype=float)
+        time_decay = group["prediction_time_decay"].to_numpy(dtype=float)
+        rows.append({
+            "origin_season": int(origin),
+            "target_season": int(origin + 1),
+            "players": int(len(group)),
+            "state_space_net_rmse": float(np.sqrt(np.mean((target - state) ** 2))),
+            "time_decay_net_rmse": float(np.sqrt(np.mean((target - time_decay) ** 2))),
+            "state_space_minus_time_decay_rmse": float(
+                np.sqrt(np.mean((target - state) ** 2)) - np.sqrt(np.mean((target - time_decay) ** 2))
+            ),
+            "state_space_net_correlation": float(np.corrcoef(target, state)[0, 1]) if len(group) >= 2 and np.std(target) > 0 and np.std(state) > 0 else np.nan,
+            "time_decay_net_correlation": float(np.corrcoef(target, time_decay)[0, 1]) if len(group) >= 2 and np.std(target) > 0 and np.std(time_decay) > 0 else np.nan,
         })
     return pd.DataFrame(rows)
 
@@ -255,6 +349,7 @@ def build_state_space_trajectory(
     targets_path: str | Path,
     observation_variance_path: str | Path,
     names_path: str | Path,
+    time_decay_trajectory_path: str | Path,
     *,
     artifact_root: str | Path,
     candidate_phis: tuple[float, ...] = (0.50, 0.65, 0.80, 0.90),
@@ -263,10 +358,18 @@ def build_state_space_trajectory(
     diagnostic_origins: tuple[int, ...] = (2022, 2023),
     minimum_side_possessions: float = 1000.0,
 ) -> dict:
-    """Select the state-space challenger only on historical selection origins."""
+    """Select the state-space challenger and compare it with frozen time decay."""
     targets = pd.read_parquet(targets_path)
     variance = pd.read_parquet(observation_variance_path)
     values = _validate_inputs(targets, variance)
+    time_decay = pd.read_parquet(time_decay_trajectory_path)
+    time_decay_required = {"PLAYER_ID", "Season", "filtered_net"}
+    if missing := sorted(time_decay_required - set(time_decay.columns)):
+        raise ValueError(f"Time-decay trajectory is missing columns: {missing}.")
+    time_decay["PLAYER_ID"] = pd.to_numeric(time_decay["PLAYER_ID"], errors="raise").astype(int)
+    time_decay["Season"] = pd.to_numeric(time_decay["Season"], errors="raise").astype(int)
+    if time_decay.duplicated(["PLAYER_ID", "Season"]).any():
+        raise ValueError("Time-decay trajectory has duplicate player-season keys.")
     available = set(values["Season"])
     required = set(selection_origins) | {year + 1 for year in selection_origins}
     required |= set(diagnostic_origins) | {year + 1 for year in diagnostic_origins}
@@ -276,19 +379,21 @@ def build_state_space_trajectory(
     for phi in candidate_phis:
         for process_sd in candidate_process_sds:
             trajectory = build_causal_state_space_filter(values, variance, phi=phi, process_sd=process_sd)
-            metrics = _forward_metrics(trajectory, values, origins=selection_origins, model="state_space", minimum_side_possessions=minimum_side_possessions)
+            metrics = _forward_metrics(trajectory, values, origins=selection_origins, model="state_space", prediction_column="filtered_net", minimum_side_possessions=minimum_side_possessions)
             candidates.append({"phi": phi, "process_sd": process_sd, "mean_net_rmse": float(metrics["net_rmse"].mean()), "mean_net_correlation": float(metrics["net_correlation"].mean())})
     candidate_table = pd.DataFrame(candidates).sort_values(["mean_net_rmse", "phi", "process_sd"], kind="stable").reset_index(drop=True)
     chosen = candidate_table.iloc[0]
     trajectory = build_causal_state_space_filter(values, variance, phi=float(chosen.phi), process_sd=float(chosen.process_sd))
-    baseline = _forward_metrics(trajectory, values, origins=selection_origins, model="latest_annual", minimum_side_possessions=minimum_side_possessions)
-    selection = _forward_metrics(trajectory, values, origins=selection_origins, model="state_space", minimum_side_possessions=minimum_side_possessions)
-    diagnostic_baseline = _forward_metrics(trajectory, values, origins=diagnostic_origins, model="latest_annual", minimum_side_possessions=minimum_side_possessions)
-    diagnostic = _forward_metrics(trajectory, values, origins=diagnostic_origins, model="state_space", minimum_side_possessions=minimum_side_possessions)
+    baseline = _forward_metrics(trajectory, values, origins=selection_origins, model="latest_annual", prediction_column="annual_net", minimum_side_possessions=minimum_side_possessions)
+    selection = _forward_metrics(trajectory, values, origins=selection_origins, model="state_space", prediction_column="filtered_net", minimum_side_possessions=minimum_side_possessions)
+    diagnostic_baseline = _forward_metrics(trajectory, values, origins=diagnostic_origins, model="latest_annual", prediction_column="annual_net", minimum_side_possessions=minimum_side_possessions)
+    diagnostic = _forward_metrics(trajectory, values, origins=diagnostic_origins, model="state_space", prediction_column="filtered_net", minimum_side_possessions=minimum_side_possessions)
+    paired_selection = _paired_forward_comparison(trajectory, time_decay, values, origins=selection_origins, minimum_side_possessions=minimum_side_possessions)
+    paired_diagnostic = _paired_forward_comparison(trajectory, time_decay, values, origins=diagnostic_origins, minimum_side_possessions=minimum_side_possessions)
     names = pd.read_csv(names_path, usecols=["PLAYER_ID", "PLAYER_NAME"])
     names["PLAYER_ID"] = pd.to_numeric(names["PLAYER_ID"], errors="raise").astype(int)
     trajectory = trajectory.merge(names, on="PLAYER_ID", how="left", validate="many_to_one")
-    config = {"candidate_phis": list(candidate_phis), "candidate_process_sds": list(candidate_process_sds), "selection_origins": list(selection_origins), "diagnostic_origins": list(diagnostic_origins), "minimum_side_possessions": minimum_side_possessions, "selected_phi": float(chosen.phi), "selected_process_sd": float(chosen.process_sd), "targets_sha256": sha256_file(targets_path), "observation_variance_sha256": sha256_file(observation_variance_path), "names_sha256": sha256_file(names_path), "builder_sha256": sha256_file(Path(__file__))}
+    config = {"candidate_phis": list(candidate_phis), "candidate_process_sds": list(candidate_process_sds), "selection_origins": list(selection_origins), "diagnostic_origins": list(diagnostic_origins), "minimum_side_possessions": minimum_side_possessions, "selected_phi": float(chosen.phi), "selected_process_sd": float(chosen.process_sd), "targets_sha256": sha256_file(targets_path), "observation_variance_sha256": sha256_file(observation_variance_path), "names_sha256": sha256_file(names_path), "time_decay_trajectory_sha256": sha256_file(time_decay_trajectory_path), "builder_sha256": sha256_file(Path(__file__))}
     run_id = f"annual_state_space_trajectory_v1_{hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()[:10]}"
     output = Path(artifact_root) / "models" / "annual_state_space_trajectory" / run_id
     output.mkdir(parents=True, exist_ok=False)
@@ -296,6 +401,8 @@ def build_state_space_trajectory(
     candidate_table.to_parquet(output / "selection_candidates.parquet", index=False)
     forward = pd.concat([baseline.assign(scope="selection"), selection.assign(scope="selection"), diagnostic_baseline.assign(scope="diagnostic"), diagnostic.assign(scope="diagnostic")], ignore_index=True)
     forward.to_parquet(output / "forward_metrics.parquet", index=False)
-    run = {"run_id": run_id, "model_family": "causal_annual_ar1_state_space_trajectory", "estimand_id": "current_latent_strength_v1", "estimand": "filtered_end_of_season_latent_strength_proxy_from_annual_normal_rapm", "status": "research_state_space_challenger", "evidence_status": "reused_annual_target_evaluation", "created_at": datetime.now(timezone.utc).isoformat(), "config": config, "metrics": {"selection_latest_annual_net_rmse": float(baseline.net_rmse.mean()), "selection_state_space_net_rmse": float(selection.net_rmse.mean()), "diagnostic_latest_annual_net_rmse": float(diagnostic_baseline.net_rmse.mean()), "diagnostic_state_space_net_rmse": float(diagnostic.net_rmse.mean()), "selection_state_space_net_correlation": float(selection.net_correlation.mean()), "diagnostic_state_space_net_correlation": float(diagnostic.net_correlation.mean()), "maximum_component_identity_error": float(np.abs(trajectory.filtered_net - trajectory.filtered_offense - trajectory.filtered_defense).max())}, "artifact_path": str(output.resolve()), "trajectories_path": str((output / "trajectories.parquet").resolve()), "caveats": ["This is a causal filtered strength proxy, not retrospective annual impact or a forecast.", "Annual observation variance is an analytic game-cluster RAPM covariance diagnostic, not publication uncertainty.", "Selection and diagnostics reuse historical annual targets; Season 2027 is not included."], "forbidden_interpretation": "Confirmed latent ability, causal value, forecast certainty, or production rating."}
+    paired = pd.concat([paired_selection.assign(scope="selection"), paired_diagnostic.assign(scope="diagnostic")], ignore_index=True)
+    paired.to_parquet(output / "paired_time_decay_comparison.parquet", index=False)
+    run = {"run_id": run_id, "model_family": "causal_annual_ar1_state_space_trajectory", "estimand_id": "current_latent_strength_v1", "estimand": "filtered_end_of_season_latent_strength_proxy_from_annual_normal_rapm", "status": "research_state_space_challenger", "evidence_status": "reused_annual_target_evaluation", "created_at": datetime.now(timezone.utc).isoformat(), "config": config, "metrics": {"selection_latest_annual_net_rmse": float(baseline.net_rmse.mean()), "selection_state_space_net_rmse": float(selection.net_rmse.mean()), "diagnostic_latest_annual_net_rmse": float(diagnostic_baseline.net_rmse.mean()), "diagnostic_state_space_net_rmse": float(diagnostic.net_rmse.mean()), "selection_state_space_minus_time_decay_rmse": float(paired_selection.state_space_minus_time_decay_rmse.mean()), "diagnostic_state_space_minus_time_decay_rmse": float(paired_diagnostic.state_space_minus_time_decay_rmse.mean()), "selection_state_space_net_correlation": float(selection.net_correlation.mean()), "diagnostic_state_space_net_correlation": float(diagnostic.net_correlation.mean()), "maximum_component_identity_error": float(np.abs(trajectory.filtered_net - trajectory.filtered_offense - trajectory.filtered_defense).max())}, "artifact_path": str(output.resolve()), "trajectories_path": str((output / "trajectories.parquet").resolve()), "paired_time_decay_comparison_path": str((output / "paired_time_decay_comparison.parquet").resolve()), "caveats": ["This is a causal filtered strength proxy, not retrospective annual impact or a forecast.", "Annual observation variance is an analytic game-cluster RAPM covariance diagnostic, not publication uncertainty.", "The challenger and the frozen 0.80 time-decay baseline are scored on exact matched player-season rows.", "Selection and diagnostics reuse historical annual targets; Season 2027 is not included."], "forbidden_interpretation": "Confirmed latent ability, causal value, forecast certainty, or production rating."}
     write_json_atomic(run, output / "run.json")
     return run

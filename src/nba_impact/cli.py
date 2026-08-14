@@ -1192,6 +1192,7 @@ def command_build_state_space_trajectory(args: argparse.Namespace) -> int:
         args.targets,
         args.observation_variance,
         args.names,
+        args.time_decay_trajectories,
         artifact_root=args.artifact_root,
         candidate_phis=tuple(args.candidate_phis),
         candidate_process_sds=tuple(args.candidate_process_sds),
@@ -2469,11 +2470,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     state_space = subparsers.add_parser(
         "build-state-space-trajectory",
-        help="Select a causal annual state-space challenger against annual RAPM.",
+        help="Select a causal annual state-space challenger against frozen time decay.",
     )
     state_space.add_argument("--targets", type=Path, required=True)
     state_space.add_argument("--observation-variance", type=Path, required=True)
     state_space.add_argument("--names", type=Path, required=True)
+    state_space.add_argument("--time-decay-trajectories", type=Path, required=True)
     state_space.add_argument("--candidate-phis", type=_float_list, default=(0.50, 0.65, 0.80, 0.90))
     state_space.add_argument("--candidate-process-sds", type=_float_list, default=(0.25, 0.50, 1.00, 2.00))
     state_space.add_argument("--selection-origins", type=_season_list, default=(2018, 2019, 2020, 2021))

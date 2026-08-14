@@ -10,6 +10,7 @@ from nba_impact.models import dynamic_state_space
 from nba_impact.models.dynamic_state_space import (
     build_annual_observation_variance,
     build_causal_state_space_filter,
+    _paired_forward_comparison,
 )
 from nba_impact import cli
 
@@ -53,6 +54,28 @@ def test_state_space_rejects_missing_observation_variance() -> None:
     targets, variance = _inputs()
     with np.testing.assert_raises_regex(ValueError, "Every annual RAPM target"):
         build_causal_state_space_filter(targets, variance.iloc[:-1], phi=0.8, process_sd=0.5)
+
+
+def test_paired_comparison_requires_identical_scored_rows() -> None:
+    targets, variance = _inputs()
+    state_space = build_causal_state_space_filter(targets, variance, phi=0.8, process_sd=0.5)
+    baseline = state_space.copy()
+    comparison = _paired_forward_comparison(
+        state_space,
+        baseline,
+        targets,
+        origins=(2018, 2019),
+        minimum_side_possessions=1000.0,
+    )
+    assert comparison["state_space_minus_time_decay_rmse"].eq(0.0).all()
+    with np.testing.assert_raises_regex(ValueError, "identical player-season rows"):
+        _paired_forward_comparison(
+            state_space,
+            baseline.loc[~((baseline["PLAYER_ID"] == 2) & (baseline["Season"] == 2019))],
+            targets,
+            origins=(2018, 2019),
+            minimum_side_possessions=1000.0,
+        )
 
 
 def test_annual_variance_honors_requested_legacy_seasons_and_skips_current(
