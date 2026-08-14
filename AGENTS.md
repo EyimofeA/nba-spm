@@ -280,11 +280,13 @@ it part of the active model unless later evidence changes the decision.
 The first dynamic baseline is documented in
 `docs/impact/DYNAMIC_TRAJECTORIES.md`. It is a no-future-leakage, filtered
 time-decayed average of annual normal-RAPM observations, not a full latent-state
-model. Run `time_decayed_trajectory_v1_4706719bfb` selects 0.80 annual decay
-with no possession exponent and beats the latest annual rating on both its
-2018–21 selection and 2022–23 later diagnostic. Keep it research-only: no
-annual interpolation, current-season claim, or API promotion until uncertainty
-and a current canonical annual input are available.
+model. Run `time_decayed_trajectory_v1_8ed684a8aa` extends the frozen 0.80
+annual-decay, no-exposure-exponent filter through 2025–26. Its input uses legacy
+annual targets through 2022–23 and canonical terminal-lineup targets from
+2023–24 onward. Source-transition run `canonical_annual_target_panel_v1_2d9ff74ca3`
+passes its 2023–24 compatibility gate (net correlation 0.975). Keep it
+research-only: no interpolation, current-season claim, or API promotion until
+an uncertainty-aware challenger and a new annual confirmation are available.
 Expected-possession residual RAPM is a separate challenger documented in
 `docs/impact/EXPECTED_POSSESSION_RAPM.md`. Snapshot
 `possession_start_context_ebcae214e662d404` has 787,579 player-neutral

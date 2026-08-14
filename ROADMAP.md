@@ -55,15 +55,19 @@ dead ends. Updated 2026-08-14. See `docs/README.md` for the document index,
 - Frozen annual SPM missed its untouched 2025 confirmation. Offense/defense/net
   RMSE is 1.102/1.154/1.610; defense correlation is 0.331. Do not promote or tune
   this run on 2025.
-- The first filtered time-decay trajectory baseline improves next-season annual
-  normal-RAPM proxy RMSE from 1.9481 to 1.7166 in 2018–21 selection and from
-  2.0285 to 1.7758 on 2022–23 later diagnostics. It is research-only, lacks
-  trajectory intervals, and uses the stale 2014–24 legacy annual targets.
+- Canonical annual normal-RAPM targets now cover 2023–24 through 2025–26. The
+  audited 2023–24 source overlap has 0.975 net correlation with the legacy
+  target and passes the frozen source-transition gate.
+- The fixed 0.80 time-decay trajectory now extends through 2025–26. It still
+  improves the historical annual proxy RMSE from 1.9481 to 1.7166 in selection
+  and from 2.0549 to 1.8086 on the later diagnostic. It is research-only and
+  has no trajectory intervals or new annual confirmation.
 
 ## Active next task
 
-Build canonical current annual normal-RAPM targets for 2023--25, then attach
-them to the filtered trajectory baseline. The scientific control plane,
+Freeze the next all-in-one challenger specification: a side-specific,
+precision-aware SPM prior in one-season normal RAPM. This needs a Sol
+mathematical review before implementation. The scientific control plane,
 canonical identity/provenance spine, two normal-RAPM uncertainty pilots, Ratings
 API v2, first filtered time-decay trajectory baseline, and expected-possession
 data contract are implemented. The player-neutral expected-points pilot improves
@@ -83,15 +87,15 @@ Slow-network policy: each immutable file resumes from `.partial`, retries up to
 
 ## Ordered queue
 
-1. **Dynamic impact:** build canonical current annual normal-RAPM targets for
-   2023--25, then extend and validate the filtered trajectory baseline with those
-   targets. Test an uncertainty-aware state-space model only afterward.
-2. **Expected possession:** retain the player-neutral start-state baseline as a
+1. **All-in-one:** freeze and review the side-specific precision-aware prior
+   contract, then compare it against zero-prior normal RAPM on predeclared
+   identical-game folds. Do not tune arbitrary prior amplitudes.
+2. **Dynamic impact:** retain the 2014--26 filtered trajectory as the simple
+   baseline. Design, then test, an uncertainty-aware state-space challenger only
+   after the all-in-one comparison is controlled.
+3. **Expected possession:** retain the player-neutral start-state baseline as a
    null. Reopen only when a richer causal state clears its prospective expected-
    points gate; then compare residual RAPM only on identical games.
-3. **All-in-one:** keep the annual statistical model research-only and design its
-   next comparison against the dynamic target. Do not start another broad
-   feature subset search on reused seasons.
 4. **Defense:** retain the validated shot/lineup panel, but wait for exact
    guarding data before individual defender modeling.
 5. **WP-RAPM / credit:** value possession-start-to-end WP change only after the WP

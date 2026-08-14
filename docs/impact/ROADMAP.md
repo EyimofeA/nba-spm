@@ -257,10 +257,15 @@ event-level guarding assignments. Move the active research queue to annual
 time-decayed impact trajectories.
 
 The first no-future-leakage filtered trajectory baseline is now complete in
-`time_decayed_trajectory_v1_4706719bfb`. Decay 0.80 with equal initial annual
-weights lowers next-year annual normal-RAPM proxy RMSE by 11.9% in selection and
-12.5% in later diagnostics. It is a research baseline rather than a latent-state
-model: the input archive ends in 2024 and the trajectory has no intervals.
+`time_decayed_trajectory_v1_8ed684a8aa`. It preserves the original selected
+decay of 0.80 with equal initial annual weights and extends the input panel
+through the 2025--26 regular season. `canonical_annual_target_panel_v1_2d9ff74ca3`
+audits the 2023--24 legacy-to-canonical transition before the join: net
+correlation is 0.975, the scale ratio is 1.019, and all frozen compatibility
+gates pass. Historical selection improves next-year normal-RAPM proxy RMSE by
+11.9%; the later diagnostic remains favorable. This is still a research
+baseline, not a latent-state model: it has no trajectory intervals and Season
+2027 remains untouched confirmation data.
 
 `possession_start_context_ebcae214e662d404` also makes the expected-possession
 residual-RAPM challenger feasible. It has 787,579 player-neutral canonical

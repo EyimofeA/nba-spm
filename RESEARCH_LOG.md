@@ -1979,3 +1979,31 @@ constant subtraction to justify another RAPM evaluation. A prospective reopening
 gate now requires at least 0.25% mean Poisson-deviance improvement in both
 chronological folds, small bias, and player-neutral out-of-fold predictions. New
 causal context—not extra model complexity—is needed before retrying.
+
+## 2026-08-14 — Canonical annual normal RAPM extends the trajectory safely
+
+**Question:** Can the current canonical possession/ordinal-lineup source extend
+the annual normal-RAPM trajectory without silently mixing incompatible ratings?
+
+**Method:** Built `current_single_season_rapm_targets_v1_9c0cdda919` for the
+2023--24, 2024--25, and 2025--26 regular seasons (ending labels 2024--26). Each
+season uses terminal lineups, a zero prior, and frozen 3000/3000/300 penalties.
+The fits cover 1,227, 1,226, and 1,228 lineup-quality-passing games. Before the
+join, `canonical_annual_target_panel_v1_2d9ff74ca3` checked the shared 2024
+season against the legacy target. It explicitly excluded one legacy zero-
+defensive-possession row, then applied an explicit 0.95 component correlation and
+coverage, a 0.80--1.25 scale ratio, and a mean difference no larger than 0.10
+points per 100.
+
+**Result:** The 571 matched 2024 players pass all gates. Canonical-versus-legacy
+Pearson correlation is 0.974 offense, 0.964 defense, and 0.975 net. Net RMSE is
+0.377 points per 100, net mean difference is 0.010, and the net scale ratio is
+1.019. The combined panel has 6,942 player-seasons from 2014--26. Applying the
+already-selected 0.80 time-decay filter in `time_decayed_trajectory_v1_8ed684a8aa`
+does not retune it. The historical selection remains 1.9481 to 1.7166 net RMSE;
+the later diagnostic remains favorable at 2.0549 to 1.8086.
+
+**Decision:** Retain the updated trajectory as a research-only dynamic baseline.
+The 2025--26 endpoint is descriptive. It does not use Season 2027 or create new
+confirmation evidence. The next model task is a separately reviewed,
+side-specific precision-aware SPM-prior challenger, not more trajectory tuning.

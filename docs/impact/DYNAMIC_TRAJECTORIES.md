@@ -58,11 +58,39 @@ net correlation with the next annual target (0.419 selection; 0.435 diagnostic).
 One source row with zero defensive possessions was explicitly excluded; the
 final panel contains 5,790 player-seasons and 1,499 players.
 
+## Canonical current-data extension
+
+The source panel now extends through the 2025--26 regular season. The annual
+season label is the ending year: 2024 means 2023--24.
+
+`current_single_season_rapm_targets_v1_9c0cdda919` fits the frozen normal-RAPM
+contract separately for 2024--26: zero prior, 3000/3000/300 ridge penalties,
+regular season only, and terminal ordinal lineups. It contains 1,723
+player-seasons over 1,227, 1,226, and 1,228 eligible games, respectively.
+
+Before joining it to the older panel, source-transition run
+`canonical_annual_target_panel_v1_2d9ff74ca3` compared the shared 2024 season.
+After excluding the known legacy row with zero defensive possessions, 571
+players matched. Canonical versus legacy Pearson correlation was 0.974 offense,
+0.964 defense, and 0.975 net. The net scale ratio was 1.019 and the mean net
+difference was 0.010 points per 100. These pass an explicit compatibility
+gate; they do not prove that either source is more accurate.
+
+Run `time_decayed_trajectory_v1_8ed684a8aa` then applies the already-selected
+0.80-decay, equal-initial-weight filter to the combined 2014--26 panel. It does
+not retune the filter. Its historical selection result is unchanged (1.9481 to
+1.7166 net RMSE). The later 2022--23 diagnostic, with canonical 2024 as the
+last target, remains directionally positive (2.0549 to 1.8086). The 2025--26
+extension is descriptive only: Season 2027 remains untouched, so it is not a
+new annual confirmation.
+
 ## Boundaries
 
 - The next annual RAPM target is a noisy proxy, not ground truth and not a team
   margin prediction.
-- The source archive is legacy and ends in 2024. It is not current NBA data.
+- The panel uses a legacy source through 2022--23 and canonical current data
+  from 2023--24 onward. The transition passed a compatibility audit, but it can
+  still create small source-specific differences.
 - There are no trajectory confidence intervals, age curve, injury state, or
   uncertainty-aware transition process in this version.
 - This does not make the existing `current_latent_strength_v1` contract

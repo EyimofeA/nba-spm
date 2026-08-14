@@ -85,6 +85,12 @@ from nba_impact.models.single_season_spm import (
     build_single_season_rapm_targets,
     fit_single_season_spm,
 )
+from nba_impact.models.current_single_season_rapm import (
+    build_current_single_season_rapm_targets,
+)
+from nba_impact.models.annual_target_transition import (
+    build_canonical_annual_target_panel,
+)
 from nba_impact.models.statistical_direct_net import (
     run_statistical_direct_net_comparison,
 )
@@ -1103,6 +1109,39 @@ def command_build_single_season_rapm_targets(args: argparse.Namespace) -> int:
         lambda_off=args.lambda_off,
         lambda_def=args.lambda_def,
         lambda_home=args.lambda_home,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_current_single_season_rapm_targets(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_current_single_season_rapm_targets(
+        args.possessions,
+        args.segments,
+        args.names,
+        args.player_games,
+        artifact_root=args.artifact_root,
+        seasons=tuple(args.seasons),
+        lambda_off=args.lambda_off,
+        lambda_def=args.lambda_def,
+        lambda_home=args.lambda_home,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_canonical_annual_target_panel(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_canonical_annual_target_panel(
+        args.legacy_targets,
+        args.canonical_targets,
+        args.names,
+        args.player_games,
+        artifact_root=args.artifact_root,
+        transition_season=args.transition_season,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -2308,6 +2347,49 @@ def build_parser() -> argparse.ArgumentParser:
     annual_rapm_targets.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     annual_rapm_targets.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     annual_rapm_targets.set_defaults(func=command_build_single_season_rapm_targets)
+
+    current_annual_rapm_targets = subparsers.add_parser(
+        "build-current-single-season-rapm-targets",
+        help="Fit canonical annual terminal-lineup zero-prior normal-RAPM targets.",
+    )
+    current_annual_rapm_targets.add_argument(
+        "--seasons", type=_season_list, default=(2024, 2025, 2026)
+    )
+    current_annual_rapm_targets.add_argument(
+        "--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet"
+    )
+    current_annual_rapm_targets.add_argument(
+        "--segments",
+        type=Path,
+        default=SILVER_ROOT / "possession_lineup_segments.parquet",
+    )
+    current_annual_rapm_targets.add_argument(
+        "--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet"
+    )
+    current_annual_rapm_targets.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    current_annual_rapm_targets.add_argument("--lambda-off", type=float, default=3000.0)
+    current_annual_rapm_targets.add_argument("--lambda-def", type=float, default=3000.0)
+    current_annual_rapm_targets.add_argument("--lambda-home", type=float, default=300.0)
+    current_annual_rapm_targets.add_argument(
+        "--artifact-root", type=Path, default=ARTIFACT_ROOT
+    )
+    current_annual_rapm_targets.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    current_annual_rapm_targets.set_defaults(
+        func=command_build_current_single_season_rapm_targets
+    )
+
+    annual_target_panel = subparsers.add_parser(
+        "build-canonical-annual-target-panel",
+        help="Audit and join legacy and canonical annual normal-RAPM targets.",
+    )
+    annual_target_panel.add_argument("--legacy-targets", type=Path, required=True)
+    annual_target_panel.add_argument("--canonical-targets", type=Path, required=True)
+    annual_target_panel.add_argument("--transition-season", type=int, default=2024)
+    annual_target_panel.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
+    annual_target_panel.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    annual_target_panel.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    annual_target_panel.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    annual_target_panel.set_defaults(func=command_build_canonical_annual_target_panel)
 
     trajectories = subparsers.add_parser(
         "build-time-decayed-trajectories",
