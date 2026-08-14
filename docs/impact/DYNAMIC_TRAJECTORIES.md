@@ -84,6 +84,19 @@ last target, remains directionally positive (2.0549 to 1.8086). The 2025--26
 extension is descriptive only: Season 2027 remains untouched, so it is not a
 new annual confirmation.
 
+## State-space challenger in progress
+
+`dynamic_state_space.py` implements a causal, side-specific AR(1) filter. It
+treats annual normal RAPM as a noisy observation and uses analytic game-cluster
+ridge covariance as an observation-variance diagnostic. The filter consumes no
+future player-seasons, fits offense and defense separately, and defines net as
+their exact sum.
+
+The variance input is resumable by season because dense analytic covariance is
+more expensive than an annual point estimate. It is not a bootstrap run. Do not
+score or publish the challenger until every 2014--26 target has a validated
+variance row and the frozen historical comparison completes.
+
 ## Boundaries
 
 - The next annual RAPM target is a noisy proxy, not ground truth and not a team
@@ -94,8 +107,8 @@ new annual confirmation.
 - There are no trajectory confidence intervals, age curve, injury state, or
   uncertainty-aware transition process in this version.
 - This does not make the existing `current_latent_strength_v1` contract
-  implemented. That later model must explicitly separate observation error and
-  player evolution, then beat this baseline on forward tests.
+  implemented. Its research challenger must explicitly separate observation
+  error and player evolution, then beat this baseline on forward tests.
 - Do not present fitted curves between observed seasons as evidence.
 
 ## Relation to expected outcomes

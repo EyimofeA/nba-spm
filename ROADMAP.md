@@ -97,8 +97,9 @@ Slow-network policy: each immutable file resumes from `.partial`, retries up to
    cannot fill its 2018--21 selection horizon. Do not tune amplitudes or reuse
    the invalid 2021--24 run.
 2. **Dynamic impact:** retain the 2014--26 filtered trajectory as the simple
-   baseline. Design, then test, an uncertainty-aware state-space challenger only
-   after the all-in-one comparison is controlled.
+   baseline. The causal state-space challenger is implemented but awaits its
+   resumable annual observation-variance panel. Run no score until all 2014--26
+   rows are present, then compare it on the frozen historical schedule.
 3. **Expected possession:** retain the player-neutral start-state baseline as a
    null. Reopen only when a richer causal state clears its prospective expected-
    points gate; then compare residual RAPM only on identical games.

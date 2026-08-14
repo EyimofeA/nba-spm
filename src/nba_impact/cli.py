@@ -55,6 +55,7 @@ from nba_impact.models.shot_defense_pilot import run_shot_defense_team_pilot
 from nba_impact.models.time_decayed_trajectory import (
     build_time_decayed_trajectory,
 )
+from nba_impact.models.dynamic_state_space import build_annual_observation_variance
 from nba_impact.models.expected_possession_points import (
     build_expected_possession_points,
 )
@@ -1142,6 +1143,7 @@ def command_build_canonical_annual_target_panel(args: argparse.Namespace) -> int
         args.player_games,
         artifact_root=args.artifact_root,
         transition_season=args.transition_season,
+        seasons=tuple(args.seasons) if args.seasons else None,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1159,6 +1161,21 @@ def command_build_time_decayed_trajectory(args: argparse.Namespace) -> int:
         selection_origins=tuple(args.selection_origins),
         diagnostic_origins=tuple(args.diagnostic_origins),
         minimum_side_possessions=args.minimum_side_possessions,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_annual_observation_variance(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_annual_observation_variance(
+        args.targets,
+        args.cache_dir,
+        args.possessions,
+        args.segments,
+        artifact_root=args.artifact_root,
+        transition_season=args.transition_season,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -2413,6 +2430,20 @@ def build_parser() -> argparse.ArgumentParser:
     trajectories.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     trajectories.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     trajectories.set_defaults(func=command_build_time_decayed_trajectory)
+
+    annual_variance = subparsers.add_parser(
+        "build-annual-observation-variance",
+        help="Build annual normal-RAPM CR0 observation-variance diagnostics.",
+    )
+    annual_variance.add_argument("--targets", type=Path, required=True)
+    annual_variance.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    annual_variance.add_argument("--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet")
+    annual_variance.add_argument("--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet")
+    annual_variance.add_argument("--transition-season", type=int, default=2024)
+    annual_variance.add_argument("--seasons", type=_season_list)
+    annual_variance.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    annual_variance.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    annual_variance.set_defaults(func=command_build_annual_observation_variance)
 
     expected_possession = subparsers.add_parser(
         "build-expected-possession-points",
