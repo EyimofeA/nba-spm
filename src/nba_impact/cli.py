@@ -1179,6 +1179,7 @@ def command_build_annual_observation_variance(args: argparse.Namespace) -> int:
         args.segments,
         artifact_root=args.artifact_root,
         transition_season=args.transition_season,
+        seasons=tuple(args.seasons) if args.seasons else None,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))

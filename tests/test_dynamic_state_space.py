@@ -1,9 +1,17 @@
 from __future__ import annotations
 
+from pathlib import Path
+from types import SimpleNamespace
+
 import numpy as np
 import pandas as pd
 
-from nba_impact.models.dynamic_state_space import build_causal_state_space_filter
+from nba_impact.models import dynamic_state_space
+from nba_impact.models.dynamic_state_space import (
+    build_annual_observation_variance,
+    build_causal_state_space_filter,
+)
+from nba_impact import cli
 
 
 def _inputs() -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -45,3 +53,83 @@ def test_state_space_rejects_missing_observation_variance() -> None:
     targets, variance = _inputs()
     with np.testing.assert_raises_regex(ValueError, "Every annual RAPM target"):
         build_causal_state_space_filter(targets, variance.iloc[:-1], phi=0.8, process_sd=0.5)
+
+
+def test_annual_variance_honors_requested_legacy_seasons_and_skips_current(
+    tmp_path, monkeypatch
+) -> None:
+    """A narrowly requested legacy batch must not perform hidden current-data work."""
+    players = np.arange(1, 11, dtype=int)
+    targets = pd.DataFrame(
+        {
+            "PLAYER_ID": players,
+            "Season": 2016,
+            "target_offense": 0.0,
+            "target_defense": 0.0,
+            "target_net": 0.0,
+        }
+    )
+    targets_path = tmp_path / "targets.parquet"
+    targets.to_parquet(targets_path, index=False)
+    current_possessions = tmp_path / "current_possessions.parquet"
+    current_segments = tmp_path / "current_segments.parquet"
+    current_possessions.write_bytes(b"placeholder")
+    current_segments.write_bytes(b"placeholder")
+    calls: list[int] = []
+
+    def fake_legacy(_cache_dir, seasons, *, game_types):
+        calls.extend(seasons)
+        return pd.DataFrame({"gameid": ["0021600001"]})
+
+    def fail_current(*_args, **_kwargs):
+        raise AssertionError("A legacy-only request must not load current possessions.")
+
+    monkeypatch.setattr(dynamic_state_space, "load_legacy_possessions", fake_legacy)
+    monkeypatch.setattr(dynamic_state_space, "load_current_possessions", fail_current)
+    monkeypatch.setattr(
+        dynamic_state_space,
+        "build_design",
+        lambda _frame: SimpleNamespace(players=players),
+    )
+    monkeypatch.setattr(
+        dynamic_state_space,
+        "game_cluster_sandwich",
+        lambda _design, _config: (np.eye(21) * 0.01, np.zeros(21), None),
+    )
+
+    run = build_annual_observation_variance(
+        targets_path,
+        tmp_path / "legacy",
+        current_possessions,
+        current_segments,
+        artifact_root=tmp_path / "artifacts",
+        seasons=(2016,),
+    )
+
+    assert calls == [2016]
+    assert run["status"] == "research_measurement_input_complete"
+    assert Path(run["observation_variance_path"]).exists()
+
+
+def test_annual_variance_cli_forwards_explicit_season_scope(monkeypatch, tmp_path) -> None:
+    captured: dict[str, object] = {}
+    monkeypatch.setattr(cli, "ensure_owned_dirs", lambda: None)
+    monkeypatch.setattr(cli, "register_model_run", lambda *_args: None)
+    monkeypatch.setattr(
+        cli,
+        "build_annual_observation_variance",
+        lambda *_args, **kwargs: captured.update(kwargs) or {"run_id": "test"},
+    )
+    args = SimpleNamespace(
+        targets=tmp_path / "targets.parquet",
+        cache_dir=tmp_path / "cache",
+        possessions=tmp_path / "possessions.parquet",
+        segments=tmp_path / "segments.parquet",
+        artifact_root=tmp_path / "artifacts",
+        transition_season=2024,
+        seasons=(2016,),
+        registry=tmp_path / "registry.jsonl",
+    )
+
+    assert cli.command_build_annual_observation_variance(args) == 0
+    assert captured["seasons"] == (2016,)

@@ -50,8 +50,19 @@ def build_annual_observation_variance(
     output = Path(artifact_root) / "models" / "annual_rapm_observation_variance" / run_id
     checkpoint_dir = output / "season_checkpoints"
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
-    current = load_current_possessions(
-        current_possessions_path, current_segments_path, lineup_policy="terminal", game_types=("regular",)
+    # Legacy-only batches must not load the much larger current canonical panel.
+    # Besides saving substantial local work, this keeps `--seasons 2016` a real
+    # one-season operation rather than a hidden all-source scan.
+    needs_current = any(season >= transition_season for season in requested_seasons)
+    current = (
+        load_current_possessions(
+            current_possessions_path,
+            current_segments_path,
+            lineup_policy="terminal",
+            game_types=("regular",),
+        )
+        if needs_current
+        else None
     )
     rows: list[pd.DataFrame] = []
     quality: list[dict] = []
@@ -65,6 +76,8 @@ def build_annual_observation_variance(
             frame = load_legacy_possessions(legacy_cache_dir, (season,), game_types=("regular",))
             source = "legacy"
         else:
+            if current is None:  # pragma: no cover - guarded by needs_current above.
+                raise RuntimeError("Current possessions were not loaded for a canonical season.")
             frame = current.loc[current["season"].eq(season)].copy()
             source = "canonical_current"
         if frame.empty:
