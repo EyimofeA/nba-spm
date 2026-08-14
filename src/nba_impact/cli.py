@@ -55,7 +55,10 @@ from nba_impact.models.shot_defense_pilot import run_shot_defense_team_pilot
 from nba_impact.models.time_decayed_trajectory import (
     build_time_decayed_trajectory,
 )
-from nba_impact.models.dynamic_state_space import build_annual_observation_variance
+from nba_impact.models.dynamic_state_space import (
+    build_annual_observation_variance,
+    build_state_space_trajectory,
+)
 from nba_impact.models.expected_possession_points import (
     build_expected_possession_points,
 )
@@ -1176,6 +1179,24 @@ def command_build_annual_observation_variance(args: argparse.Namespace) -> int:
         args.segments,
         artifact_root=args.artifact_root,
         transition_season=args.transition_season,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_state_space_trajectory(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_state_space_trajectory(
+        args.targets,
+        args.observation_variance,
+        args.names,
+        artifact_root=args.artifact_root,
+        candidate_phis=tuple(args.candidate_phis),
+        candidate_process_sds=tuple(args.candidate_process_sds),
+        selection_origins=tuple(args.selection_origins),
+        diagnostic_origins=tuple(args.diagnostic_origins),
+        minimum_side_possessions=args.minimum_side_possessions,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -2444,6 +2465,22 @@ def build_parser() -> argparse.ArgumentParser:
     annual_variance.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     annual_variance.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     annual_variance.set_defaults(func=command_build_annual_observation_variance)
+
+    state_space = subparsers.add_parser(
+        "build-state-space-trajectory",
+        help="Select a causal annual state-space challenger against annual RAPM.",
+    )
+    state_space.add_argument("--targets", type=Path, required=True)
+    state_space.add_argument("--observation-variance", type=Path, required=True)
+    state_space.add_argument("--names", type=Path, required=True)
+    state_space.add_argument("--candidate-phis", type=_float_list, default=(0.50, 0.65, 0.80, 0.90))
+    state_space.add_argument("--candidate-process-sds", type=_float_list, default=(0.25, 0.50, 1.00, 2.00))
+    state_space.add_argument("--selection-origins", type=_season_list, default=(2018, 2019, 2020, 2021))
+    state_space.add_argument("--diagnostic-origins", type=_season_list, default=(2022, 2023))
+    state_space.add_argument("--minimum-side-possessions", type=float, default=1000.0)
+    state_space.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    state_space.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    state_space.set_defaults(func=command_build_state_space_trajectory)
 
     expected_possession = subparsers.add_parser(
         "build-expected-possession-points",
