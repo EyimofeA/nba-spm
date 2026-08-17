@@ -2065,3 +2065,71 @@ challenger and time decay as the frozen baseline. Do not tune after this result,
 publish latent-strength claims, expose it in the API, or use Season 2027. The
 observation covariance is a fast ridge diagnostic, not public rating
 uncertainty; confirmation needs a separately approved untouched annual season.
+
+## 2026-08-17 — AIO diagnosis identifies defense and skill measurement as the next bottlenecks
+
+**Question:** What does the current all-in-one measure, which public-model ideas
+are missing, and what feature work is justified before another model search?
+
+**Audit:** The frozen three-season AIO uses 162 offense features in a bounded
+histogram GBM and 50 defense features in ridge. Targets are purged three-season
+normal RAPM offense and defense. Run
+`statistical_interpretability_v1_94d3f2c24b` refit the frozen specification on
+windows ending by 2021 and used grouped permutation on the reused 2024 fold.
+Baseline offense RMSE/correlation is 0.82701/0.62133; defense is
+0.89982/0.36705. Permuting shooting/scoring raises offense RMSE by 0.27185 and
+permuting public composites raises it by 0.10815. On defense, disruption,
+creation/role, and rebounding groups raise RMSE by 0.11673, 0.08159, and
+0.07927. The role result is a warning that the rolling defense model still uses
+indirect proxies. Permutation is model reliance, not causal player credit.
+
+**Feature build:** `player_skill_features_v1_cf800d4e7e` creates 12 annual
+opportunity-adjusted features from ID-based defender-distance shooting,
+passing, hustle, and shot-zone tables. It separates shot difficulty from
+shot-making above expectation and adds pass value, high-value assist share,
+bad-pass cost, screen value, deflections, charges, defensive boxouts, and loose
+balls. The artifact has 5,791 unique player-seasons from 2014--24, 1,499
+players, and no infinite values. Eleven fields are model candidates. Absolute
+shot difficulty is audit-only because the season profile found a 1.60-IQR
+median shift from 2018 to 2019; the era-relative version is the candidate.
+The partial 2025 snapshot is excluded. Hustle coverage begins in 2018 and
+missing history remains missing. Integrations `statistical_features_v2_d67bb64ac7`
+and `statistical_features_v2_2515b57958` add the 11 candidate fields to rolling and annual
+tables with unique keys, no infinite values, and no missing values after
+season-neutral imputation. No AIO model was fit or selected.
+
+**Public research:** LEBRON/PIPM, RAPTOR, current EPM, xRAPM, old ESPN RPM, BPM
+2.0, MAMBA, DARKO, BBall Index skill models, ESPN Net Points, and Six-Factor
+RAPM were compared in
+`docs/impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`. Public disclosures support
+the same direction: stat-specific stabilization, expected-versus-actual skill,
+role-relative evaluation, and separate retrospective versus predictive
+contracts. They do not disclose enough detail for an exact clone.
+
+**Decision:** Do not change normal RAPM. Do not search more subsets on 2022--25.
+Integrate the validated skill layer, then build aging-residualized forward and
+reverse diagnostics. Direct offense and defense RAPM remain the supervised
+targets. Factor RAPM and role-fit counterfactuals remain separate research
+branches. Season 2027 stays untouched.
+
+## 2026-08-17 — Forward/reverse testing does not show a simple youth-proxy win
+
+**Question:** Does next-year validation make the frozen annual SPM look better
+mainly because its inputs proxy the direction of aging?
+
+**Method:** `aging_balanced_validation_v1_ec5122d5a3` joins the frozen annual
+OOF SPM at season `T` to annual normal RAPM at `T+1` and `T-1`. For each scored
+origin, a fixed-knot ridge age curve is fit only on earlier origin seasons. The
+curve predicts adjacent-minus-current RAPM and is removed from the adjacent
+target. Age never enters the SPM. Four scored origins contain 1,768 matched
+transitions in each direction.
+
+**Result:** Raw forward net RMSE/correlation is 1.6277/0.4095. Raw reverse is
+1.5860/0.4046. Forward age adjustment changes this to 1.6380/0.4399; reverse
+changes to 1.5660/0.3837. Offense and defense show the same mixed pattern: the
+adjustment can improve correlation while worsening scale error, or the reverse.
+
+**Decision:** The similar raw forward and reverse correlations do not support a
+simple claim that the current SPM wins only by encoding youth. Keep both
+directions and the earlier-only adjustment as diagnostics. Do not replace the
+target, add age to retrospective SPM, or tune the spline on inspected seasons.

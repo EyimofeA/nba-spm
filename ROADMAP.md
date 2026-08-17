@@ -1,7 +1,7 @@
 # NBA Impact Roadmap
 
 This is the one file to follow remotely. `RESEARCH_LOG.md` contains evidence and
-dead ends. Updated 2026-08-14. See `docs/README.md` for the document index,
+dead ends. Updated 2026-08-17. See `docs/README.md` for the document index,
 `docs/impact/ROADMAP.md` for the detailed RAPM/all-in-one plan, and
 `docs/modeling/PLAYBOOK.md` for the common statistical modeling procedure.
 
@@ -33,6 +33,20 @@ dead ends. Updated 2026-08-14. See `docs/README.md` for the document index,
 - Frozen feature engineering improves the statistical AIO's reused 2024 net
   RMSE from 1.2984 to 1.2624. The gain is offensive; no new defensive block
   passes. Treat this as exploratory because 2024 informed earlier research.
+- Diagnostic run `statistical_interpretability_v1_94d3f2c24b` confirms that
+  offense relies mainly on shooting/scoring and public creation composites.
+  Defense relies on disruption and rebounding, but offensive-role proxies are
+  almost as important. This is a diagnostic, not causal attribution.
+- Validated feature run `player_skill_features_v1_cf800d4e7e` adds 12 explicit
+  shot-making, passing, screening, and hustle measurements over 5,791 player-
+  seasons from 2014--24. Eleven are model candidates; absolute shot difficulty
+  remains audit-only after QA found a large 2018--19 level shift. The annual
+  and rolling integration tables are `statistical_features_v2_2515b57958` and
+  `statistical_features_v2_d67bb64ac7`. They are inputs, not promoted models.
+- Aging diagnostic `aging_balanced_validation_v1_ec5122d5a3` scores 1,768
+  matched transitions in each direction. Raw forward/reverse net correlations
+  are similar at 0.409/0.405. Age adjustment improves forward correlation but
+  worsens RMSE; it is a diagnostic, not a replacement target.
 - Cross-fitted statistical priors cover every eligible 2019–24 feature row. For
   window `T`, training labels end by `T-3`. Six-fold prior-only net RMSE is
   1.2513 with 0.5198 correlation.
@@ -70,53 +84,45 @@ dead ends. Updated 2026-08-14. See `docs/README.md` for the document index,
 
 ## Active next task
 
-The side-specific precision-aware SPM-prior contract has passed Sol review with
-a revision: it now uses heteroskedastic earlier-window variance calibration, not
-pooled variance subtraction. Its frozen historical 2018--21 schedule is
-currently blocked because the cross-fitted prior history starts in 2019. The
-frozen three-season feature contract cannot produce the planned 2018--21
-selection folds. Do not rerun the invalid 2021--24 experiment. The active task
-is to specify a separate pre-2016 prior contract or defer this challenger. The
-scientific control plane,
-canonical identity/provenance spine, two normal-RAPM uncertainty pilots, Ratings
-API v2, first filtered time-decay trajectory baseline, and expected-possession
-data contract are implemented. The player-neutral expected-points pilot improves
-cross-fitted Poisson deviance by only about 0.05%; residual RAPM is deferred
-until a richer causal state passes its prospective gate. The exact
-shot/ordinal-lineup defense panel is also complete, but its defense-team pilot
-improved held-out combined log loss by only 0.089% against a frozen 0.5% gate.
-Keep both as documented nulls; do not fit player defender rankings without exact
-guarding assignments. Keep zero-prior normal RAPM as the production reference.
-Keep annual AIO, matchup factors, trajectories, and peaks research-only. Peak
-ranks are descriptive only; a 1,000-draw selection-aware refit was stopped
-after 65 draws because its cost is not justified now. Reserve Season 2027 as the
-next untouched annual confirmation. WP neural work stays paused on the Mac.
+The next task is the behavior-only role foundation in
+`docs/impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`. The AIO diagnosis,
+interpretation, first player-skill layer, annual/rolling integration, and aging-
+balanced diagnostic are complete. Build role descriptors from observed play
+style, then test chronological cluster stability. Do not fit role-value or role-
+fit counterfactuals until that stability gate passes. Treat 2022--25 as
+inspected diagnostics and reserve Season 2027 as untouched confirmation.
+
+The precision-aware SPM-prior challenger is deferred. Its reviewed 2018--21
+schedule cannot be produced by the frozen feature history, and the invalid
+2021--24 run must not be reused. Keep zero-prior normal RAPM as the production
+reference. Keep annual AIO, matchup factors, trajectories, and peaks research-
+only. WP neural work stays paused on the Mac.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
 
 ## Ordered queue
 
-1. **All-in-one:** specify a separate pre-2016 prior contract, or defer the
-   reviewed precision-aware prior challenger. The frozen three-season contract
-   cannot fill its 2018--21 selection horizon. Do not tune amplitudes or reuse
-   the invalid 2021--24 run.
-2. **Dynamic impact:** retain the 2014--26 state-space filter as the leading
+1. **Roles:** build behavior-only role descriptors and test stability before
+   fitting role-relative skill or role-fit counterfactuals.
+2. **All-in-one challenger:** after role stability, freeze factor-group inputs
+   without subset search. Use direct offense and defense RAPM targets.
+3. **Dynamic impact:** retain the 2014--26 state-space filter as the leading
    research challenger and frozen 0.80 time decay as its baseline. Do not retune
    either from the reused historical result. Await an untouched annual
    confirmation before any API or public-rating promotion.
-3. **Expected possession:** retain the player-neutral start-state baseline as a
+4. **Expected possession:** retain the player-neutral start-state baseline as a
    null. Reopen only when a richer causal state clears its prospective expected-
    points gate; then compare residual RAPM only on identical games.
-4. **Defense:** retain the validated shot/lineup panel, but wait for exact
+5. **Defense:** retain the validated shot/lineup panel, but wait for exact
    guarding data before individual defender modeling.
-5. **WP-RAPM / credit:** value possession-start-to-end WP change only after the WP
+6. **WP-RAPM / credit:** value possession-start-to-end WP change only after the WP
    and lineup assignment are validated; compare Net Points and TD/Shapley ideas.
-6. **Product:** stable DuckDB/API contract first, then a restrained player explorer.
+7. **Product:** stable DuckDB/API contract first, then a restrained player explorer.
    Do not rebuild the deleted UI before metric contracts are frozen.
-7. **Later data:** injuries/availability, contracts, salaries, draft, roster stints,
+8. **Later data:** injuries/availability, contracts, salaries, draft, roster stints,
    travel, and historical team schedules.
-8. **WP later:** revisit only for playoff calibration or a cloud-trained causal
+9. **WP later:** revisit only for playoff calibration or a cloud-trained causal
    sequence experiment after the impact platform is useful.
 
 ## Research rules
@@ -162,6 +168,11 @@ now would break reproducibility links.
 - Optimized statistical AIO: `statistical_aio_v1_b0295558c6`
 - Statistical features v2: `statistical_features_v2_8b2566243f`
 - Statistical feature v2 comparison: `statistical_feature_v2_comparison_9b8d0555e0`
+- Statistical AIO interpretation: `statistical_interpretability_v1_94d3f2c24b`
+- Annual player-skill features: `player_skill_features_v1_cf800d4e7e`
+- Skill-integrated rolling features: `statistical_features_v2_d67bb64ac7`
+- Skill-integrated annual features: `statistical_features_v2_2515b57958`
+- Aging-balanced annual validation: `aging_balanced_validation_v1_ec5122d5a3`
 - Cross-fitted statistical priors: `statistical_priors_v1_2c81b23662`
 - Prior-informed RAPM comparison: `prior_informed_rapm_v1_122ef63045`
 - External BPM/xRAPM benchmark: `external_impact_benchmark_v1_bab43a4087`

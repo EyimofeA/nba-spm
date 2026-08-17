@@ -22,6 +22,9 @@ Start at the repository root:
   2025/2026 statistical-feature coverage, drift, and frozen-SPM confirmation;
 - [`impact/FACTOR_DECOMPOSITION.md`](impact/FACTOR_DECOMPOSITION.md) — factor
   feature families, public benchmark formulas, and AIO explanation contract;
+- [`impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`](impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md) —
+  current AIO audit, public-model feature map, interpretation, aging-safe
+  validation, and execution order;
 - [`impact/SHOT_DEFENSE_MODEL.md`](impact/SHOT_DEFENSE_MODEL.md) — exact
   shot/lineup panel, identification boundary, and null team-defense pilot;
 - [`impact/DYNAMIC_TRAJECTORIES.md`](impact/DYNAMIC_TRAJECTORIES.md) — filtered

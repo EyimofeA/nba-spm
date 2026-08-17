@@ -140,6 +140,18 @@ feature families and explanation groups. The supervised targets remain direct
 offensive and defensive RAPM. Factor RAPM is a separate research branch, not a
 dependency for the first AIO.
 
+The independent diagnosis and public-model map now lives in
+[`AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`](AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md).
+Run `statistical_interpretability_v1_94d3f2c24b` shows that the frozen offense
+model relies mainly on shooting/scoring and public creation composites. The
+rolling defense model still relies too much on indirect role proxies. Run
+`player_skill_features_v1_cf800d4e7e` provides 12 shot-making, passing,
+screening, and hustle fields. Eleven are model candidates; absolute shot
+difficulty is audit-only after a large 2018--19 level shift. Rolling and annual
+integration runs are `statistical_features_v2_d67bb64ac7` and
+`statistical_features_v2_2515b57958`. They are validated input data, not a
+promoted model feature set.
+
 ## Phase 4 — Create the all-in-one rating
 
 1. Evaluate the statistical prior by itself.

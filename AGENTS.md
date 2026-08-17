@@ -23,6 +23,10 @@ combine TS with a separate free-throw explanation lane.
 Test the exact and behavioral passer ratings as separate challengers. The exact
 formula may contain height and positional normalization, but raw height and
 listed position remain excluded as general model inputs.
+Before changing AIO features, validation, roles, or interpretation, read
+`docs/impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`. Treat 2022–25 as inspected
+diagnostic seasons for the current feature family. Do not claim new promotion
+evidence from additional subset searches on those seasons.
 
 ---
 

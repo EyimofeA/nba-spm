@@ -87,6 +87,9 @@ For neural models only:
   and minute-weighted next-season prediction for player ratings.
 - Report coverage, uncertainty, coefficient stability, and important subgroups.
 - Seeds measure optimizer variance. Seeds are not independent seasons.
+- For annual player ratings, report raw `T -> T+1` persistence and a reverse
+  `T -> T-1` diagnostic. If aging is adjusted, fit the age curve only on earlier
+  origins. Treat reverse testing as a symmetry diagnostic, not a forecast.
 
 ## 6. Add one change at a time
 

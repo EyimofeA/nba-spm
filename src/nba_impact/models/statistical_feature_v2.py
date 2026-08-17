@@ -47,6 +47,21 @@ ROLE_CONTEXT = (
     "effective_shot_zones", "rim_and_three_frequency", "midrange_frequency",
     "creation_load_p100", "interior_role_load",
 )
+OFFENSIVE_SKILL = (
+    "shot_difficulty_expected_points_per_attempt_relative",
+    "shot_making_points_above_expected_p100_eb",
+    "tight_shot_attempt_share_eb",
+    "pass_creation_points_per_potential_assist_eb",
+    "high_value_assist_share_eb",
+    "bad_pass_turnovers_per_100_passes_eb",
+    "screen_assist_points_p100_eb",
+)
+DEFENSIVE_SKILL = (
+    "deflections_p100_eb",
+    "charges_drawn_p100_eb",
+    "defensive_boxouts_p100_eb",
+    "loose_balls_recovered_p100_eb",
+)
 
 
 def _suffix_features(
@@ -103,6 +118,9 @@ def candidate_feature_blocks(columns: tuple[str, ...]) -> dict[str, dict[str, tu
                 feature for feature in CREATION_QUALITY if feature in available
             ),
             "public_basketball_metrics": public_metrics,
+            "tracked_offensive_skills": tuple(
+                feature for feature in OFFENSIVE_SKILL if feature in available
+            ),
         },
         "defense": {
             "era_relative": defense_relative,
@@ -114,6 +132,9 @@ def candidate_feature_blocks(columns: tuple[str, ...]) -> dict[str, dict[str, tu
                 feature for feature in DEFENSIVE_INTERACTIONS if feature in available
             ),
             "role_context": tuple(feature for feature in ROLE_CONTEXT if feature in available),
+            "tracked_defensive_skills": tuple(
+                feature for feature in DEFENSIVE_SKILL if feature in available
+            ),
         },
     }
 

@@ -30,6 +30,7 @@ from nba_impact.data.manifest import (
 from nba_impact.data.official_boxscore import ingest_official_boxscores
 from nba_impact.data.player_game import build_player_games
 from nba_impact.data.playtype_features import build_playtype_features
+from nba_impact.data.player_skill_features import build_player_skill_features
 from nba_impact.data.possession_context import build_possession_start_context
 from nba_impact.data.role_context import build_role_context_features
 from nba_impact.data.shot_defense import build_shot_defense_events
@@ -95,6 +96,9 @@ from nba_impact.models.current_single_season_rapm import (
 from nba_impact.models.annual_target_transition import (
     build_canonical_annual_target_panel,
 )
+from nba_impact.models.aging_balanced_validation import (
+    run_aging_balanced_validation,
+)
 from nba_impact.models.statistical_direct_net import (
     run_statistical_direct_net_comparison,
 )
@@ -107,6 +111,9 @@ from nba_impact.models.statistical_model_comparison import (
 )
 from nba_impact.models.statistical_priors import (
     build_cross_fitted_statistical_priors,
+)
+from nba_impact.models.statistical_interpretability import (
+    run_statistical_interpretability,
 )
 from nba_impact.models.statistical_feature_v2 import (
     run_statistical_feature_v2_comparison,
@@ -770,6 +777,7 @@ def command_build_statistical_features_v2(args: argparse.Namespace) -> int:
         defensive_tracking_features_path=args.defensive_tracking_features,
         assist_quality_features_path=args.assist_quality_features,
         matchup_defense_features_path=args.matchup_defense_features,
+        player_skill_features_path=args.player_skill_features,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -826,6 +834,20 @@ def command_build_role_context_features(args: argparse.Namespace) -> int:
     run = build_role_context_features(
         args.shooting_by_dribble_source,
         args.jump_shot_by_dribble_source,
+        artifact_root=args.artifact_root,
+        seasons=args.seasons,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_player_skill_features(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_player_skill_features(
+        args.shooting_source,
+        args.passing_source,
+        args.hustle_source,
+        args.shotzone_source,
         artifact_root=args.artifact_root,
         seasons=args.seasons,
     )
@@ -890,6 +912,36 @@ def command_compare_statistical_features_v2(args: argparse.Namespace) -> int:
         args.targets,
         args.baseline_run,
         artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_interpret_statistical_aio(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_statistical_interpretability(
+        args.features,
+        args.targets,
+        args.reference_run,
+        artifact_root=args.artifact_root,
+        test_window_end=args.test_window_end,
+        group_repeats=args.group_repeats,
+        individual_repeats=args.individual_repeats,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_validate_aging_balance(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_aging_balanced_validation(
+        args.predictions,
+        args.age_source_dir,
+        artifact_root=args.artifact_root,
+        minimum_training_origins=args.minimum_training_origins,
+        aging_ridge_alpha=args.aging_ridge_alpha,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -2051,6 +2103,7 @@ def build_parser() -> argparse.ArgumentParser:
     statistical_features_v2.add_argument("--defensive-tracking-features", type=Path)
     statistical_features_v2.add_argument("--assist-quality-features", type=Path)
     statistical_features_v2.add_argument("--matchup-defense-features", type=Path)
+    statistical_features_v2.add_argument("--player-skill-features", type=Path)
     statistical_features_v2.add_argument(
         "--window-ends",
         type=_season_list,
@@ -2146,6 +2199,20 @@ def build_parser() -> argparse.ArgumentParser:
     role_context.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     role_context.set_defaults(func=command_build_role_context_features)
 
+    player_skill = subparsers.add_parser(
+        "build-player-skill-features",
+        help="Build annual shot-making, passing, screening, and hustle skill features.",
+    )
+    player_skill.add_argument("--shooting-source", type=Path, required=True)
+    player_skill.add_argument("--passing-source", type=Path, required=True)
+    player_skill.add_argument("--hustle-source", type=Path, required=True)
+    player_skill.add_argument("--shotzone-source", type=Path, required=True)
+    player_skill.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2014, 2025))
+    )
+    player_skill.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    player_skill.set_defaults(func=command_build_player_skill_features)
+
     statistical_impact = subparsers.add_parser(
         "fit-statistical-impact",
         help="Fit the first purged three-season normal-RAPM statistical baseline.",
@@ -2181,6 +2248,39 @@ def build_parser() -> argparse.ArgumentParser:
     statistical_models.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     statistical_models.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     statistical_models.set_defaults(func=command_compare_statistical_models)
+
+    statistical_interpretability = subparsers.add_parser(
+        "interpret-statistical-aio",
+        help="Measure grouped feature reliance on a frozen diagnostic fold.",
+    )
+    statistical_interpretability.add_argument("--features", type=Path, required=True)
+    statistical_interpretability.add_argument("--reference-run", type=Path, required=True)
+    statistical_interpretability.add_argument(
+        "--targets", type=Path,
+        default=Path(
+            "rapm/outputs/rapm_results/final_20260703_hl250/rapm_all_windows.csv"
+        ),
+    )
+    statistical_interpretability.add_argument("--test-window-end", type=int, default=2024)
+    statistical_interpretability.add_argument("--group-repeats", type=int, default=20)
+    statistical_interpretability.add_argument("--individual-repeats", type=int, default=3)
+    statistical_interpretability.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    statistical_interpretability.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    statistical_interpretability.set_defaults(func=command_interpret_statistical_aio)
+
+    aging_balance = subparsers.add_parser(
+        "validate-aging-balance",
+        help="Score annual ratings forward and backward with earlier-only age adjustment.",
+    )
+    aging_balance.add_argument("--predictions", type=Path, required=True)
+    aging_balance.add_argument(
+        "--age-source-dir", type=Path, default=LEGACY_PLAYER_SHEETS
+    )
+    aging_balance.add_argument("--minimum-training-origins", type=int, default=3)
+    aging_balance.add_argument("--aging-ridge-alpha", type=float, default=10.0)
+    aging_balance.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    aging_balance.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    aging_balance.set_defaults(func=command_validate_aging_balance)
 
     statistical_direct_net = subparsers.add_parser(
         "compare-statistical-direct-net",
