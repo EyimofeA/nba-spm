@@ -11,6 +11,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from nba_impact.api.player_profiles import PROFILE_AXES, build_player_skill_profiles
 from nba_impact.api.ratings import ROLE_LABELS, RatingsApiConfig, RatingsStore
 
 
@@ -19,6 +20,38 @@ MODEL_CATALOG = [
     {"id": "spm", "label": "SPM", "components": ["net", "offense", "defense"]},
     {"id": "rapm", "label": "RAPM", "components": ["net", "offense", "defense"]},
 ]
+
+
+def _compact_memberships(items: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
+    if not items:
+        return []
+    return [
+        {
+            "role_id": item["role_id"],
+            "label": item["label"],
+            "affinity": round(float(item["affinity"]), 4),
+        }
+        for item in sorted(items, key=lambda item: float(item["affinity"]), reverse=True)[:4]
+    ]
+
+
+def _compact_role(role: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not role:
+        return None
+    result = {
+        "primary_role": role["primary_role"],
+        "confidence": round(float(role["confidence"]), 4),
+        "memberships": _compact_memberships(role.get("memberships")),
+    }
+    if role.get("stabilized_memberships"):
+        result.update(
+            {
+                "stabilized_primary_role": role.get("stabilized_primary_role", role["primary_role"]),
+                "stabilized_confidence": round(float(role.get("stabilized_confidence", role["confidence"])), 4),
+                "stabilized_memberships": _compact_memberships(role["stabilized_memberships"]),
+            }
+        )
+    return result
 
 
 def _team_age_panel(player_sheets_dir: Path, seasons: list[int]) -> pd.DataFrame:
@@ -125,6 +158,124 @@ def _aio_aging_rows(annual: pd.DataFrame, team_age: pd.DataFrame) -> list[dict[s
     return result.to_dict(orient="records")
 
 
+def _weighted_r2(actual: pd.Series, predicted: pd.Series, weights: pd.Series) -> float:
+    valid = actual.notna() & predicted.notna() & weights.notna() & weights.gt(0)
+    y = actual.loc[valid].to_numpy(dtype=float)
+    p = predicted.loc[valid].to_numpy(dtype=float)
+    w = weights.loc[valid].to_numpy(dtype=float)
+    if len(y) < 2:
+        return float("nan")
+    mean = float(np.average(y, weights=w))
+    denominator = float(np.sum(w * np.square(y - mean)))
+    return float(1.0 - np.sum(w * np.square(y - p)) / denominator) if denominator > 0 else float("nan")
+
+
+def _walk_forward_summary(run_path: Path, oof_path: Path) -> list[dict[str, Any]]:
+    if not (run_path / "priors.parquet").exists() or not oof_path.exists():
+        return []
+    priors = pd.read_parquet(run_path / "priors.parquet")
+    targets = pd.read_parquet(oof_path)
+    frame = priors.merge(
+        targets[[
+            "PLAYER_ID", "Season", "target_offense", "target_defense", "target_net",
+            "sample_weight",
+        ]],
+        on=["PLAYER_ID", "Season"], how="inner", validate="one_to_one",
+    )
+    rows = []
+    for component in ("offense", "defense", "net"):
+        fold_rows = []
+        for season, group in frame.groupby("Season", sort=True):
+            actual = group[f"target_{component}"]
+            predicted = group[f"prior_{component}_per_100"]
+            weights = group["sample_weight"]
+            fold_rows.append(
+                {
+                    "season": int(season),
+                    "rmse": float(np.sqrt(np.average(np.square(actual - predicted), weights=weights))),
+                    "correlation": float(actual.corr(predicted)),
+                    "r2": _weighted_r2(actual, predicted, weights),
+                }
+            )
+        rows.append(
+            {
+                "component": component,
+                "seasons": f"{min(row['season'] for row in fold_rows)}–{max(row['season'] for row in fold_rows)}",
+                "folds": len(fold_rows),
+                "rmse": float(np.mean([row["rmse"] for row in fold_rows])),
+                "correlation": float(np.mean([row["correlation"] for row in fold_rows])),
+                "r2": float(np.mean([row["r2"] for row in fold_rows])),
+            }
+        )
+    return rows
+
+
+def _walk_backward_summary(run_path: Path) -> list[dict[str, Any]]:
+    path = run_path / "predictions.parquet"
+    if not path.exists():
+        return []
+    frame = pd.read_parquet(path)
+    rows = []
+    for direction in sorted(frame["direction"].unique()):
+        group = frame.loc[frame["direction"].eq(direction)]
+        for component in ("offense", "defense", "net"):
+            actual = group[f"raw_target_{component}"]
+            predicted = group[f"spm_{component}"]
+            weights = group["evaluation_weight"]
+            rows.append(
+                {
+                    "direction": str(direction),
+                    "component": component,
+                    "rows": int(len(group)),
+                    "rmse": float(np.sqrt(np.average(np.square(actual - predicted), weights=weights))),
+                    "correlation": float(actual.corr(predicted)),
+                    "r2": _weighted_r2(actual, predicted, weights),
+                }
+            )
+    return rows
+
+
+def _aging_projection_summary(run_path: Path) -> dict[str, Any]:
+    run_file = run_path / "run.json"
+    if not run_file.exists():
+        return {}
+    run = json.loads(run_file.read_text())
+    result: dict[str, Any] = {
+        "selected_method": run["config"]["selected_method"],
+        "selection_seasons": run["config"]["selection_origins"],
+        "diagnostic_seasons": run["config"]["diagnostic_origins"],
+    }
+    for label, filename in (
+        ("selection", "selection_summary.parquet"),
+        ("diagnostic", "diagnostic_summary.parquet"),
+        ("subgroups", "subgroup_metrics.parquet"),
+    ):
+        frame = pd.read_parquet(run_path / filename)
+        result[label] = frame.astype(object).where(frame.notna(), None).to_dict(orient="records")
+    return result
+
+
+def _win_probability_summary(run_path: Path) -> dict[str, Any]:
+    run_file = run_path / "run.json"
+    if not run_file.exists():
+        return {}
+    metrics = json.loads(run_file.read_text()).get("metrics", {})
+    rows = []
+    for checkpoint in metrics.get("checkpoints", []):
+        local = checkpoint["elo_plus_team_context"]
+        rows.append(
+            {
+                "checkpoint": checkpoint["checkpoint"],
+                "rows": local["rows"],
+                "brier": local["brier"],
+                "auc": local["auc"],
+            }
+        )
+    espn = metrics.get("espn_game_start", {}).get("espn")
+    paired = metrics.get("espn_game_start_paired", {}).get("team_context_vs_espn")
+    return {"checkpoints": rows, "espn_game_start": espn, "paired": paired}
+
+
 def build_web_snapshot(
     config_path: str | Path,
     artifact_root: str | Path,
@@ -133,7 +284,12 @@ def build_web_snapshot(
     *,
     spm_run_path: str | Path | None = None,
     player_sheets_dir: str | Path | None = None,
-    shards: int = 32,
+    features_path: str | Path | None = None,
+    walk_forward_run_path: str | Path | None = None,
+    walk_backward_run_path: str | Path | None = None,
+    aging_projection_run_path: str | Path | None = None,
+    win_probability_run_path: str | Path | None = None,
+    shards: int = 128,
 ) -> dict:
     """Write indexes plus season-specific tables and role maps."""
     if shards < 1:
@@ -144,6 +300,14 @@ def build_web_snapshot(
     project_root = Path(__file__).resolve().parents[3]
     sheets = Path(player_sheets_dir or project_root / "data/raw/playersheets/year_totals")
     team_age = _team_age_panel(sheets, seasons)
+    team_lookup = team_age.set_index(["PLAYER_ID", "Season"])["TEAM_ABBREVIATION"].to_dict()
+    profiles = pd.DataFrame(columns=["PLAYER_ID", "Season", *PROFILE_AXES])
+    if features_path and Path(features_path).exists():
+        profiles = build_player_skill_profiles(pd.read_parquet(features_path), seasons)
+    profile_lookup = {
+        int(player_id): group.drop(columns="PLAYER_ID").round(1).astype(object).where(group.notna(), None).to_dict(orient="records")
+        for player_id, group in profiles.groupby("PLAYER_ID", sort=False)
+    }
 
     player_ids = sorted(set(store.annual["PLAYER_ID"].astype(int)))
     players: dict[str, dict] = {}
@@ -155,8 +319,26 @@ def build_web_snapshot(
         public_player = {
             "PLAYER_ID": player["PLAYER_ID"],
             "PLAYER_NAME": player["PLAYER_NAME"],
-            "annual": player["annual"],
-            "roles": player["roles"],
+            "annual": [
+                {
+                    "Season": int(row["Season"]),
+                    "TEAM_ABBREVIATION": team_lookup.get((player_id, int(row["Season"]))),
+                    "Poss_Off": int(row["Poss_Off"]),
+                    "Poss_Def": int(row["Poss_Def"]),
+                    "aio_offense": round(float(row["aio_offense"]), 4),
+                    "aio_defense": round(float(row["aio_defense"]), 4),
+                    "aio_net": round(float(row["aio_net"]), 4),
+                }
+                for row in player["annual"]
+            ],
+            "roles": [
+                {
+                    "Season": int(row["Season"]),
+                    **{side: compact for side in ("offense", "defense") if (compact := _compact_role(row.get(side)))},
+                }
+                for row in player["roles"]
+            ],
+            "profiles": profile_lookup.get(player_id, []),
         }
         players[str(player_id)] = public_player
         index.append({"id": player_id, "name": public_player["PLAYER_NAME"], "shard": player_id % shards})
@@ -188,6 +370,10 @@ def build_web_snapshot(
 
     stable_manifest = store.role_stabilization_manifest or {}
     spm_path = Path(spm_run_path) if spm_run_path else None
+    forward_path = Path(walk_forward_run_path) if walk_forward_run_path else None
+    backward_path = Path(walk_backward_run_path) if walk_backward_run_path else None
+    projection_path = Path(aging_projection_run_path) if aging_projection_run_path else None
+    wp_path = Path(win_probability_run_path) if win_probability_run_path else None
     catalog = {
         "schema_version": "nba_impact_web_snapshot_v2",
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -226,11 +412,18 @@ def build_web_snapshot(
                 "rows": _aio_aging_rows(store.annual, team_age),
             },
         },
+        "validation": {
+            "walk_forward": _walk_forward_summary(forward_path, spm_path / "oof_predictions.parquet")
+            if forward_path and spm_path else [],
+            "walk_backward": _walk_backward_summary(backward_path) if backward_path else [],
+            "aging_projection": _aging_projection_summary(projection_path) if projection_path else {},
+            "win_probability": _win_probability_summary(wp_path) if wp_path else {},
+        },
         "shards": shards,
     }
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
-    for pattern in ("leaderboard-*.json", "roles-*.json"):
+    for pattern in ("leaderboard-*.json", "roles-*.json", "ratings-*.json"):
         for old_path in output.glob(pattern):
             old_path.unlink()
 
@@ -246,20 +439,30 @@ def build_web_snapshot(
         "catalog.json": write("catalog.json", catalog),
         "players.json": write("players.json", index),
     }
+    if projection_path:
+        projection_players = pd.read_parquet(projection_path / "player_projections.parquet")
+        projection_teams = pd.read_parquet(projection_path / "team_projections.parquet")
+        canonical_names = store.annual.sort_values("Season").drop_duplicates("PLAYER_ID", keep="last").set_index("PLAYER_ID")["PLAYER_NAME"]
+        projection_players["PLAYER_NAME"] = projection_players["PLAYER_ID"].map(canonical_names).fillna(projection_players["PLAYER_NAME"])
+        files["projection-players.json"] = write(
+            "projection-players.json",
+            projection_players.astype(object).where(projection_players.notna(), None).to_dict(orient="records"),
+        )
+        files["projection-teams.json"] = write(
+            "projection-teams.json",
+            projection_teams.astype(object).where(projection_teams.notna(), None).to_dict(orient="records"),
+        )
     leaderboard_columns = [
         "PLAYER_ID", "PLAYER_NAME", "Season", "TEAM_ABBREVIATION", "Poss_Off", "Poss_Def",
-        "spm_raw_offense", "spm_raw_defense", "spm_raw_net",
-        "normal_rapm_offense", "normal_rapm_defense", "normal_rapm_net",
         "aio_offense", "aio_defense", "aio_net",
-        "rapm_update_offense", "rapm_update_defense", "rapm_update_net",
-        "offense_role", "offense_stable_role", "defense_role", "defense_stable_role",
     ]
     for season in seasons:
         frame = annual.loc[annual["Season"].eq(season)].copy()
         for column in leaderboard_columns:
             if column not in frame:
                 frame[column] = None
-        selected = frame[leaderboard_columns]
+        selected = frame[leaderboard_columns].copy()
+        selected[["aio_offense", "aio_defense", "aio_net"]] = selected[["aio_offense", "aio_defense", "aio_net"]].round(4)
         selected = selected.astype(object).where(selected.notna(), None)
         name = f"leaderboard-{season}.json"
         files[name] = write(name, selected.to_dict(orient="records"))
@@ -277,6 +480,7 @@ def build_web_snapshot(
             points[stable_column].map(ROLE_LABELS[side]) if stable_column in points else points["raw_role"]
         )
         points = points.rename(columns={f"{prefix}_role_axis_1": "x", f"{prefix}_role_axis_2": "y"})
+        points[["x", "y"]] = points[["x", "y"]].round(5)
         columns = ["PLAYER_ID", "PLAYER_NAME", "Season", "TEAM_ABBREVIATION", "x", "y", "raw_role", "stable_role"]
         for season in sorted(
             int(value) for value in points.loc[points["Season"].isin(seasons), "Season"].unique()

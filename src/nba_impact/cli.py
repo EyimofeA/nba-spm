@@ -105,6 +105,7 @@ from nba_impact.models.annual_target_transition import (
 from nba_impact.models.aging_balanced_validation import (
     run_aging_balanced_validation,
 )
+from nba_impact.models.aging_projection import build_aging_projection
 from nba_impact.models.statistical_direct_net import (
     run_statistical_direct_net_comparison,
 )
@@ -1315,6 +1316,24 @@ def command_build_state_space_trajectory(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_build_aging_projection(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_aging_projection(
+        args.trajectories,
+        args.targets,
+        args.player_sheets_dir,
+        artifact_root=args.artifact_root,
+        selection_origins=tuple(args.selection_origins),
+        diagnostic_origins=tuple(args.diagnostic_origins),
+        projection_origin=args.projection_origin,
+        minimum_side_possessions=args.minimum_side_possessions,
+        alpha=args.alpha,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
 def command_build_expected_possession_points(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     run = build_expected_possession_points(
@@ -1484,6 +1503,11 @@ def command_build_web_snapshot(args: argparse.Namespace) -> int:
         args.output_dir,
         spm_run_path=args.spm_run,
         player_sheets_dir=args.player_sheets_dir,
+        features_path=args.features,
+        walk_forward_run_path=args.walk_forward_run,
+        walk_backward_run_path=args.walk_backward_run,
+        aging_projection_run_path=args.aging_projection_run,
+        win_probability_run_path=args.win_probability_run,
         shards=args.shards,
     )
     print(json.dumps(result, indent=2))
@@ -2722,6 +2746,28 @@ def build_parser() -> argparse.ArgumentParser:
     state_space.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     state_space.set_defaults(func=command_build_state_space_trajectory)
 
+    aging_projection = subparsers.add_parser(
+        "build-aging-projection",
+        help="Select walk-forward aging adjustments and project players and teams.",
+    )
+    aging_projection.add_argument("--trajectories", type=Path, required=True)
+    aging_projection.add_argument("--targets", type=Path, required=True)
+    aging_projection.add_argument(
+        "--player-sheets-dir", type=Path, default=LEGACY_PLAYER_SHEETS
+    )
+    aging_projection.add_argument(
+        "--selection-origins", type=_season_list, default=(2018, 2019, 2020, 2021)
+    )
+    aging_projection.add_argument(
+        "--diagnostic-origins", type=_season_list, default=(2022, 2023)
+    )
+    aging_projection.add_argument("--projection-origin", type=int, default=2026)
+    aging_projection.add_argument("--minimum-side-possessions", type=float, default=1000.0)
+    aging_projection.add_argument("--alpha", type=float, default=25.0)
+    aging_projection.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    aging_projection.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    aging_projection.set_defaults(func=command_build_aging_projection)
+
     expected_possession = subparsers.add_parser(
         "build-expected-possession-points",
         help="Cross-fit player-neutral expected points from possession-start context.",
@@ -2956,7 +3002,48 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=PROJECT_ROOT / "data" / "raw" / "playersheets" / "year_totals",
     )
-    web_snapshot.add_argument("--shards", type=int, default=32)
+    web_snapshot.add_argument(
+        "--features",
+        type=Path,
+        default=ARTIFACT_ROOT
+        / "features"
+        / "statistical_impact"
+        / "statistical_features_v2_907e4ee4b9"
+        / "features.parquet",
+    )
+    web_snapshot.add_argument(
+        "--walk-forward-run",
+        type=Path,
+        default=ARTIFACT_ROOT
+        / "models"
+        / "annual_spm_priors"
+        / "annual_spm_priors_v1_1107680642",
+    )
+    web_snapshot.add_argument(
+        "--walk-backward-run",
+        type=Path,
+        default=ARTIFACT_ROOT
+        / "models"
+        / "aging_balanced_validation"
+        / "aging_balanced_validation_v1_ec5122d5a3",
+    )
+    web_snapshot.add_argument(
+        "--aging-projection-run",
+        type=Path,
+        default=ARTIFACT_ROOT
+        / "models"
+        / "aging_projection"
+        / "aging_projection_v1_6a288b493e",
+    )
+    web_snapshot.add_argument(
+        "--win-probability-run",
+        type=Path,
+        default=ARTIFACT_ROOT
+        / "models"
+        / "win_probability_lineup"
+        / "wp_pregame_ablation_v3_cdbcea84ee",
+    )
+    web_snapshot.add_argument("--shards", type=int, default=128)
     web_snapshot.set_defaults(func=command_build_web_snapshot)
 
     compare = subparsers.add_parser(
