@@ -1,0 +1,22 @@
+{
+  "provider": "cdechoch/nba-data-archive",
+  "source": "https://huggingface.co/datasets/cdechoch/nba-data-archive",
+  "license": "Apache-2.0",
+  "purpose": "Complete the missing 2025-26 playoff ordinal event partition before rebuilding current possessions and lineups.",
+  "tasks": [
+    {
+      "name": "cdnnba_2026_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/cdnnba/po_2025.parquet",
+      "destination": "nba_data_archive/cdnnba/season=2025/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "source_revision": "dfa8fa43f89ae2ca6c18db524edc2050a6bb2286",
+      "season": 2025,
+      "season_type": "playoffs",
+      "expected_bytes": 1494136,
+      "expected_sha256": "1640c62350a0f96aa05be37a5a62111affa6b40939f15f1b9246c44b37cccb87",
+      "expected_min_rows": 10000,
+      "required_columns": ["gameId", "orderNumber", "actionNumber", "period", "clock", "actionType", "personId", "teamId", "possession", "_season", "_season_type"]
+    }
+  ]
+}

@@ -41,6 +41,7 @@ from nba_impact.data.role_context import build_role_context_features
 from nba_impact.data.shot_defense import build_shot_defense_events
 from nba_impact.data.possessions import build_possessions
 from nba_impact.data.scoring_events import build_scoring_event_dataset
+from nba_impact.data.rapm_readiness import audit_rapm_inputs
 from nba_impact.data.statistical_features import build_statistical_feature_windows
 from nba_impact.data.statistical_features_v2 import build_statistical_features_v2
 from nba_impact.models.rapm import (
@@ -286,6 +287,23 @@ def command_audit_events(args: argparse.Namespace) -> int:
                 f"missing={item['missing_games']} extra={item['extra_games']}"
             )
     return 0 if snapshot["passed"] else 2
+
+
+def command_audit_rapm_inputs(args: argparse.Namespace) -> int:
+    """Report whether possession and ordinal lineup data meet the RAPM contract."""
+    report = audit_rapm_inputs(args.root, args.silver_root, args.seasons)
+    destination = Path(args.output)
+    write_json_atomic(report, destination)
+    for row in report["rows"]:
+        print(
+            f"{row['season_label']} {row['season_type']:<8} "
+            f"games={row['game_dim_games']:,} rapm_ready={row['rapm_ready_games']:,} "
+            f"passed={row['passed']}"
+        )
+        for issue in row["issues"]:
+            print(f"  {issue}")
+    print(json.dumps({"passed": report["passed"], "output": str(destination)}, indent=2))
+    return 0 if report["passed"] else 2
 
 
 def command_build_game_dim(args: argparse.Namespace) -> int:
@@ -1993,6 +2011,18 @@ def build_parser() -> argparse.ArgumentParser:
     event_states.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
     event_states.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     event_states.set_defaults(func=command_build_event_states)
+
+    rapm_input_audit = subparsers.add_parser(
+        "audit-rapm-inputs",
+        help="Audit possession and ordinal lineup coverage before a RAPM fit.",
+    )
+    rapm_input_audit.add_argument("--root", type=Path, default=BRONZE_ROOT / "nba_data_archive")
+    rapm_input_audit.add_argument("--silver-root", type=Path, default=SILVER_ROOT)
+    rapm_input_audit.add_argument("--seasons", type=_season_list, default=tuple(range(2017, 2027)))
+    rapm_input_audit.add_argument(
+        "--output", type=Path, default=MANIFEST_ROOT / "rapm_input_readiness.json"
+    )
+    rapm_input_audit.set_defaults(func=command_audit_rapm_inputs)
 
     player_games = subparsers.add_parser(
         "build-player-games",

@@ -1,0 +1,30 @@
+{
+  "provider": "gabriel1200/merged_playbyplay",
+  "source": "https://github.com/gabriel1200/merged_playbyplay",
+  "source_revision": "6e077a0f62153e72db300ba1f0a45b30584fd3d2",
+  "license": "not_declared_research_only",
+  "purpose": "Targeted raw event and on-court lineup fallback for ten canonical games quarantined by strict lineup QA. This manifest is not a RAPM input by itself.",
+  "target_games": {
+    "gabriel_gsw_2024_regular": ["0022300339"], "gabriel_mia_2024_regular": ["0022300535"], "gabriel_min_2024_regular": ["0022301210"],
+    "gabriel_bos_2025_regular": ["0022400061"], "gabriel_mil_2025_regular": ["0022400223"], "gabriel_was_2025_regular": ["0022400771"], "gabriel_det_2025_regular": ["0022400821"],
+    "gabriel_orl_2026_regular": ["0022500264"], "gabriel_phi_2026_regular": ["0022500643"], "gabriel_det_2026_playoffs": ["0042500205"]
+  },
+  "tasks": [
+    {"name":"gabriel_gsw_2024_regular","url":"https://raw.githubusercontent.com/gabriel1200/merged_playbyplay/6e077a0f62153e72db300ba1f0a45b30584fd3d2/data/GSW_2024_rs.csv","destination":"gabriel_merged_playbyplay/revision=6e077a0/project_season=2024/GSW_2024_rs.csv","season":2024,"season_type":"regular","expected_bytes":13749759,"expected_min_rows":1000},
+    {"name":"gabriel_mia_2024_regular","url":"https://raw.githubusercontent.com/gabriel1200/merged_playbyplay/6e077a0f62153e72db300ba1f0a45b30584fd3d2/data/MIA_2024_rs.csv","destination":"gabriel_merged_playbyplay/revision=6e077a0/project_season=2024/MIA_2024_rs.csv","season":2024,"season_type":"regular","expected_bytes":12809937,"expected_min_rows":1000},
+    {"name":"gabriel_min_2024_regular","url":"https://raw.githubusercontent.com/gabriel1200/merged_playbyplay/6e077a0f62153e72db300ba1f0a45b30584fd3d2/data/MIN_2024_rs.csv","destination":"gabriel_merged_playbyplay/revision=6e077a0/project_season=2024/MIN_2024_rs.csv","season":2024,"season_type":"regular","expected_bytes":13470498,"expected_min_rows":1000},
+    {"name":"gabriel_bos_2025_regular","url":"https://raw.githubusercontent.com/gabriel1200/merged_playbyplay/6e077a0f62153e72db300ba1f0a45b30584fd3d2/data/BOS_2025_rs.csv","destination":"gabriel_merged_playbyplay/revision=6e077a0/project_season=2025/BOS_2025_rs.csv","season":2025,"season_type":"regular","expected_bytes":12960218,"expected_min_rows":1000},
+    {"name":"gabriel_mil_2025_regular","url":"https://raw.githubusercontent.com/gabriel1200/merged_playbyplay/6e077a0f62153e72db300ba1f0a45b30584fd3d2/data/MIL_2025_rs.csv","destination":"gabriel_merged_playbyplay/revision=6e077a0/project_season=2025/MIL_2025_rs.csv","season":2025,"season_type":"regular","expected_bytes":13314892,"expected_min_rows":1000},
+    {"name":"gabriel_was_2025_regular","url":"https://raw.githubusercontent.com/gabriel1200/merged_playbyplay/6e077a0f62153e72db300ba1f0a45b30584fd3d2/data/WAS_2025_rs.csv","destination":"gabriel_merged_playbyplay/revision=6e077a0/project_season=2025/WAS_2025_rs.csv","season":2025,"season_type":"regular","expected_bytes":13897542,"expected_min_rows":1000},
+    {"name":"gabriel_det_2025_regular","url":"https://raw.githubusercontent.com/gabriel1200/merged_playbyplay/6e077a0f62153e72db300ba1f0a45b30584fd3d2/data/DET_2025_rs.csv","destination":"gabriel_merged_playbyplay/revision=6e077a0/project_season=2025/DET_2025_rs.csv","season":2025,"season_type":"regular","expected_bytes":14024004,"expected_min_rows":1000},
+    {"name":"gabriel_orl_2026_regular","url":"https://raw.githubusercontent.com/gabriel1200/merged_playbyplay/6e077a0f62153e72db300ba1f0a45b30584fd3d2/data/ORL_2026_rs.csv","destination":"gabriel_merged_playbyplay/revision=6e077a0/project_season=2026/ORL_2026_rs.csv","season":2026,"season_type":"regular","expected_bytes":18090835,"expected_min_rows":1000},
+    {"name":"gabriel_phi_2026_regular","url":"https://raw.githubusercontent.com/gabriel1200/merged_playbyplay/6e077a0f62153e72db300ba1f0a45b30584fd3d2/data/PHI_2026_rs.csv","destination":"gabriel_merged_playbyplay/revision=6e077a0/project_season=2026/PHI_2026_rs.csv","season":2026,"season_type":"regular","expected_bytes":17868726,"expected_min_rows":1000},
+    {"name":"gabriel_det_2026_playoffs","url":"https://raw.githubusercontent.com/gabriel1200/merged_playbyplay/6e077a0f62153e72db300ba1f0a45b30584fd3d2/data/DET_2026_ps.csv","destination":"gabriel_merged_playbyplay/revision=6e077a0/project_season=2026/DET_2026_ps.csv","season":2026,"season_type":"playoffs","expected_bytes":3085844,"expected_min_rows":1000}
+  ],
+  "task_defaults": {
+    "provider": "gabriel1200/merged_playbyplay",
+    "license": "not_declared_research_only",
+    "source_revision": "6e077a0f62153e72db300ba1f0a45b30584fd3d2",
+    "required_columns": ["actionNumber", "scoreHome", "scoreAway", "players_on", "teamId", "game_id", "season_type"]
+  }
+}
