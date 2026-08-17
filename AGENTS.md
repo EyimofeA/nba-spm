@@ -248,9 +248,12 @@ the posterior. Do not attach SPM or AIO intervals until they are calibrated.
 Forward-only role display run `role_stabilization_v1_f5b426dd5d` selects a
 0.70 current-season membership weight without impact targets. It is a display
 layer only. Keep raw memberships available and never use the stable hard label
-as an SPM feature. The static derived-data web client loads one annual table or
-one role map at a time. Regenerate it with `nba-impact build-web-snapshot` after
-changing pinned ratings, roles, player sheets, or the aging curve.
+as an SPM feature. The public site now shows raw single-season roles only; the
+stable layer stays out of the web snapshot. The static derived-data web client
+loads one annual table or one role map at a time. It offers AIO, normal RAPM,
+and SPM through one model selector and shows no win-probability result.
+Regenerate it with `nba-impact build-web-snapshot` after changing pinned
+ratings, roles, player sheets, or the aging curve.
 
 Observed-lineup shot-defense research is documented in
 `docs/impact/SHOT_DEFENSE_MODEL.md`. The validated event panel has exact zones

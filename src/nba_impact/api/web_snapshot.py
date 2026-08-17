@@ -15,11 +15,103 @@ from nba_impact.api.player_profiles import PROFILE_AXES, build_player_skill_prof
 from nba_impact.api.ratings import ROLE_LABELS, RatingsApiConfig, RatingsStore
 
 
+COMPONENTS = ("offense", "defense", "net")
+
+# Public model selector.  `prefix` is the exported column prefix and `source`
+# is the column prefix inside the pinned annual rating run.
 MODEL_CATALOG = [
-    {"id": "aio", "label": "AIO", "components": ["net", "offense", "defense"]},
-    {"id": "spm", "label": "SPM", "components": ["net", "offense", "defense"]},
-    {"id": "rapm", "label": "RAPM", "components": ["net", "offense", "defense"]},
+    {
+        "id": "aio",
+        "label": "AIO",
+        "prefix": "aio_",
+        "source": "aio_",
+        "note": "SPM center plus the RAPM update.",
+    },
+    {
+        "id": "rapm",
+        "label": "Normal RAPM",
+        "prefix": "normal_rapm_",
+        "source": "normal_rapm_",
+        "note": "Zero-prior one-season ridge on possessions.",
+    },
+    {
+        "id": "spm",
+        "label": "SPM",
+        "prefix": "spm_",
+        "source": "spm_center_",
+        "note": "Held-out statistical prediction that centers the RAPM fit.",
+    },
 ]
+
+# Verified external agreement, transcribed from frozen benchmark runs.  These
+# are diagnostics against public metrics, never labels or ground truth.
+EXTERNAL_BENCHMARK = {
+    "note": (
+        "Basketball Reference BPM and xrapm.com are external diagnostics. "
+        "They are not training labels and not ground truth."
+    ),
+    "rows": [
+        {
+            "scope": "Three-season SPM windows",
+            "exposure": "3,000+ possessions per side",
+            "players": 2295,
+            "component": "net",
+            "bpm": 0.876,
+            "xrapm": 0.756,
+            "run_id": "external_impact_benchmark_v1_bab43a4087",
+        },
+        {
+            "scope": "Three-season SPM windows",
+            "exposure": "3,000+ possessions per side",
+            "players": 2295,
+            "component": "offense",
+            "bpm": None,
+            "xrapm": 0.831,
+            "run_id": "external_impact_benchmark_v1_bab43a4087",
+        },
+        {
+            "scope": "Three-season SPM windows",
+            "exposure": "3,000+ possessions per side",
+            "players": 2295,
+            "component": "defense",
+            "bpm": None,
+            "xrapm": 0.630,
+            "run_id": "external_impact_benchmark_v1_bab43a4087",
+        },
+        {
+            "scope": "Annual SPM baseline",
+            "exposure": "1,000+ possessions per side",
+            "players": 2860,
+            "component": "net",
+            "bpm": 0.897,
+            "xrapm": 0.762,
+            "run_id": "single_season_spm_v1_51adc53061",
+        },
+        {
+            "scope": "Annual SPM baseline",
+            "exposure": "1,000+ possessions per side",
+            "players": 2860,
+            "component": "defense",
+            "bpm": 0.803,
+            "xrapm": 0.590,
+            "run_id": "single_season_spm_v1_51adc53061",
+        },
+        {
+            "scope": "Annual SPM plus tracking",
+            "exposure": "1,000+ possessions per side",
+            "players": None,
+            "component": "defense",
+            "bpm": 0.690,
+            "xrapm": 0.701,
+            "run_id": "single_season_spm_v1_bff6060df6",
+        },
+    ],
+    "pinned_model_note": (
+        "The pinned rating model adds scorer-adjusted matchup features. Its "
+        "defense agreement improves against xRAPM and declines against BPM; "
+        "exact values are not published."
+    ),
+}
 
 
 def _compact_memberships(items: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
@@ -36,22 +128,24 @@ def _compact_memberships(items: list[dict[str, Any]] | None) -> list[dict[str, A
 
 
 def _compact_role(role: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Public roles are raw only.  Stabilized labels stay out of the snapshot."""
     if not role:
         return None
-    result = {
+    return {
         "primary_role": role["primary_role"],
         "confidence": round(float(role["confidence"]), 4),
         "memberships": _compact_memberships(role.get("memberships")),
     }
-    if role.get("stabilized_memberships"):
-        result.update(
-            {
-                "stabilized_primary_role": role.get("stabilized_primary_role", role["primary_role"]),
-                "stabilized_confidence": round(float(role.get("stabilized_confidence", role["confidence"])), 4),
-                "stabilized_memberships": _compact_memberships(role["stabilized_memberships"]),
-            }
-        )
-    return result
+
+
+def _model_columns(frame: pd.DataFrame) -> dict[str, str]:
+    """Map available source rating columns to their exported names."""
+    return {
+        f"{model['source']}{component}": f"{model['prefix']}{component}"
+        for model in MODEL_CATALOG
+        for component in COMPONENTS
+        if f"{model['source']}{component}" in frame.columns
+    }
 
 
 def _team_age_panel(player_sheets_dir: Path, seasons: list[int]) -> pd.DataFrame:
@@ -255,27 +349,6 @@ def _aging_projection_summary(run_path: Path) -> dict[str, Any]:
     return result
 
 
-def _win_probability_summary(run_path: Path) -> dict[str, Any]:
-    run_file = run_path / "run.json"
-    if not run_file.exists():
-        return {}
-    metrics = json.loads(run_file.read_text()).get("metrics", {})
-    rows = []
-    for checkpoint in metrics.get("checkpoints", []):
-        local = checkpoint["elo_plus_team_context"]
-        rows.append(
-            {
-                "checkpoint": checkpoint["checkpoint"],
-                "rows": local["rows"],
-                "brier": local["brier"],
-                "auc": local["auc"],
-            }
-        )
-    espn = metrics.get("espn_game_start", {}).get("espn")
-    paired = metrics.get("espn_game_start_paired", {}).get("team_context_vs_espn")
-    return {"checkpoints": rows, "espn_game_start": espn, "paired": paired}
-
-
 def build_web_snapshot(
     config_path: str | Path,
     artifact_root: str | Path,
@@ -288,7 +361,6 @@ def build_web_snapshot(
     walk_forward_run_path: str | Path | None = None,
     walk_backward_run_path: str | Path | None = None,
     aging_projection_run_path: str | Path | None = None,
-    win_probability_run_path: str | Path | None = None,
     shards: int = 128,
 ) -> dict:
     """Write indexes plus season-specific tables and role maps."""
@@ -309,6 +381,7 @@ def build_web_snapshot(
         for player_id, group in profiles.groupby("PLAYER_ID", sort=False)
     }
 
+    annual_model_columns = _model_columns(store.annual)
     player_ids = sorted(set(store.annual["PLAYER_ID"].astype(int)))
     players: dict[str, dict] = {}
     index = []
@@ -325,9 +398,11 @@ def build_web_snapshot(
                     "TEAM_ABBREVIATION": team_lookup.get((player_id, int(row["Season"]))),
                     "Poss_Off": int(row["Poss_Off"]),
                     "Poss_Def": int(row["Poss_Def"]),
-                    "aio_offense": round(float(row["aio_offense"]), 4),
-                    "aio_defense": round(float(row["aio_defense"]), 4),
-                    "aio_net": round(float(row["aio_net"]), 4),
+                    **{
+                        exported: round(float(row[source]), 4)
+                        for source, exported in annual_model_columns.items()
+                        if row.get(source) is not None
+                    },
                 }
                 for row in player["annual"]
             ],
@@ -357,23 +432,12 @@ def build_web_snapshot(
             continue
         selected = frame.copy()
         selected[f"{side}_role"] = selected[f"{prefix}_role_cluster"].map(ROLE_LABELS[side])
-        stable_column = f"{prefix}_role_stable_cluster"
-        selected[f"{side}_stable_role"] = (
-            selected[stable_column].map(ROLE_LABELS[side])
-            if stable_column in selected else selected[f"{side}_role"]
-        )
         role_frames[side] = selected
-        annual = annual.merge(
-            selected[["PLAYER_ID", "Season", f"{side}_role", f"{side}_stable_role"]],
-            on=["PLAYER_ID", "Season"], how="left", validate="one_to_one",
-        )
 
-    stable_manifest = store.role_stabilization_manifest or {}
     spm_path = Path(spm_run_path) if spm_run_path else None
     forward_path = Path(walk_forward_run_path) if walk_forward_run_path else None
     backward_path = Path(walk_backward_run_path) if walk_backward_run_path else None
     projection_path = Path(aging_projection_run_path) if aging_projection_run_path else None
-    wp_path = Path(win_probability_run_path) if win_probability_run_path else None
     catalog = {
         "schema_version": "nba_impact_web_snapshot_v2",
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -394,13 +458,11 @@ def build_web_snapshot(
             "rolling_run_id": config.rolling_run_id,
             "current_rapm_run_id": config.current_rapm_run_id,
             "side_roles_run_id": config.side_roles_run_id,
-            "role_stabilization_run_id": config.role_stabilization_run_id,
         },
         "methods": {
             "aio_equation": "AIO = SPM center + centered RAPM update",
             "rapm_update_note": "The update is the deviation of one joint centered ridge fit from its SPM center; it is not zero-prior RAPM added afterward.",
             "spm_calibration": _calibration_summary(spm_path / "oof_predictions.parquet") if spm_path else {},
-            "role_stabilization": stable_manifest.get("metrics", {}),
         },
         "aging": {
             "rapm": {
@@ -417,7 +479,7 @@ def build_web_snapshot(
             if forward_path and spm_path else [],
             "walk_backward": _walk_backward_summary(backward_path) if backward_path else [],
             "aging_projection": _aging_projection_summary(projection_path) if projection_path else {},
-            "win_probability": _win_probability_summary(wp_path) if wp_path else {},
+            "external_benchmark": EXTERNAL_BENCHMARK,
         },
         "shards": shards,
     }
@@ -452,17 +514,18 @@ def build_web_snapshot(
             "projection-teams.json",
             projection_teams.astype(object).where(projection_teams.notna(), None).to_dict(orient="records"),
         )
-    leaderboard_columns = [
+    base_columns = [
         "PLAYER_ID", "PLAYER_NAME", "Season", "TEAM_ABBREVIATION", "Poss_Off", "Poss_Def",
-        "aio_offense", "aio_defense", "aio_net",
     ]
+    rating_columns = _model_columns(annual)
     for season in seasons:
         frame = annual.loc[annual["Season"].eq(season)].copy()
-        for column in leaderboard_columns:
+        for column in base_columns:
             if column not in frame:
                 frame[column] = None
-        selected = frame[leaderboard_columns].copy()
-        selected[["aio_offense", "aio_defense", "aio_net"]] = selected[["aio_offense", "aio_defense", "aio_net"]].round(4)
+        selected = frame[base_columns + list(rating_columns)].rename(columns=rating_columns)
+        exported = list(rating_columns.values())
+        selected[exported] = selected[exported].round(4)
         selected = selected.astype(object).where(selected.notna(), None)
         name = f"leaderboard-{season}.json"
         files[name] = write(name, selected.to_dict(orient="records"))
@@ -470,18 +533,14 @@ def build_web_snapshot(
     names = store.annual[["PLAYER_ID", "PLAYER_NAME"]].drop_duplicates("PLAYER_ID", keep="last")
     for side, frame in role_frames.items():
         prefix = "off" if side == "offense" else "def"
-        stable_column = f"{prefix}_role_stable_cluster"
         points = frame.merge(names, on="PLAYER_ID", how="left", validate="many_to_one").merge(
             team_age[["PLAYER_ID", "Season", "TEAM_ABBREVIATION"]],
             on=["PLAYER_ID", "Season"], how="left", validate="one_to_one",
         )
         points["raw_role"] = points[f"{prefix}_role_cluster"].map(ROLE_LABELS[side])
-        points["stable_role"] = (
-            points[stable_column].map(ROLE_LABELS[side]) if stable_column in points else points["raw_role"]
-        )
         points = points.rename(columns={f"{prefix}_role_axis_1": "x", f"{prefix}_role_axis_2": "y"})
         points[["x", "y"]] = points[["x", "y"]].round(5)
-        columns = ["PLAYER_ID", "PLAYER_NAME", "Season", "TEAM_ABBREVIATION", "x", "y", "raw_role", "stable_role"]
+        columns = ["PLAYER_ID", "PLAYER_NAME", "Season", "TEAM_ABBREVIATION", "x", "y", "raw_role"]
         for season in sorted(
             int(value) for value in points.loc[points["Season"].isin(seasons), "Season"].unique()
         ):

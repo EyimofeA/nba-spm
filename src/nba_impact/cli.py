@@ -1534,7 +1534,6 @@ def command_build_web_snapshot(args: argparse.Namespace) -> int:
         walk_forward_run_path=args.walk_forward_run,
         walk_backward_run_path=args.walk_backward_run,
         aging_projection_run_path=args.aging_projection_run,
-        win_probability_run_path=args.win_probability_run,
         shards=args.shards,
     )
     print(json.dumps(result, indent=2))
@@ -3111,14 +3110,6 @@ def build_parser() -> argparse.ArgumentParser:
         / "models"
         / "aging_projection"
         / "aging_projection_v1_6a288b493e",
-    )
-    web_snapshot.add_argument(
-        "--win-probability-run",
-        type=Path,
-        default=ARTIFACT_ROOT
-        / "models"
-        / "win_probability_lineup"
-        / "wp_pregame_ablation_v3_cdbcea84ee",
     )
     web_snapshot.add_argument("--shards", type=int, default=128)
     web_snapshot.set_defaults(func=command_build_web_snapshot)
