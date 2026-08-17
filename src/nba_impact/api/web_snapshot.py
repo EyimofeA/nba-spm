@@ -170,6 +170,134 @@ def _team_age_panel(player_sheets_dir: Path, seasons: list[int]) -> pd.DataFrame
     return pd.concat(frames, ignore_index=True)
 
 
+def _current_normal_rapm_rows(
+    run_path: Path,
+    player_sheets_dir: Path,
+    player_games_path: Path | None,
+    published_seasons: list[int],
+) -> tuple[pd.DataFrame, str]:
+    """Read the pinned current target run as Normal-RAPM-only annual rows.
+
+    The historical annual artifact remains the source of AIO and SPM.  This
+    adapter adds only later complete seasons from the canonical terminal-lineup,
+    zero-prior target run.
+    """
+    manifest_path = run_path / "run.json"
+    targets_path = run_path / "targets.parquet"
+    if not manifest_path.exists() or not targets_path.exists():
+        raise FileNotFoundError(
+            "Current Normal RAPM requires run.json and targets.parquet."
+        )
+    manifest = json.loads(manifest_path.read_text())
+    expected = "canonical_current_single_season_zero_prior_normal_rapm_targets"
+    if manifest.get("model_family") != expected:
+        raise ValueError("Current Normal RAPM run has the wrong model family.")
+    config = manifest.get("config", {})
+    if (
+        config.get("lineup_policy") != "terminal"
+        or config.get("prior") != "zero"
+        or config.get("game_types") != ["regular"]
+    ):
+        raise ValueError("Current Normal RAPM run must be terminal-lineup, zero-prior regular season.")
+    if any(float(config.get(name, float("nan"))) != value for name, value in (
+        ("lambda_off", 3000.0), ("lambda_def", 3000.0), ("lambda_home", 300.0)
+    )):
+        raise ValueError("Current Normal RAPM run must use 3000/3000/300 penalties.")
+
+    targets = pd.read_parquet(targets_path)
+    required = {
+        "PLAYER_ID", "Season", "target_offense", "target_defense", "target_net",
+        "Poss_Off", "Poss_Def",
+    }
+    missing = required.difference(targets.columns)
+    if missing:
+        raise ValueError(f"Current Normal RAPM targets are missing columns: {sorted(missing)}")
+    targets = targets.loc[~targets["Season"].isin(published_seasons)].copy()
+    if targets.empty:
+        return pd.DataFrame(), str(manifest.get("run_id", run_path.name))
+    if targets.duplicated(["PLAYER_ID", "Season"]).any():
+        raise ValueError("Current Normal RAPM targets have duplicate player-seasons.")
+    numeric = ["target_offense", "target_defense", "target_net", "Poss_Off", "Poss_Def"]
+    if not np.isfinite(targets[numeric].to_numpy(dtype=float)).all():
+        raise ValueError("Current Normal RAPM targets contain non-finite values.")
+    if (targets[["Poss_Off", "Poss_Def"]] <= 0).any().any():
+        raise ValueError("Current Normal RAPM targets require positive side possessions.")
+    if not np.allclose(
+        targets["target_net"], targets["target_offense"] + targets["target_defense"], atol=1e-10
+    ):
+        raise ValueError("Current Normal RAPM targets violate offense + defense = net.")
+
+    target_seasons = sorted(int(value) for value in targets["Season"].unique())
+    sheet_frames = []
+    for season in target_seasons:
+        path = player_sheets_dir / f"{season}.csv"
+        if not path.exists():
+            continue
+        sheet = pd.read_csv(
+            path,
+            usecols=lambda column: column in {
+                "PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION",
+            },
+        )
+        if {"PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION"}.issubset(sheet.columns):
+            sheet["Season"] = season
+            sheet_frames.append(sheet)
+    sheet_metadata = pd.concat(sheet_frames, ignore_index=True) if sheet_frames else pd.DataFrame(
+        columns=["PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION", "Season"]
+    )
+    if not sheet_metadata.empty:
+        sheet_metadata = sheet_metadata.dropna(
+            subset=["PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION"]
+        ).drop_duplicates(["PLAYER_ID", "Season"], keep="last")
+
+    game_metadata = pd.DataFrame(
+        columns=["PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION", "Season"]
+    )
+    if player_games_path is not None and player_games_path.exists():
+        games = pd.read_parquet(
+            player_games_path,
+            columns=["season_end", "player_id", "player_name", "team_tricode", "game_date"],
+        )
+        games = games.loc[games["season_end"].isin(target_seasons)].copy()
+        games["Season"] = games.pop("season_end").astype(int)
+        games = games.rename(
+            columns={
+                "player_id": "PLAYER_ID", "player_name": "PLAYER_NAME",
+                "team_tricode": "TEAM_ABBREVIATION",
+            }
+        ).dropna(subset=["PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION"])
+        game_metadata = games.sort_values(
+            ["Season", "game_date", "PLAYER_ID"], kind="stable"
+        ).drop_duplicates(["PLAYER_ID", "Season"], keep="last")[
+            ["PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION", "Season"]
+        ]
+
+    metadata = pd.concat([game_metadata, sheet_metadata], ignore_index=True)
+    metadata = metadata.drop_duplicates(["PLAYER_ID", "Season"], keep="last")
+    targets = targets.merge(
+        metadata, on=["PLAYER_ID", "Season"], how="left", validate="one_to_one"
+    )
+    if targets[["PLAYER_NAME", "TEAM_ABBREVIATION"]].isna().any().any():
+        missing_rows = targets.loc[
+            targets[["PLAYER_NAME", "TEAM_ABBREVIATION"]].isna().any(axis=1),
+            ["PLAYER_ID", "Season"],
+        ]
+        raise ValueError(
+            f"Current Normal RAPM metadata is incomplete for {len(missing_rows)} player-seasons."
+        )
+    rows = targets.rename(
+        columns={
+            "target_offense": "normal_rapm_offense",
+            "target_defense": "normal_rapm_defense",
+            "target_net": "normal_rapm_net",
+        }
+    )[[
+        "PLAYER_ID", "PLAYER_NAME", "Season", "TEAM_ABBREVIATION", "Poss_Off", "Poss_Def",
+        "normal_rapm_offense", "normal_rapm_defense", "normal_rapm_net",
+    ]]
+    return rows, str(manifest.get("run_id", run_path.name))
+
+
 def _calibration_summary(oof_path: Path) -> dict[str, Any]:
     if not oof_path.exists():
         return {}
@@ -361,6 +489,8 @@ def build_web_snapshot(
     walk_forward_run_path: str | Path | None = None,
     walk_backward_run_path: str | Path | None = None,
     aging_projection_run_path: str | Path | None = None,
+    current_normal_rapm_run_path: str | Path | None = None,
+    current_player_games_path: str | Path | None = None,
     shards: int = 128,
 ) -> dict:
     """Write indexes plus season-specific tables and role maps."""
@@ -368,30 +498,60 @@ def build_web_snapshot(
         raise ValueError("shards must be positive.")
     config = RatingsApiConfig.from_json(config_path)
     store = RatingsStore(config, artifact_root)
-    seasons = sorted(int(value) for value in store.annual["Season"].unique())
+    historical_seasons = sorted(int(value) for value in store.annual["Season"].unique())
     project_root = Path(__file__).resolve().parents[3]
     sheets = Path(player_sheets_dir or project_root / "data/raw/playersheets/year_totals")
+    current_run_id: str | None = None
+    current_rows = pd.DataFrame()
+    if current_normal_rapm_run_path is not None:
+        current_rows, current_run_id = _current_normal_rapm_rows(
+            Path(current_normal_rapm_run_path),
+            sheets,
+            Path(current_player_games_path) if current_player_games_path else None,
+            historical_seasons,
+        )
+    annual = pd.concat([store.annual, current_rows], ignore_index=True, sort=False)
+    if annual.duplicated(["PLAYER_ID", "Season"]).any():
+        raise ValueError("Web snapshot annual panel has duplicate player-seasons.")
+    seasons = sorted(int(value) for value in annual["Season"].unique())
     team_age = _team_age_panel(sheets, seasons)
-    team_lookup = team_age.set_index(["PLAYER_ID", "Season"])["TEAM_ABBREVIATION"].to_dict()
+    annual = annual.merge(
+        team_age[["PLAYER_ID", "Season", "TEAM_ABBREVIATION"]],
+        on=["PLAYER_ID", "Season"], how="left", suffixes=("", "_sheet"), validate="one_to_one",
+    )
+    if "TEAM_ABBREVIATION_sheet" in annual:
+        if "TEAM_ABBREVIATION" in annual:
+            annual["TEAM_ABBREVIATION"] = annual["TEAM_ABBREVIATION"].combine_first(
+                annual["TEAM_ABBREVIATION_sheet"]
+            )
+        else:
+            annual["TEAM_ABBREVIATION"] = annual["TEAM_ABBREVIATION_sheet"]
+        annual = annual.drop(columns="TEAM_ABBREVIATION_sheet")
+    team_lookup = {
+        key: value if pd.notna(value) else None
+        for key, value in annual.set_index(["PLAYER_ID", "Season"])["TEAM_ABBREVIATION"].to_dict().items()
+    }
     profiles = pd.DataFrame(columns=["PLAYER_ID", "Season", *PROFILE_AXES])
     if features_path and Path(features_path).exists():
-        profiles = build_player_skill_profiles(pd.read_parquet(features_path), seasons)
+        profiles = build_player_skill_profiles(pd.read_parquet(features_path), historical_seasons)
     profile_lookup = {
         int(player_id): group.drop(columns="PLAYER_ID").round(1).astype(object).where(group.notna(), None).to_dict(orient="records")
         for player_id, group in profiles.groupby("PLAYER_ID", sort=False)
     }
 
-    annual_model_columns = _model_columns(store.annual)
-    player_ids = sorted(set(store.annual["PLAYER_ID"].astype(int)))
+    annual_model_columns = _model_columns(annual)
+    player_ids = sorted(set(annual["PLAYER_ID"].astype(int)))
     players: dict[str, dict] = {}
     index = []
     for player_id in player_ids:
         player = store.player(player_id)
-        if player is None:
+        player_rows = annual.loc[annual["PLAYER_ID"].eq(player_id)].sort_values("Season")
+        if player_rows.empty:
             continue
+        name = str(player_rows["PLAYER_NAME"].dropna().iloc[-1])
         public_player = {
-            "PLAYER_ID": player["PLAYER_ID"],
-            "PLAYER_NAME": player["PLAYER_NAME"],
+            "PLAYER_ID": player_id,
+            "PLAYER_NAME": name,
             "annual": [
                 {
                     "Season": int(row["Season"]),
@@ -401,17 +561,17 @@ def build_web_snapshot(
                     **{
                         exported: round(float(row[source]), 4)
                         for source, exported in annual_model_columns.items()
-                        if row.get(source) is not None
+                        if pd.notna(row.get(source))
                     },
                 }
-                for row in player["annual"]
+                for row in player_rows.to_dict(orient="records")
             ],
             "roles": [
                 {
                     "Season": int(row["Season"]),
                     **{side: compact for side in ("offense", "defense") if (compact := _compact_role(row.get(side)))},
                 }
-                for row in player["roles"]
+                for row in (player["roles"] if player is not None else [])
             ],
             "profiles": profile_lookup.get(player_id, []),
         }
@@ -419,10 +579,6 @@ def build_web_snapshot(
         index.append({"id": player_id, "name": public_player["PLAYER_NAME"], "shard": player_id % shards})
     index.sort(key=lambda item: (item["name"].casefold(), item["id"]))
 
-    annual = store.annual.merge(
-        team_age[["PLAYER_ID", "Season", "TEAM_ABBREVIATION"]],
-        on=["PLAYER_ID", "Season"], how="left", validate="one_to_one",
-    )
     role_frames: dict[str, pd.DataFrame] = {}
     for side, frame, prefix in (
         ("offense", store.offense_roles, "off"),
@@ -438,11 +594,23 @@ def build_web_snapshot(
     forward_path = Path(walk_forward_run_path) if walk_forward_run_path else None
     backward_path = Path(walk_backward_run_path) if walk_backward_run_path else None
     projection_path = Path(aging_projection_run_path) if aging_projection_run_path else None
+    public_models = [
+        {
+            **model,
+            "seasons": sorted(
+                int(value)
+                for value in annual.loc[
+                    annual[f"{model['source']}net"].notna(), "Season"
+                ].unique()
+            ),
+        }
+        for model in MODEL_CATALOG
+    ]
     catalog = {
         "schema_version": "nba_impact_web_snapshot_v2",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "catalog": {
-            "models": MODEL_CATALOG,
+            "models": public_models,
             "role_labels": ROLE_LABELS,
             "seasons": seasons,
             "role_seasons": {
@@ -457,6 +625,7 @@ def build_web_snapshot(
             "annual_run_id": config.annual_run_id,
             "rolling_run_id": config.rolling_run_id,
             "current_rapm_run_id": config.current_rapm_run_id,
+            "current_normal_rapm_run_id": current_run_id,
             "side_roles_run_id": config.side_roles_run_id,
         },
         "methods": {
@@ -504,6 +673,14 @@ def build_web_snapshot(
     if projection_path:
         projection_players = pd.read_parquet(projection_path / "player_projections.parquet")
         projection_teams = pd.read_parquet(projection_path / "team_projections.parquet")
+        historical_players_path = projection_path / "historical_player_projections.parquet"
+        if historical_players_path.exists():
+            historical_players = pd.read_parquet(historical_players_path).rename(
+                columns={"target_season": "projection_season", "origin_season": "Season"}
+            )
+            projection_players = pd.concat(
+                [historical_players, projection_players], ignore_index=True, sort=False
+            )
         canonical_names = store.annual.sort_values("Season").drop_duplicates("PLAYER_ID", keep="last").set_index("PLAYER_ID")["PLAYER_NAME"]
         projection_players["PLAYER_NAME"] = projection_players["PLAYER_ID"].map(canonical_names).fillna(projection_players["PLAYER_NAME"])
         files["projection-players.json"] = write(
@@ -523,8 +700,13 @@ def build_web_snapshot(
         for column in base_columns:
             if column not in frame:
                 frame[column] = None
-        selected = frame[base_columns + list(rating_columns)].rename(columns=rating_columns)
-        exported = list(rating_columns.values())
+        season_rating_columns = {
+            source: exported
+            for source, exported in rating_columns.items()
+            if frame[source].notna().any()
+        }
+        selected = frame[base_columns + list(season_rating_columns)].rename(columns=season_rating_columns)
+        exported = list(season_rating_columns.values())
         selected[exported] = selected[exported].round(4)
         selected = selected.astype(object).where(selected.notna(), None)
         name = f"leaderboard-{season}.json"

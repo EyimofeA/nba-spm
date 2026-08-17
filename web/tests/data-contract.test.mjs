@@ -46,28 +46,45 @@ test("external correlations match the verified benchmark runs", () => {
 });
 
 test("every published season table is loadable and complete", () => {
-  assert.deepEqual(catalog.catalog.seasons, [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]);
+  assert.deepEqual(catalog.catalog.seasons, [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]);
+  assert.deepEqual(
+    Object.fromEntries(catalog.catalog.models.map((model) => [model.id, model.seasons])),
+    {
+      aio: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+      rapm: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+      spm: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+    },
+  );
   for (const season of catalog.catalog.seasons) {
     const rows = read(`leaderboard-${season}.json`);
     assert.ok(rows.length > 100, `season ${season} is too small`);
     for (const row of rows) {
       assert.equal(row.Season, season);
       assert.equal(typeof row.PLAYER_NAME, "string");
-      assert.equal(typeof row.aio_net, "number");
-      assert.ok(Math.abs(row.aio_offense + row.aio_defense - row.aio_net) < 0.001, "offense plus defense must equal net");
+      assert.equal(typeof row.normal_rapm_net, "number");
+      assert.ok(Math.abs(row.normal_rapm_offense + row.normal_rapm_defense - row.normal_rapm_net) < 0.001, "RAPM offense plus defense must equal net");
+      if (season <= 2024) {
+        assert.equal(typeof row.aio_net, "number");
+        assert.equal(typeof row.spm_net, "number");
+        assert.ok(Math.abs(row.aio_offense + row.aio_defense - row.aio_net) < 0.001, "AIO offense plus defense must equal net");
+      } else {
+        assert.ok(!("aio_net" in row));
+        assert.ok(!("spm_net" in row));
+      }
       assert.ok(row.Poss_Off >= 0 && row.Poss_Def >= 0);
     }
   }
 });
 
-test("projection vintages are published only when both player and team rows exist", () => {
+test("projection vintages keep historical player backtests separate from the 2027 team forecast", () => {
   const teams = read("projection-teams.json");
   const players = read("projection-players.json");
   const teamSeasons = [...new Set(teams.map((row) => row.projection_season))].sort();
   const playerSeasons = [...new Set(players.map((row) => row.projection_season))].sort();
-  assert.deepEqual(teamSeasons, playerSeasons);
+  assert.deepEqual(playerSeasons, [2019, 2020, 2021, 2022, 2023, 2024, 2027]);
   assert.deepEqual(teamSeasons, [2027]);
-  assert.ok(players.every((row) => row.projection_season === 2027));
+  assert.ok(players.filter((row) => row.projection_season < 2027).every((row) => row.projection_kind === "walk_forward_backtest"));
+  assert.ok(players.filter((row) => row.projection_season === 2027).every((row) => row.projection_kind === "forecast"));
 });
 
 test("the player index points at existing shards", () => {

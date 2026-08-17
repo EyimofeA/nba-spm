@@ -205,6 +205,74 @@ def test_snapshot_exports_every_selectable_model(tmp_path: Path) -> None:
     assert annual["normal_rapm_net"] == 4.0
 
 
+def test_snapshot_extends_only_normal_rapm_from_the_pinned_current_target_run(
+    tmp_path: Path,
+) -> None:
+    config_path, artifact_root, aging_path = _artifacts(tmp_path)
+    current_dir = tmp_path / "current_targets"
+    current_dir.mkdir()
+    pd.DataFrame(
+        {
+            "PLAYER_ID": [1, 3, 1, 3],
+            "Season": [2025, 2025, 2026, 2026],
+            "target_offense": [2.0, 1.0, 3.0, 2.0],
+            "target_defense": [1.0, 0.5, 1.5, 1.0],
+            "target_net": [3.0, 1.5, 4.5, 3.0],
+            "Poss_Off": [2100, 800, 2200, 900],
+            "Poss_Def": [2090, 790, 2190, 890],
+        }
+    ).to_parquet(current_dir / "targets.parquet", index=False)
+    (current_dir / "run.json").write_text(
+        json.dumps(
+            {
+                "run_id": "current_targets_test",
+                "model_family": "canonical_current_single_season_zero_prior_normal_rapm_targets",
+                "config": {
+                    "lineup_policy": "terminal", "prior": "zero", "game_types": ["regular"],
+                    "lambda_off": 3000.0, "lambda_def": 3000.0, "lambda_home": 300.0,
+                },
+            }
+        )
+    )
+    sheets = tmp_path / "sheets"
+    sheets.mkdir()
+    for year in (2025, 2026):
+        pd.DataFrame(
+            {
+                "PLAYER_ID": [1, 3],
+                "PLAYER_NAME": ["Alpha Guard", "Current Rookie"],
+                "TEAM_ABBREVIATION": ["AAA", "CCC"],
+                "AGE": [26, 20],
+            }
+        ).to_csv(sheets / f"{year}.csv", index=False)
+
+    output = tmp_path / "web-current"
+    build_web_snapshot(
+        config_path,
+        artifact_root,
+        aging_path,
+        output,
+        player_sheets_dir=sheets,
+        current_normal_rapm_run_path=current_dir,
+        shards=2,
+    )
+    catalog = _read(output, "catalog.json")
+    availability = {row["id"]: row["seasons"] for row in catalog["catalog"]["models"]}
+    assert catalog["catalog"]["seasons"] == [2024, 2025, 2026]
+    assert availability == {"aio": [2024], "rapm": [2024, 2025, 2026], "spm": [2024]}
+    assert catalog["lineage"]["current_normal_rapm_run_id"] == "current_targets_test"
+
+    current_leaderboard = _read(output, "leaderboard-2026.json")
+    current_row = next(row for row in current_leaderboard if row["PLAYER_ID"] == 3)
+    assert current_row["normal_rapm_net"] == 3.0
+    assert "aio_net" not in current_row and "spm_net" not in current_row
+    shard = _read(output, "ratings-01.json")
+    current_player = shard["3"]
+    assert [row["Season"] for row in current_player["annual"]] == [2025, 2026]
+    assert all("normal_rapm_net" in row for row in current_player["annual"])
+    assert all("aio_net" not in row and "spm_net" not in row for row in current_player["annual"])
+
+
 def test_snapshot_is_raw_role_only_and_has_no_win_probability(tmp_path: Path) -> None:
     output_dir = _build(tmp_path)
     payload = "".join(path.read_text() for path in sorted(output_dir.glob("*.json")))

@@ -1537,6 +1537,8 @@ def command_build_web_snapshot(args: argparse.Namespace) -> int:
         walk_forward_run_path=args.walk_forward_run,
         walk_backward_run_path=args.walk_backward_run,
         aging_projection_run_path=args.aging_projection_run,
+        current_normal_rapm_run_path=args.current_normal_rapm_run,
+        current_player_games_path=args.current_player_games,
         shards=args.shards,
     )
     print(json.dumps(result, indent=2))
@@ -3122,6 +3124,21 @@ def build_parser() -> argparse.ArgumentParser:
         / "models"
         / "aging_projection"
         / "aging_projection_v1_6a288b493e",
+    )
+    web_snapshot.add_argument(
+        "--current-normal-rapm-run",
+        type=Path,
+        default=ARTIFACT_ROOT
+        / "models"
+        / "current_single_season_rapm_targets"
+        / "current_single_season_rapm_targets_v1_9c0cdda919",
+        help="Pinned terminal-lineup zero-prior annual RAPM target run for later seasons.",
+    )
+    web_snapshot.add_argument(
+        "--current-player-games",
+        type=Path,
+        default=PROJECT_ROOT / "data" / "lake" / "silver" / "player_games.parquet",
+        help="Canonical player-game metadata used only to complete current player names and teams.",
     )
     web_snapshot.add_argument("--shards", type=int, default=128)
     web_snapshot.set_defaults(func=command_build_web_snapshot)

@@ -38,9 +38,10 @@ type RolePoint = {
   raw_role: string;
 };
 type AgingRow = { Age: number; n: number | null; [key: string]: number | null | undefined };
+type CatalogModel = { id: ModelId; seasons: number[] };
 type Catalog = {
   shards: number;
-  catalog: { seasons: number[]; role_seasons: Record<RoleSide, number[]> };
+  catalog: { seasons: number[]; models: CatalogModel[]; role_seasons: Record<RoleSide, number[]> };
   methods: { aio_equation: string; rapm_update_note: string };
   aging: Record<"rapm" | "aio", { coverage: string; rows: AgingRow[] }>;
   validation: {
@@ -63,7 +64,7 @@ type ValidationRow = { component: string; direction?: string; seasons?: string; 
 type AgingMethodRow = { method: string; mean_rmse: number; mean_correlation: number; folds: number };
 type ExternalRow = { scope: string; exposure: string; players: number | null; component: string; bpm: number | null; xrapm: number | null };
 type TeamProjection = { TEAM_ABBREVIATION: string; projection_season: number; players: number; projected_net_rating: number; projected_win_pace: number };
-type PlayerProjection = { PLAYER_ID: number; PLAYER_NAME: string; TEAM_ABBREVIATION: string; AGE: number; projected_offense: number; projected_defense: number; projected_net: number };
+type PlayerProjection = { PLAYER_ID: number; PLAYER_NAME: string; TEAM_ABBREVIATION: string; AGE: number; projected_offense: number; projected_defense: number; projected_net: number; projection_season: number; projection_kind?: string; evidence_status?: string };
 
 // Mirrors MODEL_CATALOG in src/nba_impact/api/web_snapshot.py.
 const MODELS: { id: ModelId; label: string; prefix: string; note: string }[] = [
@@ -93,15 +94,16 @@ const rating = (row: RatingRow | undefined, prefix: string, component: Component
   return typeof value === "number" ? value : undefined;
 };
 
-/** One honest sentence about models the loaded snapshot cannot show. */
+/** One honest sentence about models that do not cover the selected season. */
 function missingModelNote(rows: RatingRow[]) {
   const missing = availableModels(rows).filter((item) => !item.available).map((item) => item.label);
-  return missing.length ? `${missing.join(" and ")} need a rebuilt data snapshot from the pinned runs.` : "";
+  return missing.length ? `${missing.join(" and ")} are not published for this season.` : "";
 }
 
-function ModelControl({ rows, model, onChange }: { rows: RatingRow[]; model: ModelId; onChange: (id: ModelId) => void }) {
-  const models = availableModels(rows);
-  return <label>Model<select value={model} onChange={(event) => onChange(event.target.value as ModelId)}>
+function ModelControl({ rows, model, onChange, allowed }: { rows: RatingRow[]; model: ModelId; onChange: (id: ModelId) => void; allowed?: Set<ModelId> }) {
+  const models = availableModels(rows).map((item) => ({ ...item, available: item.available && (allowed?.has(item.id) ?? true) }));
+  const selected = models.find((item) => item.id === model && item.available)?.id ?? models.find((item) => item.available)?.id ?? model;
+  return <label>Model<select value={selected} onChange={(event) => onChange(event.target.value as ModelId)}>
     {models.map((item) => <option key={item.id} value={item.id} disabled={!item.available}>{item.available ? item.label : `${item.label} · not in snapshot`}</option>)}
   </select></label>;
 }
@@ -251,7 +253,7 @@ export function PlayerLab() {
       if (!next) throw new Error("player unavailable");
       const latest = next.annual.at(-1)?.Season ?? 2024;
       const selected = next.annual.some((row) => row.Season === requestedSeason) ? requestedSeason! : latest;
-      setPlayer(next); setRoleSeason(selected); setSelectedPlayerSeason(selected); setQuery(""); setStatus("");
+      setPlayer(next); setRoleSeason(selected); setSelectedPlayerSeason(selected); selectAvailableModel(selected); setQuery(""); setStatus("");
       if (open) setTab("player");
     } catch { setStatus("Data unavailable."); }
   }
@@ -293,7 +295,8 @@ export function PlayerLab() {
       fetch("/data/players.json").then((response) => response.json()),
     ]).then(([nextCatalog, nextIndex]: [Catalog, PlayerIndex[]]) => {
       const latest = Math.max(...nextCatalog.catalog.seasons);
-      setCatalog(nextCatalog); setIndex(nextIndex); setSeason(String(latest)); setRoleYear(latest); setStatus("");
+      const latestRoleYear = Math.max(...nextCatalog.catalog.role_seasons.offense);
+      setCatalog(nextCatalog); setIndex(nextIndex); setSeason(String(latest)); setRoleYear(latestRoleYear); setStatus("");
     }).catch(() => setStatus("Data unavailable."));
   }, []);
 
@@ -328,11 +331,24 @@ export function PlayerLab() {
 
   function submitSearch(event: FormEvent) { event.preventDefault(); if (matches[0]) loadPlayer(matches[0].id); }
 
-  const ratingsModel = availableModels(leaderboard).find((item) => item.id === model && item.available) ?? MODELS[0];
-  const playerModel = availableModels(player?.annual ?? []).find((item) => item.id === model && item.available) ?? MODELS[0];
+  const modelSeasons = useMemo(() => new Map(catalog?.catalog.models.map((item) => [item.id, item.seasons]) ?? []), [catalog]);
+  const modelIdsForSeason = (year: number | "All") => new Set(
+    MODELS.filter((item) => (modelSeasons.get(item.id) ?? []).some((availableYear) => year === "All" || availableYear === year)).map((item) => item.id),
+  );
+  const selectAvailableModel = (year: number | "All") => {
+    if (modelIdsForSeason(year).has(model)) return;
+    const fallback = MODELS.find((item) => modelIdsForSeason(year).has(item.id));
+    if (fallback) setModel(fallback.id);
+  };
+
+  const ratingsModels = availableModels(leaderboard);
+  const selectedPlayerRows = player?.annual.filter((row) => row.Season === selectedPlayerSeason) ?? [];
+  const playerModels = availableModels(selectedPlayerRows);
+  const ratingsModel = ratingsModels.find((item) => item.id === model && item.available) ?? ratingsModels.find((item) => item.available) ?? MODELS[0];
+  const playerModel = playerModels.find((item) => item.id === model && item.available) ?? playerModels.find((item) => item.available) ?? MODELS[0];
   const teams = useMemo(() => [...new Set(leaderboard.map((row) => row.TEAM_ABBREVIATION).filter((value): value is string => Boolean(value)))].sort(), [leaderboard]);
   const sortedRows = useMemo(() => {
-    const eligible = leaderboard.filter((row) => Math.min(row.Poss_Off, row.Poss_Def) >= minimumPossessions);
+    const eligible = leaderboard.filter((row) => Math.min(row.Poss_Off, row.Poss_Def) >= minimumPossessions && rating(row, ratingsModel.prefix, "net") !== undefined);
     const rows = team === "All" ? eligible : eligible.filter((row) => row.TEAM_ABBREVIATION === team);
     const value = (row: LeaderboardRow) => sortKey === "Poss" ? Math.min(row.Poss_Off, row.Poss_Def)
       : ["net", "offense", "defense"].includes(sortKey) ? row[`${ratingsModel.prefix}${sortKey}`]
@@ -355,9 +371,10 @@ export function PlayerLab() {
   const currentProfile = player?.profiles.find((row) => row.Season === selectedPlayerSeason) ?? player?.profiles.at(-1);
   const selectedRolePoint = rolePoints.find((point) => point.PLAYER_ID === selectedRoleId);
   const projectionSeasons = useMemo(() => {
-    const playerSeasons = new Set(playerProjections.map((row) => row.projection_season));
-    return [...new Set(teamProjections.map((row) => row.projection_season))]
-      .filter((year) => playerSeasons.has(year)).sort((a, b) => a - b);
+    return [...new Set([
+      ...teamProjections.map((row) => row.projection_season),
+      ...playerProjections.map((row) => row.projection_season),
+    ])].sort((a, b) => a - b);
   }, [teamProjections, playerProjections]);
   const activeProjectionSeason = projectionSeason ?? projectionSeasons.at(-1);
   const visibleTeamProjections = useMemo(
@@ -368,6 +385,8 @@ export function PlayerLab() {
     () => playerProjections.filter((row) => row.projection_season === activeProjectionSeason),
     [playerProjections, activeProjectionSeason],
   );
+  const hasTeamProjection = visibleTeamProjections.length > 0;
+  const projectionKind = visiblePlayerProjections[0]?.projection_kind;
   const spmCenter = rating(selectedAnnual, "spm_", component);
   const aioValue = rating(selectedAnnual, "aio_", component);
   const seasons = catalog?.catalog.seasons ?? [];
@@ -404,8 +423,8 @@ export function PlayerLab() {
       {tab === "ratings" && <>
         <section className="section-head"><div><p className="kicker">RATINGS</p><h1>Player impact</h1></div><span>Points per 100 possessions</span></section>
         <section className="controls table-controls">
-          <ModelControl rows={leaderboard} model={model} onChange={setModel} />
-          <label>Year<select value={season} onChange={(event) => { setSeason(event.target.value); loadSeason(event.target.value); }}><option>All</option>{[...seasons].reverse().map((year) => <option key={year}>{year}</option>)}</select></label>
+          <ModelControl rows={leaderboard} model={model} onChange={setModel} allowed={modelIdsForSeason(season === "All" ? "All" : Number(season))} />
+          <label>Year<select value={season} onChange={(event) => { const next = event.target.value; setSeason(next); selectAvailableModel(next === "All" ? "All" : Number(next)); loadSeason(next); }}><option>All</option>{[...seasons].reverse().map((year) => <option key={year}>{year}</option>)}</select></label>
           <label>Team<select value={team} onChange={(event) => setTeam(event.target.value)}><option>All</option>{teams.map((item) => <option key={item}>{item}</option>)}</select></label>
           <label>Min poss<select value={minimumPossessions} onChange={(event) => setMinimumPossessions(Number(event.target.value))}><option value="0">All</option><option value="500">500</option><option value="1000">1,000</option><option value="2000">2,000</option></select></label>
         </section>
@@ -415,11 +434,11 @@ export function PlayerLab() {
       {tab === "player" && (player ? <>
         <section className="section-head"><div><p className="kicker">{selectedAnnual?.TEAM_ABBREVIATION ?? "PLAYER"} · {selectedPlayerSeason} · {selectedAnnual ? Math.round(Math.min(Number(selectedAnnual.Poss_Off), Number(selectedAnnual.Poss_Def))).toLocaleString() : "—"} POSS</p><h1>{player.PLAYER_NAME}</h1></div><strong className="big-rating">{formatRating(rating(selectedAnnual, playerModel.prefix, component))}</strong></section>
         <section className="controls">
-          <ModelControl rows={player.annual} model={model} onChange={setModel} />
+          <ModelControl rows={selectedPlayerRows} model={model} onChange={setModel} allowed={modelIdsForSeason(selectedPlayerSeason)} />
           <label>Side<select value={component} onChange={(event) => setComponent(event.target.value as Component)}>{(["net", "offense", "defense"] as Component[]).map((item) => <option key={item} value={item}>{componentLabel[item]}</option>)}</select></label>
         </section>
-        <p className="control-note">{playerModel.label}: {playerModel.note} {missingModelNote(player.annual)}</p>
-        <LineChart points={points} label={`${player.PLAYER_NAME} annual ${playerModel.label} ${component}`} selected={String(selectedPlayerSeason)} onSelect={(label) => { const year = Number(label); setSelectedPlayerSeason(year); setRoleSeason(year); }} />
+        <p className="control-note">{playerModel.label}: {playerModel.note} {missingModelNote(selectedPlayerRows)}</p>
+        <LineChart points={points} label={`${player.PLAYER_NAME} annual ${playerModel.label} ${component}`} selected={String(selectedPlayerSeason)} onSelect={(label) => { const year = Number(label); setSelectedPlayerSeason(year); setRoleSeason(year); selectAvailableModel(year); }} />
         {component === "net" && selectedAnnual && <section className="equation"><div><span>Offense</span><b>{formatRating(rating(selectedAnnual, playerModel.prefix, "offense"))}</b></div><i>+</i><div><span>Defense</span><b>{formatRating(rating(selectedAnnual, playerModel.prefix, "defense"))}</b></div><i>=</i><div><span>{playerModel.label} net</span><b>{formatRating(rating(selectedAnnual, playerModel.prefix, "net"))}</b></div></section>}
         {playerModel.id === "aio" && spmCenter !== undefined && aioValue !== undefined && <><section className="equation"><div><span>SPM center</span><b>{formatRating(spmCenter)}</b></div><i>+</i><div><span>RAPM update</span><b>{formatRating(aioValue - spmCenter)}</b></div><i>=</i><div><span>AIO {componentLabel[component].toLowerCase()}</span><b>{formatRating(aioValue)}</b></div></section><p className="control-note">{catalog?.methods.rapm_update_note}</p></>}
         <section className="subhead"><div><p className="kicker">SKILL PROFILE</p><h2>{currentProfile?.Season ?? selectedPlayerSeason}</h2></div><p className="muted compact">Season-relative percentile.</p></section>
@@ -427,7 +446,7 @@ export function PlayerLab() {
           {component !== "defense" && <ProfileRadar profile={currentProfile} playerName={player.PLAYER_NAME} side="offense" />}
           {component !== "offense" && <ProfileRadar profile={currentProfile} playerName={player.PLAYER_NAME} side="defense" />}
         </div>
-        <section className="subhead"><h2>Roles</h2><div className="inline-controls"><select aria-label="Player season" value={selectedPlayerSeason} onChange={(event) => { const year = Number(event.target.value); setSelectedPlayerSeason(year); setRoleSeason(year); }}>{player.annual.map((row) => <option key={row.Season}>{row.Season}</option>)}</select></div></section>
+        <section className="subhead"><h2>Roles</h2><div className="inline-controls"><select aria-label="Player season" value={selectedPlayerSeason} onChange={(event) => { const year = Number(event.target.value); setSelectedPlayerSeason(year); setRoleSeason(year); selectAvailableModel(year); }}>{player.annual.map((row) => <option key={row.Season}>{row.Season}</option>)}</select></div></section>
         <div className={`role-grid ${component}`}>
           {component !== "defense" && <RolePanel title="Offense" role={currentRoles?.offense} />}
           {component !== "offense" && <RolePanel title="Defense" role={currentRoles?.defense} />}
@@ -442,10 +461,10 @@ export function PlayerLab() {
         {selectedRolePoint && player && <section className="role-selection"><div><p className="kicker">SELECTED</p><h2>{selectedRolePoint.PLAYER_NAME}</h2><p>{selectedRolePoint.raw_role} · {selectedRolePoint.TEAM_ABBREVIATION ?? "—"}</p><button onClick={() => setTab("player")}>Open player</button></div><RolePanel title={roleSide === "offense" ? "Offense role mix" : "Defense role mix"} role={player.roles.find((row) => row.Season === roleYear)?.[roleSide]} /><div className="similar"><p className="kicker">MOST SIMILAR</p>{similarRolePlayers.map((item) => <button key={item.PLAYER_ID} onClick={() => selectRolePlayer(item.PLAYER_ID)}><b>{item.PLAYER_NAME}</b><span>{item.raw_role}</span></button>)}</div></section>}
       </>}
       {tab === "projections" && <>
-        <section className="section-head"><div><p className="kicker">{activeProjectionSeason ?? "—"} FORECAST</p><h1>Projections</h1></div><span>Research baseline</span></section>
-        <section className="controls"><label>Season<select value={activeProjectionSeason ?? ""} onChange={(event) => setProjectionSeason(Number(event.target.value))}>{projectionSeasons.map((year) => <option key={year} value={year}>{year}</option>)}</select></label><label>View<select value={projectionView} onChange={(event) => setProjectionView(event.target.value as "teams" | "players")}><option value="teams">Teams</option><option value="players">Players</option></select></label></section>
+        <section className="section-head"><div><p className="kicker">{activeProjectionSeason ?? "—"} {projectionKind === "walk_forward_backtest" ? "BACKTEST" : "FORECAST"}</p><h1>Projections</h1></div><span>Research baseline</span></section>
+        <section className="controls"><label>Season<select value={activeProjectionSeason ?? ""} onChange={(event) => { const next = Number(event.target.value); setProjectionSeason(next); if (!teamProjections.some((row) => row.projection_season === next)) setProjectionView("players"); }}>{projectionSeasons.map((year) => <option key={year} value={year}>{year}</option>)}</select></label><label>View<select value={projectionView} onChange={(event) => setProjectionView(event.target.value as "teams" | "players")}><option value="teams" disabled={!hasTeamProjection}>Teams</option><option value="players">Players</option></select></label></section>
         {projectionView === "teams" ? <div className="ratings-table-wrap projection-table"><table className="ratings-table"><thead><tr><th scope="col">#</th><th scope="col">Team</th><th scope="col">Net</th><th scope="col">Win pace</th><th scope="col">Players</th></tr></thead><tbody>{[...visibleTeamProjections].sort((a, b) => b.projected_win_pace - a.projected_win_pace).map((row, indexRow) => <tr key={row.TEAM_ABBREVIATION}><td>{indexRow + 1}</td><td className="player-cell">{row.TEAM_ABBREVIATION}</td><td>{formatRating(row.projected_net_rating)}</td><td className="rating-cell">{row.projected_win_pace.toFixed(1)}</td><td>{row.players}</td></tr>)}</tbody></table></div> : <div className="ratings-table-wrap projection-table"><table className="ratings-table"><thead><tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">Team</th><th scope="col">Age</th><th scope="col">Off</th><th scope="col">Def</th><th scope="col">Net</th></tr></thead><tbody>{[...visiblePlayerProjections].sort((a, b) => b.projected_net - a.projected_net).slice(0, 150).map((row, indexRow) => <tr key={row.PLAYER_ID} onClick={() => loadPlayer(row.PLAYER_ID)}><td>{indexRow + 1}</td><td className="player-cell">{row.PLAYER_NAME}</td><td>{row.TEAM_ABBREVIATION}</td><td>{row.AGE.toFixed(0)}</td><td>{formatRating(row.projected_offense)}</td><td>{formatRating(row.projected_defense)}</td><td className="rating-cell">{formatRating(row.projected_net)}</td></tr>)}</tbody></table></div>}
-        <p className="projection-note">Only {projectionSeasons.join(", ") || "no"} forecast vintage{projectionSeasons.length === 1 ? " is" : "s are"} published. This view will add 2018–2026 when their player and team forecast artifacts are exported. {activeProjectionSeason === 2027 ? "2027 is a forecast, not observed training or confirmation data." : ""}</p>
+        <p className="projection-note">Player backtests: 2019–2024. 2027 is a forecast, not observed training or confirmation data. Team rows exist for 2027 only. 2018 has no eligible earlier training history.</p>
       </>}
       {tab === "research" && catalog && <>
         <section className="section-head"><div><p className="kicker">RESEARCH</p><h1>What held up</h1></div><span>Frozen runs only</span></section>
