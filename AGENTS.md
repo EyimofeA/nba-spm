@@ -220,6 +220,13 @@ emits only minute-reconciled games; quarantined games remain visible in
 the ordinal `possession_lineup_segments.parquet`; a clock-only lineup join is
 not safe at same-clock substitutions. ESPN Net Points/WPA mirrors are research
 benchmarks only because the upstream repository declares no license.
+
+The verified points-only event layer covers 2017–2026: 20 partitions, 12,812
+games, and zero final-score mismatches. Its contract and anomaly handling are
+in `docs/impact/SCORING_EVENTS_2017_2026.md`. It is suitable for scoring-state
+research, but it is not possession- or lineup-ready and must not be used as a
+Normal RAPM input.
+
 The 2023–24 player-game layer uses provenance-marked ESPN fallback rows where
 the primary NBA box cache is absent. Quarantined games are repaired only through
 immutable official BoxScoreTraditionalV3 JSON; never relax lineup minute gates
