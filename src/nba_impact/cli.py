@@ -16,6 +16,7 @@ from nba_impact.api.web_snapshot import build_web_snapshot
 from nba_impact.data.assist_quality_features import build_assist_quality_features
 from nba_impact.data.behavior_roles import build_behavior_roles
 from nba_impact.data.side_roles import build_side_roles
+from nba_impact.data.role_stabilization import build_role_stabilization
 from nba_impact.data.download import plan_ingest_manifest, run_ingest_manifest
 from nba_impact.data.defensive_tracking_features import build_defensive_tracking_features
 from nba_impact.data.event_quality import build_event_snapshot
@@ -890,6 +891,16 @@ def command_build_side_roles(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_stabilize_roles(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_role_stabilization(
+        args.side_roles_run,
+        artifact_root=args.artifact_root,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
 def command_run_defense_role_challenger(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     run = run_defense_role_challenger(
@@ -1472,6 +1483,8 @@ def command_build_web_snapshot(args: argparse.Namespace) -> int:
         args.artifact_root,
         args.aging_curve,
         args.output_dir,
+        spm_run_path=args.spm_run,
+        player_sheets_dir=args.player_sheets_dir,
         shards=args.shards,
     )
     print(json.dumps(result, indent=2))
@@ -2314,6 +2327,14 @@ def build_parser() -> argparse.ArgumentParser:
     side_roles.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     side_roles.set_defaults(func=command_build_side_roles)
 
+    stable_roles = subparsers.add_parser(
+        "stabilize-roles",
+        help="Select and apply forward-only role-membership smoothing.",
+    )
+    stable_roles.add_argument("--side-roles-run", type=Path, required=True)
+    stable_roles.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    stable_roles.set_defaults(func=command_stabilize_roles)
+
     defense_role_challenger = subparsers.add_parser(
         "run-defense-role-challenger",
         help="Select new defense information on fixed older seasons and score diagnostics.",
@@ -2922,6 +2943,19 @@ def build_parser() -> argparse.ArgumentParser:
         "--output-dir",
         type=Path,
         default=PROJECT_ROOT / "web" / "public" / "data",
+    )
+    web_snapshot.add_argument(
+        "--spm-run",
+        type=Path,
+        default=ARTIFACT_ROOT
+        / "models"
+        / "single_season_spm"
+        / "single_season_spm_v1_18496a1348",
+    )
+    web_snapshot.add_argument(
+        "--player-sheets-dir",
+        type=Path,
+        default=PROJECT_ROOT / "data" / "raw" / "playersheets" / "year_totals",
     )
     web_snapshot.add_argument("--shards", type=int, default=32)
     web_snapshot.set_defaults(func=command_build_web_snapshot)

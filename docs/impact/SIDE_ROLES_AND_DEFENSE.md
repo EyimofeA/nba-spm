@@ -130,3 +130,17 @@ three-season AIO contract. Aggregate source counts before recomputing rates and
 shrinkage. Do not average annual rate estimates. Keep offense and defense role
 outputs for description and subgroup diagnostics. Reopen role inputs only after
 a new hypothesis predicts an older-fold improvement.
+
+## Descriptive role stabilization
+
+Run `role_stabilization_v1_f5b426dd5d` selects a forward filter without RAPM,
+SPM, age, size, position, minutes, or games. Candidate current-season weights
+are 0.40, 0.55, 0.70, 0.85, and 1.00. The selection target is next-season raw
+role affinity on the original development seasons. Both sides select 0.70.
+
+On later adjacent seasons, exact hard-role persistence changes from 71.30% to
+79.89% for offense and from 70.44% to 76.97% for defense. The stable and raw
+labels disagree in 7.55% and 6.53% of later player-seasons. Reset the filter
+after a missing season. Show raw membership as an option because the stable
+state can lag a real role change. Do not use the stabilized hard label as an
+impact-model input.

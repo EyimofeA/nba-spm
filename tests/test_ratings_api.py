@@ -19,12 +19,17 @@ def _store(tmp_path: Path) -> RatingsStore:
     uncertainty_dir = tmp_path / "rapm_uncertainty" / "uncertainty_test"
     role_run_id = f"roles_{tmp_path.name}"
     roles_dir = tmp_path.parent / "features" / "side_roles" / role_run_id
+    stabilization_run_id = f"stable_{tmp_path.name}"
+    stabilization_dir = (
+        tmp_path.parent / "features" / "role_stabilization" / stabilization_run_id
+    )
     annual_dir.mkdir(parents=True)
     rolling_dir.mkdir(parents=True)
     current_dir.mkdir(parents=True)
     matchup_dir.mkdir(parents=True)
     uncertainty_dir.mkdir(parents=True)
     roles_dir.mkdir(parents=True)
+    stabilization_dir.mkdir(parents=True)
     annual = pd.DataFrame(
         {
             "PLAYER_ID": [1, 2, 1],
@@ -152,8 +157,45 @@ def _store(tmp_path: Path) -> RatingsStore:
     )
     offense_roles.to_parquet(roles_dir / "offense_assignments.parquet", index=False)
     defense_roles.to_parquet(roles_dir / "defense_assignments.parquet", index=False)
+    stable_offense = offense_roles.copy()
+    stable_offense["off_role_stable_cluster"] = "off_role_1"
+    stable_offense["off_role_stable_confidence"] = 0.55
+    stable_defense = defense_roles.copy()
+    stable_defense["def_role_stable_cluster"] = "def_role_3"
+    stable_defense["def_role_stable_confidence"] = 0.6
+    for index in range(6):
+        stable_offense[f"off_role_stable_affinity_{index}"] = [
+            0.1,
+            0.55,
+            0.1,
+            0.1,
+            0.1,
+            0.05,
+        ][index]
+    for index in range(5):
+        stable_defense[f"def_role_stable_affinity_{index}"] = [
+            0.1,
+            0.1,
+            0.1,
+            0.6,
+            0.1,
+        ][index]
+    stable_offense.to_parquet(
+        stabilization_dir / "offense_assignments.parquet", index=False
+    )
+    stable_defense.to_parquet(
+        stabilization_dir / "defense_assignments.parquet", index=False
+    )
     (roles_dir / "run.json").write_text(
         json.dumps({"run_id": role_run_id, "status": "validated_research_input"})
+    )
+    (stabilization_dir / "run.json").write_text(
+        json.dumps(
+            {
+                "run_id": stabilization_run_id,
+                "status": "validated_descriptive_stabilization",
+            }
+        )
     )
     (annual_dir / "run.json").write_text(
         json.dumps(
@@ -204,6 +246,7 @@ def _store(tmp_path: Path) -> RatingsStore:
         matchup_defense_run_id="matchup_test",
         normal_rapm_uncertainty_run_ids={"single_season_2025": "uncertainty_test"},
         side_roles_run_id=role_run_id,
+        role_stabilization_run_id=stabilization_run_id,
     )
     return RatingsStore(config, tmp_path)
 
@@ -230,6 +273,10 @@ def test_player_payload_contains_annual_rolling_and_peaks(tmp_path: Path) -> Non
     assert result["current_normal_rapm"]["net_per_100"] == 5.0
     assert result["roles"][0]["offense"]["primary_role"] == "Primary creator"
     assert result["roles"][0]["defense"]["memberships"][0]["label"] == "Interior / rim"
+    assert (
+        result["roles"][0]["offense"]["stabilized_primary_role"]
+        == "Secondary handler"
+    )
 
 
 def test_dispatch_exposes_contract_and_rejects_invalid_metric(tmp_path: Path) -> None:

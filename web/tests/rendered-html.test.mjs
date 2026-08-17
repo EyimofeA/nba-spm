@@ -13,7 +13,7 @@ async function render() {
   );
 }
 
-test("server-renders the compact impact product shell", async () => {
+test("server-renders the compact ratings product shell", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
@@ -21,7 +21,7 @@ test("server-renders the compact impact product shell", async () => {
   const html = await response.text();
   assert.match(html, /<title>NBA Impact<\/title>/i);
   assert.match(html, /NBA Impact/);
-  assert.match(html, /impact/);
+  assert.match(html, /ratings/);
   assert.match(html, /Loading/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
 });

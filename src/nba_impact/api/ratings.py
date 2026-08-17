@@ -88,6 +88,7 @@ class RatingsApiConfig:
     current_uncertainty_run_id: str | None = None
     normal_rapm_uncertainty_run_ids: dict[str, str] | None = None
     side_roles_run_id: str | None = None
+    role_stabilization_run_id: str | None = None
 
     @classmethod
     def from_json(cls, path: str | Path) -> "RatingsApiConfig":
@@ -170,6 +171,23 @@ class RatingsStore:
             )
             self.defense_roles = pd.read_parquet(
                 self.side_roles_dir / "defense_assignments.parquet"
+            )
+        self.role_stabilization_manifest: dict[str, Any] | None = None
+        if config.role_stabilization_run_id is not None:
+            self.role_stabilization_dir = (
+                artifact_root.parent
+                / "features"
+                / "role_stabilization"
+                / config.role_stabilization_run_id
+            )
+            self.role_stabilization_manifest = _read_run(
+                self.role_stabilization_dir / "run.json"
+            )
+            self.offense_roles = pd.read_parquet(
+                self.role_stabilization_dir / "offense_assignments.parquet"
+            )
+            self.defense_roles = pd.read_parquet(
+                self.role_stabilization_dir / "defense_assignments.parquet"
             )
         self._validate()
 
@@ -385,6 +403,19 @@ class RatingsStore:
                 raise ValueError(f"{side} role artifact lacks columns: {missing}")
             if frame.duplicated(["PLAYER_ID", "Season"]).any():
                 raise ValueError(f"{side} role keys are not unique.")
+            if self.role_stabilization_manifest is not None:
+                stable_required = {
+                    f"{prefix}_role_stable_cluster",
+                    f"{prefix}_role_stable_confidence",
+                    *{
+                        f"{prefix}_role_stable_affinity_{index}"
+                        for index in range(len(ROLE_LABELS[side]))
+                    },
+                }
+                if missing := sorted(stable_required - set(frame.columns)):
+                    raise ValueError(
+                        f"{side} stabilized role artifact lacks columns: {missing}"
+                    )
         uncertainty_required = {
             "player_id",
             "player_name",
@@ -428,6 +459,7 @@ class RatingsStore:
             "current_rapm_run_id": self.config.current_rapm_run_id,
             "matchup_defense_run_id": self.config.matchup_defense_run_id,
             "side_roles_run_id": self.config.side_roles_run_id,
+            "role_stabilization_run_id": self.config.role_stabilization_run_id,
             "annual_status": self.annual_manifest["status"],
             "rolling_status": self.rolling_manifest["status"],
             "current_rapm_status": self.current_manifest["status"],
@@ -819,6 +851,34 @@ class RatingsStore:
                     "confidence": float(row[f"{prefix}_role_confidence"]),
                     "memberships": memberships,
                 }
+                stable_cluster_column = f"{prefix}_role_stable_cluster"
+                if stable_cluster_column in row:
+                    stable_memberships = [
+                        {
+                            "role_id": role_id,
+                            "label": label,
+                            "affinity": float(
+                                row[f"{prefix}_role_stable_affinity_{index}"]
+                            ),
+                        }
+                        for index, (role_id, label) in enumerate(
+                            ROLE_LABELS[side].items()
+                        )
+                    ]
+                    stable_memberships.sort(
+                        key=lambda item: item["affinity"], reverse=True
+                    )
+                    stable_role_id = row[stable_cluster_column]
+                    role_rows[season][side].update(
+                        {
+                            "stabilized_primary_role_id": stable_role_id,
+                            "stabilized_primary_role": ROLE_LABELS[side][stable_role_id],
+                            "stabilized_confidence": float(
+                                row[f"{prefix}_role_stable_confidence"]
+                            ),
+                            "stabilized_memberships": stable_memberships,
+                        }
+                    )
         annual_columns = [
             "Season",
             "Poss_Off",

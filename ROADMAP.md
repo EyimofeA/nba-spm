@@ -135,11 +135,16 @@ Slow-network policy: each immutable file resumes from `.partial`, retries up to
    guarding data before individual defender modeling.
 6. **WP-RAPM / credit:** value possession-start-to-end WP change only after the WP
    and lineup assignment are validated; compare Net Points and TD/Shapley ideas.
-7. **Product:** stable DuckDB/API contract first, then a restrained player explorer.
-   Do not rebuild the deleted UI before metric contracts are frozen.
-8. **Later data:** injuries/availability, contracts, salaries, draft, roster stints,
+7. **Product:** maintain the derived-data Ratings / Player / Roles / Research
+   client. Keep annual tables and role maps lazy. Add new research pages only
+   after their metric contract and caveat are frozen.
+8. **Product research ideas:** define a roster net-rating calculator contract,
+   then test 2-, 3-, 4-, and 5-player combination ratings and role-combination
+   summaries. Require exposure floors and shrinkage. Do not present combination
+   ratings as isolated causal effects.
+9. **Later data:** injuries/availability, contracts, salaries, draft, roster stints,
    travel, and historical team schedules.
-9. **WP later:** revisit only for playoff calibration or a cloud-trained causal
+10. **WP later:** revisit only for playoff calibration or a cloud-trained causal
    sequence experiment after the impact platform is useful.
 
 ## Research rules
@@ -199,3 +204,7 @@ now would break reproducibility links.
 - Annual normal RAPM targets: `single_season_rapm_targets_v1_fd876680da`
 - Annual SPM and disagreements: `single_season_spm_v1_51adc53061`
 - Corrected rolling normal-RAPM peaks: `rolling_rapm_peaks_v1_a8a612143c`
+- Full annual SPM: `single_season_spm_v1_18496a1348`
+- Historical annual AIO: `annual_aio_ratings_v1_b52b5aecd9`
+- Split side roles: `side_roles_v1_2c228f4b9e`
+- Forward role stabilization: `role_stabilization_v1_f5b426dd5d`

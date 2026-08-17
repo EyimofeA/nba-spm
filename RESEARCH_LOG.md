@@ -2217,3 +2217,24 @@ against BPM.
 zero-prior normal RAPM as the reference. Do not claim untouched promotion.
 Do not attach SPM or AIO intervals until they are calibrated. The UI may show
 existing RAPM intervals only at their exact 2022--24 and 2025 scopes.
+
+## 2026-08-17 — Role stabilization and lazy ratings product
+
+**Question:** Can role labels become less noisy without using impact outcomes,
+and can the public client expose ratings and roles without a heavy first load?
+
+**Method:** Run `role_stabilization_v1_f5b426dd5d` selects the current-season
+weight that best predicts next-season raw role affinities on the original role
+development seasons. It applies the frozen forward filter to later seasons and
+resets after gaps. The web snapshot now splits annual leaderboards and role maps
+by season. Player detail remains sharded.
+
+**Result:** Both sides select a 0.70 current-season weight. Later exact-role
+persistence improves from 71.30% to 79.89% on offense and from 70.44% to 76.97%
+on defense. Stable/raw disagreement is 7.55% and 6.53%. The first ratings view
+loads a 135 KB player index, a 12 KB catalog, and one 0.33--0.43 MB season file.
+All seasons, role maps, and player detail load only when requested.
+
+**Decision:** Default the product to stable roles, with a raw toggle. Keep role
+stabilization out of SPM. Put the RAPM level curve and RAPM/AIO year-over-year
+change under Research. Treat both aging summaries as descriptive.

@@ -1,13 +1,18 @@
 # NBA Impact web
 
-The compact client has three views:
+The compact client has five views:
 
-- Impact: SPM, normal RAPM, and decomposed AIO by side and window.
-- Roles: soft offense and defense memberships. Position is excluded.
-- Aging: the observed 1997--2024 annual RAPM curve.
+- About: casual overview plus the exact data, target, model, and validation
+  specification needed to reproduce the public build.
+- Ratings: lazy year tables for SPM, normal RAPM, and AIO. Sort by rating,
+  player, team, year, or possessions; the full view compares all three models.
+- Player: annual trajectories, the centered AIO decomposition, and raw or
+  forward-stabilized role memberships.
+- Roles: clickable offense and defense cluster maps. Position is excluded.
+- Research: year-over-year RAPM/AIO aging curves.
 
-RAPM error bars appear only for the exact 2022--24 and 2025 uncertainty runs.
-SPM and AIO intervals are not estimated.
+Role stabilization is a descriptive display layer, not an SPM feature. It uses
+70% current membership and 30% prior stable membership, resetting after gaps.
 
 Regenerate the derived-data snapshot from the repository root:
 
@@ -15,10 +20,11 @@ Regenerate the derived-data snapshot from the repository root:
 uv run python -m nba_impact.cli build-web-snapshot
 ```
 
-The export writes a small player index and 32 rating shards under
-`web/public/data/`. The browser loads about 140 KB for search and one shard for
-the selected player. It does not need the Python API at runtime and contains no
-raw NBA event data.
+The export writes a small player index, one file per year, one role map per
+side/year, and 32 player-detail shards under `web/public/data/`. The browser
+loads only the index, catalog, and current-year table at startup. All-season
+tables, role maps, and player details load on demand. It does not need the
+Python API at runtime and contains no raw NBA event data.
 
 Run and check the client:
 
