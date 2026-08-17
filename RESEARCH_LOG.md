@@ -2238,3 +2238,30 @@ Every table, role map, and pruned player-detail shard loads only when requested.
 **Decision:** Default the product to stable roles, with a raw toggle. Keep role
 stabilization out of SPM. Put the RAPM level curve and RAPM/AIO year-over-year
 change under Research. Treat both aging summaries as descriptive.
+
+## 2026-08-17 — Canonical annual RAPM bridge passes; 2025 SPM still fails
+
+**Question:** Can the current event and lineup pipeline replace the legacy
+annual RAPM labels without changing the estimand, and does that repair the weak
+2025 SPM result?
+
+**Method:** Run `canonical_annual_target_panel_v1_4586bd2f72` joins the legacy
+2014--24 labels to canonical terminal-lineup, zero-prior 3000/3000/300 labels
+for 2024--26. The transition gate checks 2024 player coverage, correlation,
+standard-deviation ratio, and mean shift separately for offense, defense, and
+net. Run `single_season_spm_v1_c4be58c72e` then repeats the fixed annual SPM
+with 2014--25 labels, the same 127 offense and 60 defense features, and
+leave-one-season-out scoring for 2017--25. The 2025 BPM and xRAPM pages were
+downloaded and hashed before the run.
+
+**Result:** The 2024 bridge passes every gate. Legacy/canonical correlations are
+0.9740 offense, 0.9639 defense, and 0.9748 net; coverage is at least 99.8% and
+scale ratios are 1.019--1.029. The refreshed 2017--24 mean RMSE changes from
+0.9972/0.9595/1.3859 to 0.9993/0.9643/1.3924 for offense/defense/net. The 2025
+fold remains weak at correlation 0.6140/0.3336/0.5030 and RMSE
+1.1049/1.1527/1.6039.
+
+**Decision:** Accept the canonical target panel as the research transition
+path. Do not replace the public 2017--24 leaderboard. The label migration does
+not explain the 2025 failure, so the next model work must diagnose feature and
+defensive-target drift instead of refitting the same specification again.

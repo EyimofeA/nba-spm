@@ -114,6 +114,13 @@ schedule cannot be produced by the frozen feature history, and the invalid
 reference. Keep annual AIO, matchup factors, trajectories, and peaks research-
 only. WP neural work stays paused on the Mac.
 
+The public product is live at `https://nba-impact-lab.mofe.chatgpt.site` with
+the validated 2017--24 ratings. The 2024 legacy-to-canonical annual RAPM bridge
+passed, but the canonical 2014--25 SPM refresh did not improve the historical
+mean and still failed in 2025. Keep the current public model pinned. Do not
+rerun the same annual specification again without a new feature or target-drift
+hypothesis.
+
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
 
@@ -208,3 +215,5 @@ now would break reproducibility links.
 - Historical annual AIO: `annual_aio_ratings_v1_b52b5aecd9`
 - Split side roles: `side_roles_v1_2c228f4b9e`
 - Forward role stabilization: `role_stabilization_v1_f5b426dd5d`
+- Canonical annual target bridge: `canonical_annual_target_panel_v1_4586bd2f72`
+- Canonical-label annual SPM refresh: `single_season_spm_v1_c4be58c72e`

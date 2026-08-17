@@ -1257,7 +1257,6 @@ def command_build_canonical_annual_target_panel(args: argparse.Namespace) -> int
         args.player_games,
         artifact_root=args.artifact_root,
         transition_season=args.transition_season,
-        seasons=tuple(args.seasons) if args.seasons else None,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
