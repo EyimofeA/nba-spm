@@ -13,11 +13,16 @@ This note is a code-and-contract audit. It does not recompute any rating.
 | Normal RAPM rolling peaks | 1997--2024 | Historical research endpoint. |
 | Raw offense roles | 2017--2024 | Descriptive display only. |
 | Raw defense roles | 2018--2024 | Descriptive display only. |
+| Historical player projection backtests | 2019--2024 targets | Causal player-level folds; selection rows are marked as reused. |
 | Player and team projection | 2027 from a 2026 origin | Research returning-minutes baseline, not a roster forecast. |
 
-The site currently has no historical projection panel for 2018--2026. Add it
-only as walk-forward backtests, clearly separated from the 2027 forecast row.
-Season 2027 remains unavailable for rating-model selection or confirmation.
+The first exportable player backtest target is 2019, from the first configured
+walk-forward origin (2018). Target 2018 is not exported: it predates the
+predeclared walk-forward evaluation window, and the selected aging method had
+not yet been selected. Do not manufacture a 2018 row with a hindsight-selected
+method. The site can show 2019--2024 backtests and the 2027 unscored forecast,
+but must label selection rows as reused evidence. Season 2027 remains
+unavailable for rating-model selection or confirmation.
 
 ## Current annual SPM
 
@@ -93,14 +98,20 @@ spline-age-plus-minutes, and spline-age-plus-impact residual adjustments.
 - Selection origins: 2018--2021.
 - Diagnostic origins: 2022--2023.
 - Selected method: spline-age-plus-minutes.
-- Current displayed row: 2026 player state projected to 2027.
+- Historical exported player backtests: 2019--2024 targets. They use each
+  fold's state at the prior-season origin and only earlier transition rows in
+  the fit. The 2019--2022 rows helped select the method, so they are not an
+  independent validation sample; 2023--2024 are diagnostic reuse.
+- Current forecast row: 2026 player state projected to 2027.
 - Team net: five times the 2026-minute-weighted projected player net.
 - Win pace: `clip(41 + 2.7 * team net, 0, 82)`.
 
 It holds each 2026 roster and minutes distribution fixed. It has no trades,
 rookies, injuries, schedule, lineup optimization, or availability model. It is
 therefore a returning-minutes baseline, not a team forecast suitable for public
-odds comparison.
+odds comparison. Historical team rows are intentionally not exported: using the
+actual next-season roster or minutes would leak the answer, while an explicit
+historical returning-roster assumption needs its own product contract.
 
 ## What the 2017--2026 possession and lineup backfill must rerun
 

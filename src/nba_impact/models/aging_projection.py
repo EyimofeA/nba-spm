@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -157,7 +156,7 @@ def _score_folds(
             continue
         for method in METHODS:
             scored = test[
-                ["PLAYER_ID", "origin_season", "target_season", "AGE", "MIN", "TEAM_ABBREVIATION", "filtered_net", "evaluation_weight"]
+                ["PLAYER_ID", "PLAYER_NAME", "origin_season", "target_season", "AGE", "MIN", "TEAM_ABBREVIATION", "filtered_net", "evaluation_weight"]
             ].copy()
             for side in ("offense", "defense"):
                 scored[f"actual_{side}"] = test[f"next_{side}"].to_numpy(dtype=float)
@@ -205,6 +204,47 @@ def _subgroup_metrics(frame: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _historical_player_projections(
+    predictions: pd.DataFrame,
+    *,
+    selected_method: str,
+    selection_origins: tuple[int, ...],
+    diagnostic_origins: tuple[int, ...],
+) -> pd.DataFrame:
+    """Keep causal player backtests for the selected projection method.
+
+    Each row is fit only on transitions with an origin before its origin season.
+    The selection rows remain reused evidence because their losses selected the
+    displayed method; diagnostic rows are later, still-reused diagnostics.
+    """
+    result = predictions.loc[predictions["method"].eq(selected_method)].copy()
+    if result.empty:
+        raise ValueError("Selected aging method has no walk-forward predictions.")
+    known_origins = set(selection_origins) | set(diagnostic_origins)
+    actual_origins = set(result["origin_season"].astype(int))
+    if actual_origins != known_origins:
+        raise ValueError("Historical projections do not cover every configured origin.")
+    if (result["target_season"] != result["origin_season"] + 1).any():
+        raise ValueError("Historical projection targets must follow their origin by one season.")
+    if result.duplicated(["PLAYER_ID", "origin_season"]).any():
+        raise ValueError("Historical player projections must have unique player-origin keys.")
+    result["projection_kind"] = "walk_forward_backtest"
+    result["evidence_status"] = np.where(
+        result["origin_season"].isin(selection_origins),
+        "selection_reused",
+        "diagnostic_reused",
+    )
+    result["method"] = selected_method
+    ordered = [
+        "PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION", "origin_season", "target_season",
+        "AGE", "MIN", "filtered_net", "evaluation_weight", "method",
+        "projection_kind", "evidence_status",
+        "actual_offense", "actual_defense", "actual_net",
+        "projected_offense", "projected_defense", "projected_net",
+    ]
+    return result[ordered].sort_values(["target_season", "projected_net"], ascending=[True, False])
+
+
 def build_aging_projection(
     trajectories_path: str | Path,
     targets_path: str | Path,
@@ -240,6 +280,12 @@ def build_aging_projection(
         predictions["method"].eq(selected_method) & predictions["origin_season"].isin(diagnostic_origins)
     ]
     subgroups = _subgroup_metrics(selected_diagnostic_predictions)
+    historical_player_projections = _historical_player_projections(
+        predictions,
+        selected_method=selected_method,
+        selection_origins=selection_origins,
+        diagnostic_origins=diagnostic_origins,
+    )
 
     final_train = transitions.loc[transitions["origin_season"].lt(projection_origin)].copy()
     current = trajectories.loc[trajectories["Season"].eq(projection_origin)].merge(
@@ -257,6 +303,8 @@ def build_aging_projection(
         "projected_offense", "projected_defense", "projected_net",
     ]
     player_projections = current[player_columns].sort_values("projected_net", ascending=False)
+    player_projections["projection_kind"] = "forecast"
+    player_projections["evidence_status"] = "unscored_future"
     team_rows = []
     for team, group in player_projections.groupby("TEAM_ABBREVIATION", sort=True):
         total_minutes = float(group["MIN"].sum())
@@ -280,6 +328,9 @@ def build_aging_projection(
     selection.to_parquet(output / "selection_summary.parquet", index=False)
     diagnostic.to_parquet(output / "diagnostic_summary.parquet", index=False)
     subgroups.to_parquet(output / "subgroup_metrics.parquet", index=False)
+    historical_player_projections.to_parquet(
+        output / "historical_player_projections.parquet", index=False
+    )
     player_projections.to_parquet(output / "player_projections.parquet", index=False)
     team_projections.to_parquet(output / "team_projections.parquet", index=False)
     selected_selection = selection.set_index("method").loc[selected_method].to_dict()
@@ -296,6 +347,9 @@ def build_aging_projection(
             "projection_origin": projection_origin, "projection_season": projection_origin + 1,
             "minimum_side_possessions": minimum_side_possessions,
             "team_translation": "five_times_minutes_weighted_player_net; wins=clip(41+2.7*net,0,82)",
+            "historical_player_projection_targets": sorted(
+                int(value) for value in historical_player_projections["target_season"].unique()
+            ),
             "source_hashes": {
                 "trajectories": sha256_file(trajectories_path), "targets": sha256_file(targets_path),
                 "source_code": sha256_file(Path(__file__)),
@@ -304,6 +358,7 @@ def build_aging_projection(
         "metrics": {"selection": selected_selection, "diagnostic": selected_diagnostic},
         "quality": {
             "transition_rows": len(transitions), "player_projection_rows": len(player_projections),
+            "historical_player_projection_rows": len(historical_player_projections),
             "team_projection_rows": len(team_projections),
             "maximum_component_identity_error": float(np.abs(player_projections["projected_net"] - player_projections["projected_offense"] - player_projections["projected_defense"]).max()),
         },
@@ -312,6 +367,8 @@ def build_aging_projection(
             "The method is selected only on 2018-21; 2022-23 are reused diagnostics.",
             "Season 2027 outcomes are not used. The 2027 rows are predictions, not confirmation evidence.",
             "Team rows hold the 2026 team and minutes distribution fixed; they are a returning-minutes baseline, not a roster or schedule simulation.",
+            "Historical player rows are causal walk-forward backtests conditional on a fixed candidate method. Rows used to select the method are marked selection_reused, and later rows are marked diagnostic_reused.",
+            "Historical team rows are intentionally omitted. A team projection requires a contemporaneous returning-roster and minutes assumption; do not backfill it from actual next-season rosters or minutes.",
             "Canonical position history is unavailable, so position is not a model input or subgroup.",
         ],
     }
