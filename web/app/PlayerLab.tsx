@@ -317,6 +317,26 @@ export function PlayerLab() {
     }).catch(() => setStatus("Data unavailable."));
   }, []);
 
+  useEffect(() => {
+    const tabs: Tab[] = ["about", "ratings", "player", "roles", "projections", "research"];
+    const applyHash = () => {
+      const requested = window.location.hash.slice(1) as Tab;
+      if (tabs.includes(requested)) setTab(requested);
+    };
+    const initial = window.setTimeout(applyHash, 0);
+    window.addEventListener("hashchange", applyHash);
+    return () => { window.clearTimeout(initial); window.removeEventListener("hashchange", applyHash); };
+  }, []);
+
+  useEffect(() => {
+    if (tab === "ratings" && catalog && leaderboard.length === 0) {
+      const retry = window.setTimeout(() => void loadSeason(season, catalog.catalog.seasons), 0);
+      return () => window.clearTimeout(retry);
+    }
+    // loadSeason is intentionally event-like; the state values below define the retry gate.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, catalog, season, leaderboard.length]);
+
   const matches = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
     return needle ? index.filter((item) => item.name.toLocaleLowerCase().includes(needle)).slice(0, 7) : [];
@@ -354,11 +374,11 @@ export function PlayerLab() {
 
   return <main id="top">
     <header><a className="brand" href="#top" onClick={() => setTab("about")}>NBA Impact</a><form className="search" onSubmit={submitSearch}><input aria-label="Find player" placeholder="Find player" value={query} onChange={(event) => setQuery(event.target.value)} />{matches.length > 0 && <div className="results">{matches.map((item) => <button type="button" key={item.id} onClick={() => loadPlayer(item.id)}>{item.name}</button>)}</div>}</form></header>
-    <nav className="tabs" aria-label="Sections">{(["about", "ratings", "player", "roles", "projections", "research"] as Tab[]).map((item) => <button key={item} className={tab === item ? "active" : ""} onClick={() => { setTab(item); if (item === "ratings" && leaderboard.length === 0) loadSeason(season); if (item === "roles") loadRoleMap(roleSide, roleYear); if (item === "projections") loadProjections(); }}>{item}</button>)}</nav>
+    <nav className="tabs" aria-label="Sections">{(["about", "ratings", "player", "roles", "projections", "research"] as Tab[]).map((item) => <a href={`#${item}`} key={item} className={tab === item ? "active" : ""} onClick={() => { setTab(item); if (item === "ratings" && leaderboard.length === 0) loadSeason(season); if (item === "roles") loadRoleMap(roleSide, roleYear); if (item === "projections") loadProjections(); }}>{item}</a>)}</nav>
     {status && <p className="status">{status}</p>}
     <div className="content">
       {tab === "about" && <>
-        <section className="intro-hero"><p className="kicker">NBA IMPACT LAB</p><h1>One number.<br />More context.</h1><p>Explore player impact, skills and roles.</p><div className="intro-actions"><button onClick={() => { setTab("ratings"); loadSeason(season); }}>View ratings</button><button className="secondary" onClick={() => { setTab("roles"); loadRoleMap(roleSide, roleYear); }}>View roles</button></div><div className="release-line"><span>2017–24</span><span>Points per 100 possessions</span></div></section>
+        <section className="intro-hero"><p className="kicker">NBA IMPACT LAB</p><h1>One number.<br />More context.</h1><p>Explore player impact, skills and roles.</p><div className="intro-actions"><a href="#ratings" onClick={() => { setTab("ratings"); loadSeason(season); }}>View ratings</a><a href="#roles" className="secondary" onClick={() => { setTab("roles"); loadRoleMap(roleSide, roleYear); }}>View roles</a></div><div className="release-line"><span>2017–24</span><span>Points per 100 possessions</span></div></section>
         <section className="model-cards definitions"><article><span>SPM</span><h2>Stats</h2><p>A model that predicts impact from box, tracking, playtype and matchup data.</p></article><article><span>RAPM</span><h2>Lineups</h2><p>A model that separates each player’s scoreboard effect while controlling for the other nine players.</p></article><article><span>AIO</span><h2>Combined</h2><p>SPM starts the estimate. RAPM updates it with possession evidence.</p></article></section>
       </>}
       {tab === "ratings" && <>

@@ -12,8 +12,8 @@ header { height:60px; display:flex; align-items:center; gap:24px; padding:0 clam
 .results button { display:block; width:100%; padding:9px 12px; border:0; border-bottom:1px solid var(--line); background:white; text-align:left; }
 .results button:hover { background:#efede5; }
 .tabs { display:flex; gap:22px; padding:0 clamp(16px,4vw,56px); border-bottom:1px solid var(--line); background:var(--paper); }
-.tabs button { padding:13px 1px 11px; border:0; background:transparent; color:var(--muted); text-transform:capitalize; font-size:13px; }
-.tabs button.active { color:var(--ink); box-shadow:inset 0 -2px var(--orange); }
+.tabs a { padding:13px 1px 11px; color:var(--muted); text-decoration:none; text-transform:capitalize; font-size:13px; }
+.tabs a.active { color:var(--ink); box-shadow:inset 0 -2px var(--orange); }
 .content { max-width:1440px; margin:auto; padding:36px clamp(16px,3vw,42px) 70px; }
 .status { position:fixed; right:20px; bottom:18px; z-index:50; margin:0; padding:8px 12px; background:var(--ink); color:white; font-size:12px; }
 .section-head { display:flex; justify-content:space-between; align-items:flex-end; gap:24px; margin-bottom:24px; }
@@ -25,7 +25,7 @@ h2 { margin:0; font-size:22px; letter-spacing:-.035em; }
 .intro-hero { min-height:440px; padding:54px 0 38px; border-bottom:1px solid var(--line); }
 .intro-hero h1 { max-width:880px; font-size:clamp(56px,9vw,116px); }
 .intro-hero > p:not(.kicker) { max-width:610px; margin:28px 0; color:var(--muted); font-size:clamp(17px,2vw,22px); line-height:1.45; }
-.intro-actions { display:flex; gap:9px; }.intro-actions button { padding:11px 16px; border:1px solid var(--ink); background:var(--ink); color:white; }.intro-actions button.secondary { background:transparent; color:var(--ink); }
+.intro-actions { display:flex; gap:9px; }.intro-actions a { padding:11px 16px; border:1px solid var(--ink); background:var(--ink); color:white; text-decoration:none; }.intro-actions a.secondary { background:transparent; color:var(--ink); }
 .release-line { display:flex; flex-wrap:wrap; gap:8px 22px; margin-top:54px; color:var(--muted); font:11px var(--font-geist-mono),monospace; text-transform:uppercase; }
 .model-cards { display:grid; grid-template-columns:repeat(3,1fr); border-bottom:1px solid var(--line); }
 .model-cards article { min-height:230px; padding:30px 28px; border-right:1px solid var(--line); }.model-cards article:last-child { border-right:0; }.model-cards span { color:var(--orange); font:10px var(--font-geist-mono),monospace; }.model-cards h2 { margin:50px 0 9px; font-size:36px; }.model-cards p { max-width:300px; margin:0; color:var(--muted); line-height:1.45; }
