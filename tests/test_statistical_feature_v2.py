@@ -37,6 +37,26 @@ def test_public_metrics_are_a_separate_offense_block() -> None:
     assert role_blocks["defense"]["behavior_roles"] == (
         "role_axis_1", "role_affinity_0"
     )
+    side_blocks = candidate_feature_blocks(
+        (
+            "off_role_axis_1", "off_role_affinity_0",
+            "def_role_axis_1", "def_role_affinity_0",
+            "matchup_blocks_p100",
+            "dfg_diff_pct_eb_x_def_role_axis_1",
+        )
+    )
+    assert side_blocks["offense"]["offense_roles"] == (
+        "off_role_affinity_0", "off_role_axis_1"
+    )
+    assert side_blocks["defense"]["defense_roles"] == (
+        "def_role_affinity_0", "def_role_axis_1"
+    )
+    assert side_blocks["defense"]["new_matchup_activity"] == (
+        "matchup_blocks_p100",
+    )
+    assert side_blocks["defense"]["defense_role_interactions"] == (
+        "dfg_diff_pct_eb_x_def_role_axis_1",
+    )
 
 
 def test_v2_comparison_selects_signal_on_discovery_and_confirms(

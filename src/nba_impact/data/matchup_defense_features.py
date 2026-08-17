@@ -21,13 +21,19 @@ RAW_COLUMNS = (
     "partial_possessions",
     "player_points",
     "matchup_assists",
+    "matchup_potential_assists",
     "matchup_turnovers",
+    "matchup_blocks",
     "matchup_field_goals_made",
     "matchup_field_goals_attempted",
     "matchup_three_pointers_made",
     "matchup_three_pointers_attempted",
     "matchup_free_throws_made",
     "shooting_fouls",
+    "switches_on",
+    "help_blocks",
+    "help_field_goals_made",
+    "help_field_goals_attempted",
 )
 
 MATCHUP_DEFENSE_FEATURES = (
@@ -46,6 +52,12 @@ MATCHUP_DEFENSE_FEATURES = (
     "matchup_turnovers_forced_vs_scorer_p100_eb",
     "matchup_assists_suppressed_vs_scorer_p100_eb",
     "matchup_shooting_fouls_prevented_vs_scorer_p100_eb",
+    "matchup_potential_assists_allowed_p100",
+    "matchup_blocks_p100",
+    "matchup_switches_on_p100",
+    "matchup_help_blocks_p100",
+    "matchup_help_fga_p100",
+    "matchup_help_fg_pct_allowed_eb",
 )
 
 
@@ -103,7 +115,13 @@ def compute_matchup_defense_features(
         three_pa=("matchup_three_pointers_attempted", "sum"),
         turnovers=("matchup_turnovers", "sum"),
         assists=("matchup_assists", "sum"),
+        potential_assists=("matchup_potential_assists", "sum"),
+        blocks=("matchup_blocks", "sum"),
         shooting_fouls=("shooting_fouls", "sum"),
+        switches=("switches_on", "sum"),
+        help_blocks=("help_blocks", "sum"),
+        help_fgm=("help_field_goals_made", "sum"),
+        help_fga=("help_field_goals_attempted", "sum"),
     )
     offense = pair.groupby("person_id", as_index=False).agg(
         offense_possessions=("pair_possessions", "sum"),
@@ -168,6 +186,12 @@ def compute_matchup_defense_features(
         turnovers=("turnovers", "sum"),
         assists=("assists", "sum"),
         shooting_fouls=("shooting_fouls", "sum"),
+        potential_assists=("potential_assists", "sum"),
+        blocks=("blocks", "sum"),
+        switches=("switches", "sum"),
+        help_blocks=("help_blocks", "sum"),
+        help_fgm=("help_fgm", "sum"),
+        help_fga=("help_fga", "sum"),
         fga_suppressed=("fga_suppressed", "sum"),
         shotmaking_points_saved=("shotmaking_points_saved", "sum"),
         three_pa_suppressed=("three_pa_suppressed", "sum"),
@@ -205,6 +229,20 @@ def compute_matchup_defense_features(
     defense["matchup_turnovers_forced_p100"] = 100.0 * defense["turnovers"] / possessions
     defense["matchup_assists_allowed_p100"] = 100.0 * defense["assists"] / possessions
     defense["matchup_shooting_fouls_committed_p100"] = 100.0 * defense["shooting_fouls"] / possessions
+    defense["matchup_potential_assists_allowed_p100"] = (
+        100.0 * defense["potential_assists"] / possessions
+    )
+    defense["matchup_blocks_p100"] = 100.0 * defense["blocks"] / possessions
+    defense["matchup_switches_on_p100"] = 100.0 * defense["switches"] / possessions
+    defense["matchup_help_blocks_p100"] = 100.0 * defense["help_blocks"] / possessions
+    defense["matchup_help_fga_p100"] = 100.0 * defense["help_fga"] / possessions
+    help_attempts = defense["help_fga"]
+    league_help_fg_pct = float(
+        defense["help_fgm"].sum() / help_attempts.sum()
+    ) if help_attempts.sum() > 0 else 0.0
+    defense["matchup_help_fg_pct_allowed_eb"] = (
+        defense["help_fgm"] + shooting_prior_attempts * league_help_fg_pct
+    ) / (help_attempts + shooting_prior_attempts)
 
     residual_specs = {
         "fga_suppressed": "matchup_fga_suppressed_vs_scorer_p100_eb",
@@ -326,6 +364,15 @@ def build_matchup_defense_features(
             f"Matchup feature panel failed: duplicate_keys={duplicate_keys}, "
             f"nonfinite_values={nonfinite_values}."
         )
+    zero_variance_features = [
+        feature
+        for feature in MATCHUP_DEFENSE_FEATURES
+        if panel[feature].nunique(dropna=False) <= 1
+    ]
+    model_eligible_features = [
+        feature for feature in MATCHUP_DEFENSE_FEATURES
+        if feature not in zero_variance_features
+    ]
     config = {
         "seasons": list(seasons),
         "defender_prior_possessions": defender_prior_possessions,
@@ -355,9 +402,11 @@ def build_matchup_defense_features(
             "players": int(panel["PLAYER_ID"].nunique()),
             "duplicate_keys": duplicate_keys,
             "nonfinite_values": nonfinite_values,
+            "zero_variance_features": zero_variance_features,
             "season_quality": season_quality,
         },
         "feature_names": list(MATCHUP_DEFENSE_FEATURES),
+        "model_eligible_feature_names": model_eligible_features,
         "exposure_column": "matchup_possessions",
         "features_path": str(features_path.resolve()),
         "artifact_path": str(output_dir.resolve()),

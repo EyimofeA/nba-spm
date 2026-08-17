@@ -2164,3 +2164,30 @@ bounded-value failures. No impact model was fit or selected.
 cluster descriptive. Do not call clusters positions, value, talent, or causal
 role fit. The next controlled task is a frozen factor-group and role-interaction
 AIO contract, not a role-counterfactual leaderboard.
+
+## 2026-08-17 — Split roles pass stability, but defense improves without them
+
+**Question:** Do separate offense and defense deployment roles improve the
+annual defense SPM, and can scorer-adjusted matchup factors improve the weak
+defense target?
+
+**Method:** `side_roles_v1_2c228f4b9e` fits offense behavior on 2014--18 and
+defense deployment on 2018--21. Cluster count is selected without RAPM from
+silhouette, seed stability, and later cluster shares. The defense challenger
+uses fixed ridge alpha 3000 and selects a predeclared block only on 2020 and
+2021. It reports 2022--24 only after selection. Five newly exposed matchup
+activity fields are constant zero in all source archives and are excluded.
+
+**Result:** The role maps select six offense and five defense clusters. Seed
+ARI is 0.9809 and 0.9910. Adjacent exact-role persistence is 71.30% and 70.44%.
+The eight-feature scorer-adjusted matchup block wins both selection seasons.
+It also wins all three diagnostic seasons. Mean diagnostic RMSE changes by
+-0.0392 and correlation by +0.0601. Defense roles alone, roles plus matchup,
+and role-conditioned interactions all lose to the matchup-only block on the
+fixed selection seasons.
+
+**Decision:** Keep separate roles as descriptive research outputs. Do not add
+them to the first defense AIO challenger. Carry the eight matchup features into
+the rolling three-season factor contract after correct count-level pooling.
+The result is research-only because the feature family and 2022--24 are already
+inspected. Keep Season 2027 untouched.

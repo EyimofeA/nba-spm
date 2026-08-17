@@ -27,6 +27,9 @@ Start at the repository root:
   validation, and execution order;
 - [`impact/BEHAVIOR_ROLES.md`](impact/BEHAVIOR_ROLES.md) — behavior-only role
   contract, stability gates, provisional interpretations, and AIO boundary;
+- [`impact/SIDE_ROLES_AND_DEFENSE.md`](impact/SIDE_ROLES_AND_DEFENSE.md) —
+  separate offense/defense roles, scorer-adjusted matchup features, and the
+  fixed chronological defense comparison;
 - [`impact/SHOT_DEFENSE_MODEL.md`](impact/SHOT_DEFENSE_MODEL.md) — exact
   shot/lineup panel, identification boundary, and null team-defense pilot;
 - [`impact/DYNAMIC_TRAJECTORIES.md`](impact/DYNAMIC_TRAJECTORIES.md) — filtered

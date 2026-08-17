@@ -125,6 +125,20 @@ def test_v2_stabilizes_small_samples_and_builds_temporal_features(tmp_path: Path
             **{f"role_affinity_{index}": [0.1] for index in range(7)},
         }
     ).to_parquet(tmp_path / "roles.parquet", index=False)
+    pd.DataFrame(
+        {
+            "PLAYER_ID": [1], "Season": [2024],
+            "off_role_axis_1": [2.0],
+            "off_role_affinity_0": [0.7], "off_role_affinity_1": [0.3],
+        }
+    ).to_parquet(tmp_path / "offense_roles.parquet", index=False)
+    pd.DataFrame(
+        {
+            "PLAYER_ID": [1], "Season": [2024],
+            "def_role_axis_1": [-2.0],
+            "def_role_affinity_0": [0.6], "def_role_affinity_1": [0.4],
+        }
+    ).to_parquet(tmp_path / "defense_roles.parquet", index=False)
     annual_v2 = build_statistical_features_v2(
         source,
         annual_v1["features_path"],
@@ -136,6 +150,8 @@ def test_v2_stabilizes_small_samples_and_builds_temporal_features(tmp_path: Path
         assist_quality_features_path=(tmp_path / "assist.parquet"),
         player_skill_features_path=(tmp_path / "skill.parquet"),
         behavior_roles_path=(tmp_path / "roles.parquet"),
+        offense_roles_path=(tmp_path / "offense_roles.parquet"),
+        defense_roles_path=(tmp_path / "defense_roles.parquet"),
     )
     annual = pd.read_parquet(annual_v2["features_path"]).set_index("PLAYER_ID")
     assert annual.loc[1, "PTS_p100"] == pytest.approx(30.0)
@@ -157,3 +173,12 @@ def test_v2_stabilizes_small_samples_and_builds_temporal_features(tmp_path: Path
         *(f"role_affinity_{index}" for index in range(7)),
     ]
     assert annual.loc[1, "role_axis_1"] == pytest.approx(1.0)
+    assert annual.loc[1, "off_role_axis_1"] == pytest.approx(2.0)
+    assert annual.loc[1, "def_role_axis_1"] == pytest.approx(-2.0)
+    assert annual.loc[
+        1, "rim_points_saved_p100_x_def_role_axis_1"
+    ] == pytest.approx(-3.0)
+    assert annual_v2["side_role_feature_names"] == {
+        "offense": ["off_role_axis_1", "off_role_affinity_0"],
+        "defense": ["def_role_axis_1", "def_role_affinity_0"],
+    }

@@ -14,6 +14,7 @@ from nba_impact.api.ratings import RatingsApiConfig, RatingsStore
 from nba_impact.api.server import serve
 from nba_impact.data.assist_quality_features import build_assist_quality_features
 from nba_impact.data.behavior_roles import build_behavior_roles
+from nba_impact.data.side_roles import build_side_roles
 from nba_impact.data.download import plan_ingest_manifest, run_ingest_manifest
 from nba_impact.data.defensive_tracking_features import build_defensive_tracking_features
 from nba_impact.data.event_quality import build_event_snapshot
@@ -80,6 +81,7 @@ from nba_impact.models.annual_spm_priors import (
 from nba_impact.models.annual_aio_ratings import build_annual_aio_ratings
 from nba_impact.models.annual_defense_ridge_nested import run_annual_defense_ridge_nested
 from nba_impact.models.annual_defense_features_nested import run_annual_defense_features_nested
+from nba_impact.models.defense_role_challenger import run_defense_role_challenger
 from nba_impact.models.current_spm_confirmation import run_current_spm_confirmation
 from nba_impact.models.current_spm_diagnostics import run_current_spm_diagnostics
 from nba_impact.models.rolling_rapm_peaks import (
@@ -780,6 +782,8 @@ def command_build_statistical_features_v2(args: argparse.Namespace) -> int:
         matchup_defense_features_path=args.matchup_defense_features,
         player_skill_features_path=args.player_skill_features,
         behavior_roles_path=args.behavior_roles,
+        offense_roles_path=args.offense_roles,
+        defense_roles_path=args.defense_roles,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -862,6 +866,35 @@ def command_build_behavior_roles(args: argparse.Namespace) -> int:
     run = build_behavior_roles(
         args.annual_features,
         args.role_context,
+        artifact_root=args.artifact_root,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_side_roles(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_side_roles(
+        args.annual_features,
+        args.dribble_context,
+        args.playtype_source,
+        args.defensive_tracking,
+        args.matchup_archive_root,
+        artifact_root=args.artifact_root,
+        offense_seasons=args.offense_seasons,
+        defense_seasons=args.defense_seasons,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_run_defense_role_challenger(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = run_defense_role_challenger(
+        args.features,
+        args.targets,
+        args.frozen_spm_run,
+        args.contract,
         artifact_root=args.artifact_root,
     )
     print(json.dumps(run, indent=2))
@@ -2118,6 +2151,8 @@ def build_parser() -> argparse.ArgumentParser:
     statistical_features_v2.add_argument("--matchup-defense-features", type=Path)
     statistical_features_v2.add_argument("--player-skill-features", type=Path)
     statistical_features_v2.add_argument("--behavior-roles", type=Path)
+    statistical_features_v2.add_argument("--offense-roles", type=Path)
+    statistical_features_v2.add_argument("--defense-roles", type=Path)
     statistical_features_v2.add_argument(
         "--window-ends",
         type=_season_list,
@@ -2235,6 +2270,40 @@ def build_parser() -> argparse.ArgumentParser:
     behavior_roles.add_argument("--role-context", type=Path, required=True)
     behavior_roles.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     behavior_roles.set_defaults(func=command_build_behavior_roles)
+
+    side_roles = subparsers.add_parser(
+        "build-side-roles",
+        help="Build separate offense and defense deployment-role maps.",
+    )
+    side_roles.add_argument("--annual-features", type=Path, required=True)
+    side_roles.add_argument("--dribble-context", type=Path, required=True)
+    side_roles.add_argument("--playtype-source", type=Path, required=True)
+    side_roles.add_argument("--defensive-tracking", type=Path, required=True)
+    side_roles.add_argument("--matchup-archive-root", type=Path, required=True)
+    side_roles.add_argument(
+        "--offense-seasons", type=_season_list, default=tuple(range(2014, 2025))
+    )
+    side_roles.add_argument(
+        "--defense-seasons", type=_season_list, default=tuple(range(2018, 2025))
+    )
+    side_roles.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    side_roles.set_defaults(func=command_build_side_roles)
+
+    defense_role_challenger = subparsers.add_parser(
+        "run-defense-role-challenger",
+        help="Select new defense information on fixed older seasons and score diagnostics.",
+    )
+    defense_role_challenger.add_argument("--features", type=Path, required=True)
+    defense_role_challenger.add_argument("--targets", type=Path, required=True)
+    defense_role_challenger.add_argument("--frozen-spm-run", type=Path, required=True)
+    defense_role_challenger.add_argument(
+        "--contract", type=Path,
+        default=PROJECT_ROOT / "configs" / "models" / "defense_role_challenger_v1.json",
+    )
+    defense_role_challenger.add_argument(
+        "--artifact-root", type=Path, default=ARTIFACT_ROOT
+    )
+    defense_role_challenger.set_defaults(func=command_run_defense_role_challenger)
 
     statistical_impact = subparsers.add_parser(
         "fit-statistical-impact",

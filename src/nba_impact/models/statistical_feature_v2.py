@@ -67,6 +67,12 @@ BEHAVIOR_ROLES = (
     "role_axis_6", "role_affinity_0", "role_affinity_1", "role_affinity_2",
     "role_affinity_3", "role_affinity_4", "role_affinity_5", "role_affinity_6",
 )
+NEW_MATCHUP_DEFENSE_ACTIVITY = (
+    # The historical Shufinskiy archives populate matchup blocks. The other
+    # newly exposed activity fields are retained in the data artifact for
+    # coverage auditing, but are constant zero and therefore not model inputs.
+    "matchup_blocks_p100",
+)
 
 
 def _suffix_features(
@@ -129,6 +135,9 @@ def candidate_feature_blocks(columns: tuple[str, ...]) -> dict[str, dict[str, tu
             "behavior_roles": tuple(
                 feature for feature in BEHAVIOR_ROLES if feature in available
             ),
+            "offense_roles": tuple(
+                sorted(feature for feature in available if feature.startswith("off_role_"))
+            ),
         },
         "defense": {
             "era_relative": defense_relative,
@@ -145,6 +154,22 @@ def candidate_feature_blocks(columns: tuple[str, ...]) -> dict[str, dict[str, tu
             ),
             "behavior_roles": tuple(
                 feature for feature in BEHAVIOR_ROLES if feature in available
+            ),
+            "defense_roles": tuple(
+                sorted(
+                    feature for feature in available
+                    if feature.startswith("def_role_")
+                    and "_cluster" not in feature
+                )
+            ),
+            "new_matchup_activity": tuple(
+                feature for feature in NEW_MATCHUP_DEFENSE_ACTIVITY if feature in available
+            ),
+            "defense_role_interactions": tuple(
+                sorted(
+                    feature for feature in available
+                    if "_x_def_role_axis_" in feature
+                )
             ),
         },
     }

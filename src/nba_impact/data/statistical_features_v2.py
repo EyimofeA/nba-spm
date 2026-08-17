@@ -359,6 +359,8 @@ def build_statistical_features_v2(
     matchup_defense_features_path: str | Path | None = None,
     player_skill_features_path: str | Path | None = None,
     behavior_roles_path: str | Path | None = None,
+    offense_roles_path: str | Path | None = None,
+    defense_roles_path: str | Path | None = None,
 ) -> dict:
     if pooled_window_seasons < 1:
         raise ValueError("pooled_window_seasons must be positive.")
@@ -478,6 +480,49 @@ def build_statistical_features_v2(
             roles[["PLAYER_ID", "Window_End", *behavior_role_feature_names]],
             on=["PLAYER_ID", "Window_End"], how="left", validate="one_to_one",
         )
+    side_role_feature_names: dict[str, list[str]] = {"offense": [], "defense": []}
+    for side, path, prefix in (
+        ("offense", offense_roles_path, "off_role"),
+        ("defense", defense_roles_path, "def_role"),
+    ):
+        if path is None:
+            continue
+        roles = pd.read_parquet(path).rename(columns={"Season": "Window_End"})
+        if roles.duplicated(["PLAYER_ID", "Window_End"]).any():
+            raise ValueError(f"{side.title()} role feature keys are not unique.")
+        axes = sorted(
+            (column for column in roles if column.startswith(f"{prefix}_axis_")),
+            key=lambda value: int(value.rsplit("_", 1)[1]),
+        )
+        affinities = sorted(
+            (column for column in roles if column.startswith(f"{prefix}_affinity_")),
+            key=lambda value: int(value.rsplit("_", 1)[1]),
+        )
+        candidates = [*axes, *affinities[:-1]]
+        if not axes or len(affinities) < 2:
+            raise ValueError(f"{side.title()} role artifact has no usable role map.")
+        side_role_feature_names[side] = candidates
+        features = features.merge(
+            roles[["PLAYER_ID", "Window_End", *candidates]],
+            on=["PLAYER_ID", "Window_End"], how="left", validate="one_to_one",
+        )
+    defense_role_interaction_feature_names: list[str] = []
+    defensive_skill_roots = (
+        "dfg_diff_pct_eb", "rim_points_saved_p100", "deflections_p100",
+        "charges_drawn_p100", "matchup_opponent_adjusted_points_saved_p100_eb",
+        "matchup_shotmaking_points_saved_vs_scorer_p100_eb",
+    )
+    defense_axes = [
+        feature for feature in side_role_feature_names["defense"]
+        if feature.startswith("def_role_axis_")
+    ]
+    for skill in defensive_skill_roots:
+        if skill not in features:
+            continue
+        for axis in defense_axes:
+            interaction = f"{skill}_x_{axis}"
+            features[interaction] = features[skill] * features[axis]
+            defense_role_interaction_feature_names.append(interaction)
     if features.duplicated(["PLAYER_ID", "Window_End"]).any():
         raise ValueError("V2 feature keys are not unique.")
     new_features = [column for column in features if column not in base.columns]
@@ -529,6 +574,12 @@ def build_statistical_features_v2(
         "behavior_roles_sha256": (
             sha256_file(behavior_roles_path) if behavior_roles_path else None
         ),
+        "offense_roles_sha256": (
+            sha256_file(offense_roles_path) if offense_roles_path else None
+        ),
+        "defense_roles_sha256": (
+            sha256_file(defense_roles_path) if defense_roles_path else None
+        ),
     }
     identity = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()[:10]
     run_id = f"statistical_features_v2_{identity}"
@@ -566,6 +617,8 @@ def build_statistical_features_v2(
         "matchup_defense_feature_names": matchup_defense_feature_names,
         "player_skill_feature_names": player_skill_feature_names,
         "behavior_role_feature_names": behavior_role_feature_names,
+        "side_role_feature_names": side_role_feature_names,
+        "defense_role_interaction_feature_names": defense_role_interaction_feature_names,
         "public_benchmark_provenance": {
             "source": "https://craftednba.com/glossary",
             "box_creation_and_offensive_load": "Ben Taylor public formulas as reproduced by CraftedNBA",

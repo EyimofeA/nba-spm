@@ -268,6 +268,16 @@ these inspected seasons. Build the next defender model from shot-location and
 lineup-context controls, then reserve a future complete season for confirmation.
 Current annual AIO remains published only through 2024.
 
+The separate role and defense feature pass is now complete. Run
+`side_roles_v1_2c228f4b9e` selects six offense clusters and five defense
+clusters without using impact. Run `defense_role_challenger_v1_4dcd557af4`
+selects eight scorer-adjusted matchup features on fixed 2020--21 validation.
+The block improves RMSE and correlation in every 2022--24 diagnostic season.
+Role axes, affinities, and role-by-skill interactions do not improve the fixed
+selection folds, so they remain descriptive. The next AIO contract must pool
+the selected matchup source counts over each three-season window and recompute
+rates and shrinkage. It must not average annual estimates.
+
 A Sol mathematical review rejected the proposed primary-defender plus exact
 zone/lineup specification as unidentified with the available game-level matchup
 aggregates. The replacement observed-lineup event panel is validated, but its

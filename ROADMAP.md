@@ -51,6 +51,12 @@ dead ends. Updated 2026-08-17. See `docs/README.md` for the document index,
   93.71% coverage, 0.9845 seed stability, 61.66% out-of-sample adjacent exact-role
   persistence, and 0.9149 median adjacent-axis cosine. Six axes and seven soft
   affinities are integrated as candidates; the hard role is descriptive only.
+- Separate role run `side_roles_v1_2c228f4b9e` selects six offense clusters and
+  five defense clusters without impact targets. The fixed defense comparison
+  rejects role inputs but selects eight scorer-adjusted matchup features on
+  both 2020 and 2021. The matchup challenger wins all three 2022--24 diagnostic
+  seasons, with mean RMSE change -0.0392 and correlation change +0.0601. It is
+  research-only because those later seasons are inspected.
 - Cross-fitted statistical priors cover every eligible 2019–24 feature row. For
   window `T`, training labels end by `T-3`. Six-fold prior-only net RMSE is
   1.2513 with 0.5198 correlation.
@@ -88,12 +94,13 @@ dead ends. Updated 2026-08-17. See `docs/README.md` for the document index,
 
 ## Active next task
 
-The next task is to freeze the direct AIO challenger contract. The AIO
-diagnosis, skill layer, aging-balanced diagnostics, and behavior-only role
-foundation are complete. Predeclare the eight basketball factor groups and one
-role-interaction block. Use 2014--21 for development. Treat 2022--25 as
-inspected diagnostics and reserve Season 2027 as untouched confirmation. Do not
-infer role-fit counterfactuals or promote a model from this step.
+Freeze the rolling three-season direct AIO challenger. Carry the selected eight
+matchup-defense features into the defense factor group. Recompute pooled counts,
+rates, and shrinkage from source totals; do not average annual rates. Keep the
+split roles as descriptive outputs and subgroup diagnostics. Do not include the
+rejected role or role-interaction blocks in the first challenger. Use 2014--21
+for development, treat 2022--25 as inspected diagnostics, and keep Season 2027
+untouched.
 
 The precision-aware SPM-prior challenger is deferred. Its reviewed 2018--21
 schedule cannot be produced by the frozen feature history, and the invalid
@@ -106,8 +113,9 @@ Slow-network policy: each immutable file resumes from `.partial`, retries up to
 
 ## Ordered queue
 
-1. **All-in-one challenger:** freeze factor-group and role-interaction inputs
-   without subset search. Use direct offense and defense RAPM targets.
+1. **All-in-one challenger:** freeze factor groups with the selected eight
+   matchup-defense fields. Use direct offense and defense RAPM targets. Do not
+   include role interactions in the first challenger.
 2. **Role research:** evaluate role-relative skill before any role-fit
    counterfactual. Require support/overlap checks for counterfactual roles.
 3. **Dynamic impact:** retain the 2014--26 state-space filter as the leading

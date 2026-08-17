@@ -25,13 +25,19 @@ def test_matchup_features_are_centered_and_shrunk() -> None:
                 "partial_possessions": 10,
                 "player_points": points,
                 "matchup_assists": 2,
+                "matchup_potential_assists": 3,
                 "matchup_turnovers": 1,
+                "matchup_blocks": 1,
                 "matchup_field_goals_made": fgm,
                 "matchup_field_goals_attempted": 8,
                 "matchup_three_pointers_made": 0,
                 "matchup_three_pointers_attempted": 2,
                 "matchup_free_throws_made": 0,
                 "shooting_fouls": 1,
+                "switches_on": 2,
+                "help_blocks": 1,
+                "help_field_goals_made": 1,
+                "help_field_goals_attempted": 2,
             }
         )
     features, quality = compute_matchup_defense_features(
@@ -71,13 +77,19 @@ def test_matchup_features_reject_point_conservation_failure() -> None:
                 "partial_possessions": 10,
                 "player_points": 9,
                 "matchup_assists": 1,
+                "matchup_potential_assists": 2,
                 "matchup_turnovers": 1,
+                "matchup_blocks": 0,
                 "matchup_field_goals_made": 4,
                 "matchup_field_goals_attempted": 8,
                 "matchup_three_pointers_made": 0,
                 "matchup_three_pointers_attempted": 2,
                 "matchup_free_throws_made": 0,
                 "shooting_fouls": 1,
+                "switches_on": 1,
+                "help_blocks": 0,
+                "help_field_goals_made": 1,
+                "help_field_goals_attempted": 2,
             }
         ]
     )

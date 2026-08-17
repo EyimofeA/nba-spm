@@ -27,9 +27,12 @@ Before changing AIO features, validation, roles, or interpretation, read
 `docs/impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`. Treat 2022–25 as inspected
 diagnostic seasons for the current feature family. Do not claim new promotion
 evidence from additional subset searches on those seasons.
-For player-role work, read `docs/impact/BEHAVIOR_ROLES.md`. Hard role clusters
-are descriptive only. Use continuous axes or soft affinities as research
-features. Do not infer role-fit counterfactuals from cluster membership alone.
+For player-role or defense-feature work, read
+`docs/impact/SIDE_ROLES_AND_DEFENSE.md`, then `docs/impact/BEHAVIOR_ROLES.md`
+for the superseded combined map. Hard role clusters are descriptive only. Use
+continuous axes or soft affinities only as predeclared research features. The
+first split-role comparison rejected roles as defense-impact inputs. Do not
+infer role-fit counterfactuals from cluster membership alone.
 
 ---
 
@@ -218,13 +221,14 @@ immutable official BoxScoreTraditionalV3 JSON; never relax lineup minute gates
 to hide incomplete boxes.
 
 The licensed matchup-assignment source is pinned in
-`configs/ingest/shufinskiy_matchups_2017_2024.json`. Its latest validated factor
-run is `matchup_defense_features_v1_09829b48c8`. Treat `matchup_possessions` as
-audit exposure, not a model input. The first opponent-adjusted matchup block,
-built from predecessor run `matchup_defense_features_v1_86d13d7357`, failed its
-correlation gate in `annual_defense_features_nested_v1_eaeca704eb`. Do not tune
-more subsets on 2022–24. The next challenger must add shot-location and lineup
-context, and matchup points saved must not be described as causal defense.
+`configs/ingest/shufinskiy_matchups_2017_2024.json`. The expanded validated
+factor run is `matchup_defense_features_v1_b265e245c4`. Treat
+`matchup_possessions` as audit exposure, not a model input. The fixed
+older-season comparison selected eight scorer-adjusted matchup features in
+`defense_role_challenger_v1_4dcd557af4`; split roles and role interactions did
+not help. This is research evidence, not promotion evidence. Do not tune more
+subsets on 2022–24. Matchup points saved must not be described as causal
+defense.
 The read-only API exposes these six factor residuals under
 `/v1/leaderboards/matchup-defense` and player payloads. Preserve the
 `research_only` label and caveat in any future client.

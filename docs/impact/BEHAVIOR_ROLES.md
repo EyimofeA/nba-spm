@@ -2,6 +2,10 @@
 
 Date: 2026-08-17
 
+> This combined offense/defense map is retained for reproducibility. New work
+> uses the separate maps in `SIDE_ROLES_AND_DEFENSE.md`. Do not mix the old
+> `role_*` fields with the new `off_role_*` and `def_role_*` fields in one model.
+
 ## Decision
 
 The first behavior-only role foundation passes its frozen coverage and
