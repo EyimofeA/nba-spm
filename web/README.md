@@ -11,11 +11,12 @@ Sections:
 - Player: annual trajectory, offense-plus-defense identity, the
   SPM-center-plus-RAPM-update decomposition for AIO, skill radar, and raw roles.
 - Roles: clickable offense and defense maps with nearest role matches.
-- Projections: research-only player and returning-minutes team baselines.
+- Projections: research-only player and returning-minutes team baselines. The
+  shipped snapshot has a 2027 forecast only; the view discovers later exported
+  vintages automatically.
 - Research: build order, forward-only SPM accuracy, the next/previous season
   direction check, external agreement with BPM and xRAPM, aging, projection
   method selection, and the recorded limits.
-- Ideas & to-do: the working queue. It contains plans, never results.
 
 Rules the client follows:
 

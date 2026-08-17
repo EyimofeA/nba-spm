@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type Component = "net" | "offense" | "defense";
 type ModelId = "aio" | "rapm" | "spm";
-type Tab = "home" | "ratings" | "player" | "roles" | "projections" | "research" | "ideas";
+type Tab = "home" | "ratings" | "player" | "roles" | "projections" | "research";
 type RoleSide = "offense" | "defense";
 type Membership = { role_id: string; label: string; affinity: number };
 type Role = { primary_role: string; confidence: number; memberships: Membership[] };
@@ -71,7 +71,7 @@ const MODELS: { id: ModelId; label: string; prefix: string; note: string }[] = [
   { id: "rapm", label: "Normal RAPM", prefix: "normal_rapm_", note: "Zero-prior one-season ridge on possessions." },
   { id: "spm", label: "SPM", prefix: "spm_", note: "Held-out statistical prediction that centers the RAPM fit." },
 ];
-const TABS: Tab[] = ["home", "ratings", "player", "roles", "projections", "research", "ideas"];
+const TABS: Tab[] = ["home", "ratings", "player", "roles", "projections", "research"];
 const formatRating = (value: number | undefined) => value === undefined || Number.isNaN(value) ? "—" : `${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
 const componentLabel: Record<Component, string> = { net: "Net", offense: "Off", defense: "Def" };
 const roleColors = ["#e85d32", "#2467d5", "#22a06b", "#8c56c2", "#c99a12", "#9c4c68"];
@@ -213,6 +213,7 @@ export function PlayerLab() {
   const [teamProjections, setTeamProjections] = useState<TeamProjection[]>([]);
   const [playerProjections, setPlayerProjections] = useState<PlayerProjection[]>([]);
   const [projectionView, setProjectionView] = useState<"teams" | "players">("teams");
+  const [projectionSeason, setProjectionSeason] = useState<number>();
   const shardCache = useRef(new Map<number, Record<string, Player>>());
   const seasonCache = useRef(new Map<number, LeaderboardRow[]>());
   const roleCache = useRef(new Map<string, RolePoint[]>());
@@ -353,6 +354,20 @@ export function PlayerLab() {
   const agingKey = agingView === "change" ? `change_${component}` : component === "net" ? "f_total" : component === "offense" ? "f_off" : "f_def";
   const currentProfile = player?.profiles.find((row) => row.Season === selectedPlayerSeason) ?? player?.profiles.at(-1);
   const selectedRolePoint = rolePoints.find((point) => point.PLAYER_ID === selectedRoleId);
+  const projectionSeasons = useMemo(() => {
+    const playerSeasons = new Set(playerProjections.map((row) => row.projection_season));
+    return [...new Set(teamProjections.map((row) => row.projection_season))]
+      .filter((year) => playerSeasons.has(year)).sort((a, b) => a - b);
+  }, [teamProjections, playerProjections]);
+  const activeProjectionSeason = projectionSeason ?? projectionSeasons.at(-1);
+  const visibleTeamProjections = useMemo(
+    () => teamProjections.filter((row) => row.projection_season === activeProjectionSeason),
+    [teamProjections, activeProjectionSeason],
+  );
+  const visiblePlayerProjections = useMemo(
+    () => playerProjections.filter((row) => row.projection_season === activeProjectionSeason),
+    [playerProjections, activeProjectionSeason],
+  );
   const spmCenter = rating(selectedAnnual, "spm_", component);
   const aioValue = rating(selectedAnnual, "aio_", component);
   const seasons = catalog?.catalog.seasons ?? [];
@@ -369,7 +384,7 @@ export function PlayerLab() {
 
   return <main id="top">
     <header><a className="brand" href="#home" onClick={() => setTab("home")}>NBA Impact</a><form className="search" onSubmit={submitSearch}><input aria-label="Find player" placeholder="Find player" value={query} onChange={(event) => setQuery(event.target.value)} />{matches.length > 0 && <div className="results">{matches.map((item) => <button type="button" key={item.id} onClick={() => loadPlayer(item.id)}>{item.name}</button>)}</div>}</form></header>
-    <nav className="tabs" aria-label="Sections">{TABS.map((item) => <a href={`#${item}`} key={item} className={tab === item ? "active" : ""} aria-current={tab === item ? "page" : undefined} onClick={() => { setTab(item); if (item === "ratings" && leaderboard.length === 0) loadSeason(season); if (item === "roles") loadRoleMap(roleSide, roleYear); if (item === "projections") loadProjections(); }}>{item === "ideas" ? "ideas & to-do" : item}</a>)}</nav>
+    <nav className="tabs" aria-label="Sections">{TABS.map((item) => <a href={`#${item}`} key={item} className={tab === item ? "active" : ""} aria-current={tab === item ? "page" : undefined} onClick={() => { setTab(item); if (item === "ratings" && leaderboard.length === 0) loadSeason(season); if (item === "roles") loadRoleMap(roleSide, roleYear); if (item === "projections") loadProjections(); }}>{item}</a>)}</nav>
     {status && <p className="status" role="status">{status}</p>}
     <div className="content">
       {tab === "home" && <>
@@ -427,10 +442,10 @@ export function PlayerLab() {
         {selectedRolePoint && player && <section className="role-selection"><div><p className="kicker">SELECTED</p><h2>{selectedRolePoint.PLAYER_NAME}</h2><p>{selectedRolePoint.raw_role} · {selectedRolePoint.TEAM_ABBREVIATION ?? "—"}</p><button onClick={() => setTab("player")}>Open player</button></div><RolePanel title={roleSide === "offense" ? "Offense role mix" : "Defense role mix"} role={player.roles.find((row) => row.Season === roleYear)?.[roleSide]} /><div className="similar"><p className="kicker">MOST SIMILAR</p>{similarRolePlayers.map((item) => <button key={item.PLAYER_ID} onClick={() => selectRolePlayer(item.PLAYER_ID)}><b>{item.PLAYER_NAME}</b><span>{item.raw_role}</span></button>)}</div></section>}
       </>}
       {tab === "projections" && <>
-        <section className="section-head"><div><p className="kicker">2027 BASELINE</p><h1>Projections</h1></div><span>Returning 2026 minutes</span></section>
-        <section className="controls"><label>View<select value={projectionView} onChange={(event) => setProjectionView(event.target.value as "teams" | "players")}><option value="teams">Teams</option><option value="players">Players</option></select></label></section>
-        {projectionView === "teams" ? <div className="ratings-table-wrap projection-table"><table className="ratings-table"><thead><tr><th scope="col">#</th><th scope="col">Team</th><th scope="col">Net</th><th scope="col">Win pace</th><th scope="col">Players</th></tr></thead><tbody>{[...teamProjections].sort((a, b) => b.projected_win_pace - a.projected_win_pace).map((row, indexRow) => <tr key={row.TEAM_ABBREVIATION}><td>{indexRow + 1}</td><td className="player-cell">{row.TEAM_ABBREVIATION}</td><td>{formatRating(row.projected_net_rating)}</td><td className="rating-cell">{row.projected_win_pace.toFixed(1)}</td><td>{row.players}</td></tr>)}</tbody></table></div> : <div className="ratings-table-wrap projection-table"><table className="ratings-table"><thead><tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">Team</th><th scope="col">Age</th><th scope="col">Off</th><th scope="col">Def</th><th scope="col">Net</th></tr></thead><tbody>{[...playerProjections].sort((a, b) => b.projected_net - a.projected_net).slice(0, 150).map((row, indexRow) => <tr key={row.PLAYER_ID} onClick={() => loadPlayer(row.PLAYER_ID)}><td>{indexRow + 1}</td><td className="player-cell">{row.PLAYER_NAME}</td><td>{row.TEAM_ABBREVIATION}</td><td>{row.AGE.toFixed(0)}</td><td>{formatRating(row.projected_offense)}</td><td>{formatRating(row.projected_defense)}</td><td className="rating-cell">{formatRating(row.projected_net)}</td></tr>)}</tbody></table></div>}
-        <p className="projection-note">Research baseline only. It ages the 2026 latent rating and holds each team’s 2026 players and minutes fixed. Trades, rookies, injuries, and schedule are absent. Season 2027 stays reserved for confirmation, so nothing here is scored against it.</p>
+        <section className="section-head"><div><p className="kicker">{activeProjectionSeason ?? "—"} FORECAST</p><h1>Projections</h1></div><span>Research baseline</span></section>
+        <section className="controls"><label>Season<select value={activeProjectionSeason ?? ""} onChange={(event) => setProjectionSeason(Number(event.target.value))}>{projectionSeasons.map((year) => <option key={year} value={year}>{year}</option>)}</select></label><label>View<select value={projectionView} onChange={(event) => setProjectionView(event.target.value as "teams" | "players")}><option value="teams">Teams</option><option value="players">Players</option></select></label></section>
+        {projectionView === "teams" ? <div className="ratings-table-wrap projection-table"><table className="ratings-table"><thead><tr><th scope="col">#</th><th scope="col">Team</th><th scope="col">Net</th><th scope="col">Win pace</th><th scope="col">Players</th></tr></thead><tbody>{[...visibleTeamProjections].sort((a, b) => b.projected_win_pace - a.projected_win_pace).map((row, indexRow) => <tr key={row.TEAM_ABBREVIATION}><td>{indexRow + 1}</td><td className="player-cell">{row.TEAM_ABBREVIATION}</td><td>{formatRating(row.projected_net_rating)}</td><td className="rating-cell">{row.projected_win_pace.toFixed(1)}</td><td>{row.players}</td></tr>)}</tbody></table></div> : <div className="ratings-table-wrap projection-table"><table className="ratings-table"><thead><tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">Team</th><th scope="col">Age</th><th scope="col">Off</th><th scope="col">Def</th><th scope="col">Net</th></tr></thead><tbody>{[...visiblePlayerProjections].sort((a, b) => b.projected_net - a.projected_net).slice(0, 150).map((row, indexRow) => <tr key={row.PLAYER_ID} onClick={() => loadPlayer(row.PLAYER_ID)}><td>{indexRow + 1}</td><td className="player-cell">{row.PLAYER_NAME}</td><td>{row.TEAM_ABBREVIATION}</td><td>{row.AGE.toFixed(0)}</td><td>{formatRating(row.projected_offense)}</td><td>{formatRating(row.projected_defense)}</td><td className="rating-cell">{formatRating(row.projected_net)}</td></tr>)}</tbody></table></div>}
+        <p className="projection-note">Only {projectionSeasons.join(", ") || "no"} forecast vintage{projectionSeasons.length === 1 ? " is" : "s are"} published. This view will add 2018–2026 when their player and team forecast artifacts are exported. {activeProjectionSeason === 2027 ? "2027 is a forecast, not observed training or confirmation data." : ""}</p>
       </>}
       {tab === "research" && catalog && <>
         <section className="section-head"><div><p className="kicker">RESEARCH</p><h1>What held up</h1></div><span>Frozen runs only</span></section>
@@ -448,21 +463,6 @@ export function PlayerLab() {
           <li><b>Roles and skill profiles are descriptive.</b><span>They are not impact estimates and not model inputs.</span></li>
           <li><b>Season 2027 is untouched.</b><span>It is reserved for annual confirmation and is never used to develop or select a model.</span></li>
         </ul></section>
-      </>}
-      {tab === "ideas" && <>
-        <section className="section-head"><div><p className="kicker">IDEAS &amp; TO-DO</p><h1>The queue</h1></div><span>Plans, not results</span></section>
-        <p className="control-note">Nothing on this page is evidence. Each item needs a frozen metric contract and a reserved confirmation season before it can change a published rating.</p>
-        <section className="research-grid">
-          <article><p className="kicker">NEXT</p><h2>All-in-one challenger</h2><p>Freeze the three-season factor groups with the eight selected matchup-defense features. Pool counts from source totals; do not average annual rates.</p></article>
-          <article><p className="kicker">NEXT</p><h2>Role-relative skill</h2><p>Measure skill inside a role before making any role-fit claim. Require support and overlap checks first.</p></article>
-          <article><p className="kicker">NEXT</p><h2>Career trajectories</h2><p>Keep the annual state-space filter as the research challenger against the fixed time-decay baseline. Promote nothing without a new untouched season.</p></article>
-          <article><p className="kicker">LATER</p><h2>Defense from tracking</h2><p>Individual defender ratings wait for exact guarding data. Assignment data measures matchups, not causal credit.</p></article>
-          <article><p className="kicker">LATER</p><h2>Roster calculator</h2><p>Define a lineup and roster net-rating contract with exposure floors and shrinkage. Combination ratings are not isolated causal effects.</p></article>
-          <article><p className="kicker">LATER</p><h2>Calibrated uncertainty</h2><p>Publish intervals for SPM and AIO only after they are calibrated on held-out seasons.</p></article>
-          <article><p className="kicker">LATER</p><h2>More context data</h2><p>Injuries, availability, contracts, draft position, roster stints, travel, and schedule.</p></article>
-          <article><p className="kicker">NOT NOW</p><h2>Neural sequence models</h2><p>Tabular baselines still win on identical rows. Any sequence work needs prefix-invariant causal tokens and cloud compute.</p></article>
-          <article><p className="kicker">NOT NOW</p><h2>More subset searches</h2><p>The 2017–24 folds are inspected. New feature claims need new data or a predeclared nested design.</p></article>
-        </section>
       </>}
     </div>
   </main>;

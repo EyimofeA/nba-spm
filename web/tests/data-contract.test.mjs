@@ -60,6 +60,16 @@ test("every published season table is loadable and complete", () => {
   }
 });
 
+test("projection vintages are published only when both player and team rows exist", () => {
+  const teams = read("projection-teams.json");
+  const players = read("projection-players.json");
+  const teamSeasons = [...new Set(teams.map((row) => row.projection_season))].sort();
+  const playerSeasons = [...new Set(players.map((row) => row.projection_season))].sort();
+  assert.deepEqual(teamSeasons, playerSeasons);
+  assert.deepEqual(teamSeasons, [2027]);
+  assert.ok(players.every((row) => row.projection_season === 2027));
+});
+
 test("the player index points at existing shards", () => {
   const index = read("players.json");
   assert.ok(index.length > 1000);
