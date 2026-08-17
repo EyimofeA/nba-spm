@@ -75,11 +75,10 @@ const TABS: Tab[] = ["home", "ratings", "player", "roles", "projections", "resea
 const formatRating = (value: number | undefined) => value === undefined || Number.isNaN(value) ? "—" : `${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
 const componentLabel: Record<Component, string> = { net: "Net", offense: "Off", defense: "Def" };
 const roleColors = ["#e85d32", "#2467d5", "#22a06b", "#8c56c2", "#c99a12", "#9c4c68"];
-const profileAxes = [
-  ["shooting", "Shooting"], ["creation", "Creation"], ["security", "Security"],
-  ["rim_pressure", "Rim pressure"], ["rebounding", "Rebounding"],
-  ["shot_defense", "Shot defense"], ["disruption", "Disruption"], ["suppression", "Suppression"],
-] as const;
+const profileAxes: Record<RoleSide, readonly (readonly [string, string])[]> = {
+  offense: [["shooting", "Shooting"], ["spacing", "Spacing"], ["creation", "Creation"], ["security", "Security"], ["rim_pressure", "Rim pressure"], ["rebounding", "Rebounding"]],
+  defense: [["shot_defense", "Shot defense"], ["disruption", "Disruption"], ["suppression", "Suppression"], ["rebounding", "Rebounding"]],
+};
 
 /** A model is selectable only when the loaded snapshot carries its values. */
 function availableModels(rows: RatingRow[]) {
@@ -142,23 +141,24 @@ function AgingChart({ rows, valueKey, label }: { rows: AgingRow[]; valueKey: str
   </svg></div>;
 }
 
-function ProfileRadar({ profile, playerName }: { profile?: SkillProfile; playerName: string }) {
+function ProfileRadar({ profile, playerName, side }: { profile?: SkillProfile; playerName: string; side: RoleSide }) {
   if (!profile) return <div className="empty profile-empty">No profile for this year.</div>;
-  const size = 520, center = size / 2, radius = 170;
+  const axes = profileAxes[side].filter(([key]) => typeof profile[key] === "number");
+  if (axes.length < 3) return <div className="empty profile-empty">No {side} profile for this year.</div>;
+  const size = 460, center = size / 2, radius = 132;
   const point = (index: number, value: number) => {
-    const angle = -Math.PI / 2 + index * Math.PI * 2 / profileAxes.length;
+    const angle = -Math.PI / 2 + index * Math.PI * 2 / axes.length;
     const scaled = radius * value / 100;
     return [center + Math.cos(angle) * scaled, center + Math.sin(angle) * scaled];
   };
-  const ring = (value: number) => profileAxes.map((_, index) => point(index, value).join(",")).join(" ");
-  const polygon = profileAxes.map(([key], index) => point(index, Number(profile[key] ?? 0)).join(",")).join(" ");
-  return <div className="chart radar"><svg viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`${playerName} ${profile.Season} skill profile`}>
+  const ring = (value: number) => axes.map((_, index) => point(index, value).join(",")).join(" ");
+  const polygon = axes.map(([key], index) => point(index, Number(profile[key])).join(",")).join(" ");
+  return <section className="profile-card"><h3>{side}</h3><div className="chart radar"><svg viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`${playerName} ${profile.Season} ${side} skill profile`}>
     {[25, 50, 75, 100].map((value) => <polygon key={value} className="radar-ring" points={ring(value)} />)}
-    {profileAxes.map(([, label], index) => { const [x, y] = point(index, 118); return <g key={label}><line className="radar-spoke" x1={center} y1={center} x2={point(index, 100)[0]} y2={point(index, 100)[1]} /><text className="radar-label" x={x} y={y} textAnchor={x < center - 5 ? "end" : x > center + 5 ? "start" : "middle"}>{label}</text></g>; })}
+    {axes.map(([, label], index) => { const [x, y] = point(index, 124); return <g key={label}><line className="radar-spoke" x1={center} y1={center} x2={point(index, 100)[0]} y2={point(index, 100)[1]} /><text className="radar-label" x={x} y={y} textAnchor={x < center - 5 ? "end" : x > center + 5 ? "start" : "middle"}>{label}</text></g>; })}
     <polygon className="radar-player" points={polygon} />
-    {profileAxes.map(([key], index) => { const [x, y] = point(index, Number(profile[key] ?? 0)); return <circle className="radar-dot" key={key} cx={x} cy={y} r="4"><title>{`${profileAxes[index][1]}: ${Math.round(Number(profile[key]))}th percentile`}</title></circle>; })}
-    <text className="radar-note" x={center} y={size - 16} textAnchor="middle">Season percentile · descriptive skill profile</text>
-  </svg></div>;
+    {axes.map(([key, label], index) => { const [x, y] = point(index, Number(profile[key])); return <circle className="radar-dot" key={key} cx={x} cy={y} r="4"><title>{`${label}: ${Math.round(Number(profile[key]))} percentile`}</title></circle>; })}
+  </svg></div></section>;
 }
 
 function RolePanel({ title, role }: { title: string; role?: Role }) {
@@ -407,11 +407,17 @@ export function PlayerLab() {
         <LineChart points={points} label={`${player.PLAYER_NAME} annual ${playerModel.label} ${component}`} selected={String(selectedPlayerSeason)} onSelect={(label) => { const year = Number(label); setSelectedPlayerSeason(year); setRoleSeason(year); }} />
         {component === "net" && selectedAnnual && <section className="equation"><div><span>Offense</span><b>{formatRating(rating(selectedAnnual, playerModel.prefix, "offense"))}</b></div><i>+</i><div><span>Defense</span><b>{formatRating(rating(selectedAnnual, playerModel.prefix, "defense"))}</b></div><i>=</i><div><span>{playerModel.label} net</span><b>{formatRating(rating(selectedAnnual, playerModel.prefix, "net"))}</b></div></section>}
         {playerModel.id === "aio" && spmCenter !== undefined && aioValue !== undefined && <><section className="equation"><div><span>SPM center</span><b>{formatRating(spmCenter)}</b></div><i>+</i><div><span>RAPM update</span><b>{formatRating(aioValue - spmCenter)}</b></div><i>=</i><div><span>AIO {componentLabel[component].toLowerCase()}</span><b>{formatRating(aioValue)}</b></div></section><p className="control-note">{catalog?.methods.rapm_update_note}</p></>}
-        <section className="subhead"><div><p className="kicker">SKILL PROFILE</p><h2>{currentProfile?.Season ?? selectedPlayerSeason}</h2></div><p className="muted compact">Season percentile. Descriptive, not impact.</p></section>
-        <ProfileRadar profile={currentProfile} playerName={player.PLAYER_NAME} />
+        <section className="subhead"><div><p className="kicker">SKILL PROFILE</p><h2>{currentProfile?.Season ?? selectedPlayerSeason}</h2></div><p className="muted compact">Season-relative percentile.</p></section>
+        <div className={`profile-grid ${component}`}>
+          {component !== "defense" && <ProfileRadar profile={currentProfile} playerName={player.PLAYER_NAME} side="offense" />}
+          {component !== "offense" && <ProfileRadar profile={currentProfile} playerName={player.PLAYER_NAME} side="defense" />}
+        </div>
         <section className="subhead"><h2>Roles</h2><div className="inline-controls"><select aria-label="Player season" value={selectedPlayerSeason} onChange={(event) => { const year = Number(event.target.value); setSelectedPlayerSeason(year); setRoleSeason(year); }}>{player.annual.map((row) => <option key={row.Season}>{row.Season}</option>)}</select></div></section>
-        <div className="role-grid"><RolePanel title="Offense" role={currentRoles?.offense} /><RolePanel title="Defense" role={currentRoles?.defense} /></div>
-        <p className="control-note">Roles come from this season’s behavior only. They are descriptive, and they are not model inputs.</p>
+        <div className={`role-grid ${component}`}>
+          {component !== "defense" && <RolePanel title="Offense" role={currentRoles?.offense} />}
+          {component !== "offense" && <RolePanel title="Defense" role={currentRoles?.defense} />}
+        </div>
+        <p className="control-note">Role mix for this season. Roles are not rating inputs.</p>
       </> : <div className="empty">Choose a player.</div>)}
       {tab === "roles" && catalog && <>
         <section className="section-head"><div><p className="kicker">ROLES</p><h1>Role map</h1></div></section>

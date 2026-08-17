@@ -7,7 +7,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from nba_impact.api.ratings import RatingsApiConfig, RatingsStore
 from nba_impact.api.web_snapshot import (
     EXTERNAL_BENCHMARK,
     MODEL_CATALOG,

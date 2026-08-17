@@ -17,8 +17,8 @@ PROFILE_AXES: dict[str, tuple[tuple[str, int], ...]] = {
         ("true_shooting_pct_relative", 1),
         ("shooting_proficiency_2017_eb", 1),
         ("zts_pct_points", 1),
-        ("crafted_spacing_stable_v1", 1),
     ),
+    "spacing": (("crafted_spacing_stable_v1", 1),),
     "creation": (
         ("box_creation_2017_eb_p100", 1),
         ("behavioral_passer_score_v1", 1),
@@ -66,6 +66,11 @@ PROFILE_AXES: dict[str, tuple[tuple[str, int], ...]] = {
     ),
 }
 
+PROFILE_SIDES: dict[str, tuple[str, ...]] = {
+    "offense": ("shooting", "spacing", "creation", "security", "rim_pressure", "rebounding"),
+    "defense": ("shot_defense", "disruption", "suppression", "rebounding"),
+}
+
 
 def _percentile(values: pd.Series, direction: int) -> pd.Series:
     """Return season-relative 0-100 percentiles where higher is always better."""
@@ -77,7 +82,7 @@ def build_player_skill_profiles(
     features: pd.DataFrame,
     seasons: Iterable[int],
 ) -> pd.DataFrame:
-    """Create eight compact skill percentiles for each available player-season."""
+    """Create compact skill percentiles for each available player-season."""
     season_values = {int(value) for value in seasons}
     season_column = "Season" if "Season" in features else "Window_End"
     required = {"PLAYER_ID", season_column}
