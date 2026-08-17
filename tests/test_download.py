@@ -11,6 +11,7 @@ from nba_impact.data.download import (
     _download_with_retries,
     _validate_file,
     ingest_task,
+    load_tasks,
     plan_ingest_manifest,
 )
 
@@ -112,6 +113,25 @@ def test_dry_run_reports_remaining_bytes(tmp_path) -> None:
     assert plan["verified"] == 0
     assert plan["remaining_bytes"] == 42
     assert plan["results"][0]["status"] == "missing"
+
+
+def test_manifest_task_defaults_are_applied_and_can_be_overridden(tmp_path) -> None:
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        '{"provider":"fixture","task_defaults":{"provider":"shared",'
+        '"license":"Apache-2.0","required_columns":["gameId"],"max_attempts":9},'
+        '"tasks":[{"name":"one","url":"https://example.invalid/one.parquet",'
+        '"destination":"one.parquet"},{"name":"two",'
+        '"url":"https://example.invalid/two.parquet","destination":"two.parquet",'
+        '"max_attempts":3}]}'
+    )
+
+    _, tasks = load_tasks(manifest)
+
+    assert tasks[0].provider == "shared"
+    assert tasks[0].required_columns == ("gameId",)
+    assert tasks[0].max_attempts == 9
+    assert tasks[1].max_attempts == 3
 
 
 def test_retry_budget_recovers_and_resumes_partial(tmp_path, monkeypatch) -> None:

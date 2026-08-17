@@ -52,7 +52,10 @@ class TransientDownloadError(RuntimeError):
 
 def load_tasks(path: str | Path) -> tuple[dict, list[DownloadTask]]:
     manifest = json.loads(Path(path).read_text())
-    return manifest, [DownloadTask.from_dict(item) for item in manifest["tasks"]]
+    defaults = manifest.get("task_defaults", {})
+    return manifest, [
+        DownloadTask.from_dict({**defaults, **item}) for item in manifest["tasks"]
+    ]
 
 
 def _validate_parquet(path: Path, task: DownloadTask) -> dict:

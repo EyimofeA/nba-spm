@@ -1,0 +1,219 @@
+{
+  "provider": "cdechoch/nba-data-archive",
+  "purpose": "Pinned NBA Stats V3 play-by-play for verified scoring events, project seasons 2017 through 2026.",
+  "season_convention": "A source file named YYYY covers the NBA season ending in YYYY+1.",
+  "task_defaults": {
+    "provider": "cdechoch/nba-data-archive",
+    "license": "Apache-2.0",
+    "source_revision": "dfa8fa43f89ae2ca6c18db524edc2050a6bb2286",
+    "expected_min_rows": 100000,
+    "required_columns": [
+      "gameId",
+      "actionId",
+      "actionNumber",
+      "period",
+      "clock",
+      "teamId",
+      "personId",
+      "actionType",
+      "scoreHome",
+      "scoreAway",
+      "pointsTotal",
+      "description",
+      "_season",
+      "_season_type"
+    ]
+  },
+  "tasks": [
+    {
+      "name": "nbastatsv3_2017_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2016.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2017/regular.parquet",
+      "season": 2017,
+      "season_type": "regular",
+      "expected_bytes": 14849335,
+      "expected_sha256": "970c6d92c0f043e0bd356ac9300985aec350277588ef50764e10e79bfdb32daa"
+    },
+    {
+      "name": "nbastatsv3_2017_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/po_2016.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2017/playoffs.parquet",
+      "season": 2017,
+      "season_type": "playoffs",
+      "expected_bytes": 873635,
+      "expected_sha256": "cd52387633ab67ca48826066a3d91b512782712cab7fcfcc0341575605f8ac85",
+      "expected_min_rows": 5000
+    },
+    {
+      "name": "nbastatsv3_2018_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2017.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2018/regular.parquet",
+      "season": 2018,
+      "season_type": "regular",
+      "expected_bytes": 14864187,
+      "expected_sha256": "1bb006f166686ab459e4fd98c4733eb4b65a5711d8dbc43277b3fd56a28a9db9"
+    },
+    {
+      "name": "nbastatsv3_2018_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/po_2017.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2018/playoffs.parquet",
+      "season": 2018,
+      "season_type": "playoffs",
+      "expected_bytes": 907262,
+      "expected_sha256": "61377ff43a7c9018a9a896e3b308e24aec3e1adb63d77305cfaf0dfa527f21c5",
+      "expected_min_rows": 5000
+    },
+    {
+      "name": "nbastatsv3_2019_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2018.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2019/regular.parquet",
+      "season": 2019,
+      "season_type": "regular",
+      "expected_bytes": 15399996,
+      "expected_sha256": "cacd0a8efcf1b078247c7120d56a98c612ec05424ed9f3a23b6d2914878efab2"
+    },
+    {
+      "name": "nbastatsv3_2019_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/po_2018.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2019/playoffs.parquet",
+      "season": 2019,
+      "season_type": "playoffs",
+      "expected_bytes": 953032,
+      "expected_sha256": "c1cff27825ae6185156fba291da9675e90f66e99184cd874b9f420cc38a89879",
+      "expected_min_rows": 5000
+    },
+    {
+      "name": "nbastatsv3_2020_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2019.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2020/regular.parquet",
+      "season": 2020,
+      "season_type": "regular",
+      "expected_bytes": 13360555,
+      "expected_sha256": "4552cd780979a2099a6b2180034758df145d1c5ec836ea36d96626eb5fdae2da"
+    },
+    {
+      "name": "nbastatsv3_2020_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/po_2019.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2020/playoffs.parquet",
+      "season": 2020,
+      "season_type": "playoffs",
+      "expected_bytes": 949289,
+      "expected_sha256": "f1cb1e1230c74360b8cb33052300373a175050aecb2c65f339338378aa76543a",
+      "expected_min_rows": 5000
+    },
+    {
+      "name": "nbastatsv3_2021_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2020.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2021/regular.parquet",
+      "season": 2021,
+      "season_type": "regular",
+      "expected_bytes": 13268558,
+      "expected_sha256": "351fd265e2550a8be2f9e44d3c3aa7442c77adedfd42258bde9ae7e7298df2db"
+    },
+    {
+      "name": "nbastatsv3_2021_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/po_2020.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2021/playoffs.parquet",
+      "season": 2021,
+      "season_type": "playoffs",
+      "expected_bytes": 961374,
+      "expected_sha256": "f2817adaaec942ae739b75eebefb0a48d21e55297e8d14150f9fd5996f381ff4",
+      "expected_min_rows": 5000
+    },
+    {
+      "name": "nbastatsv3_2022_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2021.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2022/regular.parquet",
+      "season": 2022,
+      "season_type": "regular",
+      "expected_bytes": 15175013,
+      "expected_sha256": "d1a33fbde182680787f713c65f4b45d09b27c37ea2a54719c89266899d7fc4fd"
+    },
+    {
+      "name": "nbastatsv3_2022_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/po_2021.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2022/playoffs.parquet",
+      "season": 2022,
+      "season_type": "playoffs",
+      "expected_bytes": 976288,
+      "expected_sha256": "fc640e24f7096a3713182a0ee9d210908e9cbb6c702b8138ffb9fdc4dd41fe93",
+      "expected_min_rows": 5000
+    },
+    {
+      "name": "nbastatsv3_2023_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2022.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2023/regular.parquet",
+      "season": 2023,
+      "season_type": "regular",
+      "expected_bytes": 15318550,
+      "expected_sha256": "499535258ae010b13e5213b6d3bff8232955e19798543e48a607fb34bc85b144"
+    },
+    {
+      "name": "nbastatsv3_2023_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/po_2022.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2023/playoffs.parquet",
+      "season": 2023,
+      "season_type": "playoffs",
+      "expected_bytes": 942269,
+      "expected_sha256": "e8ee2a41f257f555054616a915925749cce2dff4f0257b52590b9660de67b14f",
+      "expected_min_rows": 5000
+    },
+    {
+      "name": "nbastatsv3_2024_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2023.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2024/regular.parquet",
+      "season": 2024,
+      "season_type": "regular",
+      "expected_bytes": 15257332,
+      "expected_sha256": "8fd8f6f80aa9edcd8146c81ed171dffb2ce31ab85c58cfe39f4ea9f76e2a7e94"
+    },
+    {
+      "name": "nbastatsv3_2024_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/po_2023.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2024/playoffs.parquet",
+      "season": 2024,
+      "season_type": "playoffs",
+      "expected_bytes": 903047,
+      "expected_sha256": "26a463344e421aebea6305938cba8ef803388458831e2b78efbd00186223b307",
+      "expected_min_rows": 5000
+    },
+    {
+      "name": "nbastatsv3_2025_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2024.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2025/regular.parquet",
+      "season": 2025,
+      "season_type": "regular",
+      "expected_bytes": 15601193,
+      "expected_sha256": "959750326d6389cdefc1eaefdff7f646ddcfc3ef6797b72b3b2ac07b727ecb0f"
+    },
+    {
+      "name": "nbastatsv3_2025_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/po_2024.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2025/playoffs.parquet",
+      "season": 2025,
+      "season_type": "playoffs",
+      "expected_bytes": 990691,
+      "expected_sha256": "6befbbf8b9f4a3bd633ab304cbc1b90270ede6a3d91930b9059e804adae2b4ed",
+      "expected_min_rows": 5000
+    },
+    {
+      "name": "nbastatsv3_2026_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2025.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2026/regular.parquet",
+      "season": 2026,
+      "season_type": "regular",
+      "expected_bytes": 15899616,
+      "expected_sha256": "78cf9f44e68f7d767bd169e8ae37f742095134d67afb667c1677f1064927c806"
+    },
+    {
+      "name": "nbastatsv3_2026_playoffs",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/po_2025.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2026/playoffs.parquet",
+      "season": 2026,
+      "season_type": "playoffs",
+      "expected_bytes": 1010592,
+      "expected_sha256": "a1937f5fa60f980aed139f9365da9aa69f30a6e6657ccd53c882cc59dd94766d",
+      "expected_min_rows": 5000
+    }
+  ]
+}

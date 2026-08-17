@@ -32,6 +32,7 @@ from nba_impact.data.manifest import (
     write_json_atomic,
 )
 from nba_impact.data.official_boxscore import ingest_official_boxscores
+from nba_impact.data.official_game_scores import build_official_game_scores
 from nba_impact.data.player_game import build_player_games
 from nba_impact.data.playtype_features import build_playtype_features
 from nba_impact.data.player_skill_features import build_player_skill_features
@@ -39,6 +40,7 @@ from nba_impact.data.possession_context import build_possession_start_context
 from nba_impact.data.role_context import build_role_context_features
 from nba_impact.data.shot_defense import build_shot_defense_events
 from nba_impact.data.possessions import build_possessions
+from nba_impact.data.scoring_events import build_scoring_event_dataset
 from nba_impact.data.statistical_features import build_statistical_feature_windows
 from nba_impact.data.statistical_features_v2 import build_statistical_features_v2
 from nba_impact.models.rapm import (
@@ -537,6 +539,31 @@ def command_run_shot_defense_pilot(args: argparse.Namespace) -> int:
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
     return 0
+
+
+def command_build_scoring_events(args: argparse.Namespace) -> int:
+    run = build_scoring_event_dataset(
+        args.root,
+        args.output,
+        project_seasons=tuple(args.seasons),
+        game_dim_path=args.game_dim,
+        legacy_cache_dir=args.legacy_cache,
+        official_game_scores_path=args.official_game_scores,
+        require_reference_coverage=not args.allow_missing_reference,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_download_official_game_scores(args: argparse.Namespace) -> int:
+    run = build_official_game_scores(
+        args.output,
+        project_seasons=tuple(args.seasons),
+        max_attempts=args.max_attempts,
+        request_delay_seconds=args.request_delay,
+    )
+    print(json.dumps(run, indent=2))
+    return 0 if run["passed"] else 2
 
 
 def command_fit_rapm(args: argparse.Namespace) -> int:
@@ -1875,6 +1902,56 @@ def build_parser() -> argparse.ArgumentParser:
     event_audit.add_argument("--output", type=Path)
     event_audit.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     event_audit.set_defaults(func=command_audit_events)
+
+    scoring_events = subparsers.add_parser(
+        "build-scoring-events",
+        help="Build and verify compact 2017-2026 score-change events.",
+    )
+    scoring_events.add_argument(
+        "--root",
+        type=Path,
+        default=BRONZE_ROOT
+        / "nba_data_archive_scoring"
+        / "revision=dfa8fa43"
+        / "nbastatsv3",
+    )
+    scoring_events.add_argument(
+        "--output",
+        type=Path,
+        default=SILVER_ROOT / "scoring_events_2017_2026",
+    )
+    scoring_events.add_argument(
+        "--seasons",
+        type=_season_list,
+        default=tuple(range(2017, 2027)),
+    )
+    scoring_events.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    scoring_events.add_argument(
+        "--legacy-cache", type=Path, default=LEGACY_POSSESSION_CACHE
+    )
+    scoring_events.add_argument(
+        "--official-game-scores",
+        type=Path,
+        default=BRONZE_ROOT / "official_game_scores" / "official_game_scores.parquet",
+    )
+    scoring_events.add_argument("--allow-missing-reference", action="store_true")
+    scoring_events.set_defaults(func=command_build_scoring_events)
+
+    official_scores = subparsers.add_parser(
+        "download-official-game-scores",
+        help="Download minimal 2017-2026 official NBA final scores.",
+    )
+    official_scores.add_argument(
+        "--output", type=Path, default=BRONZE_ROOT / "official_game_scores"
+    )
+    official_scores.add_argument(
+        "--seasons", type=_season_list, default=tuple(range(2017, 2027))
+    )
+    official_scores.add_argument("--max-attempts", type=int, default=20)
+    official_scores.add_argument("--request-delay", type=float, default=0.6)
+    official_scores.set_defaults(func=command_download_official_game_scores)
 
     game_dim = subparsers.add_parser(
         "build-game-dim", help="Build the canonical silver game dimension."
