@@ -57,6 +57,12 @@ dead ends. Updated 2026-08-17. See `docs/README.md` for the document index,
   both 2020 and 2021. The matchup challenger wins all three 2022--24 diagnostic
   seasons, with mean RMSE change -0.0392 and correlation change +0.0601. It is
   research-only because those later seasons are inspected.
+- Full annual SPM run `single_season_spm_v1_18496a1348` improves defense RMSE
+  in all eight held-out seasons and net RMSE in seven of eight. The resulting
+  leakage-safe centers feed `annual_aio_ratings_v1_b52b5aecd9`. The compact web
+  client now exposes annual SPM, one-/three-/five-year RAPM, decomposed AIO,
+  soft offense/defense roles, exact-scope RAPM intervals, and the observed aging
+  curve from one sharded derived-data snapshot.
 - Cross-fitted statistical priors cover every eligible 2019–24 feature row. For
   window `T`, training labels end by `T-3`. Six-fold prior-only net RMSE is
   1.2513 with 0.5198 correlation.

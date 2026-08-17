@@ -12,6 +12,7 @@ import pandas as pd
 
 from nba_impact.api.ratings import RatingsApiConfig, RatingsStore
 from nba_impact.api.server import serve
+from nba_impact.api.web_snapshot import build_web_snapshot
 from nba_impact.data.assist_quality_features import build_assist_quality_features
 from nba_impact.data.behavior_roles import build_behavior_roles
 from nba_impact.data.side_roles import build_side_roles
@@ -77,6 +78,7 @@ from nba_impact.models.precision_aware_prior import (
 )
 from nba_impact.models.annual_spm_priors import (
     build_forward_chained_annual_spm_priors,
+    build_leave_one_season_out_annual_spm_priors,
 )
 from nba_impact.models.annual_aio_ratings import build_annual_aio_ratings
 from nba_impact.models.annual_defense_ridge_nested import run_annual_defense_ridge_nested
@@ -1352,6 +1354,17 @@ def command_build_forward_annual_spm_priors(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_build_oof_annual_spm_priors(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_leave_one_season_out_annual_spm_priors(
+        args.spm_run,
+        artifact_root=args.artifact_root,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
 def command_build_annual_aio_ratings(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     run = build_annual_aio_ratings(
@@ -1450,6 +1463,18 @@ def command_serve_ratings(args: argparse.Namespace) -> int:
     config = RatingsApiConfig.from_json(args.config)
     store = RatingsStore(config, args.artifact_root)
     serve(store, args.host, args.port)
+    return 0
+
+
+def command_build_web_snapshot(args: argparse.Namespace) -> int:
+    result = build_web_snapshot(
+        args.config,
+        args.artifact_root,
+        args.aging_curve,
+        args.output_dir,
+        shards=args.shards,
+    )
+    print(json.dumps(result, indent=2))
     return 0
 
 
@@ -2732,6 +2757,15 @@ def build_parser() -> argparse.ArgumentParser:
     forward_annual_spm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     forward_annual_spm.set_defaults(func=command_build_forward_annual_spm_priors)
 
+    oof_annual_spm = subparsers.add_parser(
+        "build-oof-annual-spm-priors",
+        help="Convert leave-one-season-out SPM predictions into annual RAPM centers.",
+    )
+    oof_annual_spm.add_argument("--spm-run", type=Path, required=True)
+    oof_annual_spm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    oof_annual_spm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    oof_annual_spm.set_defaults(func=command_build_oof_annual_spm_priors)
+
     annual_aio = subparsers.add_parser(
         "build-annual-aio-ratings",
         help="Build decomposed annual ratings from full-SPM-center normal RAPM.",
@@ -2866,6 +2900,31 @@ def build_parser() -> argparse.ArgumentParser:
     ratings_api.add_argument("--host", default="127.0.0.1")
     ratings_api.add_argument("--port", type=int, default=8765)
     ratings_api.set_defaults(func=command_serve_ratings)
+
+    web_snapshot = subparsers.add_parser(
+        "build-web-snapshot",
+        help="Export derived rating data for the static web client.",
+    )
+    web_snapshot.add_argument(
+        "--config",
+        type=Path,
+        default=PROJECT_ROOT / "configs" / "api" / "ratings_v2.json",
+    )
+    web_snapshot.add_argument(
+        "--artifact-root", type=Path, default=ARTIFACT_ROOT / "models"
+    )
+    web_snapshot.add_argument(
+        "--aging-curve",
+        type=Path,
+        default=PROJECT_ROOT / "rapm" / "outputs" / "aging" / "aging_curve_delta.csv",
+    )
+    web_snapshot.add_argument(
+        "--output-dir",
+        type=Path,
+        default=PROJECT_ROOT / "web" / "public" / "data",
+    )
+    web_snapshot.add_argument("--shards", type=int, default=32)
+    web_snapshot.set_defaults(func=command_build_web_snapshot)
 
     compare = subparsers.add_parser(
         "compare-rapm",

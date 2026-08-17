@@ -2191,3 +2191,29 @@ them to the first defense AIO challenger. Carry the eight matchup features into
 the rolling three-season factor contract after correct count-level pooling.
 The result is research-only because the feature family and 2022--24 are already
 inspected. Keep Season 2027 untouched.
+
+## 2026-08-17 — Full annual SPM and decomposed AIO are complete
+
+**Question:** Does the selected scorer-adjusted matchup block improve the full
+annual defense SPM, and can its held-out predictions safely center historical
+one-season RAPM?
+
+**Method:** Run `single_season_spm_v1_18496a1348` keeps the frozen offense
+histogram GBM and defense ridge. It trains on annual player rows from 2014--24,
+holds out each scored 2017--24 season in turn, and refits the final leaderboard
+on all labels. Run `annual_spm_oof_priors_v1_7810d88ec3` converts only held-out
+predictions into historical SPM centers. Run `annual_aio_ratings_v1_b52b5aecd9`
+fits fixed 3000/3000/300 one-season RAPM around those centers.
+
+**Result:** Defense weighted RMSE/correlation is 0.9210/0.5526 versus the prior
+0.9595/0.4964. Defense RMSE improves in all eight folds. Net is 1.3556/0.6219
+versus 1.3859/0.5991 and wins RMSE in seven of eight folds. The AIO contains
+4,341 player-seasons, 100% prior coverage, no duplicate keys, and component
+identity error below `9e-16`. The 2024 cache remains one regular-season game
+short. High-exposure defense correlation improves against xRAPM but declines
+against BPM.
+
+**Decision:** Publish the result as a retrospective research leaderboard. Keep
+zero-prior normal RAPM as the reference. Do not claim untouched promotion.
+Do not attach SPM or AIO intervals until they are calibrated. The UI may show
+existing RAPM intervals only at their exact 2022--24 and 2025 scopes.

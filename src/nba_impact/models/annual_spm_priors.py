@@ -25,6 +25,104 @@ PRIOR_OUTPUT_COLUMNS = (
 )
 
 
+def build_leave_one_season_out_annual_spm_priors(
+    spm_run_path: str | Path,
+    *,
+    artifact_root: str | Path,
+) -> dict:
+    """Convert held-out annual SPM predictions into leakage-safe RAPM centers."""
+    source = Path(spm_run_path)
+    source_manifest_path = source / "run.json"
+    source_predictions_path = source / "oof_predictions.parquet"
+    source_manifest = json.loads(source_manifest_path.read_text())
+    predictions = pd.read_parquet(source_predictions_path)
+    required = {
+        "PLAYER_ID",
+        "Season",
+        "spm_offense",
+        "spm_defense",
+        "spm_net",
+    }
+    if missing := sorted(required - set(predictions.columns)):
+        raise ValueError(f"Annual SPM OOF predictions are missing {missing}.")
+    if predictions.duplicated(["PLAYER_ID", "Season"]).any():
+        raise ValueError("Annual SPM OOF prediction keys must be unique.")
+
+    training_seasons = tuple(
+        int(value) for value in source_manifest.get("config", {}).get("training_seasons", [])
+    )
+    output_seasons = tuple(sorted(int(value) for value in predictions["Season"].unique()))
+    if not training_seasons or not output_seasons:
+        raise ValueError("Annual SPM run must declare training and output seasons.")
+    if not set(output_seasons).issubset(training_seasons):
+        raise ValueError("Annual SPM OOF output seasons must be training seasons.")
+
+    priors = predictions[
+        ["PLAYER_ID", "Season", "spm_offense", "spm_defense", "spm_net"]
+    ].rename(
+        columns={
+            "spm_offense": "prior_offense_per_100",
+            "spm_defense": "prior_defense_per_100",
+            "spm_net": "prior_net_per_100",
+        }
+    )
+    priors["Window_End"] = priors["Season"].astype(int)
+    priors["spm_training_rule"] = "leave_one_season_out"
+    priors["spm_training_season_count"] = len(training_seasons) - 1
+    if not np.isfinite(priors[list(PRIOR_OUTPUT_COLUMNS)].to_numpy()).all():
+        raise ValueError("Annual SPM OOF priors must be finite.")
+
+    identity = uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        json.dumps(
+            {
+                "source_run_id": source_manifest.get("run_id"),
+                "source_predictions_sha256": sha256_file(source_predictions_path),
+                "training_rule": "leave_one_season_out",
+            },
+            sort_keys=True,
+        ),
+    ).hex[:10]
+    run_id = f"annual_spm_oof_priors_v1_{identity}"
+    output = Path(artifact_root) / "models" / "annual_spm_priors" / run_id
+    output.mkdir(parents=True, exist_ok=False)
+    priors.to_parquet(output / "priors.parquet", index=False)
+    run = {
+        "run_id": run_id,
+        "model_family": "leave_one_season_out_annual_statistical_plus_minus",
+        "estimand": source_manifest.get("estimand"),
+        "status": "research_priors_for_retrospective_aio",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "config": {
+            "source_spm_run_id": source_manifest.get("run_id"),
+            "training_rule": "all labeled seasons except the rated season",
+            "training_seasons": list(training_seasons),
+            "output_seasons": list(output_seasons),
+            "source_hashes": {
+                "source_run": sha256_file(source_manifest_path),
+                "oof_predictions": sha256_file(source_predictions_path),
+                "source_code": sha256_file(Path(__file__)),
+            },
+        },
+        "quality": {
+            "rows": len(priors),
+            "players": int(priors["PLAYER_ID"].nunique()),
+            "duplicate_keys": 0,
+            "nonfinite_values": 0,
+        },
+        "metrics": {},
+        "priors_path": str((output / "priors.parquet").resolve()),
+        "artifact_path": str(output.resolve()),
+        "caveats": [
+            "The SPM mapping excludes the rated season's RAPM labels.",
+            "Later seasons can train earlier retrospective ratings, so this is not a forecast.",
+            "The features summarize the complete rated season.",
+        ],
+    }
+    write_json_atomic(run, output / "run.json")
+    return run
+
+
 def _load_contract(path: str | Path) -> dict:
     contract = json.loads(Path(path).read_text())
     if contract.get("status") != "frozen_research_contract":

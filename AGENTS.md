@@ -233,6 +233,16 @@ The read-only API exposes these six factor residuals under
 `/v1/leaderboards/matchup-defense` and player payloads. Preserve the
 `research_only` label and caveat in any future client.
 
+The current annual statistical run is `single_season_spm_v1_18496a1348`.
+It trains one player-season row at a time across 2014--24, uses leave-one-season-
+out evaluation for 2017--24, and refits the final SPM on all labeled seasons.
+Historical AIO run `annual_aio_ratings_v1_b52b5aecd9` uses those held-out SPM
+predictions as coefficient centers for one-season RAPM. SPM is the prior center;
+the centered RAPM estimate is the final MAP/AIO rating. Do not call SPM itself
+the posterior. Do not attach SPM or AIO intervals until they are calibrated.
+The web client is static and derived-data-only. Regenerate its sharded snapshot
+with `nba-impact build-web-snapshot` after changing pinned rating artifacts.
+
 Observed-lineup shot-defense research is documented in
 `docs/impact/SHOT_DEFENSE_MODEL.md`. The validated event panel has exact zones
 and ordinal five-player lineups but no exact primary-defender label. Run

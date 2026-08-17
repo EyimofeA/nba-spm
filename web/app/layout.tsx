@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NBA Impact Lab — Player Trajectories",
-  description: "Inspect annual AIO decompositions and rolling normal RAPM peaks.",
+  title: "NBA Impact",
+  description: "SPM, RAPM, roles, and aging.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

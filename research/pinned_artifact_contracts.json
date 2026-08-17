@@ -1,18 +1,18 @@
 {
   "schema_version": "pinned_artifact_contracts_v1",
-  "updated_at": "2026-08-12",
+  "updated_at": "2026-08-17",
   "artifacts": [
     {
       "api_field": "annual_run_id",
-      "artifact_id": "annual_aio_ratings_v1_23c4895f8f",
-      "artifact_relative_dir": "models/annual_aio_ratings/annual_aio_ratings_v1_23c4895f8f",
+      "artifact_id": "annual_aio_ratings_v1_b52b5aecd9",
+      "artifact_relative_dir": "models/annual_aio_ratings/annual_aio_ratings_v1_b52b5aecd9",
       "estimand_id": "annual_retrospective_impact_v1",
       "evidence_status": "research_challenger_not_production",
       "season_scope": "2017-2024",
       "season_completeness": "2024 has 1,229 regular-season games; this is a derived rating artifact, not a new confirmation set.",
       "uncertainty_status": "not_estimated_v1",
-      "config_sha256": "09f7b792a76c639638a1b2780b606c815fd232177633fa0e83752e8d256a02a1",
-      "code_sha256": "041745964e0246badc3e878a00c04c603073afcf35c54a0caf295b0d2cedb8d7",
+      "config_sha256": "f42522de3e653b4725c2e3b6f7c960e5b7a31c8db95bab20267659d7aa3e1034",
+      "code_sha256": "1a3185232a5f3dcec4b0509b10c0c9d2d719eb922992ec4bd675abd4b3c32d3c",
       "data_hashes_status": "embedded_in_run_config",
       "forbidden_interpretation": "current latent ability, next-season forecast, or causal player value"
     },

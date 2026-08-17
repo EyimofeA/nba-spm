@@ -13,15 +13,15 @@ async function render() {
   );
 }
 
-test("server-renders the player trajectory product shell", async () => {
+test("server-renders the compact impact product shell", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>NBA Impact Lab — Player Trajectories<\/title>/i);
-  assert.match(html, /NBA.*IMPACT LAB/s);
-  assert.match(html, /PLAYER TRAJECTORY/);
-  assert.match(html, /Loading pinned research ratings/);
+  assert.match(html, /<title>NBA Impact<\/title>/i);
+  assert.match(html, /NBA Impact/);
+  assert.match(html, /impact/);
+  assert.match(html, /Loading/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
 });

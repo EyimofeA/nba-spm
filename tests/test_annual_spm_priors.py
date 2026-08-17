@@ -8,7 +8,44 @@ import pandas as pd
 
 from nba_impact.models.annual_spm_priors import (
     build_forward_chained_annual_spm_priors,
+    build_leave_one_season_out_annual_spm_priors,
 )
+
+
+def test_oof_spm_predictions_become_annual_rapm_centers(tmp_path: Path) -> None:
+    source = tmp_path / "single_season_spm" / "source"
+    source.mkdir(parents=True)
+    predictions = pd.DataFrame(
+        {
+            "PLAYER_ID": [1, 2, 1, 2],
+            "Season": [2023, 2023, 2024, 2024],
+            "spm_offense": [1.0, -1.0, 2.0, -2.0],
+            "spm_defense": [0.5, -0.5, 0.25, -0.25],
+            "spm_net": [1.5, -1.5, 2.25, -2.25],
+        }
+    )
+    predictions.to_parquet(source / "oof_predictions.parquet", index=False)
+    (source / "run.json").write_text(
+        json.dumps(
+            {
+                "run_id": "source",
+                "estimand": "annual impact",
+                "config": {"training_seasons": [2022, 2023, 2024]},
+            }
+        )
+    )
+
+    run = build_leave_one_season_out_annual_spm_priors(
+        source, artifact_root=tmp_path / "artifacts"
+    )
+    priors = pd.read_parquet(run["priors_path"])
+    assert priors["Window_End"].tolist() == [2023, 2023, 2024, 2024]
+    assert priors["spm_training_season_count"].eq(2).all()
+    assert priors["spm_training_rule"].eq("leave_one_season_out").all()
+    np.testing.assert_allclose(
+        priors["prior_net_per_100"],
+        priors["prior_offense_per_100"] + priors["prior_defense_per_100"],
+    )
 
 
 def test_forward_priors_do_not_use_future_targets(tmp_path: Path, monkeypatch) -> None:

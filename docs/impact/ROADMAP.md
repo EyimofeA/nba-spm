@@ -198,13 +198,30 @@ because 2022–24 influenced earlier feature work.
 The all-in-one must be decomposable. A user must be able to see why the final
 rating differs from raw RAPM or the box/tracking prior.
 
-Run `annual_aio_ratings_v1_23c4895f8f` is the first decomposed rating panel. It
+Run `annual_aio_ratings_v1_23c4895f8f` was the first decomposed rating panel. It
 contains 4,341 player-seasons for 2017–24 with complete names and prior coverage.
 Each row exposes raw and possession-centered SPM, zero-prior normal RAPM, final
 AIO offense/defense/net, the RAPM update from the centered SPM value, offensive
 and defensive possessions, and annual rank. Component identities hold to
 floating-point precision. The 2024 cache has 1,229 regular-season games, so that
 season remains one game short.
+
+The current full annual run is `single_season_spm_v1_18496a1348`. It keeps the
+offense learner fixed and adds the selected scorer-adjusted matchup block to
+defense. Against the earlier annual baseline, defense RMSE improves in all eight
+held-out seasons. Mean defense RMSE changes from 0.9595 to 0.9210 and correlation
+from 0.4964 to 0.5526. Net RMSE changes from 1.3859 to 1.3556 and correlation
+from 0.5991 to 0.6219. Net RMSE wins in seven of eight seasons. External defense
+agreement improves against xRAPM and declines against BPM, so the evidence is
+mixed outside the target.
+
+Run `annual_spm_oof_priors_v1_7810d88ec3` converts the held-out predictions into
+historical coefficient centers. Each rated season is excluded from its own SPM
+training labels. Run `annual_aio_ratings_v1_b52b5aecd9` then fits fixed
+3000/3000/300 one-season RAPM around those centers. It contains 4,341 player-
+seasons for 2017--24, has complete names and prior coverage, and satisfies
+`SPM center + RAPM update = AIO` to floating-point precision. This is a
+retrospective research leaderboard, not a forecast or production promotion.
 
 ## Phase 5 — Dynamic careers and peaks
 
@@ -251,7 +268,7 @@ only after these contracts are stable.
 
 ## Immediate next task
 
-The read-only API, first player trajectory page, current possession quality gate,
+The read-only API, compact player impact/role/aging page, current possession quality gate,
 and frozen 2024–26 normal RAPM are complete. The 2025 statistical panel is also
 complete. The 2026 player sheet has only 81.8% of the prior two-season median
 possession exposure and is blocked from annual AIO publication.

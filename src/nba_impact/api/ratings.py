@@ -45,6 +45,23 @@ MATCHUP_FACTOR_METRICS = (
     "matchup_assists_suppressed_vs_scorer_p100_eb",
     "matchup_shooting_fouls_prevented_vs_scorer_p100_eb",
 )
+ROLE_LABELS = {
+    "offense": {
+        "off_role_0": "Primary creator",
+        "off_role_1": "Secondary handler",
+        "off_role_2": "Movement shooter",
+        "off_role_3": "Versatile big",
+        "off_role_4": "Post big",
+        "off_role_5": "Rim finisher",
+    },
+    "defense": {
+        "def_role_0": "Wing assignment",
+        "def_role_1": "Creator assignment",
+        "def_role_2": "Rebound / contest",
+        "def_role_3": "Versatile forward",
+        "def_role_4": "Interior / rim",
+    },
+}
 
 
 def _records(frame: pd.DataFrame) -> list[dict[str, Any]]:
@@ -70,6 +87,7 @@ class RatingsApiConfig:
     lineage_contract_path: str | None = None
     current_uncertainty_run_id: str | None = None
     normal_rapm_uncertainty_run_ids: dict[str, str] | None = None
+    side_roles_run_id: str | None = None
 
     @classmethod
     def from_json(cls, path: str | Path) -> "RatingsApiConfig":
@@ -136,6 +154,23 @@ class RatingsStore:
             )
             self.matchup_manifest = _read_run(self.matchup_dir / "run.json")
             self.matchup = pd.read_parquet(self.matchup_dir / "features.parquet")
+        self.side_roles_manifest: dict[str, Any] | None = None
+        self.offense_roles: pd.DataFrame | None = None
+        self.defense_roles: pd.DataFrame | None = None
+        if config.side_roles_run_id is not None:
+            self.side_roles_dir = (
+                artifact_root.parent
+                / "features"
+                / "side_roles"
+                / config.side_roles_run_id
+            )
+            self.side_roles_manifest = _read_run(self.side_roles_dir / "run.json")
+            self.offense_roles = pd.read_parquet(
+                self.side_roles_dir / "offense_assignments.parquet"
+            )
+            self.defense_roles = pd.read_parquet(
+                self.side_roles_dir / "defense_assignments.parquet"
+            )
         self._validate()
 
     def _lineage_contract(self) -> dict[str, Any]:
@@ -330,6 +365,26 @@ class RatingsStore:
                 raise ValueError(f"Matchup feature artifact lacks columns: {missing}")
             if self.matchup.duplicated(["PLAYER_ID", "Season"]).any():
                 raise ValueError("Matchup feature keys are not unique.")
+        for side, frame, prefix in (
+            ("offense", self.offense_roles, "off"),
+            ("defense", self.defense_roles, "def"),
+        ):
+            if frame is None:
+                continue
+            role_required = {
+                "PLAYER_ID",
+                "Season",
+                f"{prefix}_role_cluster",
+                f"{prefix}_role_confidence",
+                *{
+                    f"{prefix}_role_affinity_{index}"
+                    for index in range(len(ROLE_LABELS[side]))
+                },
+            }
+            if missing := sorted(role_required - set(frame.columns)):
+                raise ValueError(f"{side} role artifact lacks columns: {missing}")
+            if frame.duplicated(["PLAYER_ID", "Season"]).any():
+                raise ValueError(f"{side} role keys are not unique.")
         uncertainty_required = {
             "player_id",
             "player_name",
@@ -372,6 +427,7 @@ class RatingsStore:
             "rolling_run_id": self.config.rolling_run_id,
             "current_rapm_run_id": self.config.current_rapm_run_id,
             "matchup_defense_run_id": self.config.matchup_defense_run_id,
+            "side_roles_run_id": self.config.side_roles_run_id,
             "annual_status": self.annual_manifest["status"],
             "rolling_status": self.rolling_manifest["status"],
             "current_rapm_status": self.current_manifest["status"],
@@ -389,6 +445,11 @@ class RatingsStore:
             "matchup_factor_status": (
                 self.matchup_manifest["status"]
                 if self.matchup_manifest is not None
+                else None
+            ),
+            "side_roles_status": (
+                self.side_roles_manifest["status"]
+                if self.side_roles_manifest is not None
                 else None
             ),
             "caveats": sorted(
@@ -712,12 +773,15 @@ class RatingsStore:
                 return None
         else:
             current = self.current.loc[self.current["player_id"] == player_id]
-        available = annual if not annual.empty else rolling
-        name = (
-            current["player_name"].dropna().iloc[-1]
-            if not current.empty
-            else available["PLAYER_NAME"].dropna().iloc[-1]
-        )
+        name_values = pd.concat(
+            [
+                current["player_name"] if not current.empty else pd.Series(dtype=object),
+                annual["PLAYER_NAME"] if not annual.empty else pd.Series(dtype=object),
+                rolling["PLAYER_NAME"] if not rolling.empty else pd.Series(dtype=object),
+            ],
+            ignore_index=True,
+        ).dropna()
+        name = name_values.iloc[-1] if not name_values.empty else f"Player {player_id}"
         matchup = (
             self.matchup.loc[self.matchup["PLAYER_ID"] == player_id].sort_values(
                 "Season"
@@ -729,6 +793,32 @@ class RatingsStore:
             scope: frame.loc[frame["player_id"] == player_id]
             for scope, frame in self.normal_rapm_uncertainty.items()
         }
+        role_rows: dict[int, dict[str, Any]] = {}
+        for side, frame, prefix in (
+            ("offense", self.offense_roles, "off"),
+            ("defense", self.defense_roles, "def"),
+        ):
+            if frame is None:
+                continue
+            selected = frame.loc[frame["PLAYER_ID"] == player_id].sort_values("Season")
+            for row in selected.to_dict(orient="records"):
+                season = int(row["Season"])
+                memberships = [
+                    {
+                        "role_id": role_id,
+                        "label": label,
+                        "affinity": float(row[f"{prefix}_role_affinity_{index}"]),
+                    }
+                    for index, (role_id, label) in enumerate(ROLE_LABELS[side].items())
+                ]
+                memberships.sort(key=lambda item: item["affinity"], reverse=True)
+                primary_role_id = row[f"{prefix}_role_cluster"]
+                role_rows.setdefault(season, {"Season": season})[side] = {
+                    "primary_role_id": primary_role_id,
+                    "primary_role": ROLE_LABELS[side][primary_role_id],
+                    "confidence": float(row[f"{prefix}_role_confidence"]),
+                    "memberships": memberships,
+                }
         annual_columns = [
             "Season",
             "Poss_Off",
@@ -786,4 +876,5 @@ class RatingsStore:
                 )
                 for scope, frame in uncertainty.items()
             },
+            "roles": [role_rows[season] for season in sorted(role_rows)],
         }

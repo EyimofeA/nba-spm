@@ -1,254 +1,225 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
-type AnnualRating = {
-  Season: number;
-  Poss_Off: number;
-  Poss_Def: number;
-  aio_net: number;
-  aio_offense: number;
-  aio_defense: number;
-  spm_center_net: number;
-  normal_rapm_net: number;
-  rapm_update_net: number;
-};
-
-type RollingRating = {
-  window_start: number;
-  window_end: number;
-  window_seasons: number;
-  Poss_Off: number;
-  Poss_Def: number;
-  offense: number;
-  defense: number;
-  net: number;
-};
-
-type PeakRating = RollingRating & {
-  peak_component: "offense" | "defense" | "net";
-  peak_value: number;
-  all_time_rank: number;
-};
-
+type Component = "net" | "offense" | "defense";
+type ModelId = "aio" | "spm" | "rapm";
+type Tab = "impact" | "roles" | "aging";
+type Scope = "1y" | "3y" | "5y" | "2022-24" | "2025";
+type AnnualRating = { Season: number; [key: string]: number };
+type RollingRating = { window_end: number; window_seasons: number; net: number; offense: number; defense: number };
+type Membership = { role_id: string; label: string; affinity: number };
+type Role = { primary_role: string; confidence: number; memberships: Membership[] };
+type RoleSeason = { Season: number; offense?: Role; defense?: Role };
+type Interval = { low: number; high: number };
+type UncertaintyComponent = { estimate: number; interval_80: Interval; interval_95: Interval; standard_error: number };
+type UncertaintyScope = { seasons: number[]; rating: { uncertainty: { components: Record<Component, UncertaintyComponent> } } } | null;
 type Player = {
   PLAYER_ID: number;
   PLAYER_NAME: string;
   annual: AnnualRating[];
   rolling: RollingRating[];
-  peaks: PeakRating[];
-  current_normal_rapm: {
-    offense_per_100: number;
-    defense_per_100: number;
-    net_per_100: number;
-    off_possessions: number;
-    def_possessions: number;
-  } | null;
+  roles: RoleSeason[];
+  normal_rapm_uncertainty: Record<string, UncertaintyScope>;
 };
-
-type SearchResult = { PLAYER_ID: number; PLAYER_NAME: string };
-type View = "annual" | "3y" | "5y";
-
-const API = process.env.NEXT_PUBLIC_RATINGS_API_URL ?? "http://127.0.0.1:8765";
-const QUICK_PLAYERS = [
-  [2544, "LeBron"],
-  [201939, "Curry"],
-  [203999, "Jokić"],
-  [708, "Garnett"],
-] as const;
+type PlayerIndex = { id: number; name: string; shard: number };
+type AgingRow = { Age: number; f_total: number; f_off: number; f_def: number; n: number | null };
+type Catalog = {
+  created_at: string;
+  shards: number;
+  catalog: {
+    models: { id: ModelId; label: string; scopes: Scope[] }[];
+    interval_scopes: Record<string, string>;
+  };
+  lineage: Record<string, string | Record<string, string> | null>;
+  aging: { rows: AgingRow[] };
+};
+type Point = { label: string; value: number };
 
 const formatRating = (value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
+const componentLabel: Record<Component, string> = { net: "Net", offense: "Off", defense: "Def" };
 
-function TrajectoryChart({ player, view }: { player: Player; view: View }) {
-  const series = useMemo(() => {
-    if (view === "annual") {
-      return player.annual.map((row) => ({
-        label: String(row.Season),
-        offense: row.aio_offense,
-        defense: row.aio_defense,
-        net: row.aio_net,
-      }));
-    }
-    const length = view === "3y" ? 3 : 5;
-    return player.rolling
-      .filter((row) => row.window_seasons === length)
-      .map((row) => ({
-        label: String(row.window_end),
-        offense: row.offense,
-        defense: row.defense,
-        net: row.net,
-      }));
-  }, [player, view]);
-
-  if (!series.length) {
-    return <div className="empty-chart">No {view.toUpperCase()} ratings for this player.</div>;
-  }
-
-  const width = 900;
-  const height = 330;
-  const pad = { left: 48, right: 24, top: 24, bottom: 42 };
-  const values = series.flatMap((row) => [row.offense, row.defense, row.net]);
-  const bound = Math.max(4, Math.ceil(Math.max(...values.map(Math.abs)) / 2) * 2);
-  const x = (index: number) =>
-    pad.left + (index * (width - pad.left - pad.right)) / Math.max(1, series.length - 1);
-  const y = (value: number) =>
-    pad.top + ((bound - value) * (height - pad.top - pad.bottom)) / (bound * 2);
-  const line = (key: "offense" | "defense" | "net") =>
-    series.map((row, index) => `${x(index)},${y(row[key])}`).join(" ");
-  const ticks = [-bound, -bound / 2, 0, bound / 2, bound];
-  const labelStep = Math.max(1, Math.ceil(series.length / 8));
-
-  return (
-    <div className="chart-wrap">
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${view} player impact trajectory`}>
-        {ticks.map((tick) => (
-          <g key={tick}>
-            <line className={tick === 0 ? "zero-line" : "grid-line"} x1={pad.left} x2={width - pad.right} y1={y(tick)} y2={y(tick)} />
-            <text className="axis-label" x={pad.left - 10} y={y(tick) + 4} textAnchor="end">{tick > 0 ? `+${tick}` : tick}</text>
-          </g>
-        ))}
-        <polyline className="trajectory offense-line" points={line("offense")} />
-        <polyline className="trajectory defense-line" points={line("defense")} />
-        <polyline className="trajectory net-line" points={line("net")} />
-        {series.map((row, index) => (
-          <g key={row.label}>
-            <circle className="net-dot" cx={x(index)} cy={y(row.net)} r="4" />
-            {(index % labelStep === 0 || index === series.length - 1) && (
-              <text className="year-label" x={x(index)} y={height - 14} textAnchor="middle">{row.label}</text>
-            )}
-          </g>
-        ))}
-      </svg>
-    </div>
-  );
+function ImpactChart({ points, interval }: { points: Point[]; interval?: UncertaintyComponent }) {
+  if (!points.length) return <div className="empty">No rating.</div>;
+  const width = 840;
+  const height = 280;
+  const pad = { left: 42, right: 24, top: 22, bottom: 38 };
+  const values = points.map((point) => point.value);
+  if (interval) values.push(interval.interval_95.low, interval.interval_95.high);
+  const bound = Math.max(2, Math.ceil(Math.max(...values.map(Math.abs))));
+  const x = (index: number) => points.length === 1
+    ? width / 2
+    : pad.left + index * (width - pad.left - pad.right) / (points.length - 1);
+  const y = (value: number) => pad.top + (bound - value) * (height - pad.top - pad.bottom) / (bound * 2);
+  const labelStep = Math.max(1, Math.ceil(points.length / 9));
+  return <div className="chart"><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Player impact chart">
+    {[-bound, 0, bound].map((tick) => <g key={tick}>
+      <line className={tick === 0 ? "zero" : "grid"} x1={pad.left} x2={width - pad.right} y1={y(tick)} y2={y(tick)} />
+      <text className="axis" x={pad.left - 9} y={y(tick) + 4} textAnchor="end">{tick > 0 ? `+${tick}` : tick}</text>
+    </g>)}
+    {!interval && <polyline className="impact-line" points={points.map((point, index) => `${x(index)},${y(point.value)}`).join(" ")} />}
+    {points.map((point, index) => <g key={`${point.label}-${index}`}>
+      {interval && <>
+        <line className="error" x1={x(index)} x2={x(index)} y1={y(interval.interval_95.low)} y2={y(interval.interval_95.high)} />
+        <line className="error faint" x1={x(index)} x2={x(index)} y1={y(interval.interval_80.low)} y2={y(interval.interval_80.high)} />
+        <line className="cap" x1={x(index) - 10} x2={x(index) + 10} y1={y(interval.interval_95.low)} y2={y(interval.interval_95.low)} />
+        <line className="cap" x1={x(index) - 10} x2={x(index) + 10} y1={y(interval.interval_95.high)} y2={y(interval.interval_95.high)} />
+      </>}
+      <circle className="impact-dot" cx={x(index)} cy={y(point.value)} r="4" />
+      {(index % labelStep === 0 || index === points.length - 1) && <text className="axis" x={x(index)} y={height - 12} textAnchor="middle">{point.label}</text>}
+    </g>)}
+  </svg></div>;
 }
 
-function RatingBar({ label, value }: { label: string; value: number }) {
-  const width = Math.min(100, Math.abs(value) * 11);
-  return (
-    <div className="rating-row">
-      <span>{label}</span>
-      <div className="rating-track" aria-hidden="true">
-        <div className={value >= 0 ? "rating-fill positive" : "rating-fill negative"} style={{ width: `${width}%` }} />
-      </div>
-      <strong>{formatRating(value)}</strong>
-    </div>
-  );
+function AgingChart({ rows }: { rows: AgingRow[] }) {
+  const width = 840;
+  const height = 280;
+  const pad = { left: 42, right: 24, top: 22, bottom: 38 };
+  const low = -10;
+  const high = 1;
+  const x = (age: number) => pad.left + (age - 19) * (width - pad.left - pad.right) / 21;
+  const y = (value: number) => pad.top + (high - value) * (height - pad.top - pad.bottom) / (high - low);
+  const line = (key: "f_total" | "f_off" | "f_def") => rows.map((row) => `${x(row.Age)},${y(row[key])}`).join(" ");
+  return <div className="chart"><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Observed NBA aging curve">
+    {[-10, -5, 0].map((tick) => <g key={tick}><line className={tick === 0 ? "zero" : "grid"} x1={pad.left} x2={width - pad.right} y1={y(tick)} y2={y(tick)} /><text className="axis" x={pad.left - 9} y={y(tick) + 4} textAnchor="end">{tick}</text></g>)}
+    <polyline className="aging total" points={line("f_total")} />
+    <polyline className="aging off" points={line("f_off")} />
+    <polyline className="aging def" points={line("f_def")} />
+    {[19, 22, 25, 28, 31, 34, 37, 40].map((age) => <text className="axis" key={age} x={x(age)} y={height - 12} textAnchor="middle">{age}</text>)}
+  </svg></div>;
+}
+
+function RolePanel({ title, role }: { title: string; role?: Role }) {
+  if (!role) return <section className="role-panel"><h3>{title}</h3><p className="muted">No role data.</p></section>;
+  return <section className="role-panel">
+    <div className="role-title"><span>{title}</span><strong>{role.primary_role}</strong></div>
+    <div className="memberships">{role.memberships.map((item) => <div className="membership" key={item.role_id}>
+      <span>{item.label}</span><div><i style={{ width: `${item.affinity * 100}%` }} /></div><b>{Math.round(item.affinity * 100)}%</b>
+    </div>)}</div>
+  </section>;
 }
 
 export function PlayerLab() {
+  const [catalog, setCatalog] = useState<Catalog | null>(null);
+  const [index, setIndex] = useState<PlayerIndex[]>([]);
   const [player, setPlayer] = useState<Player | null>(null);
-  const [view, setView] = useState<View>("annual");
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [status, setStatus] = useState("Loading pinned research ratings…");
+  const [model, setModel] = useState<ModelId>("aio");
+  const [scope, setScope] = useState<Scope>("1y");
+  const [component, setComponent] = useState<Component>("net");
+  const [tab, setTab] = useState<Tab>("impact");
+  const [roleSeason, setRoleSeason] = useState(2024);
+  const [status, setStatus] = useState("Loading…");
+  const shardCache = useRef(new Map<number, Record<string, Player>>());
 
-  async function loadPlayer(id: number) {
-    setStatus("Loading player…");
+  async function loadPlayer(id: number, shard = id % 32) {
+    setStatus("Loading…");
     try {
-      const response = await fetch(`${API}/v1/players/${id}`);
-      if (!response.ok) throw new Error("Player not found");
-      setPlayer(await response.json());
-      setResults([]);
+      let data = shardCache.current.get(shard);
+      if (!data) {
+        const response = await fetch(`/data/ratings-${String(shard).padStart(2, "0")}.json`);
+        if (!response.ok) throw new Error("rating shard unavailable");
+        data = await response.json();
+        shardCache.current.set(shard, data!);
+      }
+      const next = data[String(id)];
+      if (!next) throw new Error("player unavailable");
+      setPlayer(next);
+      setRoleSeason(next.roles.at(-1)?.Season ?? 2024);
       setQuery("");
       setStatus("");
     } catch {
-      setStatus("Ratings API is offline. Start the local API and reload this page.");
+      setStatus("Data unavailable.");
     }
   }
 
   useEffect(() => {
-    loadPlayer(2544);
+    Promise.all([
+      fetch("/data/catalog.json").then((response) => response.json()),
+      fetch("/data/players.json").then((response) => response.json()),
+    ]).then(([nextCatalog, nextIndex]: [Catalog, PlayerIndex[]]) => {
+      setCatalog(nextCatalog);
+      setIndex(nextIndex);
+      const fallback = nextIndex.find((item) => item.id === 2544) ?? nextIndex[0];
+      if (fallback) loadPlayer(fallback.id, fallback.shard);
+    }).catch(() => setStatus("Data unavailable."));
   }, []);
 
-  async function search(event: FormEvent) {
+  const matches = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase();
+    if (!needle) return [];
+    return index.filter((item) => item.name.toLocaleLowerCase().includes(needle)).slice(0, 7);
+  }, [index, query]);
+
+  function submitSearch(event: FormEvent) {
     event.preventDefault();
-    if (!query.trim()) return;
-    try {
-      const response = await fetch(`${API}/v1/players/search?q=${encodeURIComponent(query)}&limit=8`);
-      if (!response.ok) throw new Error("Search failed");
-      const payload = await response.json();
-      setResults(payload.results);
-      setStatus(payload.results.length ? "" : "No matching player.");
-    } catch {
-      setStatus("Ratings API is offline. Start the local API and try again.");
-    }
+    if (matches[0]) loadPlayer(matches[0].id, matches[0].shard);
   }
 
-  const latest = player?.annual.at(-1);
-  const netPeaks = player?.peaks.filter((peak) => peak.peak_component === "net") ?? [];
+  const modelConfig = catalog?.catalog.models.find((item) => item.id === model);
+  const scopes = useMemo(() => modelConfig?.scopes ?? ["1y"], [modelConfig]);
 
-  return (
-    <main>
-      <header className="site-header">
-        <a className="wordmark" href="#top" aria-label="NBA Impact Lab home"><span>NBA</span> IMPACT LAB</a>
-        <div className="research-badge">AIO THROUGH 2024 · RAPM THROUGH 2026</div>
-      </header>
+  const interval = useMemo(() => {
+    if (!player || !catalog || model !== "rapm") return undefined;
+    const key = catalog.catalog.interval_scopes[scope];
+    return key ? player.normal_rapm_uncertainty[key]?.rating.uncertainty.components[component] : undefined;
+  }, [player, catalog, model, scope, component]);
 
-      <section className="hero" id="top">
-        <div>
-          <p className="eyebrow">PLAYER TRAJECTORY / 01</p>
-          <h1>{player?.PLAYER_NAME ?? "Player impact, without the black box."}</h1>
-          <p className="lede">Annual AIO explains the statistical center and lineup adjustment. Rolling normal RAPM shows what the possession data says on its own.</p>
-        </div>
-        <form className="player-search" onSubmit={search}>
-          <label htmlFor="player-query">Find a player</label>
-          <div className="search-row">
-            <input id="player-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="e.g. Tim Duncan" autoComplete="off" />
-            <button type="submit">Search</button>
-          </div>
-          {results.length > 0 && <div className="search-results">{results.map((result) => <button type="button" key={result.PLAYER_ID} onClick={() => loadPlayer(result.PLAYER_ID)}>{result.PLAYER_NAME}</button>)}</div>}
-          <div className="quick-players" aria-label="Quick player selections">
-            {QUICK_PLAYERS.map(([id, name]) => <button type="button" key={id} onClick={() => loadPlayer(id)}>{name}</button>)}
-          </div>
-        </form>
-      </section>
+  const points = useMemo<Point[]>(() => {
+    if (!player) return [];
+    if (interval) return [{ label: scope, value: interval.estimate }];
+    if (scope === "1y") {
+      const prefix = model === "aio" ? "aio" : model === "spm" ? "spm_raw" : "normal_rapm";
+      return player.annual.map((row) => ({ label: String(row.Season), value: Number(row[`${prefix}_${component}`]) }));
+    }
+    const years = Number(scope[0]);
+    return player.rolling.filter((row) => row.window_seasons === years).map((row) => ({ label: String(row.window_end), value: row[component] }));
+  }, [player, model, scope, component, interval]);
 
-      {status && <div className="status" role="status">{status}</div>}
+  const latest = points.at(-1);
+  const latestAnnual = player?.annual.at(-1);
+  const roles = player?.roles.find((row) => row.Season === roleSeason);
 
-      {player && latest && <>
-        <section className="score-strip" aria-label="Current normal RAPM summary">
-          <div><span>2024–26 NORMAL RAPM</span><strong>{player.current_normal_rapm ? formatRating(player.current_normal_rapm.net_per_100) : "—"}</strong></div>
-          <div><span>OFFENSE</span><strong>{player.current_normal_rapm ? formatRating(player.current_normal_rapm.offense_per_100) : "—"}</strong></div>
-          <div><span>DEFENSE</span><strong>{player.current_normal_rapm ? formatRating(player.current_normal_rapm.defense_per_100) : "—"}</strong></div>
-          <div><span>MIN. SIDE POSS.</span><strong>{player.current_normal_rapm ? Math.min(player.current_normal_rapm.off_possessions, player.current_normal_rapm.def_possessions).toLocaleString() : "—"}</strong></div>
+  return <main>
+    <header>
+      <a className="brand" href="#top">NBA Impact</a>
+      <form className="search" onSubmit={submitSearch}>
+        <input aria-label="Find player" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find player" />
+        {matches.length > 0 && <div className="results">{matches.map((item) => <button type="button" key={item.id} onClick={() => loadPlayer(item.id, item.shard)}>{item.name}</button>)}</div>}
+      </form>
+    </header>
+    <nav className="tabs" aria-label="View">
+      {(["impact", "roles", "aging"] as Tab[]).map((item) => <button key={item} className={tab === item ? "active" : ""} onClick={() => setTab(item)}>{item}</button>)}
+    </nav>
+    {status && <p className="status">{status}</p>}
+    {player && <div className="content" id="top">
+      {tab === "impact" && <>
+        <section className="title-row"><div><p className="kicker">PLAYER</p><h1>{player.PLAYER_NAME}</h1></div><div className="headline"><span>{latest?.label ?? "—"}</span><strong>{latest ? formatRating(latest.value) : "—"}</strong></div></section>
+        <section className="controls" aria-label="Rating controls">
+          <label>Model<select value={model} onChange={(event) => {
+            const next = event.target.value as ModelId;
+            const nextScopes = catalog?.catalog.models.find((item) => item.id === next)?.scopes ?? ["1y"];
+            setModel(next);
+            if (!nextScopes.includes(scope)) setScope(nextScopes[0]);
+          }}>{catalog?.catalog.models.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
+          <label>Window<select value={scope} onChange={(event) => setScope(event.target.value as Scope)}>{scopes.map((item) => <option key={item} value={item}>{item.toUpperCase()}</option>)}</select></label>
+          <label>Side<select value={component} onChange={(event) => setComponent(event.target.value as Component)}>{(["net", "offense", "defense"] as Component[]).map((item) => <option key={item} value={item}>{componentLabel[item]}</option>)}</select></label>
         </section>
-
-        <section className="trajectory-section">
-          <div className="section-heading">
-            <div><p className="eyebrow">IMPACT OVER TIME</p><h2>Three views. One player.</h2></div>
-            <div className="view-tabs" role="tablist" aria-label="Trajectory window">
-              {(["annual", "3y", "5y"] as View[]).map((option) => <button role="tab" aria-selected={view === option} className={view === option ? "active" : ""} key={option} onClick={() => setView(option)}>{option === "annual" ? "Annual AIO" : `${option.toUpperCase()} RAPM`}</button>)}
-            </div>
-          </div>
-          <div className="legend"><span className="net-key">Net</span><span className="offense-key">Offense</span><span className="defense-key">Defense</span><small>points per 100 possessions</small></div>
-          <TrajectoryChart player={player} view={view} />
-        </section>
-
-        <section className="detail-grid">
-          <article className="decomposition-card">
-            <p className="eyebrow">{latest.Season} AIO DECOMPOSITION</p><h2>Center, then update.</h2>
-            <p className="formula">SPM center <b>{formatRating(latest.spm_center_net)}</b> + RAPM update <b>{formatRating(latest.rapm_update_net)}</b> = AIO <b>{formatRating(latest.aio_net)}</b></p>
-            <RatingBar label="SPM center" value={latest.spm_center_net} />
-            <RatingBar label="RAPM update" value={latest.rapm_update_net} />
-            <RatingBar label="Final AIO" value={latest.aio_net} />
-            <p className="method-note">The SPM maps same-season statistical features to impact. Possession RAPM then adjusts that center for who shared the floor and who they faced.</p>
-          </article>
-          <article className="peak-card">
-            <p className="eyebrow">NORMAL RAPM PEAKS</p><h2>Best sustained windows.</h2>
-            {netPeaks.sort((a, b) => a.window_seasons - b.window_seasons).map((peak) => <div className="peak-row" key={peak.window_seasons}>
-              <div><span>{peak.window_seasons}-YEAR</span><strong>{peak.window_start}–{String(peak.window_end).slice(-2)}</strong></div>
-              <div><span>NET</span><strong>{formatRating(peak.net)}</strong></div>
-              <div><span>ALL-TIME</span><strong>#{peak.all_time_rank}</strong></div>
-            </div>)}
-            <p className="method-note">Zero-prior normal RAPM, regular season only. Peak selection is descriptive and winner’s-curse biased.</p>
-          </article>
-        </section>
-
-        <aside className="caveat-band"><strong>Read this correctly.</strong><span>Current normal RAPM covers the 2023–24 through 2025–26 regular seasons. Annual AIO still stops at 2024. Nine source games are quarantined, and uncertainty is not estimated yet.</span></aside>
+        <ImpactChart points={points} interval={interval} />
+        {interval ? <section className="intervals"><div><span>80%</span><strong>{formatRating(interval.interval_80.low)} – {formatRating(interval.interval_80.high)}</strong></div><div><span>95%</span><strong>{formatRating(interval.interval_95.low)} – {formatRating(interval.interval_95.high)}</strong></div></section> : <p className="muted compact">Interval not estimated for this metric.</p>}
+        {model === "aio" && latestAnnual && <section className="equation" aria-label="AIO decomposition"><div><span>SPM</span><b>{formatRating(latestAnnual[`spm_center_${component}`])}</b></div><i>+</i><div><span>RAPM update</span><b>{formatRating(latestAnnual[`rapm_update_${component}`])}</b></div><i>=</i><div><span>AIO</span><b>{formatRating(latestAnnual[`aio_${component}`])}</b></div></section>}
       </>}
-
-      <footer>NBA IMPACT LAB <span>·</span> MODEL VERSION IS PART OF THE RESULT</footer>
-    </main>
-  );
+      {tab === "roles" && <>
+        <section className="title-row"><div><p className="kicker">ROLES</p><h1>{player.PLAYER_NAME}</h1></div><label className="year">Season<select value={roleSeason} onChange={(event) => setRoleSeason(Number(event.target.value))}>{player.roles.map((row) => <option key={row.Season}>{row.Season}</option>)}</select></label></section>
+        <p className="muted compact">Soft membership. Position excluded.</p>
+        <div className="role-grid"><RolePanel title="Offense" role={roles?.offense} /><RolePanel title="Defense" role={roles?.defense} /></div>
+      </>}
+      {tab === "aging" && catalog && <>
+        <section className="title-row"><div><p className="kicker">AGING</p><h1>Observed curve</h1></div><div className="mini-legend"><span className="total-key">Net</span><span className="off-key">Off</span><span className="def-key">Def</span></div></section>
+        <AgingChart rows={catalog.aging.rows} />
+        <p className="muted compact">1997–2024 annual RAPM panel. Descriptive, not a player forecast.</p>
+      </>}
+      <details><summary>Details</summary><div className="details"><p>SPM trains on player-seasons from 2014–24. Historical AIO centers use leave-one-season-out SPM. One-season RAPM uses fixed 3000 / 3000 / 300 penalties.</p><p>SPM and AIO intervals are not calibrated. RAPM intervals appear only for exact 2022–24 and 2025 scopes.</p><code>{String(catalog?.lineage.annual_run_id ?? "")}</code></div></details>
+    </div>}
+  </main>;
 }

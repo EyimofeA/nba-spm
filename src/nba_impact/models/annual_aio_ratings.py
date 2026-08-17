@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -143,6 +144,15 @@ def build_annual_aio_ratings(
     if not seasons or tuple(sorted(set(seasons))) != seasons:
         raise ValueError("seasons must be unique and increasing.")
     priors = pd.read_parquet(priors_path)
+    prior_manifest_path = Path(priors_path).parent / "run.json"
+    prior_manifest = (
+        json.loads(prior_manifest_path.read_text())
+        if prior_manifest_path.exists()
+        else {}
+    )
+    prior_training_rule = prior_manifest.get("config", {}).get(
+        "training_rule", "unknown"
+    )
     required = {"PLAYER_ID", "Window_End", *PRIOR_COLUMNS}
     if missing := sorted(required - set(priors.columns)):
         raise ValueError(f"Annual AIO priors are missing {missing}.")
@@ -202,6 +212,8 @@ def build_annual_aio_ratings(
             "lambda_def": lambda_def,
             "lambda_home": lambda_home,
             "prior_center_scale": 1.0,
+            "prior_run_id": prior_manifest.get("run_id"),
+            "prior_training_rule": prior_training_rule,
             "lineup_policy": "legacy possession terminal lineup",
             "source_hashes": {
                 "priors": sha256_file(priors_path),
@@ -227,7 +239,8 @@ def build_annual_aio_ratings(
         "artifact_path": str(output.resolve()),
         "caveats": [
             "These ratings use complete-season features and possessions; they are descriptive, not preseason forecasts.",
-            "The SPM mapping is forward-chained, but 2022-2024 influenced feature design and are not untouched promotion evidence.",
+            f"The SPM prior training rule is: {prior_training_rule}.",
+            "The feature family and 2022-2024 seasons are already inspected and are not untouched promotion evidence.",
             "Legacy possessions stop after 2024 and the 2024 regular-season cache has 1,229 games.",
             "Uncertainty is not estimated in this version.",
         ],

@@ -1,33 +1,31 @@
-# NBA Impact Lab web
+# NBA Impact web
 
-The first product slice is one player trajectory page. It reads the pinned
-ratings API and shows:
+The compact client has three views:
 
-- annual AIO offense, defense, and net;
-- current 2023–24 through 2025–26 normal RAPM;
-- the SPM center plus RAPM update decomposition;
-- three- and five-year normal RAPM trajectories;
-- the player's offense, defense, and net peak ranks;
-- research status and data caveats.
+- Impact: SPM, normal RAPM, and decomposed AIO by side and window.
+- Roles: soft offense and defense memberships. Position is excluded.
+- Aging: the observed 1997--2024 annual RAPM curve.
 
-Run the API from the repository root:
+RAPM error bars appear only for the exact 2022--24 and 2025 uncertainty runs.
+SPM and AIO intervals are not estimated.
+
+Regenerate the derived-data snapshot from the repository root:
 
 ```bash
-python3 -m nba_impact.cli serve-ratings
+uv run python -m nba_impact.cli build-web-snapshot
 ```
 
-Then run the site:
+The export writes a small player index and 32 rating shards under
+`web/public/data/`. The browser loads about 140 KB for search and one shard for
+the selected player. It does not need the Python API at runtime and contains no
+raw NBA event data.
+
+Run and check the client:
 
 ```bash
 cd web
 npm install
 npm run dev
+npm test
+npm run lint
 ```
-
-The page defaults to `http://localhost:3000` and the API defaults to
-`http://127.0.0.1:8765`. Set `NEXT_PUBLIC_RATINGS_API_URL` to change the API
-origin.
-
-`npm test` compiles the Cloudflare-compatible build and validates the rendered
-product shell. The site is not deployed yet; public deployment requires hosting
-the Python query contract or adapting it to the chosen managed data service.

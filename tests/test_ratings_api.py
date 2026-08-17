@@ -17,11 +17,14 @@ def _store(tmp_path: Path) -> RatingsStore:
     current_dir = tmp_path / "rapm" / "current_test"
     matchup_dir = tmp_path / "matchup_defense" / "matchup_test"
     uncertainty_dir = tmp_path / "rapm_uncertainty" / "uncertainty_test"
+    role_run_id = f"roles_{tmp_path.name}"
+    roles_dir = tmp_path.parent / "features" / "side_roles" / role_run_id
     annual_dir.mkdir(parents=True)
     rolling_dir.mkdir(parents=True)
     current_dir.mkdir(parents=True)
     matchup_dir.mkdir(parents=True)
     uncertainty_dir.mkdir(parents=True)
+    roles_dir.mkdir(parents=True)
     annual = pd.DataFrame(
         {
             "PLAYER_ID": [1, 2, 1],
@@ -129,6 +132,29 @@ def _store(tmp_path: Path) -> RatingsStore:
     current.to_parquet(current_dir / "ratings.parquet", index=False)
     matchup.to_parquet(matchup_dir / "features.parquet", index=False)
     uncertainty.to_parquet(uncertainty_dir / "ratings_uncertainty.parquet", index=False)
+    offense_roles = pd.DataFrame(
+        {
+            "PLAYER_ID": [1],
+            "Season": [2024],
+            "off_role_cluster": ["off_role_0"],
+            "off_role_confidence": [0.6],
+            **{f"off_role_affinity_{index}": [[0.6, 0.2, 0.1, 0.05, 0.03, 0.02][index]] for index in range(6)},
+        }
+    )
+    defense_roles = pd.DataFrame(
+        {
+            "PLAYER_ID": [1],
+            "Season": [2024],
+            "def_role_cluster": ["def_role_4"],
+            "def_role_confidence": [0.7],
+            **{f"def_role_affinity_{index}": [[0.05, 0.1, 0.05, 0.1, 0.7][index]] for index in range(5)},
+        }
+    )
+    offense_roles.to_parquet(roles_dir / "offense_assignments.parquet", index=False)
+    defense_roles.to_parquet(roles_dir / "defense_assignments.parquet", index=False)
+    (roles_dir / "run.json").write_text(
+        json.dumps({"run_id": role_run_id, "status": "validated_research_input"})
+    )
     (annual_dir / "run.json").write_text(
         json.dumps(
             {"status": "research", "estimand": "annual", "caveats": ["annual caveat"]}
@@ -177,6 +203,7 @@ def _store(tmp_path: Path) -> RatingsStore:
         10,
         matchup_defense_run_id="matchup_test",
         normal_rapm_uncertainty_run_ids={"single_season_2025": "uncertainty_test"},
+        side_roles_run_id=role_run_id,
     )
     return RatingsStore(config, tmp_path)
 
@@ -201,6 +228,8 @@ def test_player_payload_contains_annual_rolling_and_peaks(tmp_path: Path) -> Non
         "net",
     }
     assert result["current_normal_rapm"]["net_per_100"] == 5.0
+    assert result["roles"][0]["offense"]["primary_role"] == "Primary creator"
+    assert result["roles"][0]["defense"]["memberships"][0]["label"] == "Interior / rim"
 
 
 def test_dispatch_exposes_contract_and_rejects_invalid_metric(tmp_path: Path) -> None:
