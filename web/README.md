@@ -22,8 +22,9 @@ uv run python -m nba_impact.cli build-web-snapshot
 
 The export writes a small player index, one file per year, one role map per
 side/year, and 32 player-detail shards under `web/public/data/`. The browser
-loads only the index, catalog, and current-year table at startup. All-season
-tables, role maps, and player details load on demand. It does not need the
+loads only the index and catalog at startup. Season tables, role maps, and
+player details load on demand. Player shards contain only annual ratings and
+roles used by the client. It does not need the
 Python API at runtime and contains no raw NBA event data.
 
 Run and check the client:

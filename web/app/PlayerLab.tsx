@@ -18,12 +18,10 @@ type Role = {
 };
 type RoleSeason = { Season: number; offense?: Role; defense?: Role };
 type AnnualRating = { Season: number; [key: string]: number | boolean | null };
-type RollingRating = { window_end: number; window_seasons: number; net: number; offense: number; defense: number };
 type Player = {
   PLAYER_ID: number;
   PLAYER_NAME: string;
   annual: AnnualRating[];
-  rolling: RollingRating[];
   roles: RoleSeason[];
 };
 type PlayerIndex = { id: number; name: string; shard: number };

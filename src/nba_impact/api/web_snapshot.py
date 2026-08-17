@@ -145,21 +145,21 @@ def build_web_snapshot(
     sheets = Path(player_sheets_dir or project_root / "data/raw/playersheets/year_totals")
     team_age = _team_age_panel(sheets, seasons)
 
-    player_ids = sorted(
-        set(store.annual["PLAYER_ID"].astype(int))
-        | set(store.rolling["PLAYER_ID"].astype(int))
-        | set(store.current["player_id"].astype(int))
-    )
+    player_ids = sorted(set(store.annual["PLAYER_ID"].astype(int)))
     players: dict[str, dict] = {}
     index = []
     for player_id in player_ids:
         player = store.player(player_id)
         if player is None:
             continue
-        player["peaks"] = []
-        player["matchup_defense_factors"] = []
-        players[str(player_id)] = player
-        index.append({"id": player_id, "name": player["PLAYER_NAME"], "shard": player_id % shards})
+        public_player = {
+            "PLAYER_ID": player["PLAYER_ID"],
+            "PLAYER_NAME": player["PLAYER_NAME"],
+            "annual": player["annual"],
+            "roles": player["roles"],
+        }
+        players[str(player_id)] = public_player
+        index.append({"id": player_id, "name": public_player["PLAYER_NAME"], "shard": player_id % shards})
     index.sort(key=lambda item: (item["name"].casefold(), item["id"]))
 
     annual = store.annual.merge(
@@ -196,7 +196,10 @@ def build_web_snapshot(
             "role_labels": ROLE_LABELS,
             "seasons": seasons,
             "role_seasons": {
-                side: sorted(int(value) for value in frame["Season"].unique())
+                side: sorted(
+                    int(value)
+                    for value in frame.loc[frame["Season"].isin(seasons), "Season"].unique()
+                )
                 for side, frame in role_frames.items()
             },
         },
@@ -275,7 +278,9 @@ def build_web_snapshot(
         )
         points = points.rename(columns={f"{prefix}_role_axis_1": "x", f"{prefix}_role_axis_2": "y"})
         columns = ["PLAYER_ID", "PLAYER_NAME", "Season", "TEAM_ABBREVIATION", "x", "y", "raw_role", "stable_role"]
-        for season in sorted(int(value) for value in points["Season"].unique()):
+        for season in sorted(
+            int(value) for value in points.loc[points["Season"].isin(seasons), "Season"].unique()
+        ):
             selected = points.loc[points["Season"].eq(season), columns]
             selected = selected.astype(object).where(selected.notna(), None)
             name = f"roles-{side}-{season}.json"
