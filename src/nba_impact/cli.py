@@ -549,6 +549,7 @@ def command_build_scoring_events(args: argparse.Namespace) -> int:
         game_dim_path=args.game_dim,
         legacy_cache_dir=args.legacy_cache,
         official_game_scores_path=args.official_game_scores,
+        fallback_root=args.fallback_root,
         require_reference_coverage=not args.allow_missing_reference,
     )
     print(json.dumps(run, indent=2))
@@ -561,6 +562,8 @@ def command_download_official_game_scores(args: argparse.Namespace) -> int:
         project_seasons=tuple(args.seasons),
         max_attempts=args.max_attempts,
         request_delay_seconds=args.request_delay,
+        fallback_game_dim_path=args.game_dim,
+        existing_only=args.existing_only,
     )
     print(json.dumps(run, indent=2))
     return 0 if run["passed"] else 2
@@ -1915,6 +1918,11 @@ def build_parser() -> argparse.ArgumentParser:
         / "nbastatsv3",
     )
     scoring_events.add_argument(
+        "--fallback-root",
+        type=Path,
+        default=BRONZE_ROOT / "nba_data_archive_scoring" / "revision=dfa8fa43" / "datanba",
+    )
+    scoring_events.add_argument(
         "--output",
         type=Path,
         default=SILVER_ROOT / "scoring_events_2017_2026",
@@ -1950,6 +1958,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     official_scores.add_argument("--max-attempts", type=int, default=20)
     official_scores.add_argument("--request-delay", type=float, default=0.6)
+    official_scores.add_argument(
+        "--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet"
+    )
+    official_scores.add_argument("--existing-only", action="store_true")
     official_scores.set_defaults(func=command_download_official_game_scores)
 
     game_dim = subparsers.add_parser(

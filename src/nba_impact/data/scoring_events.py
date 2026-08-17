@@ -32,7 +32,8 @@ REQUIRED_COLUMNS = (
 )
 OPTIONAL_COLUMNS = ("subType", "shotResult", "isFieldGoal")
 PARTITION_PATTERN = re.compile(r"project_season=(\d{4})")
-EXTRACTION_VERSION = "score_state_verified_final_v3"
+EXTRACTION_VERSION = "score_state_verified_with_fallback_v4"
+MAX_STALE_TAIL_SCORE_STATES = 5
 
 
 def _game_id(values: pd.Series) -> pd.Series:
@@ -93,6 +94,7 @@ def extract_scoring_events(
     score_states = score_states.sort_values(["game_id", "event_order"], kind="stable")
     source_tail_rows_removed = 0
     repaired_final_score_games = 0
+    unrepaired_final_score_game_ids: list[str] = []
     if expected_final_scores:
         retained: list[pd.DataFrame] = []
         for game_id, game_rows in score_states.groupby("game_id", sort=False):
@@ -114,7 +116,12 @@ def extract_scoring_events(
                 continue
             last_valid_order = exact.iloc[-1]["event_order"]
             valid_rows = game_rows.loc[game_rows["event_order"].le(last_valid_order)]
-            source_tail_rows_removed += int(len(game_rows) - len(valid_rows))
+            tail_rows = int(len(game_rows) - len(valid_rows))
+            if tail_rows > MAX_STALE_TAIL_SCORE_STATES:
+                unrepaired_final_score_game_ids.append(game_id)
+                retained.append(game_rows)
+                continue
+            source_tail_rows_removed += tail_rows
             repaired_final_score_games += 1
             retained.append(valid_rows)
         score_states = pd.concat(retained, ignore_index=True)
@@ -226,6 +233,7 @@ def extract_scoring_events(
         "score_conservation_failures": conservation_failures,
         "source_tail_rows_removed": source_tail_rows_removed,
         "repaired_final_score_games": repaired_final_score_games,
+        "unrepaired_final_score_game_ids": unrepaired_final_score_game_ids,
     }
     metrics["structural_passed"] = not any(
         metrics[key]
@@ -241,6 +249,96 @@ def extract_scoring_events(
         )
     )
     return output, metrics
+
+
+def extract_datanba_scoring_events(
+    frame: pd.DataFrame,
+    *,
+    project_season: int,
+    season_type: str,
+    game_ids: set[str],
+    expected_final_scores: dict[str, tuple[int, int]],
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Build score changes for quarantined games from the alternate data.nba.net feed."""
+    required = {
+        "GAME_ID", "ord", "evt", "PERIOD", "cl", "tid", "pid", "etype",
+        "hs", "vs", "de", "_season", "_season_type",
+    }
+    if missing := sorted(required - set(frame.columns)):
+        raise ValueError(f"Alternate scoring source is missing columns: {missing}")
+    expected_source_season = project_season - 1
+    expected_source_type = "rg" if season_type == "regular" else "po"
+    if set(pd.to_numeric(frame["_season"], errors="raise").astype(int)) != {expected_source_season}:
+        raise ValueError("Alternate scoring source has the wrong season")
+    if set(frame["_season_type"].astype(str)) != {expected_source_type}:
+        raise ValueError("Alternate scoring source has the wrong season type")
+
+    work = frame.copy()
+    work["game_id"] = _game_id(work["GAME_ID"])
+    work = work.loc[work["game_id"].isin(game_ids)].copy()
+    if set(work["game_id"]) != game_ids:
+        raise ValueError(f"Alternate source is missing games: {sorted(game_ids - set(work['game_id']))}")
+    work["event_order"] = pd.to_numeric(work["ord"], errors="raise").astype("int64")
+    work["score_home"] = pd.to_numeric(work["hs"], errors="raise").astype("int64")
+    work["score_away"] = pd.to_numeric(work["vs"], errors="raise").astype("int64")
+    work = work.sort_values(["game_id", "event_order"], kind="stable")
+    if work.duplicated(["game_id", "event_order"]).any():
+        raise ValueError("Alternate scoring source has duplicate event-order keys")
+    grouped = work.groupby("game_id", sort=False)
+    work["home_points_delta"] = grouped["score_home"].diff().fillna(work["score_home"])
+    work["away_points_delta"] = grouped["score_away"].diff().fillna(work["score_away"])
+    work["points_delta"] = work["home_points_delta"] + work["away_points_delta"]
+    scoring = work.loc[
+        work["home_points_delta"].ne(0) | work["away_points_delta"].ne(0)
+    ].copy()
+    scoring["is_score_correction"] = (
+        scoring["home_points_delta"].lt(0)
+        | scoring["away_points_delta"].lt(0)
+        | (scoring["home_points_delta"].ne(0) & scoring["away_points_delta"].ne(0))
+        | ~scoring["points_delta"].between(1, 3)
+    )
+    final = work.groupby("game_id", sort=False).tail(1).set_index("game_id")
+    mismatches = [
+        game_id
+        for game_id in game_ids
+        if (int(final.at[game_id, "score_home"]), int(final.at[game_id, "score_away"]))
+        != expected_final_scores[game_id]
+    ]
+    if mismatches:
+        raise ValueError(f"Alternate source final scores do not reconcile: {mismatches}")
+
+    made_field_goal = pd.to_numeric(scoring["etype"], errors="coerce").eq(1)
+    output = pd.DataFrame(
+        {
+            "project_season": project_season,
+            "season_type": season_type,
+            "game_id": scoring["game_id"],
+            "event_order": scoring["event_order"],
+            "action_number": pd.to_numeric(scoring["evt"], errors="coerce").astype("Int64"),
+            "period": pd.to_numeric(scoring["PERIOD"], errors="raise").astype("Int64"),
+            "clock": scoring["cl"].astype(str),
+            "team_id": pd.to_numeric(scoring["tid"], errors="coerce").astype("Int64"),
+            "player_id": pd.to_numeric(scoring["pid"], errors="coerce").astype("Int64"),
+            "action_type": scoring["etype"].astype("string"),
+            "sub_type": pd.Series(pd.NA, index=scoring.index, dtype="string"),
+            "description": scoring["de"].astype("string"),
+            "shot_result": made_field_goal.map({True: "Made", False: pd.NA}).astype("string"),
+            "is_field_goal": made_field_goal.astype("Int64"),
+            "score_home": scoring["score_home"],
+            "score_away": scoring["score_away"],
+            "cumulative_points": scoring["score_home"] + scoring["score_away"],
+            "home_points_delta": scoring["home_points_delta"].astype("int64"),
+            "away_points_delta": scoring["away_points_delta"].astype("int64"),
+            "points_delta": scoring["points_delta"].astype("int64"),
+            "is_score_correction": scoring["is_score_correction"].astype(bool),
+        }
+    ).sort_values(["game_id", "event_order"], kind="stable").reset_index(drop=True)
+    return output, {
+        "games": len(game_ids),
+        "raw_rows": int(len(work)),
+        "score_change_rows": int(len(output)),
+        "score_correction_rows": int(output["is_score_correction"].sum()),
+    }
 
 
 def _reference_games(
@@ -303,6 +401,7 @@ def build_scoring_event_dataset(
     game_dim_path: str | Path | None = None,
     legacy_cache_dir: str | Path | None = None,
     official_game_scores_path: str | Path | None = None,
+    fallback_root: str | Path | None = None,
     require_reference_coverage: bool = True,
 ) -> dict[str, Any]:
     """Build resumable score-change partitions and a coverage report."""
@@ -311,6 +410,7 @@ def build_scoring_event_dataset(
     game_dim = Path(game_dim_path) if game_dim_path else None
     legacy = Path(legacy_cache_dir) if legacy_cache_dir else None
     official_scores = Path(official_game_scores_path) if official_game_scores_path else None
+    fallback = Path(fallback_root) if fallback_root else None
     expected_pairs = {(season, kind) for season in project_seasons for kind in ("regular", "playoffs")}
     discovered: dict[tuple[int, str], Path] = {}
     for path in sorted(source.glob("project_season=*/*.parquet")):
@@ -340,6 +440,13 @@ def build_scoring_event_dataset(
             reference_path = official_scores if reference_source == "official_nba_game_scores" else game_dim
             if reference_path and reference_path.exists():
                 reference_score_hash = sha256_file(reference_path)
+        fallback_path = (
+            fallback / f"project_season={project_season}" / f"{season_type}.parquet"
+            if fallback else None
+        )
+        fallback_sha256 = (
+            sha256_file(fallback_path) if fallback_path and fallback_path.exists() else None
+        )
         destination = output / f"project_season={project_season}" / f"{season_type}.parquet"
         partition_manifest_path = destination.with_suffix(".parquet.manifest.json")
         cached = None
@@ -349,6 +456,7 @@ def build_scoring_event_dataset(
                 candidate.get("extraction_version") == EXTRACTION_VERSION
                 and candidate.get("source_sha256") == source_sha256
                 and candidate.get("reference_score_hash") == reference_score_hash
+                and candidate.get("fallback_source_sha256") == fallback_sha256
                 and candidate.get("output_sha256") == sha256_file(destination)
             ):
                 cached = candidate
@@ -368,6 +476,39 @@ def build_scoring_event_dataset(
                 season_type=season_type,
                 expected_final_scores=reference_scores,
             )
+            fallback_game_ids: list[str] = []
+            if reference_scores:
+                final = (
+                    scoring.sort_values(["game_id", "event_order"], kind="stable")
+                    .groupby("game_id", sort=False)
+                    .tail(1)
+                    .set_index("game_id")
+                )
+                fallback_game_ids = sorted(
+                    game_id
+                    for game_id, expected in reference_scores.items()
+                    if game_id in final.index
+                    and (int(final.at[game_id, "score_home"]), int(final.at[game_id, "score_away"]))
+                    != expected
+                )
+            fallback_metrics: dict[str, Any] = {}
+            if fallback_game_ids and fallback_path and fallback_path.exists():
+                alternate = pd.read_parquet(fallback_path)
+                replacement, fallback_metrics = extract_datanba_scoring_events(
+                    alternate,
+                    project_season=project_season,
+                    season_type=season_type,
+                    game_ids=set(fallback_game_ids),
+                    expected_final_scores=reference_scores,
+                )
+                scoring = pd.concat(
+                    [scoring.loc[~scoring["game_id"].isin(fallback_game_ids)], replacement],
+                    ignore_index=True,
+                ).sort_values(["game_id", "event_order"], kind="stable")
+            metrics["score_change_rows"] = int(len(scoring))
+            metrics["score_correction_rows"] = int(scoring["is_score_correction"].sum())
+            metrics["fallback_game_ids"] = fallback_game_ids if fallback_metrics else []
+            metrics["fallback_raw_rows"] = int(fallback_metrics.get("raw_rows", 0))
             _write_parquet_atomic(scoring, destination)
             cached = {
                 **metrics,
@@ -375,6 +516,8 @@ def build_scoring_event_dataset(
                 "source_path": str(path),
                 "source_sha256": source_sha256,
                 "reference_score_hash": reference_score_hash,
+                "fallback_source_path": str(fallback_path) if fallback_sha256 else None,
+                "fallback_source_sha256": fallback_sha256,
                 "output_path": str(destination),
                 "output_sha256": sha256_file(destination),
             }

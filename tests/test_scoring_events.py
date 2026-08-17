@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import pandas as pd
 
-from nba_impact.data.scoring_events import extract_scoring_events
+from nba_impact.data.scoring_events import (
+    extract_datanba_scoring_events,
+    extract_scoring_events,
+)
 
 
 def test_extract_scoring_events_preserves_score_corrections() -> None:
@@ -115,3 +118,28 @@ def test_extract_scoring_events_discards_only_stale_tail_after_verified_final() 
     assert metrics["source_tail_rows_removed"] == 1
     assert metrics["repaired_final_score_games"] == 1
     assert metrics["structural_passed"]
+
+
+def test_datanba_fallback_reconciles_a_quarantined_game() -> None:
+    frame = pd.DataFrame(
+        [
+            {"GAME_ID": 21700025, "ord": 1000, "evt": 1, "PERIOD": 1,
+             "cl": "11:00", "tid": 1, "pid": 10, "etype": 1,
+             "hs": 2, "vs": 0, "de": "home made", "_season": 2017,
+             "_season_type": "rg"},
+            {"GAME_ID": 21700025, "ord": 2000, "evt": 2, "PERIOD": 1,
+             "cl": "10:00", "tid": 2, "pid": 20, "etype": 1,
+             "hs": 2, "vs": 3, "de": "away made", "_season": 2017,
+             "_season_type": "rg"},
+        ]
+    )
+    output, metrics = extract_datanba_scoring_events(
+        frame,
+        project_season=2018,
+        season_type="regular",
+        game_ids={"0021700025"},
+        expected_final_scores={"0021700025": (2, 3)},
+    )
+    assert output["points_delta"].tolist() == [2, 3]
+    assert tuple(output.iloc[-1][["score_home", "score_away"]]) == (2, 3)
+    assert metrics["games"] == 1

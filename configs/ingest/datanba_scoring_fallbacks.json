@@ -1,0 +1,42 @@
+{
+  "schema_version": "ingest_manifest_v1",
+  "purpose": "Pinned alternate score-event source for quarantined NBA Stats V3 games.",
+  "provider": "cdechoch/nba-data-archive on Hugging Face",
+  "dataset_revision": "dfa8fa43f89ae2ca6c18db524edc2050a6bb2286",
+  "license": "Apache-2.0",
+  "tasks": [
+    {
+      "name": "datanba_2018_regular_fallback",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/datanba/2017.parquet?download=true",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/datanba/project_season=2018/regular.parquet",
+      "provider": "data.nba.net archive mirror",
+      "license": "Apache-2.0",
+      "season": 2018,
+      "season_type": "regular",
+      "source_revision": "dfa8fa43f89ae2ca6c18db524edc2050a6bb2286",
+      "expected_bytes": 14304134,
+      "expected_sha256": "e5a43ea3f2e8a709bcb8be76c13b56e45efdc1d27bb8ae75335c73c2139ec59e",
+      "expected_min_rows": 500000,
+      "required_columns": [
+        "GAME_ID",
+        "ord",
+        "PERIOD",
+        "cl",
+        "tid",
+        "pid",
+        "etype",
+        "hs",
+        "vs",
+        "opt1",
+        "de",
+        "_season",
+        "_season_type"
+      ],
+      "max_attempts": 20,
+      "connect_timeout_seconds": 30,
+      "read_timeout_seconds": 300,
+      "retry_initial_seconds": 2,
+      "retry_max_seconds": 300
+    }
+  ]
+}
