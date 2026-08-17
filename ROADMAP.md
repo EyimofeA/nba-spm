@@ -47,6 +47,10 @@ dead ends. Updated 2026-08-17. See `docs/README.md` for the document index,
   matched transitions in each direction. Raw forward/reverse net correlations
   are similar at 0.409/0.405. Age adjustment improves forward correlation but
   worsens RMSE; it is a diagnostic, not a replacement target.
+- Behavior-role run `behavior_roles_v1_e0fb51c026` passes all frozen gates:
+  93.71% coverage, 0.9845 seed stability, 61.66% out-of-sample adjacent exact-role
+  persistence, and 0.9149 median adjacent-axis cosine. Six axes and seven soft
+  affinities are integrated as candidates; the hard role is descriptive only.
 - Cross-fitted statistical priors cover every eligible 2019–24 feature row. For
   window `T`, training labels end by `T-3`. Six-fold prior-only net RMSE is
   1.2513 with 0.5198 correlation.
@@ -84,13 +88,12 @@ dead ends. Updated 2026-08-17. See `docs/README.md` for the document index,
 
 ## Active next task
 
-The next task is the behavior-only role foundation in
-`docs/impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`. The AIO diagnosis,
-interpretation, first player-skill layer, annual/rolling integration, and aging-
-balanced diagnostic are complete. Build role descriptors from observed play
-style, then test chronological cluster stability. Do not fit role-value or role-
-fit counterfactuals until that stability gate passes. Treat 2022--25 as
-inspected diagnostics and reserve Season 2027 as untouched confirmation.
+The next task is to freeze the direct AIO challenger contract. The AIO
+diagnosis, skill layer, aging-balanced diagnostics, and behavior-only role
+foundation are complete. Predeclare the eight basketball factor groups and one
+role-interaction block. Use 2014--21 for development. Treat 2022--25 as
+inspected diagnostics and reserve Season 2027 as untouched confirmation. Do not
+infer role-fit counterfactuals or promote a model from this step.
 
 The precision-aware SPM-prior challenger is deferred. Its reviewed 2018--21
 schedule cannot be produced by the frozen feature history, and the invalid
@@ -103,10 +106,10 @@ Slow-network policy: each immutable file resumes from `.partial`, retries up to
 
 ## Ordered queue
 
-1. **Roles:** build behavior-only role descriptors and test stability before
-   fitting role-relative skill or role-fit counterfactuals.
-2. **All-in-one challenger:** after role stability, freeze factor-group inputs
+1. **All-in-one challenger:** freeze factor-group and role-interaction inputs
    without subset search. Use direct offense and defense RAPM targets.
+2. **Role research:** evaluate role-relative skill before any role-fit
+   counterfactual. Require support/overlap checks for counterfactual roles.
 3. **Dynamic impact:** retain the 2014--26 state-space filter as the leading
    research challenger and frozen 0.80 time decay as its baseline. Do not retune
    either from the reused historical result. Await an untouched annual
@@ -173,6 +176,9 @@ now would break reproducibility links.
 - Skill-integrated rolling features: `statistical_features_v2_d67bb64ac7`
 - Skill-integrated annual features: `statistical_features_v2_2515b57958`
 - Aging-balanced annual validation: `aging_balanced_validation_v1_ec5122d5a3`
+- Behavior-only roles: `behavior_roles_v1_e0fb51c026`
+- Role-integrated rolling features: `statistical_features_v2_2bb78bc737`
+- Role-integrated annual features: `statistical_features_v2_d8dd1d8dc2`
 - Cross-fitted statistical priors: `statistical_priors_v1_2c81b23662`
 - Prior-informed RAPM comparison: `prior_informed_rapm_v1_122ef63045`
 - External BPM/xRAPM benchmark: `external_impact_benchmark_v1_bab43a4087`

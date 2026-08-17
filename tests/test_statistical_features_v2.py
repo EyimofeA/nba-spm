@@ -118,6 +118,13 @@ def test_v2_stabilizes_small_samples_and_builds_temporal_features(tmp_path: Path
             "has_hustle_tracking": [True],
         }
     ).to_parquet(tmp_path / "skill.parquet", index=False)
+    pd.DataFrame(
+        {
+            "PLAYER_ID": [1], "Season": [2024],
+            **{f"role_axis_{index}": [float(index)] for index in range(1, 7)},
+            **{f"role_affinity_{index}": [0.1] for index in range(7)},
+        }
+    ).to_parquet(tmp_path / "roles.parquet", index=False)
     annual_v2 = build_statistical_features_v2(
         source,
         annual_v1["features_path"],
@@ -128,6 +135,7 @@ def test_v2_stabilizes_small_samples_and_builds_temporal_features(tmp_path: Path
         defensive_tracking_features_path=(tmp_path / "defense.parquet"),
         assist_quality_features_path=(tmp_path / "assist.parquet"),
         player_skill_features_path=(tmp_path / "skill.parquet"),
+        behavior_roles_path=(tmp_path / "roles.parquet"),
     )
     annual = pd.read_parquet(annual_v2["features_path"]).set_index("PLAYER_ID")
     assert annual.loc[1, "PTS_p100"] == pytest.approx(30.0)
@@ -144,3 +152,8 @@ def test_v2_stabilizes_small_samples_and_builds_temporal_features(tmp_path: Path
     assert annual_v2["player_skill_feature_names"] == [
         "shot_making_points_above_expected_p100_eb"
     ]
+    assert annual_v2["behavior_role_feature_names"] == [
+        *(f"role_axis_{index}" for index in range(1, 7)),
+        *(f"role_affinity_{index}" for index in range(7)),
+    ]
+    assert annual.loc[1, "role_axis_1"] == pytest.approx(1.0)

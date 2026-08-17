@@ -25,6 +25,8 @@ Start at the repository root:
 - [`impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`](impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md) —
   current AIO audit, public-model feature map, interpretation, aging-safe
   validation, and execution order;
+- [`impact/BEHAVIOR_ROLES.md`](impact/BEHAVIOR_ROLES.md) — behavior-only role
+  contract, stability gates, provisional interpretations, and AIO boundary;
 - [`impact/SHOT_DEFENSE_MODEL.md`](impact/SHOT_DEFENSE_MODEL.md) — exact
   shot/lineup panel, identification boundary, and null team-defense pilot;
 - [`impact/DYNAMIC_TRAJECTORIES.md`](impact/DYNAMIC_TRAJECTORIES.md) — filtered

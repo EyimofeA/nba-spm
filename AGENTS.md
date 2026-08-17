@@ -27,6 +27,9 @@ Before changing AIO features, validation, roles, or interpretation, read
 `docs/impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`. Treat 2022–25 as inspected
 diagnostic seasons for the current feature family. Do not claim new promotion
 evidence from additional subset searches on those seasons.
+For player-role work, read `docs/impact/BEHAVIOR_ROLES.md`. Hard role clusters
+are descriptive only. Use continuous axes or soft affinities as research
+features. Do not infer role-fit counterfactuals from cluster membership alone.
 
 ---
 

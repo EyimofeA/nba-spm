@@ -62,6 +62,11 @@ DEFENSIVE_SKILL = (
     "defensive_boxouts_p100_eb",
     "loose_balls_recovered_p100_eb",
 )
+BEHAVIOR_ROLES = (
+    "role_axis_1", "role_axis_2", "role_axis_3", "role_axis_4", "role_axis_5",
+    "role_axis_6", "role_affinity_0", "role_affinity_1", "role_affinity_2",
+    "role_affinity_3", "role_affinity_4", "role_affinity_5", "role_affinity_6",
+)
 
 
 def _suffix_features(
@@ -121,6 +126,9 @@ def candidate_feature_blocks(columns: tuple[str, ...]) -> dict[str, dict[str, tu
             "tracked_offensive_skills": tuple(
                 feature for feature in OFFENSIVE_SKILL if feature in available
             ),
+            "behavior_roles": tuple(
+                feature for feature in BEHAVIOR_ROLES if feature in available
+            ),
         },
         "defense": {
             "era_relative": defense_relative,
@@ -134,6 +142,9 @@ def candidate_feature_blocks(columns: tuple[str, ...]) -> dict[str, dict[str, tu
             "role_context": tuple(feature for feature in ROLE_CONTEXT if feature in available),
             "tracked_defensive_skills": tuple(
                 feature for feature in DEFENSIVE_SKILL if feature in available
+            ),
+            "behavior_roles": tuple(
+                feature for feature in BEHAVIOR_ROLES if feature in available
             ),
         },
     }

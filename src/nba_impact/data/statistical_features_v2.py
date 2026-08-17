@@ -12,6 +12,7 @@ import pandas as pd
 
 from nba_impact.data.manifest import sha256_file, write_json_atomic
 from nba_impact.data.player_skill_features import PLAYER_SKILL_MODEL_FEATURES
+from nba_impact.data.behavior_roles import ROLE_MODEL_FEATURES
 from nba_impact.data.statistical_features import RATIO_SPECS, _aggregate_window, _load_source
 
 TEMPORAL_FEATURES = (
@@ -357,6 +358,7 @@ def build_statistical_features_v2(
     assist_quality_features_path: str | Path | None = None,
     matchup_defense_features_path: str | Path | None = None,
     player_skill_features_path: str | Path | None = None,
+    behavior_roles_path: str | Path | None = None,
 ) -> dict:
     if pooled_window_seasons < 1:
         raise ValueError("pooled_window_seasons must be positive.")
@@ -460,6 +462,22 @@ def build_statistical_features_v2(
             skill[["PLAYER_ID", "Window_End", *player_skill_feature_names]],
             on=["PLAYER_ID", "Window_End"], how="left", validate="one_to_one",
         )
+    behavior_role_feature_names: list[str] = []
+    if behavior_roles_path is not None:
+        roles = pd.read_parquet(behavior_roles_path).rename(
+            columns={"Season": "Window_End"}
+        )
+        if roles.duplicated(["PLAYER_ID", "Window_End"]).any():
+            raise ValueError("Behavior-role feature keys are not unique.")
+        behavior_role_feature_names = [
+            column for column in ROLE_MODEL_FEATURES if column in roles.columns
+        ]
+        if behavior_role_feature_names != list(ROLE_MODEL_FEATURES):
+            raise ValueError("Behavior-role artifact is missing frozen model candidates.")
+        features = features.merge(
+            roles[["PLAYER_ID", "Window_End", *behavior_role_feature_names]],
+            on=["PLAYER_ID", "Window_End"], how="left", validate="one_to_one",
+        )
     if features.duplicated(["PLAYER_ID", "Window_End"]).any():
         raise ValueError("V2 feature keys are not unique.")
     new_features = [column for column in features if column not in base.columns]
@@ -508,6 +526,9 @@ def build_statistical_features_v2(
             sha256_file(player_skill_features_path)
             if player_skill_features_path else None
         ),
+        "behavior_roles_sha256": (
+            sha256_file(behavior_roles_path) if behavior_roles_path else None
+        ),
     }
     identity = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()[:10]
     run_id = f"statistical_features_v2_{identity}"
@@ -544,6 +565,7 @@ def build_statistical_features_v2(
         "assist_quality_feature_names": assist_quality_feature_names,
         "matchup_defense_feature_names": matchup_defense_feature_names,
         "player_skill_feature_names": player_skill_feature_names,
+        "behavior_role_feature_names": behavior_role_feature_names,
         "public_benchmark_provenance": {
             "source": "https://craftednba.com/glossary",
             "box_creation_and_offensive_load": "Ben Taylor public formulas as reproduced by CraftedNBA",

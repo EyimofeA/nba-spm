@@ -294,7 +294,9 @@ team-score evidence that RAPM is trying to allocate.
    tables without fitting or selecting a model. Generate coverage and drift QA.
 6. Freeze one direct AIO challenger with the eight factor groups. Compare it
    with the current offense GBM plus defense ridge on identical rows.
-7. Build behavior-only roles. Test role stability before role-fit value.
+7. **Done:** build behavior-only roles and pass the frozen stability gates.
+   See [`BEHAVIOR_ROLES.md`](BEHAVIOR_ROLES.md). Continuous axes and soft
+   affinities are eligible research inputs; hard clusters remain descriptive.
 8. Build factor RAPM only as a separate research branch.
 9. Build the mobile UI after the rating and interpretation contracts freeze.
 

@@ -13,6 +13,7 @@ import pandas as pd
 from nba_impact.api.ratings import RatingsApiConfig, RatingsStore
 from nba_impact.api.server import serve
 from nba_impact.data.assist_quality_features import build_assist_quality_features
+from nba_impact.data.behavior_roles import build_behavior_roles
 from nba_impact.data.download import plan_ingest_manifest, run_ingest_manifest
 from nba_impact.data.defensive_tracking_features import build_defensive_tracking_features
 from nba_impact.data.event_quality import build_event_snapshot
@@ -778,6 +779,7 @@ def command_build_statistical_features_v2(args: argparse.Namespace) -> int:
         assist_quality_features_path=args.assist_quality_features,
         matchup_defense_features_path=args.matchup_defense_features,
         player_skill_features_path=args.player_skill_features,
+        behavior_roles_path=args.behavior_roles,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -850,6 +852,17 @@ def command_build_player_skill_features(args: argparse.Namespace) -> int:
         args.shotzone_source,
         artifact_root=args.artifact_root,
         seasons=args.seasons,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_behavior_roles(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_behavior_roles(
+        args.annual_features,
+        args.role_context,
+        artifact_root=args.artifact_root,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -2104,6 +2117,7 @@ def build_parser() -> argparse.ArgumentParser:
     statistical_features_v2.add_argument("--assist-quality-features", type=Path)
     statistical_features_v2.add_argument("--matchup-defense-features", type=Path)
     statistical_features_v2.add_argument("--player-skill-features", type=Path)
+    statistical_features_v2.add_argument("--behavior-roles", type=Path)
     statistical_features_v2.add_argument(
         "--window-ends",
         type=_season_list,
@@ -2212,6 +2226,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     player_skill.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     player_skill.set_defaults(func=command_build_player_skill_features)
+
+    behavior_roles = subparsers.add_parser(
+        "build-behavior-roles",
+        help="Build behavior-only annual role axes, affinities, and stability diagnostics.",
+    )
+    behavior_roles.add_argument("--annual-features", type=Path, required=True)
+    behavior_roles.add_argument("--role-context", type=Path, required=True)
+    behavior_roles.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    behavior_roles.set_defaults(func=command_build_behavior_roles)
 
     statistical_impact = subparsers.add_parser(
         "fit-statistical-impact",

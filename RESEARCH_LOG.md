@@ -2133,3 +2133,34 @@ adjustment can improve correlation while worsening scale error, or the reverse.
 simple claim that the current SPM wins only by encoding youth. Keep both
 directions and the earlier-only adjustment as diagnostics. Do not replace the
 target, add age to retrospective SPM, or tune the spline on inspected seasons.
+
+## 2026-08-17 — Behavior-only roles pass frozen stability gates
+
+**Question:** Can the AIO represent player role without age, size, listed
+position, opportunity totals, efficiency, impact, or team-outcome inputs?
+
+**Method:** `behavior_roles_v1_e0fb51c026` uses 32 season-relative behavior
+descriptors covering shot allocation, creation, passing, interior activity,
+rebounding activity, and dribble context. It fits six deterministic PCA axes
+and eight K-means clusters on 2014--18 only, then applies the map unchanged
+through 2024. A player-season needs at least 80% observed descriptors. Frozen
+gates require at least 90% row coverage, 0.90 seed adjusted Rand, 50% adjacent-
+season exact-role persistence, 0.75 adjacent-axis cosine, and later-period
+cluster shares between 2% and 30%.
+
+**Result:** All gates pass. Coverage is 93.71% over 5,427 eligible rows. The six
+axes explain 83.18% of development variance. Median seed adjusted Rand is
+0.9845. Across 2,397 out-of-sample adjacent player-season pairs, exact role persists 61.66%
+and median axis cosine is 0.9149. Later-period cluster shares range from 6.27%
+to 18.93%.
+
+**Integration:** Continuous axes and seven drop-one soft affinities enter
+rolling table `statistical_features_v2_2bb78bc737` and annual table
+`statistical_features_v2_d8dd1d8dc2`. The tables have 6,689 player-windows and
+5,791 player-seasons, 270 feature columns, unique keys, and no infinite or
+bounded-value failures. No impact model was fit or selected.
+
+**Decision:** Use axes and affinities as research candidates. Keep the hard
+cluster descriptive. Do not call clusters positions, value, talent, or causal
+role fit. The next controlled task is a frozen factor-group and role-interaction
+AIO contract, not a role-counterfactual leaderboard.

@@ -152,6 +152,15 @@ integration runs are `statistical_features_v2_d67bb64ac7` and
 `statistical_features_v2_2515b57958`. They are validated input data, not a
 promoted model feature set.
 
+Behavior-role run `behavior_roles_v1_e0fb51c026` fits a fixed eight-cluster map
+on 2014--18 and applies it unchanged through 2024. Coverage is 93.71%, median
+seed adjusted Rand is 0.9845, out-of-sample adjacent-season role persistence is
+61.66%, and median adjacent-axis cosine is 0.9149. All frozen stability gates pass.
+Only six continuous axes and seven drop-one affinities are model candidates.
+The hard cluster remains descriptive. Role-integrated rolling and annual tables
+are `statistical_features_v2_2bb78bc737` and
+`statistical_features_v2_d8dd1d8dc2`. No impact model was fit.
+
 ## Phase 4 — Create the all-in-one rating
 
 1. Evaluate the statistical prior by itself.

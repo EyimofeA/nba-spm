@@ -30,6 +30,13 @@ def test_public_metrics_are_a_separate_offense_block() -> None:
         "box_creation_2017_eb_p100",
         "behavioral_passer_score_v1",
     )
+    role_blocks = candidate_feature_blocks(("role_axis_1", "role_affinity_0"))
+    assert role_blocks["offense"]["behavior_roles"] == (
+        "role_axis_1", "role_affinity_0"
+    )
+    assert role_blocks["defense"]["behavior_roles"] == (
+        "role_axis_1", "role_affinity_0"
+    )
 
 
 def test_v2_comparison_selects_signal_on_discovery_and_confirms(
