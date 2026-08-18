@@ -52,6 +52,25 @@ or K-factor update is used.
 - `net_elo`: offense plus defense, centered at zero.
 - scorer and defender matchup exposures.
 
+## Time-decayed three-season challenger
+
+`matchup_elo_time_decay_v1_f71da3382c` is a separate research artifact. For a
+rating year *Y*, it uses seasons *Y-2*, *Y-1*, and *Y*. Row exposure weights are
+
+\[
+w = partial\ possessions \times 0.70^{(Y - source\ season)}.
+\]
+
+The rate target is normalized within each source season before fitting. This
+prevents a league-wide scoring shift from becoming a player-effect change. The
+artifact therefore starts in 2020 and covers 2020--26. It has seven complete
+windows and 5,472 player-season rows.
+
+This improves stability by using more observations. It does **not** establish
+better predictive performance or solve assignment, help-defense, and scheme
+confounding. Keep it out of RAPM, SPM, AIO, and the site until a predeclared
+future-season matchup prediction test beats the annual fit on identical rows.
+
 ## Checks
 
 - non-null player, defender, game, points, and exposure;

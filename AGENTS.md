@@ -296,6 +296,11 @@ defense.
 scorer/listed-defender log-rate fit on an Elo display scale. It is not
 sequential Elo, primary-defender value, causal defense, or an AIO input. Read
 `docs/impact/MATCHUP_ELO_V1.md` before extending it.
+`matchup_elo_time_decay_v1_f71da3382c` is its separate trailing three-season,
+0.70-decay stability challenger. It is still research-only and has no
+predictive promotion evidence. `box_pipm_style_v1_1768252352` is a transparent
+15-box-rate RAPM baseline, not a replication of full PIPM; read
+`docs/impact/BOX_PIPM_STYLE_V1.md` before extending it.
 The read-only API exposes these six factor residuals under
 `/v1/leaderboards/matchup-defense` and player payloads. Preserve the
 `research_only` label and caveat in any future client.

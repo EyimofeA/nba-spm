@@ -2581,3 +2581,49 @@ artifact only. Do not add it to RAPM, SPM, AIO, or the public site. Before any
 predictive test, define a chronological holdout and compare it with the
 existing scorer-adjusted matchup-feature baseline on identical rows. Details:
 `docs/impact/MATCHUP_ELO_V1.md`.
+
+## 2026-08-19 — Annual SPM versus BPM, xRAPM, and BoxPIPM-style baseline
+
+**Question.** On identical player-season rows, do the current annual SPM, BPM,
+xRAPM, and a transparent BoxPIPM-style baseline predict annual zero-prior RAPM
+best?
+
+**Method.** Used the pinned 2017--24 SPM OOF table. Restricted every comparison
+to the same 2,860 player-seasons with at least 1,000 offensive and defensive
+RAPM possessions and non-missing SPM, BPM, and xRAPM. Scored SPM and the
+BoxPIPM-style baseline natively. For BPM and xRAPM, fit a component-specific
+affine scale only on the other seven seasons before scoring the held-out season.
+The BoxPIPM-style baseline is a LOSO ridge using only 15 traditional per-100 box
+rates; it is not full PIPM.
+
+**Result.** Mean held-out net RAPM scores were: BoxPIPM-style RMSE 1.5585,
+correlation .5453; BPM 1.4944, .5792; SPM 1.4003, .6483; xRAPM 1.1080, .7936.
+SPM also beat BPM and BoxPIPM-style for offense and defense. xRAPM was strongest
+for all three components. It is not a clean box-only winner because it contains
+an adjusted-plus-minus prior and multiple information windows.
+
+**Decision.** BPM is the primary external box-model comparator. SPM has a real
+matched-row advantage over it. Keep xRAPM as a stronger but non-independent
+impact comparator. Keep BoxPIPM-style as a documented baseline and do not call
+it PIPM. Details: `docs/impact/BOX_PIPM_STYLE_V1.md`.
+
+## 2026-08-19 — Time-decayed matchup Elo challenger
+
+**Question.** Does a fixed three-season, time-decayed scorer/listed-defender
+rate model provide a stable alternative to the annual matchup Elo display?
+
+**Method.** Fitted trailing three-season windows ending 2020--26. Each row was
+weighted by assigned partial possessions times `0.70^(rating season - source
+season)`. Each source season was normalized by its own league matchup scoring
+rate before fitting the shared two-way ridge model.
+
+**Result.** The run emitted 5,472 player-seasons across seven complete windows,
+with 2.37--2.65 million effective assigned possessions per window. Unit tests
+verified row-order invariance, synthetic scorer/defender ordering, complete
+window requirements, and component centering.
+
+**Decision.** Stability is not validation. Retain
+`matchup_elo_time_decay_v1_f71da3382c` as research descriptive only. It does
+not fix defensive assignment, help, scheme, or context confounding. Do not add
+it to RAPM, SPM, AIO, or the public site before a predeclared chronological
+matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
