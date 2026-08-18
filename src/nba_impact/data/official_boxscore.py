@@ -64,62 +64,83 @@ def ingest_official_boxscores(
     max_attempts: int = 20,
     minimum_delay_seconds: float = 0.6,
 ) -> dict:
-    """Cache official boxscores atomically, skipping already-valid games."""
+    """Cache official boxscores atomically, skipping already-valid games.
+
+    A failed game is recorded and does not stop the rest of a large resumable
+    batch. The returned snapshot fails until every requested game is valid.
+    """
     destination_root = Path(root)
     destination_root.mkdir(parents=True, exist_ok=True)
     results: list[dict] = []
     normalized_ids = sorted({canonical_game_id(game_id) for game_id in game_ids})
     for game_id in normalized_ids:
         destination = destination_root / f"game_id={game_id}.json"
-        status = "verified_existing"
-        if destination.exists():
-            payload = json.loads(destination.read_text())
-            _validated_box(payload, game_id)
-        else:
-            retrying = Retrying(
-                retry=retry_if_exception_type((requests.RequestException, json.JSONDecodeError)),
-                wait=wait_exponential_jitter(initial=2, max=300),
-                stop=stop_after_attempt(max_attempts),
-                reraise=True,
+        try:
+            status = "verified_existing"
+            if destination.exists():
+                payload = json.loads(destination.read_text())
+                _validated_box(payload, game_id)
+            else:
+                retrying = Retrying(
+                    retry=retry_if_exception_type(
+                        (requests.RequestException, json.JSONDecodeError, ValueError)
+                    ),
+                    wait=wait_exponential_jitter(initial=2, max=300),
+                    stop=stop_after_attempt(max_attempts),
+                    reraise=True,
+                )
+                payload = None
+                for attempt in retrying:
+                    with attempt:
+                        response = boxscoretraditionalv3.BoxScoreTraditionalV3(
+                            game_id=game_id, timeout=300
+                        ).get_dict()
+                        _validated_box(response, game_id)
+                        payload = response
+                if payload is None:
+                    raise RuntimeError(f"{game_id}: retry loop ended without a response")
+                write_json_atomic(payload, destination)
+                status = "downloaded"
+                time.sleep(minimum_delay_seconds)
+            results.append(
+                {
+                    "game_id": game_id,
+                    "status": status,
+                    "path": str(destination.resolve()),
+                    "bytes": destination.stat().st_size,
+                    "sha256": sha256_file(destination),
+                }
             )
-            payload = None
-            for attempt in retrying:
-                with attempt:
-                    response = boxscoretraditionalv3.BoxScoreTraditionalV3(
-                        game_id=game_id, timeout=300
-                    ).get_dict()
-                    _validated_box(response, game_id)
-                    payload = response
-            if payload is None:
-                raise RuntimeError(f"{game_id}: retry loop ended without a response")
-            write_json_atomic(payload, destination)
-            status = "downloaded"
-            time.sleep(minimum_delay_seconds)
-        results.append(
-            {
-                "game_id": game_id,
-                "status": status,
-                "path": str(destination.resolve()),
-                "bytes": destination.stat().st_size,
-                "sha256": sha256_file(destination),
-            }
-        )
-        print(f"{status:>17} {game_id} {destination.stat().st_size / 1000:7.1f} KB")
+            print(f"{status:>17} {game_id} {destination.stat().st_size / 1000:7.1f} KB")
+        except (requests.RequestException, json.JSONDecodeError, ValueError) as exc:
+            results.append(
+                {
+                    "game_id": game_id,
+                    "status": "failed",
+                    "error_type": type(exc).__name__,
+                    "error": str(exc)[:500],
+                }
+            )
+            print(f"{'failed':>17} {game_id} {type(exc).__name__}: {str(exc)[:160]}")
 
     identity = hashlib.sha256(
-        json.dumps([(item["game_id"], item["sha256"]) for item in results]).encode("utf-8")
+        json.dumps(
+            [(item["game_id"], item["status"], item.get("sha256")) for item in results]
+        ).encode("utf-8")
     ).hexdigest()[:16]
+    failed_count = sum(item["status"] == "failed" for item in results)
     snapshot = {
         "snapshot_id": f"official_boxscores_{identity}",
         "dataset": "official_nba_boxscore_repairs",
         "grain": "one official NBA Stats V3 game boxscore JSON",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "passed": len(results) == len(normalized_ids),
+        "passed": len(results) == len(normalized_ids) and failed_count == 0,
         "requested_game_count": len(normalized_ids),
         "downloaded_game_count": sum(item["status"] == "downloaded" for item in results),
         "verified_existing_game_count": sum(
             item["status"] == "verified_existing" for item in results
         ),
+        "failed_game_count": failed_count,
         "max_attempts": max_attempts,
         "minimum_delay_seconds": minimum_delay_seconds,
         "source": "NBA Stats BoxScoreTraditionalV3",
