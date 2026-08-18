@@ -52,15 +52,40 @@ conserve, every segment has ten unique players, and the terminal-lineup RAPM
 loader accepts all 217,853 rows with no missing values. These are still
 separate candidate tables, not production inputs.
 
+## Full 2017--23 regular-season build
+
+The same frozen contract was run for every project season. Project season 2017
+failed closed because the accepted player-game table contains no trustworthy
+starter rows. Seasons 2018--23 emitted 5,569 games, 1,118,333 possessions,
+1,356,240 ordinal lineup segments, and 2,575,531 owned actions. The attachment
+stage rejected zero games that had already passed both the possession and lineup
+contracts.
+
+| Season | Lineup pass | Quarantine | Possessions | Segments | RAPM run |
+|---:|---:|---:|---:|---:|---|
+| 2017 | 0 | 1,230 | -- | -- | blocked: no accepted starters |
+| 2018 | 529 | 701 | 104,292 | 125,749 | `current_single_season_rapm_targets_v1_d999837054` |
+| 2019 | 1,117 | 113 | 226,110 | 273,711 | `current_single_season_rapm_targets_v1_56fc612455` |
+| 2020 | 893 | 166 | 181,484 | 221,070 | `current_single_season_rapm_targets_v1_75183420c6` |
+| 2021 | 890 | 190 | 178,777 | 216,424 | `current_single_season_rapm_targets_v1_fb085c13e8` |
+| 2022 | 1,055 | 175 | 209,817 | 255,332 | `current_single_season_rapm_targets_v1_8f89e8ba21` |
+| 2023 | 1,085 | 145 | 217,853 | 263,954 | `current_single_season_rapm_targets_v1_d0760ddd78` |
+
+The six RAPM runs use one regular season, terminal lineups, a zero prior, and
+the frozen `3000/3000/300` penalties. They are isolated research training-label
+artifacts. They are not eligible for the public panel until the matched-game
+comparison with the legacy terminal-lineup source passes.
+
 ## Next gate
 
 1. Complete the immutable official box cache for all 2017--2023 games.
-2. Rebuild the separate historical player-game table, preferring official rows.
-3. Rerun each regular season and retain only strict passes.
-4. Attach V3 possessions to lineups by exact `actionId` intervals and prove
-   action, point, score, and ten-player conservation.
-5. Fit RAPM on regular-season passing games only and compare with the
-   legacy terminal-lineup model on identical games.
+2. Rebuild the separate historical player-game table using official rows only
+   where they pass; verify the 2018--23 accepted-game set is unchanged.
+3. Audit a possible 2017 starter source independently. Do not infer starters
+   from minutes or relax the five-starter gate.
+4. Compare the six fitted candidates with legacy terminal-lineup RAPM on
+   identical games and players.
+5. Promote no historical target until that matched comparison passes.
 
 Historical playoffs remain excluded from the first fit because the frozen
 possession-owner rules miss the 2024 playoff count gate in two games.
