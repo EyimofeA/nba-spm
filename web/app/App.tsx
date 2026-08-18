@@ -144,25 +144,6 @@ export function App() {
       try {
         const next = await loadSeason(season);
         if (live) setRows(next);
-        // A blank visit opens on a real rated player. Explicit hashes keep
-        // their requested view, and the player itself comes from the loaded
-        // snapshot rather than a fabricated current-season value.
-        if (live && !window.location.hash.slice(1)) {
-          const defaultRow = [...next]
-            .filter((row) => Number.isFinite(row.PLAYER_ID))
-            .sort((a, b) => {
-              const value = (row: LeaderboardRow) =>
-                typeof row.aio_net === "number"
-                  ? row.aio_net
-                  : typeof row.normal_rapm_net === "number"
-                    ? row.normal_rapm_net
-                    : typeof row.spm_net === "number"
-                      ? row.spm_net
-                      : -Infinity;
-              return value(b) - value(a);
-            })[0];
-          if (defaultRow) navigate("player", defaultRow.PLAYER_ID);
-        }
       } catch {
         if (live) setError("Season unavailable.");
       } finally {
@@ -259,14 +240,7 @@ export function App() {
 
   const seasons = catalog?.catalog.seasons ?? [];
   const { tab } = route;
-  const playerLinkId =
-    player?.PLAYER_ID ??
-    [...rows]
-      .filter((row) => Number.isFinite(row.PLAYER_ID))
-      .sort((a, b) =>
-        (typeof b.aio_net === "number" ? b.aio_net : -Infinity) -
-        (typeof a.aio_net === "number" ? a.aio_net : -Infinity),
-      )[0]?.PLAYER_ID;
+  const playerLinkId = player?.PLAYER_ID;
 
   /* -------------------------------------------------------------- view --- */
 

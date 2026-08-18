@@ -12,8 +12,10 @@ candidates and their promotion gates, read `docs/win_probability/ARCHITECTURES.m
 Before changing a public model claim, read `research/estimands.yml` and
 `research/season_exposure.yml`. Season 2027 is reserved as untouched annual
 confirmation. Do not use it for development, debugging, or model selection.
-The public site is `https://nba-impact-lab.nba-impact-lab.workers.dev`; the
-older ChatGPT Sites build remains at `https://nba-impact-lab.mofe.chatgpt.site`.
+The public site is `https://courtsignalnba.pages.dev`; the Worker origin at
+`https://nba-impact-lab.nba-impact-lab.workers.dev` remains its deployment
+target, and the older ChatGPT Sites build remains at
+`https://nba-impact-lab.mofe.chatgpt.site`.
 The UI
 calls the zero-prior baseline `RAPM`; use `normal RAPM` only when a technical
 document must distinguish it from prior-centered variants. RAPM is available
