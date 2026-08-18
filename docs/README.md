@@ -25,6 +25,8 @@ Start at the repository root:
   2025/2026 statistical-feature coverage, drift, and frozen-SPM confirmation;
 - [`impact/CURRENT_2026_REFRESH.md`](impact/CURRENT_2026_REFRESH.md) — pinned
   current data, the 2014--2026 SPM null result, and RAPM input readiness;
+- [`impact/UNIFIED_TIMELINE_2014_2026.md`](impact/UNIFIED_TIMELINE_2014_2026.md) —
+  unified 2014--26 terminal-lineup AIO run and chronological SPM train-window comparison;
 - [`impact/LEGACY_POSSESSION_MIGRATION.md`](impact/LEGACY_POSSESSION_MIGRATION.md) —
   strict historical cache migration, coverage, and terminal-lineup boundary;
 - [`impact/HISTORICAL_V3_POSSESSIONS.md`](impact/HISTORICAL_V3_POSSESSIONS.md) —

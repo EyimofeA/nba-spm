@@ -100,6 +100,7 @@ from nba_impact.models.annual_spm_priors import (
 from nba_impact.models.annual_aio_ratings import (
     build_annual_aio_ratings,
     build_current_annual_aio_ratings,
+    build_unified_annual_aio_ratings,
 )
 from nba_impact.models.annual_defense_ridge_nested import run_annual_defense_ridge_nested
 from nba_impact.models.annual_defense_features_nested import run_annual_defense_features_nested
@@ -1670,6 +1671,7 @@ def command_build_forward_annual_spm_priors(args: argparse.Namespace) -> int:
         artifact_root=args.artifact_root,
         output_seasons=tuple(args.output_seasons),
         minimum_training_seasons=args.minimum_training_seasons,
+        train_window_seasons=args.train_window_seasons,
     )
     register_model_run(args.registry, run)
     print(json.dumps(run, indent=2))
@@ -1714,6 +1716,27 @@ def command_build_current_annual_aio_ratings(args: argparse.Namespace) -> int:
         args.player_games,
         artifact_root=args.artifact_root,
         seasons=tuple(args.seasons),
+        lambda_off=args.lambda_off,
+        lambda_def=args.lambda_def,
+        lambda_home=args.lambda_home,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_unified_annual_aio_ratings(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_unified_annual_aio_ratings(
+        args.cache_dir,
+        args.possessions,
+        args.segments,
+        args.priors,
+        args.names,
+        args.player_games,
+        artifact_root=args.artifact_root,
+        seasons=tuple(args.seasons),
+        transition_season=args.transition_season,
         lambda_off=args.lambda_off,
         lambda_def=args.lambda_def,
         lambda_home=args.lambda_home,
@@ -3505,6 +3528,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--output-seasons", type=_season_list, default=tuple(range(2017, 2024))
     )
     forward_annual_spm.add_argument("--minimum-training-seasons", type=int, default=3)
+    forward_annual_spm.add_argument(
+        "--train-window-seasons",
+        type=int,
+        help="Use only this many most recent earlier seasons; omit for expanding history.",
+    )
     forward_annual_spm.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     forward_annual_spm.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     forward_annual_spm.set_defaults(func=command_build_forward_annual_spm_priors)
@@ -3549,6 +3577,25 @@ def build_parser() -> argparse.ArgumentParser:
     current_annual_aio.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     current_annual_aio.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     current_annual_aio.set_defaults(func=command_build_current_annual_aio_ratings)
+
+    unified_annual_aio = subparsers.add_parser(
+        "build-unified-annual-aio-ratings",
+        help="Build one provenance-preserving annual AIO timeline across legacy and canonical RAPM inputs.",
+    )
+    unified_annual_aio.add_argument("--priors", type=Path, required=True)
+    unified_annual_aio.add_argument("--seasons", type=_season_list, default=tuple(range(2014, 2027)))
+    unified_annual_aio.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    unified_annual_aio.add_argument("--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet")
+    unified_annual_aio.add_argument("--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet")
+    unified_annual_aio.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    unified_annual_aio.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
+    unified_annual_aio.add_argument("--transition-season", type=int, default=2024)
+    unified_annual_aio.add_argument("--lambda-off", type=float, default=3000.0)
+    unified_annual_aio.add_argument("--lambda-def", type=float, default=3000.0)
+    unified_annual_aio.add_argument("--lambda-home", type=float, default=300.0)
+    unified_annual_aio.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    unified_annual_aio.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    unified_annual_aio.set_defaults(func=command_build_unified_annual_aio_ratings)
 
     rolling_peaks = subparsers.add_parser(
         "build-rolling-rapm-peaks",

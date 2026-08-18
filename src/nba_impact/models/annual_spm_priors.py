@@ -141,12 +141,21 @@ def build_forward_chained_annual_spm_priors(
     artifact_root: str | Path,
     output_seasons: tuple[int, ...] = tuple(range(2017, 2024)),
     minimum_training_seasons: int = 3,
+    train_window_seasons: int | None = None,
 ) -> dict:
-    """Train only before season T, then create an SPM prior for season T."""
+    """Train only before season T, then create an SPM prior for season T.
+
+    ``train_window_seasons=None`` uses every earlier season.  A positive value
+    uses only the most recent complete seasons before T.  This makes expanding,
+    one-year, three-year, and five-year histories directly comparable on the
+    same forecast-season rows.
+    """
     if not output_seasons or tuple(sorted(set(output_seasons))) != output_seasons:
         raise ValueError("output_seasons must be unique and increasing.")
     if minimum_training_seasons < 1:
         raise ValueError("minimum_training_seasons must be positive.")
+    if train_window_seasons is not None and train_window_seasons < 1:
+        raise ValueError("train_window_seasons must be positive when set.")
 
     contract = _load_contract(contract_path)
     features = pd.read_parquet(features_path).rename(columns={"Window_End": "Season"})
@@ -179,6 +188,10 @@ def build_forward_chained_annual_spm_priors(
     fitted_models: dict[int, dict[str, object]] = {}
     for season in output_seasons:
         train = panel.loc[panel["Season"].lt(season)].copy()
+        if train_window_seasons is not None:
+            available = sorted(int(value) for value in train["Season"].unique())
+            keep = set(available[-train_window_seasons:])
+            train = train.loc[train["Season"].isin(keep)].copy()
         prediction_frame = features.loc[features["Season"].eq(season)].copy()
         train_seasons = tuple(sorted(int(value) for value in train["Season"].unique()))
         if len(train_seasons) < minimum_training_seasons:
@@ -263,6 +276,7 @@ def build_forward_chained_annual_spm_priors(
             "output_seasons": list(output_seasons),
             "minimum_training_seasons": minimum_training_seasons,
             "training_rule": "strictly earlier seasons only",
+            "train_window_seasons": train_window_seasons,
             "features": {side: list(values) for side, values in selected.items()},
             "learners": {
                 side: contract["components"][side]["learner"]
@@ -292,6 +306,7 @@ def build_forward_chained_annual_spm_priors(
         "artifact_path": str(output.resolve()),
         "caveats": [
             "The SPM mapping uses only seasons before the rated season.",
+            "A finite training window retains only the most recent earlier seasons.",
             "The features summarize the complete rated season, so the rating is descriptive rather than preseason.",
             "One-season zero-prior RAPM labels are noisy and are not ground truth.",
         ],

@@ -18,6 +18,11 @@ document must distinguish it from prior-centered variants. RAPM is available
 for 2017--26. SPM and AIO stay pinned to the validated 2017--24 model. External
 Cloudflare Worker hosting is configured but not live until account login and a
 custom domain are supplied.
+The complete 2014--26 unified AIO timeline is now a research artifact. It uses
+legacy terminal inputs through 2023 and canonical event inputs from 2024; do
+not erase this explicit provenance boundary. Read
+`docs/impact/UNIFIED_TIMELINE_2014_2026.md` before changing annual SPM/AIO
+scope or train-window policy.
 The canonical 2024 RAPM transition passed. A full 2014--26 SPM refresh also
 failed to improve the matched 2017--24 result; its 2025 and 2026 defense folds
 were weak. Read `docs/impact/CURRENT_2026_REFRESH.md` before any current AIO or

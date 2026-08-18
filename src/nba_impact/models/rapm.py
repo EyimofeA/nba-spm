@@ -152,6 +152,66 @@ def load_current_possessions(
     return output
 
 
+def load_unified_terminal_possessions(
+    cache_dir: str | Path,
+    possessions_path: str | Path,
+    segments_path: str | Path,
+    seasons: tuple[int, ...],
+    *,
+    transition_season: int = 2024,
+    game_types: tuple[str, ...] = ("regular",),
+) -> pd.DataFrame:
+    """Load one audited annual RAPM contract across legacy and current eras.
+
+    The function deliberately preserves source provenance.  It does not claim
+    that historical cache rows and canonical event rows have the same raw-event
+    reconstruction.  The 2024 overlap is checked by the annual target-panel
+    gate before this adapter is used for a cross-era model.
+    """
+    requested = tuple(sorted({int(season) for season in seasons}))
+    if not requested:
+        raise ValueError("At least one season is required.")
+    legacy_seasons = tuple(season for season in requested if season < transition_season)
+    current_seasons = tuple(season for season in requested if season >= transition_season)
+    frames: list[pd.DataFrame] = []
+    source_by_season: dict[str, str] = {}
+
+    if legacy_seasons:
+        legacy = load_legacy_possessions(cache_dir, legacy_seasons, game_types=game_types).copy()
+        legacy["rapm_input_source"] = "legacy_terminal_cache"
+        frames.append(legacy)
+        source_by_season.update({str(season): "legacy_terminal_cache" for season in legacy_seasons})
+    if current_seasons:
+        current = load_current_possessions(
+            possessions_path,
+            segments_path,
+            lineup_policy="terminal",
+            game_types=game_types,
+        )
+        current = current.loc[current["season"].isin(current_seasons)].copy()
+        missing = sorted(set(current_seasons) - set(current["season"].astype(int)))
+        if missing:
+            raise ValueError(f"Canonical current possessions are missing seasons: {missing}.")
+        current["rapm_input_source"] = "canonical_event_terminal"
+        frames.append(current)
+        source_by_season.update({str(season): "canonical_event_terminal" for season in current_seasons})
+
+    unified = pd.concat(frames, ignore_index=True)
+    observed = set(pd.to_numeric(unified["season"], errors="raise").astype(int))
+    if missing := sorted(set(requested) - observed):
+        raise ValueError(f"Unified RAPM input is missing seasons: {missing}.")
+    if unified.duplicated(["gameid", "period", "num"]).any():
+        raise ValueError("Unified RAPM input has duplicate game-period-possession keys.")
+    unified.attrs["source_by_season"] = source_by_season
+    unified.attrs["lineup_policy"] = "terminal"
+    unified.attrs["source_paths"] = [
+        str(Path(cache_dir).resolve()),
+        str(Path(possessions_path).resolve()),
+        str(Path(segments_path).resolve()),
+    ]
+    return unified
+
+
 def load_current_player_names(
     legacy_names_path: str | Path,
     player_games_path: str | Path,

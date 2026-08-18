@@ -2529,3 +2529,29 @@ held-out prediction RMSE in only two seasons: mean delta was +.080 RMSE,
 proof, not a public-source replacement. Keep V3 historical RAPM research-only;
 legacy remains the public historical reference because the frozen prediction
 gate did not pass.
+
+## 2026-08-18 — Unified 2014--26 annual timeline and chronological SPM windows
+
+**Question.** Can one audited terminal-lineup interface produce annual RAPM,
+SPM, and AIO for every 2014--26 season, and how much history should SPM use?
+
+**Method.** Used the verified annual source transition: legacy score-conserved
+terminal possessions for 2014--23 and canonical event terminal lineups for
+2024--26. Refit the zero-prior RAPM side of the AIO for each season, trained
+leave-one-season-out retrospective SPM across all 13 seasons, and fit the
+centered AIO with those OOF priors. Then compared strictly earlier expanding,
+one-year, three-year, and five-year SPM training histories on identical
+2017--26 player-season targets.
+
+**Result.** The unified artifact has 6,942 player-seasons, 1,706 players, full
+prior coverage, no duplicate keys, no missing names, and exact component
+identities. Its zero-prior components reproduce the audited annual target panel
+exactly. Expanding history has the best mean chronological RMSE: offense
+1.0253, defense .9908, net 1.4307. Five-year is close but has worse RMSE on all
+three components; one-year is worst.
+
+**Decision.** Use expanding-history SPM for this research timeline and retain
+five-year as a sensitivity. Keep 2025--26 SPM/AIO research-only because the
+current defensive feature families remain incomplete and the pre-existing
+current-season validation gate failed. Full detail:
+`docs/impact/UNIFIED_TIMELINE_2014_2026.md`.
