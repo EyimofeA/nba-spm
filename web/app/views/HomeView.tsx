@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { ImpactBars, ImpactDatum, impactLegend } from "../charts/bars";
 import { Figure, Legend } from "../charts/frame";
 import { Catalog, LeaderboardRow, possessions, rating } from "../lib/data";
-import { fmtInt, fmtRating } from "../lib/viz";
+import { fmtRating } from "../lib/viz";
 
 export function HomeView({
   catalog,
@@ -17,10 +17,7 @@ export function HomeView({
   onGo: (tab: "ratings" | "landscape" | "research") => void;
   onPlayer: (id: number) => void;
 }) {
-  const seasons = catalog.catalog.seasons;
-  const span = seasons.length
-    ? `${seasons[0] - 1}–${String(seasons[seasons.length - 1]).slice(2)}`
-    : "—";
+  const displayedSeason = rows[0]?.Season;
 
   const leaders = useMemo<ImpactDatum[]>(
     () =>
@@ -39,11 +36,6 @@ export function HomeView({
         .sort((a, b) => b.net - a.net)
         .slice(0, 10),
     [rows],
-  );
-
-  const totalPoss = rows.reduce((sum, row) => sum + possessions(row), 0);
-  const netForward = catalog.validation.walk_forward.find(
-    (row) => row.component === "net",
   );
 
   return (
@@ -89,37 +81,8 @@ export function HomeView({
         </div>
       </section>
 
-      <div className="kpi-row" style={{ margin: "22px 0" }}>
-        <div className="tile">
-          <div className="tile-label">Seasons covered</div>
-          <div className="tile-value">{seasons.length}</div>
-          <div className="tile-sub">{span}</div>
-        </div>
-        <div className="tile">
-          <div className="tile-label">Rated players</div>
-          <div className="tile-value">{fmtInt(rows.length)}</div>
-          <div className="tile-sub">Latest season</div>
-        </div>
-        <div className="tile">
-          <div className="tile-label">Possessions</div>
-          <div className="tile-value">
-            {totalPoss ? `${Math.round(totalPoss / 1000)}K` : "—"}
-          </div>
-          <div className="tile-sub">Smaller side, summed</div>
-        </div>
-        <div className="tile">
-          <div className="tile-label">Held-out net r</div>
-          <div className="tile-value">
-            {netForward ? netForward.correlation.toFixed(2) : "—"}
-          </div>
-          <div className="tile-sub">
-            Walk-forward, {netForward?.folds ?? 0} folds
-          </div>
-        </div>
-      </div>
-
       <Figure
-        kicker={`AIO · ${seasons[seasons.length - 1] ?? ""}`}
+        kicker={`AIO · ${displayedSeason ?? ""}`}
         title="This season’s ten most valuable"
         legend={<Legend items={impactLegend} />}
         note="Players with 1,000 or more possessions on the smaller side, ranked by AIO net. Select a row to open the player page."

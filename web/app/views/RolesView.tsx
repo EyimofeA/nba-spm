@@ -111,9 +111,6 @@ export function RolesView({
           <p className="kicker">Roles</p>
           <h1>The behavioural map</h1>
         </div>
-        <span className="meta">
-          {shaped.length} player-seasons · {roleNames.length} clusters
-        </span>
       </div>
 
       <div className="filters">

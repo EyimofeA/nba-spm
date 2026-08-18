@@ -36,6 +36,9 @@ type Tab = (typeof TABS)[number]["id"];
 const isTab = (value: string): value is Tab =>
   TABS.some((tab) => tab.id === value);
 
+const foldName = (value: string) =>
+  value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase();
+
 /** The location hash is the single source of truth for the current view. */
 type Route = { tab: Tab; playerId?: number };
 
@@ -78,7 +81,11 @@ export function App() {
     Promise.all([loadCatalog(), loadIndex()])
       .then(([nextCatalog, nextIndex]) => {
         if (!live) return;
-        const latest = Math.max(...nextCatalog.catalog.seasons);
+        // Open on the newest season supported by the default AIO model. RAPM
+        // continues through 2026, but choosing that season here would render
+        // an empty AIO card and no role/skill context on first visit.
+        const aio = nextCatalog.catalog.models.find((item) => item.id === "aio");
+        const latest = Math.max(...(aio?.seasons.length ? aio.seasons : nextCatalog.catalog.seasons));
         setCatalog(nextCatalog);
         setIndex(nextIndex);
         setSeason(latest);
@@ -221,13 +228,13 @@ export function App() {
   /* ------------------------------------------------------------ search --- */
 
   const matches = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase();
+    const needle = foldName(query.trim());
     if (needle.length < 2) return [];
     return index
-      .filter((item) => item.name.toLocaleLowerCase().includes(needle))
+      .filter((item) => foldName(item.name).includes(needle))
       .sort((a, b) => {
-        const aStarts = a.name.toLocaleLowerCase().startsWith(needle) ? 0 : 1;
-        const bStarts = b.name.toLocaleLowerCase().startsWith(needle) ? 0 : 1;
+        const aStarts = foldName(a.name).startsWith(needle) ? 0 : 1;
+        const bStarts = foldName(b.name).startsWith(needle) ? 0 : 1;
         return aStarts - bStarts || a.name.localeCompare(b.name);
       })
       .slice(0, 8);
@@ -255,6 +262,14 @@ export function App() {
 
   const seasons = catalog?.catalog.seasons ?? [];
   const { tab } = route;
+  const playerLinkId =
+    player?.PLAYER_ID ??
+    [...rows]
+      .filter((row) => Number.isFinite(row.PLAYER_ID))
+      .sort((a, b) =>
+        (typeof b.aio_net === "number" ? b.aio_net : -Infinity) -
+        (typeof a.aio_net === "number" ? a.aio_net : -Infinity),
+      )[0]?.PLAYER_ID;
 
   /* -------------------------------------------------------------- view --- */
 
@@ -337,7 +352,11 @@ export function App() {
         {TABS.map((item) => (
           <a
             key={item.id}
-            href={`#${item.id}`}
+            href={
+              item.id === "player" && playerLinkId
+                ? `#player/${playerLinkId}`
+                : `#${item.id}`
+            }
             className={tab === item.id ? "active" : ""}
             aria-current={tab === item.id ? "page" : undefined}
           >

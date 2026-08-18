@@ -103,10 +103,6 @@ export function LandscapeView({
           <p className="kicker">Landscape</p>
           <h1>Offense against defense</h1>
         </div>
-        <span className="meta">
-          {points.length} player-seasons · {season - 1}–
-          {String(season).slice(2)}
-        </span>
       </div>
 
       <div className="filters">
@@ -145,7 +141,7 @@ export function LandscapeView({
         }
         note={
           <>
-            Each dot is one player-season. Dot size is possessions on the
+            Each dot is one player. Dot size is possessions on the
             smaller side, so thin samples look thin. Colour restates net — the
             sum of the two axes — which is what makes the two-way corner read at
             a glance. Only the highest-net names are labelled; hover or open the

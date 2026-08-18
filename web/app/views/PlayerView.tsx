@@ -44,6 +44,9 @@ type PlayerViewProps = {
   onCompare: (id: number) => void;
 };
 
+const foldName = (value: string) =>
+  value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase();
+
 /** Guard only. The body below always has a player, so its hooks are unconditional. */
 export function PlayerView({
   player,
@@ -83,16 +86,16 @@ function PlayerBody({
   const profile = player.profiles.find((row) => row.Season === season);
   const roles = player.roles.find((row) => row.Season === season);
   const compareMatches = useMemo(() => {
-    const needle = compareQuery.trim().toLocaleLowerCase();
+    const needle = foldName(compareQuery.trim());
     if (needle.length < 2) return [];
     return index
-      .filter((item) => item.id !== player.PLAYER_ID && item.name.toLocaleLowerCase().includes(needle))
+      .filter((item) => item.id !== player.PLAYER_ID && foldName(item.name).includes(needle))
       .slice(0, 6);
   }, [compareQuery, index, player.PLAYER_ID]);
 
   const net = rating(current, active.prefix, "net");
-  const spmCenter = rating(current, "spm_", component);
-  const aioValue = rating(current, "aio_", component);
+  const offense = rating(current, active.prefix, "offense");
+  const defense = rating(current, active.prefix, "defense");
 
   const series = (
     [
@@ -289,36 +292,30 @@ function PlayerBody({
           />
         </Figure>
 
-        {active.id === "aio" &&
-          spmCenter !== undefined &&
-          aioValue !== undefined && (
+        {offense !== undefined && defense !== undefined && net !== undefined && (
             <section className="card">
               <div className="card-head">
                 <div>
-                  <p className="kicker">Decomposition</p>
-                  <h2>
-                    Where the {COMPONENT_LABEL[component].toLowerCase()} number
-                    comes from
-                  </h2>
+                  <p className="kicker">Net</p>
+                  <h2>Offense + defense</h2>
                 </div>
               </div>
               <div className="equation" style={{ marginTop: 14 }}>
                 <div>
-                  <span>SPM center</span>
-                  <b>{fmtRating(spmCenter)}</b>
+                  <span>Offense</span>
+                  <b>{fmtRating(offense)}</b>
                 </div>
                 <i>+</i>
                 <div>
-                  <span>RAPM update</span>
-                  <b>{fmtRating(aioValue - spmCenter)}</b>
+                  <span>Defense</span>
+                  <b>{fmtRating(defense)}</b>
                 </div>
                 <i>=</i>
                 <div>
-                  <span>AIO {COMPONENT_LABEL[component].toLowerCase()}</span>
-                  <b>{fmtRating(aioValue)}</b>
+                  <span>{active.label} net</span>
+                  <b>{fmtRating(net)}</b>
                 </div>
               </div>
-              <p className="note">{catalog.methods.rapm_update_note}</p>
             </section>
           )}
 

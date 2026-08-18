@@ -30,6 +30,7 @@ export function RatingsView({
   minPoss,
   onMinPoss,
   onPlayer,
+  selected,
 }: {
   catalog: Catalog;
   rows: LeaderboardRow[];
@@ -155,9 +156,6 @@ export function RatingsView({
             {season - 1}–{String(season).slice(2)} player impact
           </h1>
         </div>
-        <span className="meta">
-          {sorted.length} player-seasons · points per 100 possessions
-        </span>
       </div>
 
       {/* One filter row, above everything it scopes. */}
