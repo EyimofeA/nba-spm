@@ -449,6 +449,7 @@ def command_build_historical_espn_player_games(args: argparse.Namespace) -> int:
         args.quality_output,
         args.manifest_dir,
         seasons=tuple(args.seasons),
+        official_box_dir=args.official_box_dir,
     )
     register_snapshot(args.registry, snapshot)
     print(json.dumps(snapshot, indent=2))
@@ -2254,6 +2255,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=SILVER_ROOT / "historical_espn_player_games_quality.parquet",
     )
     historical_player_games.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    historical_player_games.add_argument("--official-box-dir", type=Path, default=OFFICIAL_BOXSCORE_ROOT)
     historical_player_games.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     historical_player_games.add_argument("--seasons", type=int, nargs="+", default=list(range(2017, 2024)))
     historical_player_games.set_defaults(func=command_build_historical_espn_player_games)

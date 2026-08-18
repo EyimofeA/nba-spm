@@ -2257,7 +2257,9 @@ complete 2017--23 table. The output is separate from canonical `player_games`.
 
 **Decision:** Use the new historical ESPN builder only for research inputs that
 can tolerate explicit coverage gaps. Do not use its rows to infer historical
-lineups or to replace the canonical player-game table.
+lineups or to replace the canonical player-game table. When a locally cached
+official BoxScoreTraditionalV3 JSON is available, it takes priority over ESPN;
+an invalid official box rejects the game rather than falling back silently.
 
 ## 2026-08-17 — Canonical annual RAPM bridge passes; 2025 SPM still fails
 
