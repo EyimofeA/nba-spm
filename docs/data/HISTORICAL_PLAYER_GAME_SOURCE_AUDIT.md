@@ -72,8 +72,8 @@ coverage.
 4. Do not overwrite canonical current tables or redistribute raw official or
    ESPN rows in the public release bundle.
 
-The existing `build_player_games` function already implements the relevant
-ESPN fallback join, including home/away team-ID mapping. A historical candidate
-also needs a complete historical `game_dim` carrying team tricodes and maximum
-period. The official score table plus the scoring-event panel provide the
-necessary pieces, but no historical candidate is written by this audit.
+The existing `build_player_games` function implements the relevant ESPN fallback
+join, including home/away team-ID mapping. The separate historical candidate
+uses the official score table plus the scoring-event panel for game identity,
+team tricodes, and maximum period. It remains outside the canonical current
+table and outside public release bundles.
