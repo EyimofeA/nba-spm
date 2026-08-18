@@ -525,11 +525,11 @@ def command_build_identity_dimensions(args: argparse.Namespace) -> int:
 def command_ingest_official_boxscores(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     quality = pd.read_parquet(args.quality)
-    failed = quality.loc[~quality["passed"]].copy()
+    requested = quality.copy() if args.all_games else quality.loc[~quality["passed"]].copy()
     if args.seasons:
-        failed = failed.loc[failed["season_label"].isin(args.seasons)]
+        requested = requested.loc[requested["season_label"].isin(args.seasons)]
     snapshot = ingest_official_boxscores(
-        failed["game_id"].astype(str).tolist(),
+        requested["game_id"].astype(str).tolist(),
         args.output_root,
         args.manifest_dir,
         max_attempts=args.max_attempts,
@@ -2412,6 +2412,11 @@ def build_parser() -> argparse.ArgumentParser:
     official_boxes.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     official_boxes.add_argument("--max-attempts", type=int, default=20)
     official_boxes.add_argument("--minimum-delay-seconds", type=float, default=0.6)
+    official_boxes.add_argument(
+        "--all-games",
+        action="store_true",
+        help="Cache every game in the quality ledger, not only failed games.",
+    )
     official_boxes.set_defaults(func=command_ingest_official_boxscores)
 
     lineups = subparsers.add_parser(
