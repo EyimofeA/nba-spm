@@ -73,6 +73,24 @@ export function HomeView({
         </div>
       </section>
 
+      <section className="grid three" aria-label="Rating definitions" style={{ marginTop: 14 }}>
+        <article className="tile">
+          <p className="kicker">RAPM</p>
+          <h2>Lineup impact</h2>
+          <p className="note">A ridge regression on possession outcomes and the ten players on court. It has no player-stat prior.</p>
+        </article>
+        <article className="tile">
+          <p className="kicker">SPM</p>
+          <h2>Statistical impact</h2>
+          <p className="note">A player-season model using box, tracking, playtype, and matchup signals to estimate an impact prior.</p>
+        </article>
+        <article className="tile">
+          <p className="kicker">AIO</p>
+          <h2>Combined impact</h2>
+          <p className="note">The SPM prior updated by that season’s lineup possessions in one joint ridge fit.</p>
+        </article>
+      </section>
+
       <Figure
         kicker={`AIO · ${displayedSeason ?? ""}`}
         title="This season’s ten most valuable"

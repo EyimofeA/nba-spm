@@ -17,7 +17,6 @@ import {
 import { HomeView } from "./views/HomeView";
 import { LandscapeView } from "./views/LandscapeView";
 import { PlayerView } from "./views/PlayerView";
-import { ProjectionsView } from "./views/ProjectionsView";
 import { RatingsView } from "./views/RatingsView";
 import { ResearchView } from "./views/ResearchView";
 import { RolesView } from "./views/RolesView";
@@ -28,7 +27,6 @@ const TABS = [
   { id: "landscape", label: "Landscape" },
   { id: "player", label: "Player" },
   { id: "roles", label: "Roles" },
-  { id: "projections", label: "Projections" },
   { id: "research", label: "Research" },
 ] as const;
 
@@ -376,7 +374,7 @@ export function App() {
                 onPlayer={openPlayer}
               />
             )}
-            {tab === "ratings" && (
+            {tab === "ratings" && rows.length > 0 && (
               <RatingsView
                 catalog={catalog}
                 rows={rows}
@@ -389,7 +387,7 @@ export function App() {
                 onPlayer={openPlayer}
               />
             )}
-            {tab === "landscape" && (
+            {tab === "landscape" && rows.length > 0 && (
               <LandscapeView
                 rows={rows}
                 seasons={seasons}
@@ -427,7 +425,6 @@ export function App() {
                 onPlayer={openPlayer}
               />
             )}
-            {tab === "projections" && <ProjectionsView onPlayer={openPlayer} />}
             {tab === "research" && <ResearchView catalog={catalog} />}
           </>
         )}

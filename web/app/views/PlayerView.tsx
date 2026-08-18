@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Figure, Legend } from "../charts/frame";
 import { MultiLine } from "../charts/lines";
-import { Pizza, SKILLS, Slice, pizzaLegend } from "../charts/pizza";
+import { Pizza, RadarComparison, SKILL_DEFINITIONS, SKILLS, Slice, pizzaLegend } from "../charts/pizza";
 import {
   Catalog,
   COMPONENT_LABEL,
@@ -85,9 +85,6 @@ function PlayerBody({
       .slice(0, 6);
   }, [compareQuery, index, player.PLAYER_ID]);
 
-  const net = rating(current, active.prefix, "net");
-  const offense = rating(current, active.prefix, "offense");
-  const defense = rating(current, active.prefix, "defense");
 
   const series = (
     [
@@ -113,6 +110,17 @@ function PlayerBody({
           })
         : [],
     [profile],
+  );
+  const comparisonProfile = comparePlayer?.profiles.find((row) => row.Season === season);
+  const comparisonSlices = useMemo<Slice[]>(
+    () =>
+      comparisonProfile
+        ? SKILLS.flatMap((skill) => {
+            const value = comparisonProfile[skill.key];
+            return typeof value === "number" ? [{ ...skill, value }] : [];
+          })
+        : [],
+    [comparisonProfile],
   );
 
   // Left unmemoized on purpose: the compiler handles it, and a hand-written dep
@@ -194,7 +202,13 @@ function PlayerBody({
           )}
         </div>
         {comparePlayer ? (
-          <ComparisonTable left={player} right={comparePlayer} season={season} model={model} />
+          <>
+            <ComparisonTable left={player} right={comparePlayer} model={model} />
+            <div className="grid two comparison-roles">
+              <RoleComparisonPlayer name={player.PLAYER_NAME} roles={roles} catalog={catalog} />
+              <RoleComparisonPlayer name={comparePlayer.PLAYER_NAME} roles={comparePlayer.roles.find((row) => row.Season === season)} catalog={catalog} />
+            </div>
+          </>
         ) : (
           <p className="note">Choose a second player to compare offense, defense, and net.</p>
         )}
@@ -256,45 +270,19 @@ function PlayerBody({
           />
         </Figure>
 
-        {offense !== undefined && defense !== undefined && net !== undefined && (
-            <section className="card">
-              <div className="card-head">
-                <div>
-                  <p className="kicker">Net</p>
-                  <h2>Offense + defense</h2>
-                </div>
-              </div>
-              <div className="equation" style={{ marginTop: 14 }}>
-                <div>
-                  <span>Offense</span>
-                  <b>{fmtRating(offense)}</b>
-                </div>
-                <i>+</i>
-                <div>
-                  <span>Defense</span>
-                  <b>{fmtRating(defense)}</b>
-                </div>
-                <i>=</i>
-                <div>
-                  <span>{active.label} net</span>
-                  <b>{fmtRating(net)}</b>
-                </div>
-              </div>
-            </section>
-          )}
-
         <div className="grid two">
           <Figure
             kicker={`Skill profile · ${season}`}
             title="Season-relative percentile"
             legend={<Legend items={pizzaLegend} />}
-            note="Rings mark the 25th, 50th, and 75th percentiles. Percentiles compare this player to the rest of the season, not to history. Skills are descriptive: they are not rating inputs."
+            note="Percentiles compare this player to the rest of the season. Open the table for the inputs behind each skill."
             table={
               <table className="mini">
                 <thead>
                   <tr>
                     <th scope="col">Skill</th>
                     <th scope="col">Group</th>
+                    <th scope="col">Inputs</th>
                     <th scope="col">Percentile</th>
                   </tr>
                 </thead>
@@ -307,6 +295,7 @@ function PlayerBody({
                         <td>
                           {slice.group === "shared" ? "Both ends" : slice.group}
                         </td>
+                        <td>{SKILL_DEFINITIONS[slice.key]}</td>
                         <td>{ordinalSuffix(slice.value)}</td>
                       </tr>
                     ))}
@@ -346,6 +335,21 @@ function PlayerBody({
           </section>
         </div>
 
+        {comparePlayer && slices.length >= 3 && comparisonSlices.length >= 3 && (
+          <Figure
+            kicker={`Skill comparison · ${season}`}
+            title={`${player.PLAYER_NAME} vs ${comparePlayer.PLAYER_NAME}`}
+            legend={[
+              { label: player.PLAYER_NAME, color: "var(--series-1)" },
+              { label: comparePlayer.PLAYER_NAME, color: "var(--series-2)" },
+            ]}
+            note="Each spoke is the same season-relative skill percentile used above."
+            table={<SkillComparisonTable left={slices} right={comparisonSlices} leftName={player.PLAYER_NAME} rightName={comparePlayer.PLAYER_NAME} />}
+          >
+            <RadarComparison left={slices} right={comparisonSlices} leftName={player.PLAYER_NAME} rightName={comparePlayer.PLAYER_NAME} />
+          </Figure>
+        )}
+
       </div>
     </>
   );
@@ -376,17 +380,28 @@ function TeamLogo({ team }: { team?: string | null }) {
   );
 }
 
-function ComparisonTable({ left, right, season, model }: { left: Player; right: Player; season: number; model: ModelId }) {
+function ComparisonTable({ left, right, model }: { left: Player; right: Player; model: ModelId }) {
   const leftActive = resolveModel(left.annual, model);
   const rightActive = resolveModel(right.annual, model);
-  const leftRow = left.annual.find((row) => row.Season === season) ?? left.annual.at(-1);
-  const rightRow = right.annual.find((row) => row.Season === season) ?? right.annual.at(-1);
-  const rows: Component[] = ["offense", "defense", "net"];
+  const rightBySeason = new Map(right.annual.map((row) => [row.Season, row]));
+  const seasons = left.annual
+    .filter((row) => rightBySeason.has(row.Season))
+    .map((row) => row.Season)
+    .sort((a, b) => b - a);
   return <div className="comparison-grid">
-    <div className="comparison-player"><PlayerHeadshot id={left.PLAYER_ID} name={left.PLAYER_NAME} /><b>{left.PLAYER_NAME}</b><span>{leftRow?.TEAM_ABBREVIATION ?? "—"}</span></div>
-    <table className="mini comparison-table"><thead><tr><th scope="col">Metric</th><th scope="col">{left.PLAYER_NAME}</th><th scope="col">{right.PLAYER_NAME}</th></tr></thead><tbody>{rows.map((key) => <tr key={key}><td>{COMPONENT_LABEL[key]}</td><td>{fmtRating(rating(leftRow, leftActive.prefix, key))}</td><td>{fmtRating(rating(rightRow, rightActive.prefix, key))}</td></tr>)}</tbody></table>
-    <div className="comparison-player"><PlayerHeadshot id={right.PLAYER_ID} name={right.PLAYER_NAME} /><b>{right.PLAYER_NAME}</b><span>{rightRow?.TEAM_ABBREVIATION ?? "—"}</span></div>
+    <div className="comparison-player"><PlayerHeadshot id={left.PLAYER_ID} name={left.PLAYER_NAME} /><b>{left.PLAYER_NAME}</b></div>
+    <table className="mini comparison-table"><thead><tr><th scope="col">Season</th><th scope="col">{left.PLAYER_NAME}<br />Off / Def / Net</th><th scope="col">{right.PLAYER_NAME}<br />Off / Def / Net</th></tr></thead><tbody>{seasons.map((season) => { const leftRow = left.annual.find((row) => row.Season === season); const rightRow = rightBySeason.get(season); return <tr key={season}><td>{season - 1}–{String(season).slice(2)}</td><td>{["offense", "defense", "net"].map((key) => fmtRating(rating(leftRow, leftActive.prefix, key as Component))).join(" / ")}</td><td>{["offense", "defense", "net"].map((key) => fmtRating(rating(rightRow, rightActive.prefix, key as Component))).join(" / ")}</td></tr>; })}</tbody></table>
+    <div className="comparison-player"><PlayerHeadshot id={right.PLAYER_ID} name={right.PLAYER_NAME} /><b>{right.PLAYER_NAME}</b></div>
   </div>;
+}
+
+function SkillComparisonTable({ left, right, leftName, rightName }: { left: Slice[]; right: Slice[]; leftName: string; rightName: string }) {
+  const rightByKey = new Map(right.map((slice) => [slice.key, slice]));
+  return <table className="mini comparison-table"><thead><tr><th scope="col">Skill</th><th scope="col">{leftName}</th><th scope="col">{rightName}</th></tr></thead><tbody>{left.map((slice) => <tr key={slice.key}><td>{slice.label}</td><td>{ordinalSuffix(slice.value)}</td><td>{rightByKey.get(slice.key) ? ordinalSuffix(rightByKey.get(slice.key)!.value) : "—"}</td></tr>)}</tbody></table>;
+}
+
+function RoleComparisonPlayer({ name, roles, catalog }: { name: string; roles?: Player["roles"][number]; catalog: Catalog }) {
+  return <div className="role-comparison-player"><h3>{name} · role mix</h3><RoleMix title="Offense" role={roles?.offense} side="offense" catalog={catalog} /><RoleMix title="Defense" role={roles?.defense} side="defense" catalog={catalog} /></div>;
 }
 
 /**

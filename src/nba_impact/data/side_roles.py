@@ -323,6 +323,31 @@ def _defensive_matchup_context(
     offense_assignments: pd.DataFrame,
     seasons: tuple[int, ...],
 ) -> tuple[pd.DataFrame, dict[str, str], dict[str, float]]:
+    def load_source(season: int) -> tuple[pd.DataFrame, Path]:
+        """Load one canonical regular-season matchup source for a project season.
+
+        Older seasons retain the pinned archive source.  The current NBA Stats
+        parquet exports have the same per-matchup fields, so 2025--26 can use
+        them without changing the role definition or silently dropping the
+        opponent-role-assignment block.
+        """
+        root = Path(archive_root)
+        candidates = (
+            root / "shufinskiy_nba_data" / "revision=e829d46" / "matchups" / f"season={season}",
+            root / "nba_data_archive" / "matchups" / f"season={season}" / "regular.parquet",
+            root / "official_nba_stats_v3" / "matchups" / f"season={season}" / "regular.parquet",
+            root / f"season={season}",
+        )
+        for candidate in candidates:
+            if candidate.is_dir():
+                archives = sorted(candidate.glob("*.tar.xz"))
+                if len(archives) == 1:
+                    frame, _ = _read_archive(archives[0])
+                    return frame, archives[0]
+            elif candidate.exists():
+                return pd.read_parquet(candidate), candidate
+        raise ValueError(f"No canonical matchup source found for season {season}.")
+
     affinity_columns = tuple(
         column for column in offense_assignments
         if column.startswith("off_role_affinity_")
@@ -331,10 +356,7 @@ def _defensive_matchup_context(
     hashes = {}
     role_coverage = {}
     for season in seasons:
-        archives = sorted((Path(archive_root) / f"season={season}").glob("*.tar.xz"))
-        if len(archives) != 1:
-            raise ValueError(f"Expected one matchup archive for season {season}.")
-        frame, _ = _read_archive(archives[0])
+        frame, source_path = load_source(season)
         columns = [
             "person_id", "matchups_person_id", "partial_possessions", "switches_on",
             "matchup_field_goals_attempted", "matchup_three_pointers_attempted",
@@ -408,7 +430,7 @@ def _defensive_matchup_context(
             *(f"def_opponent_off_role_affinity_{i}" for i in range(len(affinity_columns))),
         ]
         outputs.append(defender[keep])
-        hashes[str(archives[0].resolve())] = sha256_file(archives[0])
+        hashes[str(source_path.resolve())] = sha256_file(source_path)
         role_coverage[str(season)] = float(
             work.loc[role_covered, "partial_possessions"].sum()
             / work["partial_possessions"].sum()

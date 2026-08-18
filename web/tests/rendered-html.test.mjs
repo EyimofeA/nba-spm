@@ -23,7 +23,7 @@ test("server-renders the compact ratings product shell", async () => {
   assert.match(html, /Loading/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
 
-  for (const section of ["home", "ratings", "landscape", "player", "roles", "projections", "research"]) {
+  for (const section of ["home", "ratings", "landscape", "player", "roles", "research"]) {
     assert.match(html, new RegExp(`href="#${section}"`), `missing ${section} section link`);
   }
   assert.match(html, /points per 100 possessions/i);

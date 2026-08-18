@@ -393,6 +393,8 @@ button {
 .comparison-player .player-headshot { width: 58px; height: 58px; font-size: 15px; }
 .comparison-table { margin: 0; }
 .comparison-table th:not(:first-child), .comparison-table td:not(:first-child) { text-align: right; }
+.comparison-roles { margin-top: 18px; }
+.role-comparison-player { display: grid; gap: 14px; padding: 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); }
 
 .toast {
   position: fixed;
