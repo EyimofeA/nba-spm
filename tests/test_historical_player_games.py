@@ -4,6 +4,10 @@ from pathlib import Path
 import pandas as pd
 
 from nba_impact.data.historical_player_games import build_historical_espn_player_games
+from nba_impact.data.official_boxscore import (
+    OFFICIAL_FIRST_FIVE_STARTER_FALLBACK_VERSION,
+    infer_official_starters,
+)
 
 
 def _players(game_id: str, team: str, home: int, player_start: int) -> list[dict]:
@@ -108,3 +112,61 @@ def test_historical_builder_rejects_invalid_official_instead_of_falling_back(tmp
     assert not bool(ledger.loc[0, "passed"])
     assert ledger.loc[0, "selected_source"] == "official_boxscore"
     assert "home_team_id_mismatch" in ledger.loc[0, "issues"]
+
+
+def test_official_first_five_fallback_is_versioned_and_fail_closed() -> None:
+    rows = pd.DataFrame(
+        [
+            {
+                "game_id": "0021600001", "team_id": 10, "player_id": player_id,
+                "starter_position": "G" if player_id != 16 else "F", "source_row_order": player_id - 10,
+            }
+            for player_id in range(10, 17)
+        ]
+    )
+    inferred = infer_official_starters(rows, first_five_fallback_game_ids={"0021600001"})
+    assert inferred.loc[inferred["starter"], "player_id"].tolist() == [10, 11, 12, 13, 14]
+    assert set(inferred["starter_inference_source"]) == {OFFICIAL_FIRST_FIVE_STARTER_FALLBACK_VERSION}
+    try:
+        infer_official_starters(rows)
+    except ValueError as error:
+        assert "do not identify exactly five starters" in str(error)
+    else:
+        raise AssertionError("Unapproved first-five fallback was accepted.")
+    malformed = rows.copy()
+    malformed.loc[6, "source_row_order"] = 4
+    try:
+        infer_official_starters(malformed, first_five_fallback_game_ids={"0021600001"})
+    except ValueError as error:
+        assert "invalid official player row order" in str(error)
+    else:
+        raise AssertionError("Malformed official source row order was accepted.")
+
+
+def test_historical_builder_uses_first_five_when_old_positions_include_bench(tmp_path: Path) -> None:
+    game_id = "0021600001"
+    official = pd.DataFrame([
+        {"project_season": 2017, "season_type": "regular", "game_id": game_id, "game_date": "2016-10-25", "home_team_id": 10, "away_team_id": 20},
+    ])
+    official_path = tmp_path / "official.parquet"; official.to_parquet(official_path, index=False)
+    espn_path = tmp_path / "espn.parquet"; pd.DataFrame(columns=["season", "game_id", "player_id", "team", "home", "name", "starter", "minutes_played", "played"]).to_parquet(espn_path, index=False)
+    raw = pd.DataFrame([
+        {"gameId": game_id, "period": period, "teamId": team_id, "teamTricode": tricode}
+        for period in (1, 4) for team_id, tricode in ((10, "HOM"), (20, "AWY"))
+    ])
+    v3_root = tmp_path / "v3"; partition = v3_root / "project_season=2017"; partition.mkdir(parents=True)
+    raw.to_parquet(partition / "regular.parquet", index=False)
+    box_root = tmp_path / "official_boxes"; box_root.mkdir()
+    def players(start: int) -> list[dict]:
+        return [
+            {"personId": start + number, "firstName": "Player", "familyName": str(number), "position": "G" if number < 5 else "F", "statistics": {"minutes": "48:00" if number < 5 else ""}}
+            for number in range(6)
+        ]
+    payload = {"boxScoreTraditional": {"gameId": game_id, "homeTeam": {"teamId": 10, "players": players(100)}, "awayTeam": {"teamId": 20, "players": players(200)}}}
+    (box_root / f"game_id={game_id}.json").write_text(json.dumps(payload))
+    output, quality = tmp_path / "historical.parquet", tmp_path / "quality.parquet"
+    build_historical_espn_player_games(espn_path, official_path, v3_root, output, quality, tmp_path / "manifests", seasons=(2017,), official_box_dir=box_root)
+    result, ledger = pd.read_parquet(output), pd.read_parquet(quality)
+    assert result.groupby("team_id")["starter"].sum().eq(5).all()
+    assert set(result["starter_inference_source"]) == {OFFICIAL_FIRST_FIVE_STARTER_FALLBACK_VERSION}
+    assert ledger.loc[0, "official_starter_inference_sources"] == OFFICIAL_FIRST_FIVE_STARTER_FALLBACK_VERSION
