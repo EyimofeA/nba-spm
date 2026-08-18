@@ -12,12 +12,13 @@ candidates and their promotion gates, read `docs/win_probability/ARCHITECTURES.m
 Before changing a public model claim, read `research/estimands.yml` and
 `research/season_exposure.yml`. Season 2027 is reserved as untouched annual
 confirmation. Do not use it for development, debugging, or model selection.
-The current public site is `https://nba-impact-lab.mofe.chatgpt.site`. The UI
+The public site is `https://nba-impact-lab.nba-impact-lab.workers.dev`; the
+older ChatGPT Sites build remains at `https://nba-impact-lab.mofe.chatgpt.site`.
+The UI
 calls the zero-prior baseline `RAPM`; use `normal RAPM` only when a technical
 document must distinguish it from prior-centered variants. RAPM is available
-for 2017--26. SPM and AIO stay pinned to the validated 2017--24 model. External
-Cloudflare Worker hosting is configured but not live until account login and a
-custom domain are supplied.
+for 2017--26. SPM and AIO stay pinned to the validated 2017--24 model.
+Cloudflare Workers hosts the launch build; a custom domain can be attached later.
 The complete 2014--26 unified AIO timeline is now a research artifact. It uses
 legacy terminal inputs through 2023 and canonical event inputs from 2024; do
 not erase this explicit provenance boundary. Read
