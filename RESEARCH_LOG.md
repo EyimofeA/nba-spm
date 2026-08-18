@@ -2409,3 +2409,28 @@ check has 99.98% core action-owner agreement and 92.7% exact full-game
 sequences, but only 80 of 82 games are within two possessions. Games
 `0042300134` and `0042300163` fail that gate. Keep historical playoffs
 research-only and exclude them from the first Normal RAPM fit.
+
+## 2026-08-18 — Matched historical V3 versus legacy RAPM
+
+**Question:** Do the historical V3 possession and terminal-lineup candidate and
+the legacy terminal-lineup cache produce materially different RAPM ratings on
+the same regular-season games?
+
+**Method:** Restrict both sources to the exact intersection of `002` regular-
+season game IDs in 2018–23. Use the V3 terminal ordinal segment for each
+possession. Fit each source separately with the frozen zero-prior ridge
+penalties 3000/3000/300. Compare matched-player offense, defense, and net
+correlations, RMSE, and Spearman rank correlations. Also report a chronological
+20% within-season held-out game-margin retrodiction.
+
+**Result:** Every V3 game was present in the legacy cache. Net-rating Pearson
+correlations were 0.971–0.982 and net-rating RMSE was 0.233–0.348 points per
+100. Candidate possession counts and point totals were consistently higher on
+the matched games. Held-out metrics are source-specific retrodictions using
+observed test lineups, not forecasts.
+
+**Decision:** Keep this as research evidence only. The sources have similar
+player ordering but are not interchangeable at the possession level. V3 must
+still pass historical ordinal-lineup and official-minute reconciliation before
+it can replace the legacy research cache. Artifact:
+`artifacts/research/historical_matched_rapm/historical_matched_rapm_v1_f49c0fdc102e`.
