@@ -302,12 +302,15 @@ predictions as coefficient centers for one-season RAPM. SPM is the prior center;
 the centered RAPM estimate is the final MAP/AIO rating. Do not call SPM itself
 the posterior. Do not attach SPM or AIO intervals until they are calibrated.
 Forward-only role display run `role_stabilization_v1_f5b426dd5d` selects a
-0.70 current-season membership weight without impact targets. It is a display
-layer only. Keep raw memberships available and never use the stable hard label
-as an SPM feature. The public site now shows raw single-season roles only; the
-stable layer stays out of the web snapshot. The static derived-data web client
-loads one annual table or one role map at a time. It offers AIO, RAPM, and SPM
-through one model selector and shows no win-probability result.
+0.70 current-season membership weight without impact targets. It remains a
+display-only research artifact. The public site uses raw roles only. Its pinned
+run is `side_roles_v1_74842695a1`: offense covers 2014--26 and defense covers
+2018--26. It retains the original 41 offensive and 17 defensive descriptors;
+2026 defensive matchup rows come from the official NBA Stats export. Do not
+reintroduce stabilization into the web snapshot or use a hard role label as an
+SPM feature. The static derived-data client loads one annual table or one role
+map at a time. It offers AIO, RAPM, and SPM through one model selector and
+shows no win-probability result.
 Regenerate it with `nba-impact build-web-snapshot` after changing pinned
 ratings, roles, player sheets, or the aging curve.
 
