@@ -130,6 +130,32 @@ Games `0022300339` and `0022500264` remain quarantined because one or more V3
 substitutions cannot be mapped under the full ordinal key. The candidate keeps
 separate outputs and does not weaken the production gate.
 
+### Official Live retry of the six remaining regular games
+
+The current official NBA Live feed was also tested directly for all six
+remaining regular-season quarantines. It supplied 3,477 valid ordered actions,
+but none of the six passed the unchanged lineup contract:
+
+| Game | Transition errors | Maximum official-minute error |
+|---|---:|---:|
+| `0022300339` | 0 | 156.1 seconds |
+| `0022400223` | 0 | 115.0 seconds |
+| `0022400771` | 6 | 611.2 seconds |
+| `0022400821` | 2 | 25.0 seconds |
+| `0022500264` | 0 | 93.0 seconds |
+| `0022500643` | 1 | 6.9 seconds |
+
+Current Live events therefore do not repair these games by themselves. Keep
+all six quarantined. The next acceptable repair needs a better observed lineup
+source or a separately validated ordinal reconstruction; rerunning the same
+clock-based substitution replay is not useful.
+
+A one-game-per-season availability probe found nonempty official Live actions
+for project seasons 2020--2023, while the sampled 2017--2019 games returned
+HTTP 403. This is only an availability probe, not a season-completeness claim.
+Do not start a large historical Live download until historical starter and
+official player-minute inputs are pinned: play-by-play alone is not lineup-ready.
+
 ## Integrated current candidate
 
 `possessions_complete.parquet` combines the canonical base, the one strict

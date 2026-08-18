@@ -2332,3 +2332,26 @@ integrated regular-season coverage is 1,229 / 1,230 in 2024, 1,227 / 1,230 in
 source. Use Normal RAPM run `current_single_season_rapm_targets_v1_8f2a6f2e0a`.
 Do not rerun SPM/AIO selection: the added regular games move net ratings by only
 0.0057 and 0.0071 mean absolute points per 100 in 2024 and 2025.
+
+## 2026-08-18 — Official Live does not close the six regular quarantines
+
+**Question:** Can a fresh copy of the official NBA Live actions repair the six
+remaining 2024--26 regular-season lineup failures?
+
+**Method:** Download and validate the current official Live JSON for the exact
+six games. Rebuild scoped CDN-schema partitions, then rerun the unchanged
+starter, substitution, five-player, official-minute, and five-second gates.
+Probe one midpoint regular game per project season from 2017 through 2023 to
+bound whether the same source can support a historical backfill.
+
+**Result:** The six files contain 3,477 valid ordered actions, but zero games
+pass. Maximum official-minute errors are 156.1, 115.0, 611.2, 25.0, 93.0, and
+6.9 seconds; three games also retain substitution-transition errors. The
+sampled 2020--23 games return nonempty Live actions, while sampled 2017--19
+games return HTTP 403.
+
+**Decision:** Keep all six games quarantined and keep the published current
+Normal RAPM unchanged. Do not spend bandwidth on a historical Live sweep until
+historical starter and official player-minute inputs are pinned. The next
+repair must improve lineup evidence or validate a new ordinal reconstruction,
+not repeat the same clock-based replay.

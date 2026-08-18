@@ -242,6 +242,13 @@ completed 85-game partition passes score, lineup-minute, and possession QA.
 Use `build-live-playoff-completion`; keep raw NBA rows out of public bundles.
 See `docs/impact/RAPM_INPUT_COVERAGE.md`.
 
+Do not assume the same Live endpoint solves lineup quarantine. A direct retry
+of the six remaining 2024--26 regular games supplied valid events but zero
+lineup-minute passes under the five-second gate. A historical midpoint probe
+returned nonempty Live actions for 2020--23 and HTTP 403 for 2017--19; that is
+not full-season coverage. Pin historical starters and official player minutes
+before any large Live backfill, because play-by-play alone is not RAPM-ready.
+
 The 2023–24 player-game layer uses provenance-marked ESPN fallback rows where
 the primary NBA box cache is absent. Quarantined games are repaired only through
 immutable official BoxScoreTraditionalV3 JSON; never relax lineup minute gates
