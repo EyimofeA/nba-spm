@@ -3,7 +3,7 @@
 ## Status
 
 Research candidate only. Do not merge these rows into the canonical current
-lineup tables and do not publish a historical Normal RAPM from them until the
+lineup tables and do not publish a historical RAPM from them until the
 matched legacy comparison passes.
 
 ## Contract
@@ -44,6 +44,13 @@ These categories overlap. The official BoxScoreTraditionalV3 backfill is
 resumable and should address missing or incomplete roster evidence. It cannot
 by itself justify ambiguous substitutions or inferred period starts.
 
+The strict possession-lineup attachment then emitted all 1,023 double-passing
+games: 205,252 possessions, 248,766 ordinal lineup segments, and 471,674 owned
+actions. Every owned action maps once, the official score and segment points
+conserve, every segment has ten unique players, and the terminal-lineup RAPM
+loader accepts all 205,252 rows with no missing values. These are still
+separate candidate tables, not production inputs.
+
 ## Next gate
 
 1. Complete the immutable official box cache for all 2017--2023 games.
@@ -51,7 +58,7 @@ by itself justify ambiguous substitutions or inferred period starts.
 3. Rerun each regular season and retain only strict passes.
 4. Attach V3 possessions to lineups by exact `actionId` intervals and prove
    action, point, score, and ten-player conservation.
-5. Fit Normal RAPM on regular-season passing games only and compare with the
+5. Fit RAPM on regular-season passing games only and compare with the
    legacy terminal-lineup model on identical games.
 
 Historical playoffs remain excluded from the first fit because the frozen
