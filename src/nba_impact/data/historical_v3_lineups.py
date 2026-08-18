@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import unicodedata
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,6 +17,7 @@ from pathlib import Path
 import pandas as pd
 
 from .game_dim import canonical_game_id
+from .historical_v3_possessions import _description_points
 from .lineups import _elapsed_seconds, _normalize_name
 from .manifest import sha256_file, write_json_atomic
 from .v3_cdn_lineup_repair import infer_v3_period_starts
@@ -40,19 +42,31 @@ def _name_aliases(name: object) -> set[str]:
     tokens = re.findall(r"[A-Za-z0-9]+", text)
     if not tokens:
         return set()
-    aliases = {_normalize_name(text), _normalize_name(tokens[-1])}
-    if len(tokens) >= 2:
+    suffix = tokens[-1] if tokens[-1].casefold().strip(".") in _SUFFIXES else None
+    core = tokens[:-1] if suffix else tokens
+    if not core:
+        return set()
+    surname = core[1:] if len(core) >= 2 else core
+    strict_surname = " ".join([*surname, *([suffix] if suffix else [])])
+    aliases = {
+        _normalize_name(text),
+        _normalize_name(" ".join(surname)),
+        _normalize_name(core[-1]),
+        _normalize_name_preserving_suffix(text),
+        _normalize_name_preserving_suffix(strict_surname),
+    }
+    if len(core) >= 2:
         # V3 often writes only a compound surname in substitution text.
-        aliases.add(_normalize_name(" ".join(tokens[1:])))
-        aliases.add(_normalize_name(f"{tokens[0][0]} {tokens[-1]}"))
-        aliases.add(_normalize_name(f"{tokens[0][:3]} {tokens[-1]}"))
-        aliases.add(_normalize_name(f"{tokens[0]} {tokens[-1]}"))
-    if len(tokens) >= 2 and tokens[-1].casefold().strip(".") in _SUFFIXES:
-        aliases.add(_normalize_name(" ".join(tokens[-2:])))
-        aliases.add(_normalize_name(tokens[-2]))
-        if len(tokens) >= 3:
-            aliases.add(_normalize_name(f"{tokens[0][0]} {' '.join(tokens[-2:])}"))
+        surname_text = " ".join(surname)
+        aliases.add(_normalize_name(f"{core[0][0]} {surname_text}"))
+        aliases.add(_normalize_name(f"{core[0][:3]} {surname_text}"))
+        aliases.add(_normalize_name(f"{core[0]} {surname_text}"))
     return {alias for alias in aliases if alias}
+
+
+def _normalize_name_preserving_suffix(value: object) -> str:
+    text = unicodedata.normalize("NFKD", str(value)).encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z0-9]", "", text)
 
 
 def _historical_aliases(player_games: pd.DataFrame) -> dict[tuple[str, int, str], set[int]]:
@@ -83,9 +97,14 @@ def parse_historical_v3_substitutions(
             failures.append({"game_id": str(row.game_id), "action_id": int(row.actionId), "reason": "parse"})
             continue
         incoming_name, _ = match.groups()
-        candidates = aliases.get(
-            (str(row.game_id), int(row.teamId), _normalize_name(incoming_name)), set()
+        strict_key = (
+            str(row.game_id), int(row.teamId), _normalize_name_preserving_suffix(incoming_name)
         )
+        candidates = aliases.get(strict_key, set())
+        if not candidates:
+            candidates = aliases.get(
+                (str(row.game_id), int(row.teamId), _normalize_name(incoming_name)), set()
+            )
         if len(candidates) != 1:
             failures.append(
                 {
@@ -134,13 +153,21 @@ def _official_scores(
 
 
 def _v3_score_conserved(actions: pd.DataFrame, score: pd.Series) -> bool:
-    values = actions[["scoreHome", "scoreAway"]].apply(pd.to_numeric, errors="coerce").dropna(how="any")
-    if values.empty:
-        return False
-    if not values.diff().fillna(0).ge(0).all(axis=None):
-        return False
-    last = values.iloc[-1]
-    return bool(int(last["scoreHome"]) == int(score.home_score) and int(last["scoreAway"]) == int(score.away_score))
+    """Validate final points from scoring actions, not corrupted sparse score states."""
+    home_id, away_id = int(score.home_team_id), int(score.away_team_id)
+    totals = {home_id: 0, away_id: 0}
+    for row in actions.to_dict("records"):
+        points = _description_points(row)
+        if not points:
+            continue
+        team_id = int(row.get("teamId") or 0)
+        if team_id not in totals:
+            person_id = int(row.get("personId") or 0)
+            team_id = person_id if person_id in totals else 0
+        if team_id not in totals:
+            return False
+        totals[team_id] += points
+    return totals[home_id] == int(score.home_score) and totals[away_id] == int(score.away_score)
 
 
 def _lineup_state_valid(lineups: dict[int, set[int]], home_id: int, away_id: int) -> bool:

@@ -143,3 +143,51 @@ def test_historical_substitution_resolves_compound_surname_and_first_abbreviatio
 
     assert failures.empty
     assert pairs["in_player_id"].tolist() == [1, 2]
+
+
+def test_historical_substitution_uses_suffix_before_ambiguous_surname() -> None:
+    players = pd.DataFrame(
+        [
+            {"game_id": "0022200001", "team_id": 10, "player_id": 1, "player_name": "Grant Williams"},
+            {"game_id": "0022200001", "team_id": 10, "player_id": 2, "player_name": "Robert Williams III"},
+        ]
+    )
+    v3 = pd.DataFrame(
+        [{
+            "game_id": "0022200001", "actionId": 3, "actionNumber": 3, "period": 1,
+            "clock": "PT05M00.00S", "actionType": "Substitution",
+            "description": "SUB: Williams III FOR Other", "personId": 9, "teamId": 10,
+        }]
+    )
+
+    pairs, failures = parse_historical_v3_substitutions(v3, players)
+
+    assert failures.empty
+    assert pairs.loc[0, "in_player_id"] == 2
+
+
+def test_historical_builder_ignores_corrupt_sparse_cumulative_score(tmp_path) -> None:
+    root = tmp_path / "v3"
+    v3_path = root / "nbastatsv3" / "project_season=2023" / "regular.parquet"
+    v3_path.parent.mkdir(parents=True)
+    events = _v3_rows()
+    events.loc[events.index[-2], ["scoreHome", "scoreAway"]] = [100, 100]
+    events.loc[events.index[-1], ["scoreHome", "scoreAway"]] = [0, 0]
+    events.to_parquet(v3_path, index=False)
+    player_path = tmp_path / "players.parquet"
+    _players().to_parquet(player_path, index=False)
+    score_path = tmp_path / "scores.parquet"
+    pd.DataFrame(
+        [{
+            "project_season": 2023, "season_type": "regular", "game_id": "0022200001",
+            "home_team_id": 10, "away_team_id": 20, "home_score": 0, "away_score": 0,
+        }]
+    ).to_parquet(score_path, index=False)
+
+    report = build_historical_v3_lineup_candidate(
+        root, player_path, score_path,
+        tmp_path / "stints.parquet", tmp_path / "quality.parquet",
+        tmp_path / "report.json", tmp_path / "manifests", project_season=2023,
+    )
+
+    assert report["passed"]
