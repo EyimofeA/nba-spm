@@ -1,10 +1,20 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
 
 const read = (name) => JSON.parse(readFileSync(new URL(`../public/data/${name}`, import.meta.url)));
 const catalog = read("catalog.json");
-const client = readFileSync(new URL("../app/PlayerLab.tsx", import.meta.url), "utf8");
+
+/** Every client source concatenated, so these checks cover the whole app. */
+function sources(dir) {
+  let text = "";
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) text += sources(new URL(`${entry.name}/`, dir));
+    else if (/\.tsx?$/.test(entry.name)) text += readFileSync(new URL(entry.name, dir), "utf8");
+  }
+  return text;
+}
+const client = sources(new URL("../app/", import.meta.url));
 
 test("the catalog offers exactly the models the client can render", () => {
   assert.deepEqual(

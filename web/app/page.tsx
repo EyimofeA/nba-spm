@@ -1,5 +1,5 @@
-import { PlayerLab } from "./PlayerLab";
+import { App } from "./App";
 
 export default function Home() {
-  return <PlayerLab />;
+  return <App />;
 }
