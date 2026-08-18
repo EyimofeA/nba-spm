@@ -178,8 +178,10 @@ def _current_normal_rapm_rows(
 ) -> tuple[pd.DataFrame, str]:
     """Read the pinned current target run as Normal-RAPM-only annual rows.
 
-    The historical annual artifact remains the source of AIO and SPM.  This
-    adapter adds only later complete seasons from the canonical terminal-lineup,
+    The historical annual artifact remains the source of AIO, SPM, player name,
+    and team.  Its overlapping Normal RAPM and possession columns may be
+    replaced only after the caller establishes an exact player-season match.
+    Later complete seasons are added from the canonical terminal-lineup,
     zero-prior target run.
     """
     manifest_path = run_path / "run.json"
@@ -212,9 +214,6 @@ def _current_normal_rapm_rows(
     missing = required.difference(targets.columns)
     if missing:
         raise ValueError(f"Current Normal RAPM targets are missing columns: {sorted(missing)}")
-    targets = targets.loc[~targets["Season"].isin(published_seasons)].copy()
-    if targets.empty:
-        return pd.DataFrame(), str(manifest.get("run_id", run_path.name))
     if targets.duplicated(["PLAYER_ID", "Season"]).any():
         raise ValueError("Current Normal RAPM targets have duplicate player-seasons.")
     numeric = ["target_offense", "target_defense", "target_net", "Poss_Off", "Poss_Def"]
@@ -227,7 +226,21 @@ def _current_normal_rapm_rows(
     ):
         raise ValueError("Current Normal RAPM targets violate offense + defense = net.")
 
-    target_seasons = sorted(int(value) for value in targets["Season"].unique())
+    new_targets = targets.loc[~targets["Season"].isin(published_seasons)].copy()
+    if new_targets.empty:
+        rows = targets.rename(
+            columns={
+                "target_offense": "normal_rapm_offense",
+                "target_defense": "normal_rapm_defense",
+                "target_net": "normal_rapm_net",
+            }
+        )[[
+            "PLAYER_ID", "Season", "Poss_Off", "Poss_Def",
+            "normal_rapm_offense", "normal_rapm_defense", "normal_rapm_net",
+        ]]
+        return rows, str(manifest.get("run_id", run_path.name))
+
+    target_seasons = sorted(int(value) for value in new_targets["Season"].unique())
     sheet_frames = []
     for season in target_seasons:
         path = player_sheets_dir / f"{season}.csv"
@@ -274,18 +287,28 @@ def _current_normal_rapm_rows(
 
     metadata = pd.concat([game_metadata, sheet_metadata], ignore_index=True)
     metadata = metadata.drop_duplicates(["PLAYER_ID", "Season"], keep="last")
-    targets = targets.merge(
+    new_targets = new_targets.merge(
         metadata, on=["PLAYER_ID", "Season"], how="left", validate="one_to_one"
     )
-    if targets[["PLAYER_NAME", "TEAM_ABBREVIATION"]].isna().any().any():
-        missing_rows = targets.loc[
-            targets[["PLAYER_NAME", "TEAM_ABBREVIATION"]].isna().any(axis=1),
+    if new_targets[["PLAYER_NAME", "TEAM_ABBREVIATION"]].isna().any().any():
+        missing_rows = new_targets.loc[
+            new_targets[["PLAYER_NAME", "TEAM_ABBREVIATION"]].isna().any(axis=1),
             ["PLAYER_ID", "Season"],
         ]
         raise ValueError(
             f"Current Normal RAPM metadata is incomplete for {len(missing_rows)} player-seasons."
         )
-    rows = targets.rename(
+    overlap_rows = targets.loc[targets["Season"].isin(published_seasons)].rename(
+        columns={
+            "target_offense": "normal_rapm_offense",
+            "target_defense": "normal_rapm_defense",
+            "target_net": "normal_rapm_net",
+        }
+    )[[
+        "PLAYER_ID", "Season", "Poss_Off", "Poss_Def",
+        "normal_rapm_offense", "normal_rapm_defense", "normal_rapm_net",
+    ]]
+    new_rows = new_targets.rename(
         columns={
             "target_offense": "normal_rapm_offense",
             "target_defense": "normal_rapm_defense",
@@ -295,6 +318,7 @@ def _current_normal_rapm_rows(
         "PLAYER_ID", "PLAYER_NAME", "Season", "TEAM_ABBREVIATION", "Poss_Off", "Poss_Def",
         "normal_rapm_offense", "normal_rapm_defense", "normal_rapm_net",
     ]]
+    rows = pd.concat([overlap_rows, new_rows], ignore_index=True, sort=False)
     return rows, str(manifest.get("run_id", run_path.name))
 
 
@@ -502,7 +526,7 @@ def build_web_snapshot(
     project_root = Path(__file__).resolve().parents[3]
     sheets = Path(player_sheets_dir or project_root / "data/raw/playersheets/year_totals")
     current_run_id: str | None = None
-    current_rows = pd.DataFrame()
+    current_rows = pd.DataFrame(columns=["PLAYER_ID", "Season"])
     if current_normal_rapm_run_path is not None:
         current_rows, current_run_id = _current_normal_rapm_rows(
             Path(current_normal_rapm_run_path),
@@ -510,7 +534,37 @@ def build_web_snapshot(
             Path(current_player_games_path) if current_player_games_path else None,
             historical_seasons,
         )
-    annual = pd.concat([store.annual, current_rows], ignore_index=True, sort=False)
+    historical = store.annual.copy()
+    overlap = current_rows.loc[current_rows["Season"].isin(historical_seasons)].copy()
+    if not overlap.empty:
+        overlap_seasons = sorted(int(value) for value in overlap["Season"].unique())
+        historical_overlap = historical.loc[historical["Season"].isin(overlap_seasons)]
+        current_keys = set(zip(overlap["PLAYER_ID"].astype(int), overlap["Season"].astype(int)))
+        historical_keys = set(zip(
+            historical_overlap["PLAYER_ID"].astype(int), historical_overlap["Season"].astype(int)
+        ))
+        if current_keys != historical_keys:
+            raise ValueError(
+                "Current Normal RAPM overlap keys do not exactly match the historical annual panel."
+            )
+        override_columns = [
+            "normal_rapm_offense", "normal_rapm_defense", "normal_rapm_net", "Poss_Off", "Poss_Def",
+        ]
+        if overlap[override_columns].isna().any().any():
+            raise ValueError("Current Normal RAPM overlap has missing override values.")
+        overrides = overlap.set_index(["PLAYER_ID", "Season"])[override_columns]
+        overlap_mask = historical["Season"].isin(overlap_seasons)
+        historical_overlap_index = pd.MultiIndex.from_frame(
+            historical.loc[overlap_mask, ["PLAYER_ID", "Season"]]
+        )
+        for column in override_columns:
+            # Do not touch historical identity, SPM, or AIO fields.  This is a
+            # narrow replacement of the validated current RAPM observation.
+            historical.loc[overlap_mask, column] = overrides[column].reindex(
+                historical_overlap_index
+            ).to_numpy()
+    new_current_rows = current_rows.loc[~current_rows["Season"].isin(historical_seasons)]
+    annual = pd.concat([historical, new_current_rows], ignore_index=True, sort=False)
     if annual.duplicated(["PLAYER_ID", "Season"]).any():
         raise ValueError("Web snapshot annual panel has duplicate player-seasons.")
     seasons = sorted(int(value) for value in annual["Season"].unique())

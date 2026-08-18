@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from nba_impact.api.web_snapshot import (
     EXTERNAL_BENCHMARK,
@@ -30,6 +31,7 @@ def _artifacts(tmp_path: Path) -> tuple[Path, Path, Path]:
             "PLAYER_ID": [1, 2],
             "PLAYER_NAME": ["Alpha Guard", "Beta Wing"],
             "Season": [2024, 2024],
+            "TEAM_ABBREVIATION": ["HIST", "HST2"],
             "Poss_Off": [2000, 900],
             "Poss_Def": [1990, 910],
             "aio_net": [5.0, 6.0],
@@ -213,13 +215,13 @@ def test_snapshot_extends_only_normal_rapm_from_the_pinned_current_target_run(
     current_dir.mkdir()
     pd.DataFrame(
         {
-            "PLAYER_ID": [1, 3, 1, 3],
-            "Season": [2025, 2025, 2026, 2026],
-            "target_offense": [2.0, 1.0, 3.0, 2.0],
-            "target_defense": [1.0, 0.5, 1.5, 1.0],
-            "target_net": [3.0, 1.5, 4.5, 3.0],
-            "Poss_Off": [2100, 800, 2200, 900],
-            "Poss_Def": [2090, 790, 2190, 890],
+            "PLAYER_ID": [1, 2, 1, 3, 1, 3],
+            "Season": [2024, 2024, 2025, 2025, 2026, 2026],
+            "target_offense": [8.0, 7.0, 2.0, 1.0, 3.0, 2.0],
+            "target_defense": [2.0, 1.0, 1.0, 0.5, 1.5, 1.0],
+            "target_net": [10.0, 8.0, 3.0, 1.5, 4.5, 3.0],
+            "Poss_Off": [4000, 3900, 2100, 800, 2200, 900],
+            "Poss_Def": [3990, 3890, 2090, 790, 2190, 890],
         }
     ).to_parquet(current_dir / "targets.parquet", index=False)
     (current_dir / "run.json").write_text(
@@ -262,6 +264,15 @@ def test_snapshot_extends_only_normal_rapm_from_the_pinned_current_target_run(
     assert availability == {"aio": [2024], "rapm": [2024, 2025, 2026], "spm": [2024]}
     assert catalog["lineage"]["current_normal_rapm_run_id"] == "current_targets_test"
 
+    overlap_leaderboard = _read(output, "leaderboard-2024.json")
+    overlap_row = next(row for row in overlap_leaderboard if row["PLAYER_ID"] == 1)
+    assert overlap_row["normal_rapm_net"] == 10.0
+    assert (overlap_row["Poss_Off"], overlap_row["Poss_Def"]) == (4000, 3990)
+    assert overlap_row["aio_net"] == 5.0
+    assert overlap_row["spm_net"] == 4.5
+    assert overlap_row["PLAYER_NAME"] == "Alpha Guard"
+    assert overlap_row["TEAM_ABBREVIATION"] == "HIST"
+
     current_leaderboard = _read(output, "leaderboard-2026.json")
     current_row = next(row for row in current_leaderboard if row["PLAYER_ID"] == 3)
     assert current_row["normal_rapm_net"] == 3.0
@@ -271,6 +282,34 @@ def test_snapshot_extends_only_normal_rapm_from_the_pinned_current_target_run(
     assert [row["Season"] for row in current_player["annual"]] == [2025, 2026]
     assert all("normal_rapm_net" in row for row in current_player["annual"])
     assert all("aio_net" not in row and "spm_net" not in row for row in current_player["annual"])
+
+    targets = pd.read_parquet(current_dir / "targets.parquet")
+    targets.loc[
+        ~((targets["PLAYER_ID"] == 2) & (targets["Season"] == 2024))
+    ].to_parquet(current_dir / "targets.parquet", index=False)
+    with pytest.raises(ValueError, match="overlap keys do not exactly match"):
+        build_web_snapshot(
+            config_path,
+            artifact_root,
+            aging_path,
+            tmp_path / "web-key-mismatch",
+            player_sheets_dir=sheets,
+            current_normal_rapm_run_path=current_dir,
+            shards=2,
+        )
+
+    targets.loc[(targets["PLAYER_ID"] == 1) & (targets["Season"] == 2024), "target_net"] = float("nan")
+    targets.to_parquet(current_dir / "targets.parquet", index=False)
+    with pytest.raises(ValueError, match="non-finite values"):
+        build_web_snapshot(
+            config_path,
+            artifact_root,
+            aging_path,
+            tmp_path / "web-missing-value",
+            player_sheets_dir=sheets,
+            current_normal_rapm_run_path=current_dir,
+            shards=2,
+        )
 
 
 def test_snapshot_is_raw_role_only_and_has_no_win_probability(tmp_path: Path) -> None:
