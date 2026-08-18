@@ -2506,3 +2506,26 @@ zero rejects, duplicate keys, or invalid ten-player segments.
 eligibility rule. This is not fuzzy matching and does not relax the five-second
 minute reconciliation gate. Retain zero-minute players in the underlying
 official player-game ledger for provenance.
+# 2026-08-18 — Complete official-box historical rebuild and matched source audit
+
+**Question.** Does a complete official 2017–23 starter/minute cache improve
+historical V3 RAPM readiness?
+
+**Method.** Downloaded 8,871 `BoxScoreTraditionalV3` JSON responses with
+resumable retries, atomic writes, and hash validation; rebuilt official-only
+player-games, strict V3 `actionId` lineups, and possession attachments; fit
+seven frozen terminal-lineup, zero-prior RAPM models; then compared each to the
+legacy source on the identical official-margin holdout games.
+
+**Result.** All 8,871 official boxes passed. The rebuild emitted 7,250 regular
+season games, 1,448,146 possessions, and 1,756,230 lineup segments, with zero
+attachment rejects. Net-rating Pearson agreement with legacy was .971–.981 and
+RMSE .299–.355 points per 100. The V3 parser reconstructed official final
+margins better in all seven seasons (mean 0.816 lower RMSE), but V3 RAPM won
+held-out prediction RMSE in only two seasons: mean delta was +.080 RMSE,
+.050 MAE, and −.012 correlation versus legacy.
+
+**Decision.** The official source spine is complete and is a compatibility
+proof, not a public-source replacement. Keep V3 historical RAPM research-only;
+legacy remains the public historical reference because the frozen prediction
+gate did not pass.

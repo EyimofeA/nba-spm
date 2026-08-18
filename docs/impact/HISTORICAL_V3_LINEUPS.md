@@ -80,37 +80,35 @@ segments with zero rejects, invalid ten-player segments, or duplicate keys.
 The same frozen contract was run for every project season. Project season 2017
 uses the separately validated `official_box_first_five_v1` starter fallback:
 first-five response order agreed with 10,073 independently marked later team
-records and is permitted only for 2016--17 payloads. Seasons 2017--23 emitted
-7,136 games, 1,425,380 possessions, 1,728,895 ordinal lineup segments, and
-3,289,566 owned actions. The attachment stage rejected zero games that had
+records and is permitted only for 2016--17 payloads. The completed 8,871-game
+official box-score cache then supported an official-only rebuild. Seasons
+2017--23 emitted 7,250 games, 1,448,146 possessions, 1,756,230 ordinal lineup
+segments, and 3,342,158 owned actions. The attachment stage rejected zero games that had
 already passed both the possession and lineup contracts.
 
 | Season | Lineup pass | Quarantine | Possessions | Segments | RAPM run |
 |---:|---:|---:|---:|---:|---|
-| 2017 | 941 | 289 | 183,171 | 222,326 | `current_single_season_rapm_targets_v1_c4512aa5c3` |
-| 2018 | 1,014 | 216 | 199,696 | 241,438 | `current_single_season_rapm_targets_v1_64cdcaec78` |
-| 2019 | 1,139 | 91 | 230,514 | 279,077 | `current_single_season_rapm_targets_v1_bd1209bc26` |
-| 2020 | 949 | 110 | 192,896 | 234,941 | `current_single_season_rapm_targets_v1_80ad208f37` |
-| 2021 | 892 | 188 | 179,181 | 216,916 | `current_single_season_rapm_targets_v1_10118df750` |
-| 2022 | 1,077 | 153 | 214,138 | 260,586 | `current_single_season_rapm_targets_v1_c7b600f15e` |
-| 2023 | 1,124 | 106 | 225,784 | 273,611 | `current_single_season_rapm_targets_v1_82f653ce02` |
+| 2017 | 996 | 234 | 194,364 | 235,649 | `current_single_season_rapm_targets_v1_c498e38e09` |
+| 2018 | 1,051 | 179 | 206,981 | 250,166 | `current_single_season_rapm_targets_v1_54b97074d0` |
+| 2019 | 1,135 | 95 | 229,686 | 278,065 | `current_single_season_rapm_targets_v1_31aa665391` |
+| 2020 | 949 | 110 | 192,877 | 234,920 | `current_single_season_rapm_targets_v1_ba501c0ecd` |
+| 2021 | 892 | 188 | 179,181 | 216,916 | `current_single_season_rapm_targets_v1_f4655e5d66` |
+| 2022 | 1,084 | 146 | 215,543 | 262,288 | `current_single_season_rapm_targets_v1_f72bc5e5e4` |
+| 2023 | 1,143 | 87 | 229,514 | 278,226 | `current_single_season_rapm_targets_v1_13d15a0a60` |
 
 The seven RAPM runs use one regular season, terminal lineups, a zero prior, and
 the frozen `3000/3000/300` penalties. They are isolated research training-label
 artifacts. The matched-game comparison passed a narrow compatibility check but
-did not show predictive improvement. The artifacts remain research-only until
-the official-preferred player-game rebuild reproduces the same gates.
+did not show predictive improvement. The artifacts remain research-only.
 
 ## Next gate
 
-1. Complete the immutable official box cache for all 2017--2023 games.
-2. Rebuild the separate historical player-game table using official rows only
-   where they pass; verify the 2018--23 accepted-game set is unchanged.
-3. Retain the 2017 first-five fallback as a versioned exception; do not infer
+1. Retain the 2017 first-five fallback as a versioned exception; do not infer
    starters from minutes or extend the exception to another season.
-4. Re-run the seven matched-source comparisons after the official-preferred
-   rebuild and require the accepted-game and metric changes to be explained.
-5. Keep the V3 targets research-only unless that reproducibility check passes.
+2. Explain the remaining season-level quarantine sets before investigating any
+   coverage expansion.
+3. Keep the V3 targets research-only unless a separately preregistered
+   predictive promotion gate passes.
 
 Historical playoffs remain excluded from the first fit because the frozen
 possession-owner rules miss the 2024 playoff count gate in two games.

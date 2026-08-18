@@ -91,14 +91,14 @@ builder fits each season independently with the same `3000/3000/300` penalties.
 The current reference run `rapm_v0_01b5084f0a` covers the validated current
 2024–26 scope. The historical legacy cache supports research-only annual
 targets through 2024. The historical V3 program now has strict season-level
-research candidates for 2017--23. The frozen build emits 7,136 regular-season
-games, 1,425,380 possessions, and 1,728,895 ordinal lineup segments. Season
-coverage ranges from 892 to 1,139 accepted games. All failed games remain in
-the quality ledger. A matched-source comparison gives net-rating Pearson
-correlations of 0.971--0.981 versus the legacy terminal-lineup source, but the
-V3 candidate improves held-out game RMSE in only one of seven seasons. Keep it
-research-only until the immutable official player-game cache is complete and
-the official-preferred rebuild reproduces the frozen gates.
+research candidates for 2017--23. The official-preferred build emits 7,250
+regular-season games, 1,448,146 possessions, and 1,756,230 ordinal lineup
+segments. Season coverage ranges from 892 to 1,143 accepted games. All failed
+games remain in the quality ledger. A matched-source comparison gives net-rating
+Pearson correlations of 0.971--0.981 versus the legacy terminal-lineup source,
+but the V3 candidate improves held-out game RMSE in only two of seven seasons.
+Keep it research-only; the official box-score cache and official-preferred
+reproducibility gate are complete, but no predictive promotion gate passed.
 
 ## 3. Annual SPM: exact target, windows, learners, and features
 
@@ -143,9 +143,11 @@ The exact lists are in Appendix A.
 
 ### Stabilization and feature construction
 
-The three-season statistical feature builder aggregates natural counts first,
-then computes rates. The expanded feature builder uses empirical-Bayes rate
-shrinkage:
+The audited feature artifact for this SPM run uses one season
+(`pooled_window_seasons = 1`), not three seasons. The code can build pooled
+windows for research variants, but that is not the pinned public artifact. It
+aggregates natural counts first, then computes rates. The expanded feature
+builder uses empirical-Bayes rate shrinkage:
 
 ```text
 rate_EB = (player_numerator + k * league_rate)

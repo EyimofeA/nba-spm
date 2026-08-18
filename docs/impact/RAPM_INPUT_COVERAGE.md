@@ -20,7 +20,7 @@ partition passes. It does not run a model.
 
 | Project season | Canonical RAPM-ready games | Status |
 |---|---:|---|
-| 2017--2023 | 7,136 / 8,289 regular-season games in separate strict V3 research candidates | Possession ownership, action order, terminal ordinal lineups, official score, and player minutes pass. The independent strict legacy migration remains available for 3,343 regular-season games. The V3 candidates are not canonical or public. |
+| 2017--2023 | 7,250 / 8,289 regular-season games in separate strict V3 research candidates | Possession ownership, action order, terminal ordinal lineups, official score, and player minutes pass. The completed 8,871-game official box-score cache is the starter/minute source. The independent strict legacy migration remains available for 3,343 regular-season games. The V3 candidates are not canonical or public. |
 | 2024 regular | 1,229 / 1,230 | One game remains quarantined after Gabriel and V3 repairs. |
 | 2024 playoffs | 82 / 82 | Passes. |
 | 2025 regular | 1,227 / 1,230 | Three games remain quarantined after V3 repair. |
@@ -167,13 +167,13 @@ matches in 93.6% and 91.9% of games.
 The separate all-type 2017--2023 possession build accepts 8,863 games and
 1,768,472 possession rows. Eight 2017 regular-season games fail exact team-
 score conservation and remain rejected. The strict regular-season lineup
-attachment then accepts 7,136 games, 1,425,380 possessions, and 1,728,895
+attachment then accepts 7,250 games, 1,448,146 possessions, and 1,756,230
 ordinal lineup segments. Every accepted action maps once, each segment has ten
 unique players, and official player minutes reconcile within five seconds.
 
 The matched legacy comparison uses identical regular-season games, one
 persisted chronological split, and official final margins. Net-rating Pearson
-correlation is 0.971--0.981; it remains 0.970--0.982 after requiring 2,000
+correlation is 0.971--0.981; it remains 0.969--0.982 after requiring 2,000
 possessions per side in both sources. V3 reconstructs official margins more
 accurately, but its RAPM has lower held-out prediction RMSE in only two of seven
 seasons. Keep it as a validated research input, not exact ground truth or a

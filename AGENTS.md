@@ -236,10 +236,10 @@ current-event tables.
 The separate historical V3 possession state machine is documented in
 `docs/impact/HISTORICAL_V3_POSSESSIONS.md`. Its frozen 2024 development and
 2025 validation gates pass. Strict ordinal lineups and official player-minute
-gates now emit 7,136 regular-season games for 2017--23. Seven isolated RAPM
-fits and the matched legacy comparison are complete. The source passes a narrow
-compatibility check but does not improve held-out prediction, so keep it
-research-only while the full official player-game cache finishes. Order V3
+gates now emit 7,250 regular-season games for 2017--23 from a complete
+8,871-game official box-score cache. Seven isolated RAPM fits and the matched
+legacy comparison are complete. The source passes a narrow compatibility check
+but does not improve held-out prediction, so keep it research-only. Order V3
 events by `actionId`; use `actionNumber` only as a guarded cross-source
 validation key.
 
