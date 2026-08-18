@@ -37,6 +37,10 @@ from nba_impact.data.official_boxscore import ingest_official_boxscores
 from nba_impact.data.official_game_scores import build_official_game_scores
 from nba_impact.data.player_game import build_player_games
 from nba_impact.data.historical_player_games import build_historical_espn_player_games
+from nba_impact.data.historical_v3_possessions import (
+    build_historical_v3_possession_candidates,
+    validate_v3_owners_against_cdn,
+)
 from nba_impact.data.playtype_features import build_playtype_features
 from nba_impact.data.player_skill_features import build_player_skill_features
 from nba_impact.data.possession_context import build_possession_start_context
@@ -454,6 +458,42 @@ def command_build_historical_espn_player_games(args: argparse.Namespace) -> int:
     register_snapshot(args.registry, snapshot)
     print(json.dumps(snapshot, indent=2))
     return 0
+
+
+def command_validate_v3_possession_owners(args: argparse.Namespace) -> int:
+    partition_name = f"{args.season_type}.parquet"
+    v3_path = args.v3_root / f"project_season={args.project_season}" / partition_name
+    cdn_path = args.cdn_root / f"season={args.project_season - 1}" / partition_name
+    metrics = validate_v3_owners_against_cdn(
+        pd.read_parquet(v3_path), pd.read_parquet(cdn_path)
+    )
+    payload = {
+        "project_season": args.project_season,
+        "season_type": args.season_type,
+        "v3_path": str(v3_path.resolve()),
+        "cdn_path": str(cdn_path.resolve()),
+        "metrics": metrics,
+    }
+    if args.output is not None:
+        write_json_atomic(payload, args.output)
+    print(json.dumps(payload, indent=2))
+    return 0 if metrics["passed"] else 2
+
+
+def command_build_historical_v3_possessions(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_historical_v3_possession_candidates(
+        args.v3_root,
+        args.official_scores,
+        args.output_root,
+        args.quality_output,
+        args.manifest_dir,
+        seasons=tuple(args.seasons),
+        season_types=tuple(args.season_types),
+    )
+    register_snapshot(args.registry, snapshot)
+    print(json.dumps(snapshot, indent=2))
+    return 0 if snapshot["passed"] else 2
 
 
 def command_build_identity_dimensions(args: argparse.Namespace) -> int:
@@ -2096,6 +2136,54 @@ def build_parser() -> argparse.ArgumentParser:
     )
     scoring_events.add_argument("--allow-missing-reference", action="store_true")
     scoring_events.set_defaults(func=command_build_scoring_events)
+
+    v3_owner_validation = subparsers.add_parser(
+        "validate-v3-possession-owners",
+        help="Validate frozen V3 possession-owner inference against later CDN labels.",
+    )
+    v3_owner_validation.add_argument("--project-season", type=int, required=True)
+    v3_owner_validation.add_argument(
+        "--season-type", choices=("regular", "playoffs"), default="regular"
+    )
+    v3_owner_validation.add_argument(
+        "--v3-root", type=Path,
+        default=BRONZE_ROOT / "nba_data_archive_scoring" / "revision=dfa8fa43" / "nbastatsv3",
+    )
+    v3_owner_validation.add_argument(
+        "--cdn-root", type=Path, default=BRONZE_ROOT / "nba_data_archive" / "cdnnba"
+    )
+    v3_owner_validation.add_argument("--output", type=Path)
+    v3_owner_validation.set_defaults(func=command_validate_v3_possession_owners)
+
+    historical_v3_possessions = subparsers.add_parser(
+        "build-historical-v3-possessions",
+        help="Build separate score-conserved historical V3 possession candidates.",
+    )
+    historical_v3_possessions.add_argument(
+        "--v3-root", type=Path,
+        default=BRONZE_ROOT / "nba_data_archive_scoring" / "revision=dfa8fa43" / "nbastatsv3",
+    )
+    historical_v3_possessions.add_argument(
+        "--official-scores", type=Path,
+        default=BRONZE_ROOT / "official_game_scores" / "official_game_scores.parquet",
+    )
+    historical_v3_possessions.add_argument(
+        "--output-root", type=Path, default=SILVER_ROOT / "historical_v3_possessions"
+    )
+    historical_v3_possessions.add_argument(
+        "--quality-output", type=Path,
+        default=SILVER_ROOT / "historical_v3_possession_quality.parquet",
+    )
+    historical_v3_possessions.add_argument(
+        "--seasons", type=int, nargs="+", default=list(range(2017, 2024))
+    )
+    historical_v3_possessions.add_argument(
+        "--season-types", nargs="+", choices=("regular", "playoffs"),
+        default=["regular", "playoffs"],
+    )
+    historical_v3_possessions.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    historical_v3_possessions.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    historical_v3_possessions.set_defaults(func=command_build_historical_v3_possessions)
 
     official_scores = subparsers.add_parser(
         "download-official-game-scores",
