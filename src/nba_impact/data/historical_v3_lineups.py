@@ -42,7 +42,10 @@ def _name_aliases(name: object) -> set[str]:
         return set()
     aliases = {_normalize_name(text), _normalize_name(tokens[-1])}
     if len(tokens) >= 2:
+        # V3 often writes only a compound surname in substitution text.
+        aliases.add(_normalize_name(" ".join(tokens[1:])))
         aliases.add(_normalize_name(f"{tokens[0][0]} {tokens[-1]}"))
+        aliases.add(_normalize_name(f"{tokens[0][:3]} {tokens[-1]}"))
         aliases.add(_normalize_name(f"{tokens[0]} {tokens[-1]}"))
     if len(tokens) >= 2 and tokens[-1].casefold().strip(".") in _SUFFIXES:
         aliases.add(_normalize_name(" ".join(tokens[-2:])))

@@ -114,3 +114,32 @@ def test_historical_substitution_name_must_be_unique_within_the_team_roster() ->
 
     assert pairs.empty
     assert failures.loc[0, "reason"] == "incoming_alias_matches_2"
+
+
+def test_historical_substitution_resolves_compound_surname_and_first_abbreviation() -> None:
+    players = pd.DataFrame(
+        [
+            {"game_id": "0022200001", "team_id": 10, "player_id": 1, "player_name": "Juan Toscano-Anderson"},
+            {"game_id": "0022200001", "team_id": 10, "player_id": 2, "player_name": "Jalen Williams"},
+            {"game_id": "0022200001", "team_id": 10, "player_id": 3, "player_name": "Jaylin Williams"},
+        ]
+    )
+    v3 = pd.DataFrame(
+        [
+            {
+                "game_id": "0022200001", "actionId": 3, "actionNumber": 3, "period": 1,
+                "clock": "PT05M00.00S", "actionType": "Substitution",
+                "description": "SUB: Toscano-Anderson FOR Other", "personId": 9, "teamId": 10,
+            },
+            {
+                "game_id": "0022200001", "actionId": 4, "actionNumber": 4, "period": 1,
+                "clock": "PT04M00.00S", "actionType": "Substitution",
+                "description": "SUB: Jal. Williams FOR Other", "personId": 8, "teamId": 10,
+            },
+        ]
+    )
+
+    pairs, failures = parse_historical_v3_substitutions(v3, players)
+
+    assert failures.empty
+    assert pairs["in_player_id"].tolist() == [1, 2]
