@@ -234,7 +234,9 @@ def _build_game_stints(
         if end_time < start_time:
             errors.add("negative_elapsed_stint")
             return
-        if end_action <= start_action or end_time == start_time:
+        # A same-clock substitution can still own one or more V3 actions.
+        # Keep its ordinal interval even when it contributes zero seconds.
+        if end_action <= start_action:
             return
         if not _lineup_state_valid(lineups, home_id, away_id):
             errors.add("invalid_ten_player_state")
@@ -285,10 +287,9 @@ def _build_game_stints(
     end_seconds = 2880.0 + max(max_period - 4, 0) * 300.0
     append(int(actions["actionId"].max()) + 1, end_seconds)
 
-    # Event coverage is a state audit, not a duration-stint count. Multiple
-    # substitutions can occur at the same clock, so a valid action-level state
-    # can have zero elapsed duration and must not be emitted as a zero-length
-    # stint. Apply each action's transition first, then audit its lineup.
+    # Event coverage is an action-state audit. Multiple substitutions can occur
+    # at the same clock, so a valid action interval can have zero elapsed
+    # duration. Apply each action's transition first, then audit its lineup.
     coverage_lineups = {home_id: set(starters[home_id]), away_id: set(starters[away_id])}
     covered = 0
     for action in actions.itertuples(index=False):

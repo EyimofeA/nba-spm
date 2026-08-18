@@ -27,6 +27,9 @@ from nba_impact.data.identity import build_identity_dimensions
 from nba_impact.data.lineups import build_lineup_stints
 from nba_impact.data.live_playoff_completion import build_live_playoff_completion
 from nba_impact.data.historical_v3_lineups import build_historical_v3_lineup_candidate
+from nba_impact.data.historical_v3_possession_lineups import (
+    build_historical_v3_possession_lineup_candidate,
+)
 from nba_impact.data.v3_cdn_lineup_repair import build_v3_cdn_lineup_repair_candidate
 from nba_impact.data.matchup_defense_features import build_matchup_defense_features
 from nba_impact.data.manifest import (
@@ -702,6 +705,37 @@ def command_build_historical_v3_lineups(args: argparse.Namespace) -> int:
             indent=2,
         )
     )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_historical_v3_possession_lineups(args: argparse.Namespace) -> int:
+    """Attach separately validated V3 lineups to historical possession candidates."""
+    ensure_owned_dirs()
+    snapshot = build_historical_v3_possession_lineup_candidate(
+        args.v3_root,
+        args.possessions,
+        args.possession_quality,
+        args.lineup_stints,
+        args.lineup_quality,
+        args.output,
+        args.segments_output,
+        args.assigned_actions_output,
+        args.quality_output,
+        args.report_output,
+        args.manifest_dir,
+        project_season=args.project_season,
+        season_type=args.season_type,
+    )
+    register_snapshot(args.registry, snapshot)
+    print(json.dumps({
+        "snapshot_id": snapshot["snapshot_id"],
+        "input_double_passed_games": snapshot["double_passed_input_game_count"],
+        "emitted_games": snapshot["emitted_game_count"],
+        "possessions": snapshot["emitted_possession_count"],
+        "segments": snapshot["emitted_segment_count"],
+        "owned_actions": snapshot["emitted_owned_action_count"],
+        "report": str(args.report_output),
+    }, indent=2))
     return 0 if snapshot["passed"] else 2
 
 
@@ -2570,6 +2604,56 @@ def build_parser() -> argparse.ArgumentParser:
     historical_v3_lineups.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
     historical_v3_lineups.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     historical_v3_lineups.set_defaults(func=command_build_historical_v3_lineups)
+
+    historical_v3_possession_lineups = subparsers.add_parser(
+        "build-historical-v3-possession-lineups",
+        help="Attach strict V3 actionId lineups to separate historical possession candidates.",
+    )
+    historical_v3_possession_lineups.add_argument(
+        "--v3-root", type=Path,
+        default=BRONZE_ROOT / "nba_data_archive_scoring" / "revision=dfa8fa43",
+    )
+    historical_v3_possession_lineups.add_argument(
+        "--possessions", type=Path,
+        default=SILVER_ROOT / "historical_v3_possessions" / "project_season=2023" / "regular.parquet",
+    )
+    historical_v3_possession_lineups.add_argument(
+        "--possession-quality", type=Path,
+        default=SILVER_ROOT / "historical_v3_possession_quality.parquet",
+    )
+    historical_v3_possession_lineups.add_argument(
+        "--lineup-stints", type=Path,
+        default=SILVER_ROOT / "candidates" / "historical_v3_lineup_stints.parquet",
+    )
+    historical_v3_possession_lineups.add_argument(
+        "--lineup-quality", type=Path,
+        default=SILVER_ROOT / "candidates" / "historical_v3_lineup_quality.parquet",
+    )
+    historical_v3_possession_lineups.add_argument("--project-season", type=int, required=True)
+    historical_v3_possession_lineups.add_argument("--season-type", choices=("regular", "playoffs"), default="regular")
+    historical_v3_possession_lineups.add_argument(
+        "--output", type=Path,
+        default=SILVER_ROOT / "candidates" / "historical_v3_possessions_with_lineups.parquet",
+    )
+    historical_v3_possession_lineups.add_argument(
+        "--segments-output", type=Path,
+        default=SILVER_ROOT / "candidates" / "historical_v3_possession_lineup_segments.parquet",
+    )
+    historical_v3_possession_lineups.add_argument(
+        "--assigned-actions-output", type=Path,
+        default=SILVER_ROOT / "candidates" / "historical_v3_assigned_actions.parquet",
+    )
+    historical_v3_possession_lineups.add_argument(
+        "--quality-output", type=Path,
+        default=SILVER_ROOT / "candidates" / "historical_v3_possession_lineup_quality.parquet",
+    )
+    historical_v3_possession_lineups.add_argument(
+        "--report-output", type=Path,
+        default=SILVER_ROOT / "candidates" / "historical_v3_possession_lineup_report.json",
+    )
+    historical_v3_possession_lineups.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    historical_v3_possession_lineups.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    historical_v3_possession_lineups.set_defaults(func=command_build_historical_v3_possession_lineups)
 
     possessions = subparsers.add_parser(
         "build-possessions",

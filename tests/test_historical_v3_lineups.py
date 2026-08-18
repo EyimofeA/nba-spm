@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 
 from nba_impact.data.historical_v3_lineups import (
+    _build_game_stints,
     build_historical_v3_lineup_candidate,
     parse_historical_v3_substitutions,
 )
@@ -191,3 +192,42 @@ def test_historical_builder_ignores_corrupt_sparse_cumulative_score(tmp_path) ->
     )
 
     assert report["passed"]
+
+
+def test_historical_builder_keeps_same_clock_action_interval() -> None:
+    players = _players()
+    replacements = pd.DataFrame(
+        [
+            {"game_id": "0022200001", "season_end": 2023, "season_label": "2022-23", "season_type": "regular", "game_date": "2022-10-18", "team_id": 10, "player_id": 1006, "player_name": "Home Player6", "starter": False, "minutes_seconds": 2760.0},
+            {"game_id": "0022200001", "season_end": 2023, "season_label": "2022-23", "season_type": "regular", "game_date": "2022-10-18", "team_id": 20, "player_id": 2006, "player_name": "Away Player6", "starter": False, "minutes_seconds": 2760.0},
+        ]
+    )
+    players.loc[players["player_id"].eq(1001) | players["player_id"].eq(2001), "minutes_seconds"] = 120.0
+    actions = pd.DataFrame(
+        [
+            {"game_id": "0022200001", "actionId": 1, "actionNumber": 1, "period": 1, "clock": "PT12M00.00S", "actionType": "period", "description": "start", "personId": 0, "teamId": 0, "scoreHome": 0, "scoreAway": 0},
+            {"game_id": "0022200001", "actionId": 2, "actionNumber": 2, "period": 1, "clock": "PT10M00.00S", "actionType": "substitution", "description": "SUB", "personId": 1001, "teamId": 10, "scoreHome": 0, "scoreAway": 0},
+            {"game_id": "0022200001", "actionId": 3, "actionNumber": 3, "period": 1, "clock": "PT10M00.00S", "actionType": "substitution", "description": "SUB", "personId": 2001, "teamId": 20, "scoreHome": 0, "scoreAway": 0},
+            *[
+                {"game_id": "0022200001", "actionId": action_id, "actionNumber": action_id, "period": period, "clock": "PT12M00.00S", "actionType": "period", "description": "start", "personId": 0, "teamId": 0, "scoreHome": 0, "scoreAway": 0}
+                for action_id, period in ((4, 2), (5, 3), (6, 4))
+            ],
+        ]
+    )
+    pairs = pd.DataFrame(
+        [
+            {"game_id": "0022200001", "v3_action_id": 2, "v3_action_number": 2, "period": 1, "clock": "PT10M00.00S", "team_id": 10, "out_player_id": 1001, "in_player_id": 1006},
+            {"game_id": "0022200001", "v3_action_id": 3, "v3_action_number": 3, "period": 1, "clock": "PT10M00.00S", "team_id": 20, "out_player_id": 2001, "in_player_id": 2006},
+        ]
+    )
+    period_starts = {
+        ("0022200001", team_id, period): set(players.loc[players["team_id"].eq(team_id) & players["starter"], "player_id"].astype(int)) - {team_id * 100 + 1} | {team_id * 100 + 6}
+        for team_id in (10, 20) for period in (2, 3, 4)
+    }
+    stints, quality = _build_game_stints(
+        actions, pd.concat([players, replacements], ignore_index=True),
+        pd.Series({"game_id": "0022200001", "home_team_id": 10, "away_team_id": 20, "home_score": 0, "away_score": 0}),
+        pairs, period_starts, 0, 0,
+    )
+    assert quality["passed"]
+    assert any(stint["duration_seconds"] == 0.0 and stint["start_action_id"] == 2 and stint["end_action_id_exclusive"] == 3 for stint in stints)
