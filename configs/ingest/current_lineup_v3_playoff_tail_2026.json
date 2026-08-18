@@ -1,0 +1,34 @@
+{
+  "schema_version": "ingest_manifest_v1",
+  "purpose": "Pinned NBA Stats V3 substitution fallback for the 2025-26 playoff games absent from the CDN event partition. This source is for lineup reconstruction only; it has action order and substitutions but no native possession-owner field or CDN orderNumber.",
+  "provider": "cdechoch/nba-data-archive on Hugging Face",
+  "dataset_revision": "dfa8fa43f89ae2ca6c18db524edc2050a6bb2286",
+  "license": "Apache-2.0",
+  "verified_game_ids_missing_from_cdnnba": [
+    "0042500204", "0042500205", "0042500206", "0042500207", "0042500214",
+    "0042500224", "0042500234", "0042500235", "0042500236", "0042500301",
+    "0042500302", "0042500303", "0042500304", "0042500311", "0042500312",
+    "0042500313", "0042500314", "0042500315", "0042500316", "0042500317",
+    "0042500401", "0042500402", "0042500403", "0042500404", "0042500405"
+  ],
+  "tasks": [
+    {
+      "name": "nbastatsv3_2026_playoffs_lineup_tail",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/po_2025.parquet",
+      "destination": "nba_data_archive/nbastatsv3/revision=dfa8fa43/season=2026/playoffs.parquet",
+      "provider": "cdechoch/nba-data-archive",
+      "license": "Apache-2.0",
+      "season": 2026,
+      "season_type": "playoffs",
+      "source_revision": "dfa8fa43f89ae2ca6c18db524edc2050a6bb2286",
+      "expected_bytes": 1010592,
+      "expected_sha256": "a1937f5fa60f980aed139f9365da9aa69f30a6e6657ccd53c882cc59dd94766d",
+      "expected_min_rows": 43000,
+      "required_columns": [
+        "gameId", "actionId", "actionNumber", "period", "clock",
+        "actionType", "description", "personId", "teamId",
+        "scoreHome", "scoreAway", "_season", "_season_type"
+      ]
+    }
+  ]
+}
