@@ -2310,3 +2310,25 @@ absolute change is 0.4982.
 **Decision:** Keep the one passing repair. Keep all nine failures quarantined.
 Use `current_single_season_rapm_targets_v1_b4cdb51de8` for the current Normal
 RAPM snapshot. Better source data, not looser QA, is the next repair path.
+
+## 2026-08-18 — Official Live source closes the 2026 playoff tail
+
+**Question:** Can the 25-game 2026 playoff cutoff be repaired without inferring
+possession ownership or weakening lineup-minute QA?
+
+**Method:** Download official NBA Live JSON for all 85 playoff games. Compare
+the 60-game overlap event by event with the pinned CDN archive. Build the same
+CDN schema, rerun the normal lineup and possession builders, then add only
+strictly passing regular-season repairs to a separate integrated table.
+
+**Result:** All 34,579 overlapping actions match on event key, action number,
+period, clock, possession owner, score, and action type. The 85-game output has
+49,727 actions, 16,648 possessions, and 20,639 lineup segments. All 85 games
+pass official-minute, score, player-count, and point-conservation gates. The
+integrated regular-season coverage is 1,229 / 1,230 in 2024, 1,227 / 1,230 in
+2025, and 1,228 / 1,230 in 2026.
+
+**Decision:** Accept the official Live completion as the current 2026 playoff
+source. Use Normal RAPM run `current_single_season_rapm_targets_v1_8f2a6f2e0a`.
+Do not rerun SPM/AIO selection: the added regular games move net ratings by only
+0.0057 and 0.0071 mean absolute points per 100 in 2024 and 2025.

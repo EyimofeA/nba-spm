@@ -25,6 +25,7 @@ from nba_impact.data.espn_win_probability import ingest_espn_win_probability
 from nba_impact.data.game_dim import build_game_dimension
 from nba_impact.data.identity import build_identity_dimensions
 from nba_impact.data.lineups import build_lineup_stints
+from nba_impact.data.live_playoff_completion import build_live_playoff_completion
 from nba_impact.data.v3_cdn_lineup_repair import build_v3_cdn_lineup_repair_candidate
 from nba_impact.data.matchup_defense_features import build_matchup_defense_features
 from nba_impact.data.manifest import (
@@ -521,6 +522,24 @@ def command_build_lineups(args: argparse.Namespace) -> int:
         )
     )
     return 0 if snapshot["passed"] else 2
+
+
+def command_build_live_playoff_completion(args: argparse.Namespace) -> int:
+    report = build_live_playoff_completion(
+        args.raw_dir,
+        args.reference_cdn,
+        args.game_dim,
+        args.player_games,
+        args.output,
+        args.scoped_game_dim_output,
+        args.scoped_player_games_output,
+        args.report,
+        season_label=args.season_label,
+        max_attempts=args.max_attempts,
+        download_missing=not args.no_download,
+    )
+    print(json.dumps({key: report[key] for key in ("passed", "game_count", "tail_game_count", "action_row_count", "issues", "output")}, indent=2))
+    return 0
 
 
 def command_build_v3_cdn_lineup_repair(args: argparse.Namespace) -> int:
@@ -2254,6 +2273,40 @@ def build_parser() -> argparse.ArgumentParser:
     lineups.add_argument("--minute-tolerance-seconds", type=float, default=5.0)
     lineups.add_argument("--max-quarantine-fraction", type=float, default=0.005)
     lineups.set_defaults(func=command_build_lineups)
+
+    live_playoffs = subparsers.add_parser(
+        "build-live-playoff-completion",
+        help="Complete and verify the cut-off 2025-26 CDN playoff partition from official NBA Live JSON.",
+    )
+    live_playoffs.add_argument("--season-label", default="2025-26")
+    live_playoffs.add_argument(
+        "--raw-dir", type=Path,
+        default=BRONZE_ROOT / "pbpstats_live" / "project_season=2026" / "playoffs" / "pbp",
+    )
+    live_playoffs.add_argument(
+        "--reference-cdn", type=Path,
+        default=BRONZE_ROOT / "nba_data_archive" / "cdnnba" / "revision=dfa8fa43" / "season=2025" / "playoffs.parquet",
+    )
+    live_playoffs.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    live_playoffs.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
+    live_playoffs.add_argument(
+        "--output", type=Path,
+        default=BRONZE_ROOT / "nba_live_completed" / "cdnnba" / "season=2025" / "playoffs.parquet",
+    )
+    live_playoffs.add_argument(
+        "--scoped-game-dim-output", type=Path,
+        default=SILVER_ROOT / "candidates" / "current_2026_playoffs_game_dim.parquet",
+    )
+    live_playoffs.add_argument(
+        "--scoped-player-games-output", type=Path,
+        default=SILVER_ROOT / "candidates" / "current_2026_playoffs_player_games.parquet",
+    )
+    live_playoffs.add_argument(
+        "--report", type=Path, default=MANIFEST_ROOT / "nba_live_2026_playoff_completion.json"
+    )
+    live_playoffs.add_argument("--max-attempts", type=int, default=20)
+    live_playoffs.add_argument("--no-download", action="store_true")
+    live_playoffs.set_defaults(func=command_build_live_playoff_completion)
 
     repair_lineups = subparsers.add_parser(
         "build-v3-cdn-lineup-repair",

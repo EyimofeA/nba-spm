@@ -235,11 +235,12 @@ in `docs/impact/SCORING_EVENTS_2017_2026.md`. It is suitable for scoring-state
 research, but it is not possession- or lineup-ready and must not be used as a
 Normal RAPM input.
 
-The pinned 2026 playoff CDN partition stops at 60 of 85 games. The V3 source and
-the research-only Gabriel fallback cover the 25-game event/lineup tail, but
-neither provides a licensed native possession owner. Do not describe the tail
-as RAPM-ready or infer possession ownership without a separately validated
-state-machine contract. See `docs/impact/RAPM_INPUT_COVERAGE.md`.
+The archived 2026 playoff CDN partition stops at 60 of 85 games. The official
+NBA Live endpoint supplies the same `orderNumber`, possession owner, and score
+fields for all 85. Its 60-game overlap is row-identical to the archive, and the
+completed 85-game partition passes score, lineup-minute, and possession QA.
+Use `build-live-playoff-completion`; keep raw NBA rows out of public bundles.
+See `docs/impact/RAPM_INPUT_COVERAGE.md`.
 
 The 2023–24 player-game layer uses provenance-marked ESPN fallback rows where
 the primary NBA box cache is absent. Quarantined games are repaired only through

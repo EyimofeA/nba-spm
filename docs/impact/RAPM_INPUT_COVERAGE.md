@@ -21,12 +21,12 @@ partition passes. It does not run a model.
 | Project season | Canonical RAPM-ready games | Status |
 |---|---:|---|
 | 2017--2023 | 3,343 regular-season games in a separate strict legacy migration | The original clean action-level table has not been built. Only 3,631 all-type cache games whose terminal-lineup rows conserve to an official final score are emitted. |
-| 2024 regular | 1,227 / 1,230 | Three games are quarantined by lineup-minute QA. |
+| 2024 regular | 1,229 / 1,230 | One game remains quarantined after Gabriel and V3 repairs. |
 | 2024 playoffs | 82 / 82 | Passes. |
-| 2025 regular | 1,226 / 1,230 | Four games are quarantined by lineup-minute QA. |
+| 2025 regular | 1,227 / 1,230 | Three games remain quarantined after V3 repair. |
 | 2025 playoffs | 84 / 84 | Passes. |
 | 2026 regular | 1,228 / 1,230 | Two games are quarantined by lineup-minute QA. |
-| 2026 playoffs | 60 / 85 | One game is quarantined and 24 games lack the CDN ordinal event partition. |
+| 2026 playoffs | 85 / 85 | Official Live completion passes every possession and lineup gate. |
 
 Do not silently fill these gaps with clock joins or inferred lineups.
 
@@ -56,6 +56,28 @@ non-substitution row has exact five-versus-five lineups. The upstream repository
 does not declare a license. These files remain quarantined and cannot create
 canonical possessions without an independently validated possession source.
 
+### Official Live completion
+
+`nba-impact build-live-playoff-completion` downloads the official NBA Live JSON
+with 20 retries and writes one schema-identical completed CDN partition. The
+official source contains `orderNumber`, possession owner, scores, and
+substitutions. It is not a possession inference.
+
+The 60 games shared with the archived CDN source are identical on all 34,579
+event keys and on action number, period, clock, possession owner, score, and
+action type. The completed partition has 49,727 actions across 85 games with no
+duplicate event keys, score mismatch, or invalid possession owner.
+
+The normal lineup and possession builders then pass on all 85 games:
+
+- 2,940 minute-reconciled lineup stints;
+- 16,648 possessions;
+- 20,639 ordinal lineup segments;
+- zero invalid ten-player segments or point-conservation failures.
+
+Raw NBA rows are internal research inputs and must not enter a public release
+bundle.
+
 Gabriel Adebayo's `merged_playbyplay` repository is a targeted fallback for
 the nine regular-season quarantines and the remaining failed playoff game.
 Its 2024 pilot had unique action numbers, a matching final score, and ten
@@ -83,7 +105,7 @@ canonical tables. One game passed all gates:
 | `0022300339`, `0022400061`, `0022400821` | Blocked | An upstream substitution cannot be mapped to a direct observed post-substitution state. |
 | `0022400771` | Blocked | An outcome-adjacent violation lacks two-sided lineup continuity. |
 | `0022301210`, `0022400223`, `0022500264`, `0022500643` | Blocked | Official player-minute error is 136.0, 115.0, 78.4, and 48.0 seconds respectively; the 5-second gate is retained. |
-| `0042500205` | Blocked | The matching canonical 2026 playoff CDN event partition is absent, so no possession output can be created safely. |
+| `0042500205` | Superseded | The official Live completion now supplies the canonical possession and substitution rows. |
 
 All other audited 2024--26 partitions were unchanged. The adapter writes a
 separate merged candidate (`possessions_repaired.parquet` and
@@ -108,8 +130,24 @@ Games `0022300339` and `0022500264` remain quarantined because one or more V3
 substitutions cannot be mapped under the full ordinal key. The candidate keeps
 separate outputs and does not weaken the production gate.
 
+## Integrated current candidate
+
+`possessions_complete.parquet` combines the canonical base, the one strict
+Gabriel repair, the two strict V3 repairs, and the completed 2026 playoff slice.
+It has 793,122 possessions, 953,691 lineup segments, and 3,935 games. All IDs,
+lineups, scores, and segment points reconcile.
+
+Normal RAPM run `current_single_season_rapm_targets_v1_8f2a6f2e0a` uses only
+regular-season rows from that table. It has 1,229 / 1,230 games in 2024,
+1,227 / 1,230 in 2025, and 1,228 / 1,230 in 2026. Against the previous current
+run, net-rating correlation is 0.999841 in 2024 and 0.999846 in 2025; mean
+absolute change is 0.0057 and 0.0071 points per 100. The 2026 regular fit is
+unchanged.
+
+The change is too small to justify another SPM/AIO model-selection pass. Keep
+the validated 2017--24 SPM/AIO and treat the newer SPM refresh as a null.
+
 ## Boundary
 
 This page measures input availability, not model quality. The public 2017--24
-ratings remain frozen. No rating is updated until the repaired data passes the
-same audit and a separately declared model run.
+SPM/AIO ratings remain frozen. Normal RAPM can use the integrated current run.

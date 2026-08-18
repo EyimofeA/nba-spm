@@ -82,23 +82,23 @@ The clean silver RAPM input is close to complete for the regular season:
 
 | Season | Regular RAPM-ready games | Playoff RAPM-ready games |
 | --- | ---: | ---: |
-| 2024 | 1,228 / 1,230 | 82 / 82 |
-| 2025 | 1,226 / 1,230 | 84 / 84 |
-| 2026 | 1,228 / 1,230 | 60 / 85 |
+| 2024 | 1,229 / 1,230 | 82 / 82 |
+| 2025 | 1,227 / 1,230 | 84 / 84 |
+| 2026 | 1,228 / 1,230 | 85 / 85 |
 
 The 2017--2023 legacy cache contains possessions and ten-player lineups under
 its historical contract. It is not yet rebuilt into the clean ordinal silver
 contract.
 
-The strict Gabriel adapter repaired game `0022300535`. It rejected the other
-nine targets because of unmappable event states, player-minute errors above
-five seconds, or a missing canonical possession source. Do not relax the
-existing QA gates. The repaired 2024 fit uses 1,228 regular-season games.
+The strict Gabriel adapter repaired game `0022300535`. The V3/CDN ordinal
+adapter repaired `0022301210` and `0022400061`. The official Live completion
+restored all 25 missing 2026 playoff games without inferring possession owner.
+Do not relax the remaining regular-season QA gates.
 
 On the same 572 players, repaired and prior 2024 net RAPM have correlation
 0.99975. The mean absolute change is 0.0079 points per 100 possessions. The
-largest absolute change is 0.4982. The current three-season Normal RAPM artifact
-is `current_single_season_rapm_targets_v1_b4cdb51de8`.
+largest absolute change is 0.4982. The integrated three-season Normal RAPM
+artifact is `current_single_season_rapm_targets_v1_8f2a6f2e0a`.
 
 ## AIO update
 
