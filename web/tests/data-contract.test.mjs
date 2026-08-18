@@ -56,13 +56,14 @@ test("external correlations match the verified benchmark runs", () => {
 });
 
 test("every published season table is loadable and complete", () => {
-  assert.deepEqual(catalog.catalog.seasons, [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]);
+  const fullTimeline = [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+  assert.deepEqual(catalog.catalog.seasons, fullTimeline);
   assert.deepEqual(
     Object.fromEntries(catalog.catalog.models.map((model) => [model.id, model.seasons])),
     {
-      aio: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
-      rapm: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
-      spm: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+      aio: fullTimeline,
+      rapm: fullTimeline,
+      spm: fullTimeline,
     },
   );
   for (const season of catalog.catalog.seasons) {
@@ -73,14 +74,9 @@ test("every published season table is loadable and complete", () => {
       assert.equal(typeof row.PLAYER_NAME, "string");
       assert.equal(typeof row.normal_rapm_net, "number");
       assert.ok(Math.abs(row.normal_rapm_offense + row.normal_rapm_defense - row.normal_rapm_net) < 0.001, "RAPM offense plus defense must equal net");
-      if (season <= 2024) {
-        assert.equal(typeof row.aio_net, "number");
-        assert.equal(typeof row.spm_net, "number");
-        assert.ok(Math.abs(row.aio_offense + row.aio_defense - row.aio_net) < 0.001, "AIO offense plus defense must equal net");
-      } else {
-        assert.ok(!("aio_net" in row));
-        assert.ok(!("spm_net" in row));
-      }
+      assert.equal(typeof row.aio_net, "number");
+      assert.equal(typeof row.spm_net, "number");
+      assert.ok(Math.abs(row.aio_offense + row.aio_defense - row.aio_net) < 0.001, "AIO offense plus defense must equal net");
       assert.ok(row.Poss_Off >= 0 && row.Poss_Def >= 0);
     }
   }

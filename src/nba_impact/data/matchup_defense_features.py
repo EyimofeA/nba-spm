@@ -7,6 +7,7 @@ import json
 import tarfile
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Mapping
 
 import numpy as np
 import pandas as pd
@@ -288,17 +289,25 @@ def compute_matchup_defense_features(
     return output, audit
 
 
-def _read_archive(path: Path) -> tuple[pd.DataFrame, dict]:
+def _read_source(path: Path) -> tuple[pd.DataFrame, dict]:
+    """Load a pinned archive or a materialized official V3 season."""
     manifest_path = Path(f"{path}.manifest.json")
     manifest = json.loads(manifest_path.read_text())
-    member_name = manifest["archive_member"]
-    with tarfile.open(path, mode="r:xz") as archive:
-        member = archive.getmember(member_name)
-        extracted = archive.extractfile(member)
-        if extracted is None:
-            raise ValueError(f"Could not read {member_name} from {path}.")
-        frame = pd.read_csv(extracted, low_memory=False)
+    if path.suffix == ".parquet":
+        frame = pd.read_parquet(path)
+    else:
+        member_name = manifest["archive_member"]
+        with tarfile.open(path, mode="r:xz") as archive:
+            member = archive.getmember(member_name)
+            extracted = archive.extractfile(member)
+            if extracted is None:
+                raise ValueError(f"Could not read {member_name} from {path}.")
+            frame = pd.read_csv(extracted, low_memory=False)
     return frame, manifest
+
+
+# Kept for the separate role-map reader.  It only passes historical tar archives.
+_read_archive = _read_source
 
 
 def build_matchup_defense_features(
@@ -309,6 +318,8 @@ def build_matchup_defense_features(
     seasons: tuple[int, ...] = tuple(range(2018, 2026)),
     defender_prior_possessions: float = 500.0,
     shooting_prior_attempts: float = 200.0,
+    source_overrides: Mapping[int, str | Path] | None = None,
+    box_source_overrides: Mapping[int, str | Path] | None = None,
 ) -> dict:
     """Build a content-addressed annual matchup-defense feature artifact."""
     archive_root = Path(archive_root)
@@ -317,21 +328,31 @@ def build_matchup_defense_features(
     season_quality: dict[str, dict] = {}
     source_hashes: dict[str, str] = {}
     box_hashes: dict[str, str] = {}
+    source_overrides = dict(source_overrides or {})
+    box_source_overrides = dict(box_source_overrides or {})
 
     for season in seasons:
-        archives = sorted((archive_root / f"season={season}").glob("*.tar.xz"))
-        if len(archives) != 1:
-            raise ValueError(f"Expected one matchup archive for season {season}; found {len(archives)}.")
-        archive = archives[0]
-        frame, manifest = _read_archive(archive)
+        override = source_overrides.get(season)
+        sources = [Path(override)] if override is not None else []
+        if not sources:
+            sources = sorted((archive_root / f"season={season}").glob("*.tar.xz"))
+            sources += sorted((archive_root / f"season={season}").glob("*.parquet"))
+        if len(sources) != 1:
+            raise ValueError(f"Expected one matchup source for season {season}; found {len(sources)}.")
+        archive = sources[0]
+        frame, manifest = _read_source(archive)
         features, quality = compute_matchup_defense_features(
             frame,
             season,
             defender_prior_possessions=defender_prior_possessions,
             shooting_prior_attempts=shooting_prior_attempts,
         )
-        box_path = box_source_dir / f"{season}.csv"
-        box = pd.read_csv(box_path, usecols=["PLAYER_ID", "DefPoss"])
+        box_path = Path(box_source_overrides.get(season, box_source_dir / f"{season}.csv"))
+        box = (
+            pd.read_parquet(box_path, columns=["PLAYER_ID", "DefPoss"])
+            if box_path.suffix == ".parquet"
+            else pd.read_csv(box_path, usecols=["PLAYER_ID", "DefPoss"])
+        )
         box["PLAYER_ID"] = pd.to_numeric(box["PLAYER_ID"], errors="coerce")
         box["DefPoss"] = pd.to_numeric(box["DefPoss"], errors="coerce")
         box = box.dropna().groupby("PLAYER_ID", as_index=False)["DefPoss"].sum()

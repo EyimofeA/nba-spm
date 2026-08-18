@@ -148,17 +148,30 @@ def _model_columns(frame: pd.DataFrame) -> dict[str, str]:
     }
 
 
-def _team_age_panel(player_sheets_dir: Path, seasons: list[int]) -> pd.DataFrame:
+def _team_age_panel(
+    player_sheets_dir: Path,
+    seasons: list[int],
+    source_overrides: dict[int, Path] | None = None,
+) -> pd.DataFrame:
     frames = []
+    source_overrides = source_overrides or {}
     for season in seasons:
-        path = player_sheets_dir / f"{season}.csv"
+        path = source_overrides.get(season, player_sheets_dir / f"{season}.csv")
         if not path.exists():
             continue
-        frame = pd.read_csv(
-            path,
-            usecols=lambda column: column
-            in {"PLAYER_ID", "TEAM_ABBREVIATION", "AGE", "year"},
-        ).rename(columns={"year": "Season"})
+        if path.suffix.lower() in {".parquet", ".pq"}:
+            frame = pd.read_parquet(path)
+            frame = frame.loc[:, [
+                column for column in ("PLAYER_ID", "TEAM_ABBREVIATION", "AGE", "year")
+                if column in frame.columns
+            ]]
+        else:
+            frame = pd.read_csv(
+                path,
+                usecols=lambda column: column
+                in {"PLAYER_ID", "TEAM_ABBREVIATION", "AGE", "year"},
+            )
+        frame = frame.rename(columns={"year": "Season"})
         frame["Season"] = season
         frame = frame.dropna(subset=["PLAYER_ID"]).drop_duplicates(
             ["PLAYER_ID", "Season"], keep="last"
@@ -515,6 +528,7 @@ def build_web_snapshot(
     aging_projection_run_path: str | Path | None = None,
     current_normal_rapm_run_path: str | Path | None = None,
     current_player_games_path: str | Path | None = None,
+    player_sheet_source_overrides: dict[int, str | Path] | None = None,
     shards: int = 128,
 ) -> dict:
     """Write indexes plus season-specific tables and role maps."""
@@ -568,7 +582,14 @@ def build_web_snapshot(
     if annual.duplicated(["PLAYER_ID", "Season"]).any():
         raise ValueError("Web snapshot annual panel has duplicate player-seasons.")
     seasons = sorted(int(value) for value in annual["Season"].unique())
-    team_age = _team_age_panel(sheets, seasons)
+    team_age = _team_age_panel(
+        sheets,
+        seasons,
+        {
+            int(season): Path(path)
+            for season, path in (player_sheet_source_overrides or {}).items()
+        },
+    )
     annual = annual.merge(
         team_age[["PLAYER_ID", "Season", "TEAM_ABBREVIATION"]],
         on=["PLAYER_ID", "Season"], how="left", suffixes=("", "_sheet"), validate="one_to_one",

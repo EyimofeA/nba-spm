@@ -3,6 +3,17 @@
 Updated 2026-08-18. This note covers season labels 2025 and 2026, which mean the
 2024–25 and 2025–26 NBA seasons.
 
+> **Supersession — current refresh.** The source-gap claims below are retained
+> as historical diagnosis, not current status. The current 2014--26 research
+> panel uses `statistical_features_v2_6bdb60a186`, which has 6,942 unique
+> player-seasons. Its 2026 block uses all 582 target-panel players, direct NBA
+> `LeagueDashPtDefend` DFG/rim-DFG dashboards, and official NBA
+> `BoxScoreMatchupsV3` across all 1,230 regular-season games. The derived
+> defensive-tracking and matchup artifacts pass their row-key, finiteness,
+> point-reconciliation, and exposure checks. The remaining research-only label
+> is about the explicit 2014--23 legacy to 2024--26 canonical RAPM source
+> transition, not missing 2025--26 feature families.
+
 ## Decision
 
 - Use the 2025 feature panel for diagnosis and research.

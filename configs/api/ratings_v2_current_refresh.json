@@ -1,0 +1,14 @@
+{
+  "contract_version": "ratings_api_v2_current_refresh",
+  "annual_run_id": "unified_annual_aio_ratings_v1_acfc097fb0",
+  "annual_model_family": "unified_annual_aio_ratings",
+  "annual_artifact_root": "artifacts/research/current_feature_refresh/models",
+  "rolling_run_id": "rolling_rapm_peaks_v1_a8a612143c",
+  "current_rapm_run_id": "rapm_v0_01b5084f0a",
+  "matchup_defense_run_id": "matchup_defense_features_v1_09829b48c8",
+  "side_roles_run_id": "side_roles_v1_2c228f4b9e",
+  "role_stabilization_run_id": "role_stabilization_v1_f5b426dd5d",
+  "default_limit": 25,
+  "maximum_limit": 100,
+  "lineage_contract_path": "research/pinned_artifact_contracts.json"
+}

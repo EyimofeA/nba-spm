@@ -6,6 +6,7 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Mapping
 
 import numpy as np
 import pandas as pd
@@ -361,6 +362,7 @@ def build_statistical_features_v2(
     behavior_roles_path: str | Path | None = None,
     offense_roles_path: str | Path | None = None,
     defense_roles_path: str | Path | None = None,
+    source_overrides: Mapping[int, str | Path] | None = None,
 ) -> dict:
     if pooled_window_seasons < 1:
         raise ValueError("pooled_window_seasons must be positive.")
@@ -368,9 +370,10 @@ def build_statistical_features_v2(
     base = pd.read_parquet(base_features_path)
     loaded = {}
     source_hashes = {}
+    source_overrides = dict(source_overrides or {})
     history_seasons = max(3, pooled_window_seasons)
     for season in range(min(window_ends) - history_seasons + 1, max(window_ends) + 1):
-        path = source / f"{season}.csv"
+        path = Path(source_overrides.get(season, source / f"{season}.csv"))
         loaded[season] = _load_source(path, season)[0]
         source_hashes[str(season)] = sha256_file(path)
     outputs = []

@@ -507,12 +507,16 @@ That task is complete. `docs/impact/CURRENT_POSSESSION_QUALITY.md` records the
 quality gate. Frozen terminal-lineup run `rapm_v0_01b5084f0a` covers the
 2023–24 through 2025–26 regular seasons, matches the earlier validated numerical
 ratings exactly, has no missing player names, and is pinned in the ratings API.
-Next audit and build current 2025/2026 statistical feature panels before extending
-annual AIO beyond 2024.
+The current-data audit and rebuild are complete in
+`docs/impact/CURRENT_FEATURE_QUALITY.md`. The 2014--26 research panel now uses
+versioned Gabriel current player/playtype/tracking inputs, official NBA
+`LeagueDashPtDefend` DFG/rim dashboards, and official 2026 game matchups.
+The unified RAPM/SPM/AIO artifact preserves the source boundary explicitly:
+legacy terminal cache through 2023 and canonical event terminal lineups from
+2024. Do not describe that boundary as one raw source or promote the research
+timeline without a separate release review.
 
-That audit is complete in `docs/impact/CURRENT_FEATURE_QUALITY.md`. Full 2025
-box, playtype, DFG, rim, and hustle features pass structural QA; 2026 is partial
-and blocked. Run `current_spm_confirmation_v1_9b4cca0b12` scores the frozen
+Run `current_spm_confirmation_v1_9b4cca0b12` scores the frozen
 2014–24 annual SPM on untouched 2025 normal RAPM. All components exceed the
 worst historical held-out RMSE, and defense correlation falls to 0.331. Do not
 promote or tune this frozen model on 2025. Use 2025 only for diagnosis. The next

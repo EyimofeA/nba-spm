@@ -6,6 +6,7 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Mapping
 
 import numpy as np
 import pandas as pd
@@ -142,7 +143,7 @@ def _required_source_columns() -> set[str]:
 
 
 def _load_source(path: Path, season: int) -> tuple[pd.DataFrame, int]:
-    frame = pd.read_csv(path, low_memory=False)
+    frame = pd.read_parquet(path) if path.suffix == ".parquet" else pd.read_csv(path, low_memory=False)
     for canonical, alias in SOURCE_COLUMN_ALIASES.items():
         if canonical not in frame and alias in frame:
             frame[canonical] = frame[alias]
@@ -207,6 +208,7 @@ def build_statistical_feature_windows(
     artifact_root: str | Path,
     window_ends: tuple[int, ...] = tuple(range(2016, 2025)),
     window_seasons: int = 3,
+    source_overrides: Mapping[int, str | Path] | None = None,
 ) -> dict:
     """Build content-addressed pooled features from complete source seasons."""
     if window_seasons < 1:
@@ -217,9 +219,10 @@ def build_statistical_feature_windows(
     )
     loaded: dict[int, pd.DataFrame] = {}
     source_records = []
+    source_overrides = dict(source_overrides or {})
     duplicate_rows_removed = 0
     for season in required_seasons:
-        path = source / f"{season}.csv"
+        path = Path(source_overrides.get(season, source / f"{season}.csv"))
         if not path.exists():
             raise FileNotFoundError(f"Missing source season {path}.")
         frame, removed = _load_source(path, season)

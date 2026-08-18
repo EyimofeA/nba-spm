@@ -38,6 +38,9 @@ from nba_impact.data.manifest import (
     write_json_atomic,
 )
 from nba_impact.data.official_boxscore import ingest_official_boxscores
+from nba_impact.data.official_matchups import ingest_official_matchups
+from nba_impact.data.observed_defense_dashboards import build_observed_defense_dashboards
+from nba_impact.data.official_defense_dashboards import ingest_official_defense_dashboards
 from nba_impact.data.official_game_scores import build_official_game_scores
 from nba_impact.data.player_game import build_player_games
 from nba_impact.data.historical_player_games import build_historical_espn_player_games
@@ -563,6 +566,52 @@ def command_ingest_official_boxscores(args: argparse.Namespace) -> int:
     return 0 if snapshot["passed"] else 2
 
 
+def command_ingest_official_matchups(args: argparse.Namespace) -> int:
+    games = pd.read_parquet(args.game_dim)
+    required = {"game_id", "season_end", "season_type"}
+    if missing := required - set(games.columns):
+        raise ValueError(f"Game dimension is missing {sorted(missing)}")
+    selected = games.loc[
+        (pd.to_numeric(games["season_end"], errors="coerce") == args.season)
+        & (games["season_type"].astype(str) == args.season_type),
+        "game_id",
+    ].astype(str).tolist()
+    snapshot = ingest_official_matchups(
+        selected,
+        args.raw_root,
+        args.output,
+        args.manifest_dir,
+        season=args.season,
+        season_type=args.season_type,
+        max_attempts=args.max_attempts,
+        minimum_delay_seconds=args.minimum_delay_seconds,
+        max_workers=args.max_workers,
+    )
+    print(json.dumps(snapshot, indent=2))
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_observed_defense_dashboards(args: argparse.Namespace) -> int:
+    snapshot = build_observed_defense_dashboards(
+        args.player_sheets_dir,
+        args.output_dir,
+        seasons=tuple(args.seasons),
+        historical_dfg_source=args.historical_dfg_source,
+        historical_rim_dfg_source=args.historical_rim_dfg_source,
+    )
+    print(json.dumps(snapshot, indent=2))
+    return 0
+
+
+def command_ingest_official_defense_dashboards(args: argparse.Namespace) -> int:
+    snapshot = ingest_official_defense_dashboards(
+        tuple(args.seasons), args.raw_root, args.output_dir, args.manifest_dir,
+        max_attempts=args.max_attempts, minimum_delay_seconds=args.minimum_delay_seconds,
+    )
+    print(json.dumps(snapshot, indent=2))
+    return 0
+
+
 def command_build_lineups(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     snapshot = build_lineup_stints(
@@ -1015,6 +1064,12 @@ def _penalty_triples(value: str) -> tuple[tuple[float, float, float], ...]:
     return tuple(triples)
 
 
+def _load_source_override_map(path: Path | None) -> dict[int, Path]:
+    if path is None:
+        return {}
+    return {int(season): Path(value) for season, value in json.loads(path.read_text()).items()}
+
+
 def command_tune_normal_rapm(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     frame = load_current_possessions(
@@ -1056,11 +1111,13 @@ def command_fit_statistical_impact(args: argparse.Namespace) -> int:
 
 def command_build_statistical_features(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
+    source_overrides = _load_source_override_map(args.source_overrides)
     run = build_statistical_feature_windows(
         args.source_dir,
         artifact_root=args.artifact_root,
         window_ends=args.window_ends,
         window_seasons=args.window_seasons,
+        source_overrides=source_overrides,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -1068,6 +1125,7 @@ def command_build_statistical_features(args: argparse.Namespace) -> int:
 
 def command_build_statistical_features_v2(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
+    source_overrides = _load_source_override_map(args.source_overrides)
     run = build_statistical_features_v2(
         args.source_dir,
         args.base_features,
@@ -1082,6 +1140,7 @@ def command_build_statistical_features_v2(args: argparse.Namespace) -> int:
         behavior_roles_path=args.behavior_roles,
         offense_roles_path=args.offense_roles,
         defense_roles_path=args.defense_roles,
+        source_overrides=source_overrides,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -1102,9 +1161,18 @@ def command_build_playtype_features(args: argparse.Namespace) -> int:
 
 def command_build_defensive_tracking_features(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
+    box_source_overrides = {}
+    if args.box_source_overrides is not None:
+        box_source_overrides = {
+            int(season): Path(path)
+            for season, path in json.loads(args.box_source_overrides.read_text()).items()
+        }
     run = build_defensive_tracking_features(
         args.dfg_source, args.rim_dfg_source, args.hustle_source,
-        args.box_source_dir, artifact_root=args.artifact_root, seasons=args.seasons,
+        args.box_source_dir,
+        artifact_root=args.artifact_root,
+        seasons=args.seasons,
+        box_source_overrides=box_source_overrides,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -1112,6 +1180,18 @@ def command_build_defensive_tracking_features(args: argparse.Namespace) -> int:
 
 def command_build_matchup_defense_features(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
+    source_overrides = {}
+    if args.source_overrides is not None:
+        source_overrides = {
+            int(season): Path(path)
+            for season, path in json.loads(args.source_overrides.read_text()).items()
+        }
+    box_source_overrides = {}
+    if args.box_source_overrides is not None:
+        box_source_overrides = {
+            int(season): Path(path)
+            for season, path in json.loads(args.box_source_overrides.read_text()).items()
+        }
     run = build_matchup_defense_features(
         args.archive_root,
         args.box_source_dir,
@@ -1119,6 +1199,8 @@ def command_build_matchup_defense_features(args: argparse.Namespace) -> int:
         seasons=args.seasons,
         defender_prior_possessions=args.defender_prior_possessions,
         shooting_prior_attempts=args.shooting_prior_attempts,
+        source_overrides=source_overrides,
+        box_source_overrides=box_source_overrides,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -1831,6 +1913,9 @@ def command_serve_ratings(args: argparse.Namespace) -> int:
 
 
 def command_build_web_snapshot(args: argparse.Namespace) -> int:
+    player_sheet_source_overrides = _load_source_override_map(
+        args.player_sheet_source_overrides
+    )
     result = build_web_snapshot(
         args.config,
         args.artifact_root,
@@ -1844,6 +1929,7 @@ def command_build_web_snapshot(args: argparse.Namespace) -> int:
         aging_projection_run_path=args.aging_projection_run,
         current_normal_rapm_run_path=args.current_normal_rapm_run,
         current_player_games_path=args.current_player_games,
+        player_sheet_source_overrides=player_sheet_source_overrides,
         shards=args.shards,
     )
     print(json.dumps(result, indent=2))
@@ -2318,6 +2404,33 @@ def build_parser() -> argparse.ArgumentParser:
     )
     official_scores.add_argument("--existing-only", action="store_true")
     official_scores.set_defaults(func=command_download_official_game_scores)
+
+    official_matchups = subparsers.add_parser(
+        "ingest-official-matchups",
+        help="Fetch one official NBA Stats matchup season with resumable game JSON.",
+    )
+    official_matchups.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    official_matchups.add_argument("--season", type=int, required=True)
+    official_matchups.add_argument("--season-type", default="regular")
+    official_matchups.add_argument("--raw-root", type=Path, required=True)
+    official_matchups.add_argument("--output", type=Path, required=True)
+    official_matchups.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    official_matchups.add_argument("--max-attempts", type=int, default=20)
+    official_matchups.add_argument("--minimum-delay-seconds", type=float, default=0.2)
+    official_matchups.add_argument("--max-workers", type=int, default=2)
+    official_matchups.set_defaults(func=command_ingest_official_matchups)
+
+    official_defense = subparsers.add_parser(
+        "ingest-official-defense-dashboards",
+        help="Fetch official annual overall and rim close-defender dashboards.",
+    )
+    official_defense.add_argument("--seasons", type=_season_list, required=True)
+    official_defense.add_argument("--raw-root", type=Path, required=True)
+    official_defense.add_argument("--output-dir", type=Path, required=True)
+    official_defense.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    official_defense.add_argument("--max-attempts", type=int, default=20)
+    official_defense.add_argument("--minimum-delay-seconds", type=float, default=0.2)
+    official_defense.set_defaults(func=command_ingest_official_defense_dashboards)
 
     game_dim = subparsers.add_parser(
         "build-game-dim", help="Build the canonical silver game dimension."
@@ -2899,6 +3012,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=tuple(range(2016, 2025)),
     )
     statistical_features.add_argument("--window-seasons", type=int, default=3)
+    statistical_features.add_argument("--source-overrides", type=Path)
     statistical_features.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     statistical_features.set_defaults(func=command_build_statistical_features)
 
@@ -2923,6 +3037,7 @@ def build_parser() -> argparse.ArgumentParser:
     statistical_features_v2.add_argument("--behavior-roles", type=Path)
     statistical_features_v2.add_argument("--offense-roles", type=Path)
     statistical_features_v2.add_argument("--defense-roles", type=Path)
+    statistical_features_v2.add_argument("--source-overrides", type=Path)
     statistical_features_v2.add_argument(
         "--window-ends",
         type=_season_list,
@@ -2961,10 +3076,28 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("data/raw/playersheets/year_totals"),
     )
     defensive_tracking.add_argument(
+        "--box-source-overrides", type=Path,
+        help="JSON map of project-season to a current player-sheet CSV or Parquet source.",
+    )
+    defensive_tracking.add_argument(
         "--seasons", type=_season_list, default=tuple(range(2014, 2025))
     )
     defensive_tracking.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     defensive_tracking.set_defaults(func=command_build_defensive_tracking_features)
+
+    observed_dashboards = subparsers.add_parser(
+        "build-observed-defense-dashboards",
+        help="Derive observed DFG/rim-DFG rows from canonical player sheets.",
+    )
+    observed_dashboards.add_argument("--player-sheets-dir", type=Path, default=LEGACY_PLAYER_SHEETS)
+    observed_dashboards.add_argument("--seasons", type=_season_list, required=True)
+    observed_dashboards.add_argument("--historical-dfg-source", type=Path)
+    observed_dashboards.add_argument("--historical-rim-dfg-source", type=Path)
+    observed_dashboards.add_argument(
+        "--output-dir", type=Path,
+        default=ARTIFACT_ROOT / "features" / "observed_defense_dashboards",
+    )
+    observed_dashboards.set_defaults(func=command_build_observed_defense_dashboards)
 
     matchup_defense = subparsers.add_parser(
         "build-matchup-defense-features",
@@ -2991,6 +3124,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     matchup_defense.add_argument(
         "--shooting-prior-attempts", type=float, default=200.0
+    )
+    matchup_defense.add_argument(
+        "--source-overrides", type=Path,
+        help="JSON map of project-season to an explicit materialized matchup source.",
+    )
+    matchup_defense.add_argument(
+        "--box-source-overrides", type=Path,
+        help="JSON map of project-season to a current player-sheet CSV or Parquet source.",
     )
     matchup_defense.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     matchup_defense.set_defaults(func=command_build_matchup_defense_features)
@@ -3751,6 +3892,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--player-sheets-dir",
         type=Path,
         default=PROJECT_ROOT / "data" / "raw" / "playersheets" / "year_totals",
+    )
+    web_snapshot.add_argument(
+        "--player-sheet-source-overrides",
+        type=Path,
+        help="JSON map of project-season to current player-sheet CSV or Parquet source.",
     )
     web_snapshot.add_argument(
         "--features",

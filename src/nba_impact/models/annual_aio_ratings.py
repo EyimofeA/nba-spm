@@ -268,8 +268,8 @@ def build_current_annual_aio_ratings(
     """Build research AIO ratings on canonical current possession inputs.
 
     This adapter keeps canonical current possessions separate from the legacy
-    cache. It is deliberately research-only: current SPM source completeness
-    and validation must be evaluated before any public release can use it.
+    cache. It is deliberately research-only until the unified timeline's
+    source transition receives a separate release review.
     """
     requested = tuple(sorted({int(season) for season in seasons}))
     if not requested:
@@ -503,7 +503,7 @@ def build_unified_annual_aio_ratings(
             "The source transition is explicit: legacy terminal cache before 2024 and canonical event terminal lineups from 2024 onward.",
             "The 2024 target overlap is an engineering compatibility check, not a proof that sources are interchangeable.",
             "The prior is retrospective leave-one-season-out SPM, not a forecast.",
-            "The 2025--26 feature completeness and validation issues keep this complete timeline research-only.",
+            "This unified research artifact is not a public-release endorsement; the legacy-to-canonical source transition needs separate review.",
         ],
     }
     write_json_atomic(run, output / "run.json")
