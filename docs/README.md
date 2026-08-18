@@ -30,11 +30,16 @@ Start at the repository root:
 - [`impact/HISTORICAL_V3_POSSESSIONS.md`](impact/HISTORICAL_V3_POSSESSIONS.md) —
   validated V3 possession-owner state machine, frozen gates, and historical
   candidate boundary;
+- [`impact/HISTORICAL_V3_LINEUPS.md`](impact/HISTORICAL_V3_LINEUPS.md) — strict
+  ordinal lineup reconstruction, pre-backfill coverage, and promotion gates;
 - [`impact/FACTOR_DECOMPOSITION.md`](impact/FACTOR_DECOMPOSITION.md) — factor
   feature families, public benchmark formulas, and AIO explanation contract;
 - [`impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`](impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md) —
   current AIO audit, public-model feature map, interpretation, aging-safe
   validation, and execution order;
+- [`impact/MODEL_REPLICATION_SPEC.md`](impact/MODEL_REPLICATION_SPEC.md) — exact
+  RAPM, annual SPM, centered AIO, role, zTS, feature, window, and promotion
+  contracts from the checked-in code and pinned artifacts;
 - [`impact/BEHAVIOR_ROLES.md`](impact/BEHAVIOR_ROLES.md) — behavior-only role
   contract, stability gates, provisional interpretations, and AIO boundary;
 - [`impact/SIDE_ROLES_AND_DEFENSE.md`](impact/SIDE_ROLES_AND_DEFENSE.md) —
