@@ -527,7 +527,13 @@ def command_ingest_official_boxscores(args: argparse.Namespace) -> int:
     quality = pd.read_parquet(args.quality)
     requested = quality.copy() if args.all_games else quality.loc[~quality["passed"]].copy()
     if args.seasons:
-        requested = requested.loc[requested["season_label"].isin(args.seasons)]
+        if "season_label" in requested:
+            season_values = requested["season_label"].astype(str)
+        elif "project_season" in requested:
+            season_values = requested["project_season"].astype(str)
+        else:
+            raise ValueError("Quality ledger has no season_label or project_season column.")
+        requested = requested.loc[season_values.isin({str(value) for value in args.seasons})]
     snapshot = ingest_official_boxscores(
         requested["game_id"].astype(str).tolist(),
         args.output_root,
