@@ -85,6 +85,17 @@ def _historical_aliases(
     aliases: dict[tuple[str, int, str], set[int]] = defaultdict(set)
     roster_ids: dict[tuple[str, int], set[int]] = defaultdict(set)
     for row in player_games.itertuples(index=False):
+        # Official box scores include DNP rows. A player with zero official
+        # seconds cannot be the incoming player in an observed substitution.
+        # Excluding those rows prevents false surname ambiguity (for example,
+        # Grant/Robert Williams or Moses/Charlie Brown) without fuzzy matching.
+        minutes_seconds = getattr(row, "minutes_seconds", None)
+        if (
+            minutes_seconds is not None
+            and pd.notna(minutes_seconds)
+            and float(minutes_seconds) <= 0.0
+        ):
+            continue
         roster_ids[(str(row.game_id), int(row.team_id))].add(int(row.player_id))
         player_id = int(row.player_id)
         player_aliases = _name_aliases(row.player_name) | _EXACT_PLAYER_ALIASES.get(

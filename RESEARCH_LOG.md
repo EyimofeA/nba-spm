@@ -2484,3 +2484,25 @@ possession-lineup adapter emitted all 1,141 games, 230,905 possessions, and
 **Decision:** Keep the exact alias fix. Do not add fuzzy or general first-name
 matching. The full 2017--23 official-preferred rebuild remains the final
 reproducibility gate.
+
+## 2026-08-18 — Official-box DNP rows cannot be substitution aliases
+
+**Question:** Why did the official-only 2021 lineup rebuild lose five games
+that passed with the earlier mixed player-game source?
+
+**Method:** Compare the accepted game IDs, inspect every new substitution parse
+failure, and reconcile the ambiguous names to official minutes and structured
+V3 identities.
+
+**Result:** All eight new failures were surname collisions caused by zero-minute
+DNP rows retained in official boxes: Grant/Robert Williams or Moses/Charlie
+Brown. Only the positive-minute player could have entered the observed game.
+Excluding zero-minute rows from the substitution alias map restored 892/1,080
+regular-season passes, exactly matching the prior accepted set. The attachment
+stage emitted all 892 games, 179,181 possessions, and 216,916 segments with
+zero rejects, duplicate keys, or invalid ten-player segments.
+
+**Decision:** Keep positive official minutes as an exact substitution-alias
+eligibility rule. This is not fuzzy matching and does not relax the five-second
+minute reconciliation gate. Retain zero-minute players in the underlying
+official player-game ledger for provenance.

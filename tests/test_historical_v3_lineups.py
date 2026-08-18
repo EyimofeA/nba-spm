@@ -119,6 +119,39 @@ def test_historical_substitution_name_must_be_unique_within_the_team_roster() ->
     assert failures.loc[0, "reason"] == "incoming_alias_matches_2"
 
 
+def test_historical_substitution_excludes_zero_minute_dnp_from_aliases() -> None:
+    players = pd.DataFrame(
+        [
+            {
+                "game_id": "0022000218",
+                "team_id": 10,
+                "player_id": 1,
+                "player_name": "Grant Williams",
+                "minutes_seconds": 949.0,
+            },
+            {
+                "game_id": "0022000218",
+                "team_id": 10,
+                "player_id": 2,
+                "player_name": "Robert Williams III",
+                "minutes_seconds": 0.0,
+            },
+        ]
+    )
+    v3 = pd.DataFrame(
+        [{
+            "game_id": "0022000218", "actionId": 187, "actionNumber": 187,
+            "period": 2, "clock": "PT05M00.00S", "actionType": "Substitution",
+            "description": "SUB: Williams FOR Ojeleye", "personId": 3, "teamId": 10,
+        }]
+    )
+
+    pairs, failures = parse_historical_v3_substitutions(v3, players)
+
+    assert failures.empty
+    assert pairs.loc[0, "in_player_id"] == 1
+
+
 def test_historical_substitution_resolves_compound_surname_and_first_abbreviation() -> None:
     players = pd.DataFrame(
         [

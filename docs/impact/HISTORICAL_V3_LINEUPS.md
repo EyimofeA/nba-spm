@@ -15,7 +15,9 @@ is complete and the official-preferred rebuild reproduces the same gates.
   player-game table.
 - An incoming substitution name must resolve to exactly one player on the same
   game and team roster. Compound surnames, first-name abbreviations, and explicit
-  suffixes are supported; fuzzy matching is not.
+  suffixes are supported; fuzzy matching is not. Official-box DNP rows with zero
+  minutes are excluded from substitution aliases because they cannot enter an
+  observed game.
 - Each period reset requires exactly five inferred players per team.
 - Every V3 action must have one valid ten-player state.
 - Every emitted game must have five unique players per team, no cross-team
@@ -64,6 +66,14 @@ same-game/team V3 actor aliases plus one versioned ID-specific alias
 `2403 -> nene`; it still does not use fuzzy matching. The strict official-
 preferred pilot then passed 1,141 games, restoring all 39 false losses and
 adding two games that the mixed-source build had quarantined.
+
+The official-only 2021 reproducibility pilot exposed a different exact-input
+issue: official boxes retain zero-minute DNP rows, so surname-only substitution
+text falsely made Grant/Robert Williams and Moses/Charlie Brown ambiguous.
+Restricting substitution aliases to players with positive official minutes
+restored the exact prior accepted set: 892 passes, 188 quarantines, no gained or
+lost games. Attachment emitted all 892 games, 179,181 possessions, and 216,916
+segments with zero rejects, invalid ten-player segments, or duplicate keys.
 
 ## Full 2017--23 regular-season build
 
