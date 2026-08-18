@@ -2462,3 +2462,25 @@ does not support a predictive promotion. Keep V3 research-only until the full
 official player-game cache is complete and the official-preferred rebuild
 reproduces the accepted-game and comparison gates. Artifact:
 `artifacts/research/historical_matched_rapm/historical_matched_rapm_v1_9fb68e0fd785`.
+
+## 2026-08-18 — Official-box reproducibility finds one exact identity gap
+
+**Question:** Does replacing the ESPN fallback with official player boxes keep
+the strict historical lineup accepted-game set stable?
+
+**Method:** Rebuild official-preferred player games for the complete 2017--20
+cache. Re-run the frozen 2019 and 2020 regular-season lineup contracts. Compare
+accepted game IDs and inspect every newly unresolved substitution.
+
+**Result:** The player-game builder accepted 5,075/5,075 games. Season 2020
+reproduced 949 lineup passes. Season 2019 initially fell from 1,139 to 1,102.
+All 103 new substitution parse failures across 39 lost games were player ID
+2403: official boxes use `Nene Hilario`, structured V3 names use `Hilario`, and
+substitution text uses `Nene`. Adding exact same-game/team event aliases and the
+versioned identity alias `2403 -> nene` raised 2019 to 1,141 passes. The
+possession-lineup adapter emitted all 1,141 games, 230,905 possessions, and
+279,555 segments with zero attachment rejects.
+
+**Decision:** Keep the exact alias fix. Do not add fuzzy or general first-name
+matching. The full 2017--23 official-preferred rebuild remains the final
+reproducibility gate.

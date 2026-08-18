@@ -56,6 +56,15 @@ conserve, every segment has ten unique players, and the terminal-lineup RAPM
 loader accepts all 225,784 rows with no missing values. These are still
 separate candidate tables, not production inputs.
 
+The official-only 2019 reproducibility pilot exposed one additional identity
+edge case. Official boxes name player ID 2403 `Nene Hilario`; structured V3
+actor rows use `Hilario`; substitution text uses `Nene`. All 103 new parse
+failures across 39 games were this same player. The resolver now uses exact
+same-game/team V3 actor aliases plus one versioned ID-specific alias
+`2403 -> nene`; it still does not use fuzzy matching. The strict official-
+preferred pilot then passed 1,141 games, restoring all 39 false losses and
+adding two games that the mixed-source build had quarantined.
+
 ## Full 2017--23 regular-season build
 
 The same frozen contract was run for every project season. Project season 2017
