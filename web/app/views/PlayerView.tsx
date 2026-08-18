@@ -339,10 +339,10 @@ function PlayerBody({
           <Figure
             kicker={`Skill comparison · ${season}`}
             title={`${player.PLAYER_NAME} vs ${comparePlayer.PLAYER_NAME}`}
-            legend={[
+            legend={<Legend items={[
               { label: player.PLAYER_NAME, color: "var(--series-1)" },
               { label: comparePlayer.PLAYER_NAME, color: "var(--series-2)" },
-            ]}
+            ]} />}
             note="Each spoke is the same season-relative skill percentile used above."
             table={<SkillComparisonTable left={slices} right={comparisonSlices} leftName={player.PLAYER_NAME} rightName={comparePlayer.PLAYER_NAME} />}
           >
