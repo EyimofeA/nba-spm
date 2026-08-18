@@ -40,6 +40,7 @@ def _v3_rows(game_id: int = 22200001) -> pd.DataFrame:
                 "gameId": game_id, "actionId": action_id, "actionNumber": action_id,
                 "period": period, "clock": "PT12M00.00S", "actionType": "period",
                 "description": "period start", "personId": 0, "teamId": 0,
+                "playerName": None,
                 "scoreHome": 0, "scoreAway": 0,
             }
         )
@@ -51,6 +52,7 @@ def _v3_rows(game_id: int = 22200001) -> pd.DataFrame:
                         "gameId": game_id, "actionId": action_id, "actionNumber": action_id,
                         "period": period, "clock": "PT11M00.00S", "actionType": "turnover",
                         "description": "event", "personId": team_id * 100 + index, "teamId": team_id,
+                        "playerName": f"{'Home' if team_id == 10 else 'Away'} Player{index}",
                         "scoreHome": 0, "scoreAway": 0,
                     }
                 )
@@ -172,6 +174,86 @@ def test_historical_substitution_transliterates_roster_diacritics_before_tokeniz
 
     assert failures.empty
     assert pairs["in_player_id"].tolist() == [1, 2]
+
+
+def test_historical_substitution_uses_exact_same_game_event_name_alias() -> None:
+    players = pd.DataFrame(
+        [
+            {
+                "game_id": "0021800334",
+                "team_id": 10,
+                "player_id": 999,
+                "player_name": "Solo Hilario",
+            }
+        ]
+    )
+    v3 = pd.DataFrame(
+        [
+            {
+                "game_id": "0021800334",
+                "actionId": 1,
+                "actionNumber": 1,
+                "period": 1,
+                "clock": "PT08M00.00S",
+                "actionType": "shot",
+                "description": "Mononym shot",
+                "personId": 999,
+                "playerName": "Mononym",
+                "teamId": 10,
+            },
+            {
+                "game_id": "0021800334",
+                "actionId": 2,
+                "actionNumber": 2,
+                "period": 1,
+                "clock": "PT07M00.00S",
+                "actionType": "Substitution",
+                "description": "SUB: Mononym FOR Other",
+                "personId": 9,
+                "playerName": "Other",
+                "teamId": 10,
+            },
+        ]
+    )
+
+    pairs, failures = parse_historical_v3_substitutions(v3, players)
+
+    assert failures.empty
+    assert pairs.loc[0, "in_player_id"] == 999
+
+
+def test_historical_substitution_uses_versioned_nene_identity_alias() -> None:
+    players = pd.DataFrame(
+        [
+            {
+                "game_id": "0021800334",
+                "team_id": 10,
+                "player_id": 2403,
+                "player_name": "Nene Hilario",
+            }
+        ]
+    )
+    v3 = pd.DataFrame(
+        [
+            {
+                "game_id": "0021800334",
+                "actionId": 2,
+                "actionNumber": 2,
+                "period": 1,
+                "clock": "PT07M00.00S",
+                "actionType": "Substitution",
+                "description": "SUB: Nene FOR Other",
+                "personId": 9,
+                "playerName": "Other",
+                "teamId": 10,
+            }
+        ]
+    )
+
+    pairs, failures = parse_historical_v3_substitutions(v3, players)
+
+    assert failures.empty
+    assert pairs.loc[0, "in_player_id"] == 2403
 
 
 def test_historical_substitution_uses_suffix_before_ambiguous_surname() -> None:

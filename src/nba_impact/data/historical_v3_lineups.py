@@ -25,6 +25,11 @@ from .v3_cdn_lineup_repair import infer_v3_period_starts
 
 _V3_SUB = re.compile(r"^SUB:\s*(.+?)\s+FOR\s+(.+?)$", re.IGNORECASE)
 _SUFFIXES = {"jr", "sr", "ii", "iii", "iv"}
+# Exact NBA identity exceptions only. V3 substitution text uses the mononym
+# "Nene", while official box rows name player 2403 "Nene Hilario" and V3's
+# structured playerName field uses "Hilario". Do not generalize this to fuzzy
+# or first-name matching.
+_EXACT_PLAYER_ALIASES = {2403: {"nene"}}
 _LINEUP_COLUMNS = tuple(
     [f"home_player_{index}" for index in range(1, 6)]
     + [f"away_player_{index}" for index in range(1, 6)]
@@ -73,12 +78,28 @@ def _normalize_name_preserving_suffix(value: object) -> str:
     return re.sub(r"[^a-z0-9]", "", text)
 
 
-def _historical_aliases(player_games: pd.DataFrame) -> dict[tuple[str, int, str], set[int]]:
-    """Resolve only against the named game and team roster."""
+def _historical_aliases(
+    player_games: pd.DataFrame, v3: pd.DataFrame | None = None
+) -> dict[tuple[str, int, str], set[int]]:
+    """Resolve only against exact same-game/team roster and event identities."""
     aliases: dict[tuple[str, int, str], set[int]] = defaultdict(set)
+    roster_ids: dict[tuple[str, int], set[int]] = defaultdict(set)
     for row in player_games.itertuples(index=False):
-        for alias in _name_aliases(row.player_name):
+        roster_ids[(str(row.game_id), int(row.team_id))].add(int(row.player_id))
+        player_id = int(row.player_id)
+        player_aliases = _name_aliases(row.player_name) | _EXACT_PLAYER_ALIASES.get(
+            player_id, set()
+        )
+        for alias in player_aliases:
             aliases[(str(row.game_id), int(row.team_id), alias)].add(int(row.player_id))
+    if v3 is not None and "playerName" in v3.columns:
+        for row in v3.loc[v3["playerName"].notna()].itertuples(index=False):
+            game_team = (str(row.game_id), int(row.teamId))
+            player_id = int(row.personId)
+            if player_id <= 0 or player_id not in roster_ids.get(game_team, set()):
+                continue
+            for alias in _name_aliases(row.playerName):
+                aliases[(*game_team, alias)].add(player_id)
     return aliases
 
 
@@ -88,10 +109,20 @@ def parse_historical_v3_substitutions(
     """Parse V3 pairs; incoming names must map to one same-game team roster ID."""
     _require_columns(
         v3,
-        {"game_id", "actionId", "actionNumber", "period", "clock", "actionType", "description", "personId", "teamId"},
+        {
+            "game_id",
+            "actionId",
+            "actionNumber",
+            "period",
+            "clock",
+            "actionType",
+            "description",
+            "personId",
+            "teamId",
+        },
         "V3 events",
     )
-    aliases = _historical_aliases(player_games)
+    aliases = _historical_aliases(player_games, v3)
     source = v3.loc[v3["actionType"].astype(str).str.casefold().eq("substitution")].copy()
     rows: list[dict] = []
     failures: list[dict] = []
@@ -396,7 +427,20 @@ def build_historical_v3_lineup_candidate(
     scores = _official_scores(scores_path, project_season, season_type)
     v3 = pd.read_parquet(
         v3_path,
-        columns=["gameId", "actionId", "actionNumber", "period", "clock", "actionType", "description", "personId", "teamId", "scoreHome", "scoreAway"],
+        columns=[
+            "gameId",
+            "actionId",
+            "actionNumber",
+            "period",
+            "clock",
+            "actionType",
+            "description",
+            "personId",
+            "playerName",
+            "teamId",
+            "scoreHome",
+            "scoreAway",
+        ],
     )
     v3["game_id"] = v3["gameId"].map(canonical_game_id)
     target_ids = set(scores["game_id"])
