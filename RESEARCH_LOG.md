@@ -2555,3 +2555,29 @@ five-year as a sensitivity. Keep 2025--26 SPM/AIO research-only because the
 current defensive feature families remain incomplete and the pre-existing
 current-season validation gate failed. Full detail:
 `docs/impact/UNIFIED_TIMELINE_2014_2026.md`.
+
+## 2026-08-19 — Matchup Elo-scale v1
+
+**Question.** Can the existing scorer-versus-listed-defender matchup rows give
+one simple offensive score and one simple defensive score before a more complex
+matchup model is considered?
+
+**Method.** Fit a separate regularized two-way log-rate model for each regular
+season from 2018--26. The only inputs are scorer ID, listed defender ID,
+assigned partial possessions, and player points. The fitted equation is
+`log(PPP scorer,defender / league PPP) = offense scorer - defense defender`.
+Scores use an Elo display scale centered at 1500 on each side. This is a static
+Elo-scale transformation, not sequential Elo.
+
+**Result.** The run emitted 4,991 player-seasons for 1,394 players from nine
+source seasons and passed row identity, non-negative exposure, source-order,
+and synthetic recovery tests. The 2026 offensive top five were Giannis
+Antetokounmpo, Shai Gilgeous-Alexander, Luka Doncic, Kawhi Leonard, and Joel
+Embiid. The defensive ordering contains clear matchup-assignment and context
+signals, including implausible-looking high ranks for some players.
+
+**Decision.** Retain `matchup_elo_v1_09b1ed8860` as a descriptive research
+artifact only. Do not add it to RAPM, SPM, AIO, or the public site. Before any
+predictive test, define a chronological holdout and compare it with the
+existing scorer-adjusted matchup-feature baseline on identical rows. Details:
+`docs/impact/MATCHUP_ELO_V1.md`.

@@ -125,6 +125,7 @@ from nba_impact.models.current_single_season_rapm import (
 from nba_impact.models.annual_target_transition import (
     build_canonical_annual_target_panel,
 )
+from nba_impact.models.matchup_elo import build_matchup_elo
 from nba_impact.models.aging_balanced_validation import (
     run_aging_balanced_validation,
 )
@@ -1201,6 +1202,22 @@ def command_build_matchup_defense_features(args: argparse.Namespace) -> int:
         shooting_prior_attempts=args.shooting_prior_attempts,
         source_overrides=source_overrides,
         box_source_overrides=box_source_overrides,
+    )
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_matchup_elo(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    source_overrides = {
+        int(season): Path(path)
+        for season, path in json.loads(args.source_overrides.read_text()).items()
+    }
+    run = build_matchup_elo(
+        source_overrides=source_overrides,
+        artifact_root=args.artifact_root,
+        ridge_penalty=args.ridge_penalty,
+        smoothing_possessions=args.smoothing_possessions,
     )
     print(json.dumps(run, indent=2))
     return 0
@@ -3135,6 +3152,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     matchup_defense.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     matchup_defense.set_defaults(func=command_build_matchup_defense_features)
+
+    matchup_elo = subparsers.add_parser(
+        "build-matchup-elo",
+        help="Fit research-only Elo-scale scorer and listed-defender matchup ratings.",
+    )
+    matchup_elo.add_argument(
+        "--source-overrides", type=Path, required=True,
+        help="JSON map of project-season to one pinned raw matchup source.",
+    )
+    matchup_elo.add_argument("--ridge-penalty", type=float, default=500.0)
+    matchup_elo.add_argument("--smoothing-possessions", type=float, default=3.0)
+    matchup_elo.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    matchup_elo.set_defaults(func=command_build_matchup_elo)
 
     assist_quality = subparsers.add_parser(
         "build-assist-quality-features",

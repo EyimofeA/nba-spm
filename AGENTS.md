@@ -292,6 +292,10 @@ older-season comparison selected eight scorer-adjusted matchup features in
 not help. This is research evidence, not promotion evidence. Do not tune more
 subsets on 2022–24. Matchup points saved must not be described as causal
 defense.
+`matchup_elo_v1_09b1ed8860` is a separate 2018--26 descriptive two-way
+scorer/listed-defender log-rate fit on an Elo display scale. It is not
+sequential Elo, primary-defender value, causal defense, or an AIO input. Read
+`docs/impact/MATCHUP_ELO_V1.md` before extending it.
 The read-only API exposes these six factor residuals under
 `/v1/leaderboards/matchup-defense` and player payloads. Preserve the
 `research_only` label and caveat in any future client.
