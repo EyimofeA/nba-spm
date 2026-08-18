@@ -44,6 +44,7 @@ from nba_impact.data.possessions import build_possessions
 from nba_impact.data.scoring_events import build_scoring_event_dataset
 from nba_impact.data.rapm_readiness import audit_rapm_inputs
 from nba_impact.data.gabriel_fallback_repairs import build_gabriel_fallback_repairs
+from nba_impact.data.legacy_possession_migration import migrate_legacy_possession_cache
 from nba_impact.data.statistical_features import build_statistical_feature_windows
 from nba_impact.data.statistical_features_v2 import build_statistical_features_v2
 from nba_impact.models.rapm import (
@@ -335,6 +336,33 @@ def command_build_gabriel_fallback_repairs(args: argparse.Namespace) -> int:
         )
     )
     return 0 if report["passed"] else 2
+
+
+def command_migrate_legacy_possessions(args: argparse.Namespace) -> int:
+    """Migrate only score- and identity-verified legacy cache games."""
+    report = migrate_legacy_possession_cache(
+        args.cache_dir,
+        args.official_scores,
+        args.output,
+        args.segments_output,
+        args.game_identity_output,
+        args.quality_output,
+        args.report,
+        seasons=tuple(args.seasons),
+    )
+    print(
+        json.dumps(
+            {
+                "passed": report["passed"],
+                "complete": report["complete"],
+                "accepted_games_by_season": report["accepted_games_by_season"],
+                "quality": report["quality"],
+                "report": str(args.report),
+            },
+            indent=2,
+        )
+    )
+    return 0
 
 
 def command_build_game_dim(args: argparse.Namespace) -> int:
@@ -2109,6 +2137,32 @@ def build_parser() -> argparse.ArgumentParser:
         "--report", type=Path, default=MANIFEST_ROOT / "gabriel_targeted_lineup_repairs.json"
     )
     gabriel_repairs.set_defaults(func=command_build_gabriel_fallback_repairs)
+
+    legacy_migration = subparsers.add_parser(
+        "migrate-legacy-possessions",
+        help="Migrate only identity- and final-score-verified legacy RAPM cache rows.",
+    )
+    legacy_migration.add_argument("--seasons", type=_season_list, default=tuple(range(2017, 2024)))
+    legacy_migration.add_argument("--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE)
+    legacy_migration.add_argument(
+        "--official-scores",
+        type=Path,
+        default=BRONZE_ROOT / "official_game_scores" / "official_game_scores.parquet",
+    )
+    legacy_migration.add_argument("--output", type=Path, default=SILVER_ROOT / "legacy_possessions.parquet")
+    legacy_migration.add_argument(
+        "--segments-output", type=Path, default=SILVER_ROOT / "legacy_possession_lineup_segments.parquet"
+    )
+    legacy_migration.add_argument(
+        "--game-identity-output", type=Path, default=SILVER_ROOT / "legacy_game_identity.parquet"
+    )
+    legacy_migration.add_argument(
+        "--quality-output", type=Path, default=SILVER_ROOT / "legacy_possession_migration_quality.parquet"
+    )
+    legacy_migration.add_argument(
+        "--report", type=Path, default=MANIFEST_ROOT / "legacy_possession_migration.json"
+    )
+    legacy_migration.set_defaults(func=command_migrate_legacy_possessions)
 
     player_games = subparsers.add_parser(
         "build-player-games",

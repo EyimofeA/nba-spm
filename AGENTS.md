@@ -223,6 +223,12 @@ the ordinal `possession_lineup_segments.parquet`; a clock-only lineup join is
 not safe at same-clock substitutions. ESPN Net Points/WPA mirrors are research
 benchmarks only because the upstream repository declares no license.
 
+The separate 2017--2023 legacy-cache migration retains only score-conserved
+games with verified official game identity. It emits one terminal lineup segment
+per legacy row and has no within-possession substitution timing. It is for
+historical terminal-lineup research only; do not merge it into the canonical
+current-event tables.
+
 The verified points-only event layer covers 2017–2026: 20 partitions, 12,812
 games, and zero final-score mismatches. Its contract and anomaly handling are
 in `docs/impact/SCORING_EVENTS_2017_2026.md`. It is suitable for scoring-state

@@ -20,7 +20,7 @@ partition passes. It does not run a model.
 
 | Project season | Canonical RAPM-ready games | Status |
 |---|---:|---|
-| 2017--2023 | 0 | The clean canonical table has not been built. A legacy possession cache exists, but it is a separate historical input contract. |
+| 2017--2023 | 3,343 regular-season games in a separate strict legacy migration | The original clean action-level table has not been built. Only 3,631 all-type cache games whose terminal-lineup rows conserve to an official final score are emitted. |
 | 2024 regular | 1,227 / 1,230 | Three games are quarantined by lineup-minute QA. |
 | 2024 playoffs | 82 / 82 | Passes. |
 | 2025 regular | 1,226 / 1,230 | Four games are quarantined by lineup-minute QA. |
@@ -31,10 +31,12 @@ partition passes. It does not run a model.
 Do not silently fill these gaps with clock joins or inferred lineups.
 
 The legacy `rapm/data/possession_cache/` has possession rows with ten player
-columns for 2017--2024. It is the input used by the historical model work. It
-is not a substitute for the canonical source contract: the 2024 cache is
-incomplete and has duplicate-player lineup rows, the 2025 cache is empty, and
-there is no 2026 cache.
+columns for 2017--2024. `migrate-legacy-possessions` now makes a separate,
+strict 2017--2023 terminal-lineup table from its 3,631 score-conserved games.
+It is not a substitute for the canonical action-level source contract: it has
+no within-possession substitution timing. The 2024 cache is incomplete and has
+duplicate-player lineup rows, the 2025 cache is empty, and there is no 2026
+cache. See `LEGACY_POSSESSION_MIGRATION.md`.
 
 ## Immediate, bounded repair
 

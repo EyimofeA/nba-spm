@@ -22,6 +22,8 @@ Start at the repository root:
   2025/2026 statistical-feature coverage, drift, and frozen-SPM confirmation;
 - [`impact/CURRENT_2026_REFRESH.md`](impact/CURRENT_2026_REFRESH.md) — pinned
   current data, the 2014--2026 SPM null result, and RAPM input readiness;
+- [`impact/LEGACY_POSSESSION_MIGRATION.md`](impact/LEGACY_POSSESSION_MIGRATION.md) —
+  strict historical cache migration, coverage, and terminal-lineup boundary;
 - [`impact/FACTOR_DECOMPOSITION.md`](impact/FACTOR_DECOMPOSITION.md) — factor
   feature families, public benchmark formulas, and AIO explanation contract;
 - [`impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`](impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md) —
