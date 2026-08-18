@@ -36,6 +36,7 @@ from nba_impact.data.manifest import (
 from nba_impact.data.official_boxscore import ingest_official_boxscores
 from nba_impact.data.official_game_scores import build_official_game_scores
 from nba_impact.data.player_game import build_player_games
+from nba_impact.data.historical_player_games import build_historical_espn_player_games
 from nba_impact.data.playtype_features import build_playtype_features
 from nba_impact.data.player_skill_features import build_player_skill_features
 from nba_impact.data.possession_context import build_possession_start_context
@@ -436,6 +437,22 @@ def command_build_player_games(args: argparse.Namespace) -> int:
         )
     )
     return 0 if snapshot["passed"] else 2
+
+
+def command_build_historical_espn_player_games(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    snapshot = build_historical_espn_player_games(
+        args.espn,
+        args.official_scores,
+        args.v3_root,
+        args.output,
+        args.quality_output,
+        args.manifest_dir,
+        seasons=tuple(args.seasons),
+    )
+    register_snapshot(args.registry, snapshot)
+    print(json.dumps(snapshot, indent=2))
+    return 0
 
 
 def command_build_identity_dimensions(args: argparse.Namespace) -> int:
@@ -2213,6 +2230,33 @@ def build_parser() -> argparse.ArgumentParser:
     )
     player_games.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     player_games.set_defaults(func=command_build_player_games)
+
+    historical_player_games = subparsers.add_parser(
+        "build-historical-espn-player-games",
+        help="Build a separate strict historical ESPN player-game subset and QA ledger.",
+    )
+    historical_player_games.add_argument(
+        "--espn", type=Path, default=BRONZE_ROOT / "llimllib_nba_data" / "espn" / "player_box.parquet"
+    )
+    historical_player_games.add_argument(
+        "--official-scores", type=Path,
+        default=BRONZE_ROOT / "official_game_scores" / "official_game_scores.parquet",
+    )
+    historical_player_games.add_argument(
+        "--v3-root", type=Path,
+        default=BRONZE_ROOT / "nba_data_archive_scoring" / "revision=dfa8fa43" / "nbastatsv3",
+    )
+    historical_player_games.add_argument(
+        "--output", type=Path, default=SILVER_ROOT / "historical_espn_player_games.parquet"
+    )
+    historical_player_games.add_argument(
+        "--quality-output", type=Path,
+        default=SILVER_ROOT / "historical_espn_player_games_quality.parquet",
+    )
+    historical_player_games.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    historical_player_games.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    historical_player_games.add_argument("--seasons", type=int, nargs="+", default=list(range(2017, 2024)))
+    historical_player_games.set_defaults(func=command_build_historical_espn_player_games)
 
     identity_dimensions = subparsers.add_parser(
         "build-identity-dimensions",

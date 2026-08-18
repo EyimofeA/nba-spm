@@ -2239,6 +2239,26 @@ Every table, role map, and pruned player-detail shard loads only when requested.
 stabilization out of SPM. Put the RAPM level curve and RAPM/AIO year-over-year
 change under Research. Treat both aging summaries as descriptive.
 
+## 2026-08-18 — Historical ESPN player-game subset is valid but incomplete
+
+**Question:** Can local sources produce a strict 2017--23 player-game table
+with team identities, starters, and minutes without a new download?
+
+**Method:** Reconcile the pinned ESPN player-box mirror to official game IDs and
+scores, then use pinned V3 play-by-play only to verify each team ID and expected
+team minutes from the actual number of periods. Require one player-game row,
+five starters, two home/away teams, valid minutes, and no more than five seconds
+of team-minute error. Preserve every rejected game in a separate quality ledger.
+
+**Result:** The strict subset accepts 5,611 games and 118,953 player-game rows:
+2019 1,230; 2020 906; 2021 1,093; 2022 1,193; and 2023 1,189. The mirror has no
+2017 or 2018 rows and lacks 171 official 2020 games. It does not support a
+complete 2017--23 table. The output is separate from canonical `player_games`.
+
+**Decision:** Use the new historical ESPN builder only for research inputs that
+can tolerate explicit coverage gaps. Do not use its rows to infer historical
+lineups or to replace the canonical player-game table.
+
 ## 2026-08-17 — Canonical annual RAPM bridge passes; 2025 SPM still fails
 
 **Question:** Can the current event and lineup pipeline replace the legacy
