@@ -217,10 +217,12 @@ export function RadarComparison({
   const radius = size * 0.34;
   const point = (index: number, value: number) => polar(center, center, radius * Math.max(0, Math.min(100, value)) / 100, index * 360 / skills.length);
   const polygon = (values: Map<string, number>) => skills.map((skill, index) => { const p = point(index, values.get(skill.key) ?? 0); return `${p.x},${p.y}`; }).join(" ");
-  return <svg viewBox={`0 0 ${box} ${box}`} role="img" aria-label={`Skill comparison: ${leftName} and ${rightName}`}>
+  // Keep the comparison inside the shared chart shell.  The shell owns the
+  // theme-aware SVG label fills; without it, SVG falls back to black text.
+  return <div className="chart"><svg viewBox={`0 0 ${box} ${box}`} role="img" aria-label={`Skill comparison: ${leftName} and ${rightName}`}>
     {[25, 50, 75, 100].map((ring) => <circle key={ring} className="grid-line" cx={center} cy={center} r={radius * ring / 100} fill="none" />)}
     {skills.map((skill, index) => { const edge = polar(center, center, radius, index * 360 / skills.length); const label = polar(center, center, radius + 24, index * 360 / skills.length); return <g key={skill.key}><line className="grid-line" x1={center} y1={center} x2={edge.x} y2={edge.y} /><text className="cat-label" x={label.x} y={label.y + 4} textAnchor={Math.abs(label.x - center) < 10 ? "middle" : label.x > center ? "start" : "end"}>{skill.label}</text></g>; })}
     <polygon points={polygon(leftValues)} fill="var(--series-1)" opacity="0.22" stroke="var(--series-1)" strokeWidth="2" />
     <polygon points={polygon(rightValues)} fill="var(--series-2)" opacity="0.2" stroke="var(--series-2)" strokeWidth="2" />
-  </svg>;
+  </svg></div>;
 }
