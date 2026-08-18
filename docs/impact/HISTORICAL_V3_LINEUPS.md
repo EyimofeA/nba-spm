@@ -26,29 +26,30 @@ historical games contain mid-game score resets. Final-score validation instead
 uses made-shot and made-free-throw actions, matching the accepted historical
 possession candidate contract.
 
-## 2023 pre-backfill pilot
+## 2023 strict pilot
 
 The first implementation passed 629 of 1,230 regular-season games. Conservative
 support for compound surnames and explicit suffixes, plus action-derived score
 conservation, raised that to 1,023 games without fuzzy matching or a relaxed
-minute gate. The remaining 207 games stay quarantined:
+minute gate. After the official-box repair accepted every 2018--2023 game in the
+separate player-game table, the same frozen lineup contract passed 1,085 games.
+The remaining 145 games stay quarantined. Their overlapping current issues are:
 
-- 111 have no accepted historical player-game rows;
-- 75 have an invalid inferred period start;
-- 73 record a period-start inference failure;
-- 67 exceed five seconds of player-minute error;
-- 64 have an unresolved substitution name;
-- 52 have an invalid substitution transition.
+- 114 exceed five seconds of player-minute error;
+- 110 have an unresolved substitution name;
+- 107 have an invalid inferred period start;
+- 105 record a period-start inference failure;
+- 76 have an invalid substitution transition.
 
 These categories overlap. The official BoxScoreTraditionalV3 backfill is
 resumable and should address missing or incomplete roster evidence. It cannot
 by itself justify ambiguous substitutions or inferred period starts.
 
-The strict possession-lineup attachment then emitted all 1,023 double-passing
-games: 205,252 possessions, 248,766 ordinal lineup segments, and 471,674 owned
+The strict possession-lineup attachment then emitted all 1,085 double-passing
+games: 217,853 possessions, 263,954 ordinal lineup segments, and 500,709 owned
 actions. Every owned action maps once, the official score and segment points
 conserve, every segment has ten unique players, and the terminal-lineup RAPM
-loader accepts all 205,252 rows with no missing values. These are still
+loader accepts all 217,853 rows with no missing values. These are still
 separate candidate tables, not production inputs.
 
 ## Next gate

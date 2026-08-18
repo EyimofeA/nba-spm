@@ -1,6 +1,6 @@
 # Historical player-game source audit (2017–2023)
 
-Status: **audited 2026-08-18; no historical production table written.**
+Status: **strict separate candidate rebuilt 2026-08-18; no historical production table written.**
 
 ## Question
 
@@ -8,10 +8,12 @@ Can the pinned local sources make a verified `player_games` table with one row
 per player-game, official game and team IDs, starter status, and played
 minutes for project seasons 2017 through 2023?
 
-The answer is **yes for 2019 and 2021 only**. The resulting rows would be
-research-only because their upstream ESPN mirror has no declared licence.
-The remaining seasons need more official box-score coverage or individual game
-repair. Do not weaken the current player-game gates to make them pass.
+The current answer is **yes for every official game in project seasons
+2018--2023** after a 3,260-game official BoxScoreTraditionalV3 repair cache.
+Project season 2017 remains blocked: its 1,309 cached official boxes do not
+provide a valid five-starter state under the unchanged contract. The separate
+candidate is still research-only and is not the canonical current player-game
+table. Do not weaken the current gates to make 2017 pass.
 
 Project season means the season end year. For example, project season 2019 is
 the 2018-19 NBA season. Official game counts include regular season and
@@ -32,22 +34,27 @@ The ESPN schema also contains `team_id`, but it is null for every inspected
 `home = 1` to `official_game_scores.home_team_id`, and `home = 0` to
 `away_team_id`, after an exact game-ID join.
 
-## Local coverage and quality checks
+## Current local coverage and quality checks
 
 For every ESPN-covered official game, the audit checked two team sides, ten
 starters, five starters per side, and the sum of player minutes against five
 players for regulation plus the observed overtime periods. Minute tolerance is
 five seconds, matching the existing builder.
 
-| Project season | Official games | ESPN-covered games | Games with two teams / ten starters | Team sides with 5 starters | Team sides within 5 seconds | Decision |
-| --- | ---: | ---: | ---: | ---: | ---: | --- |
-| 2017 | 1,309 | 0 | — | — | — | No local player-box source. |
-| 2018 | 1,312 | 0 | — | — | — | No local player-box source. |
-| 2019 | 1,312 | 1,312 | 1,312 / 1,312 | 2,624 / 2,624 | 2,624 / 2,624 (max error 3 s) | **Complete candidate available.** |
-| 2020 | 1,142 | 971 | 971 / 971 | 1,942 / 1,942 | 1,942 / 1,942 (max error 5 s) | Incomplete: 171 games absent. |
-| 2021 | 1,165 | 1,165 | 1,165 / 1,165 | 2,330 / 2,330 | 2,330 / 2,330 (max error 3 s) | **Complete candidate available.** |
-| 2022 | 1,317 | 1,317 | 1,317 / 1,313 | 2,630 / 2,634 | 2,585 / 2,634 (max error 241 s) | Quarantine 4 starter-invalid games and 49 minute-invalid team sides. |
-| 2023 | 1,314 | 1,314 | 1,314 / 1,313 | 2,627 / 2,628 | 2,581 / 2,628 (max error 154 s) | Quarantine 1 starter-invalid game and 47 minute-invalid team sides. |
+| Project season | Official games | Strict accepted | Decision |
+| --- | ---: | ---: | --- |
+| 2017 | 1,309 | 0 | Cached official rows fail the five-starter gate; blocked. |
+| 2018 | 1,312 | 1,312 | **Complete candidate.** |
+| 2019 | 1,312 | 1,312 | **Complete candidate.** |
+| 2020 | 1,142 | 1,142 | **Complete candidate.** |
+| 2021 | 1,165 | 1,165 | **Complete candidate.** |
+| 2022 | 1,317 | 1,317 | **Complete candidate.** |
+| 2023 | 1,314 | 1,314 | **Complete candidate.** |
+
+The rebuilt table has 168,428 player-game rows across 7,562 accepted games.
+Every accepted team-game has five starters and satisfies the five-second team
+minute gate. All 1,309 rejected games are from project season 2017 and fail both
+home and away starter-count checks.
 
 Sample identity check: game `0021800512` is Boston at Houston in the official
 score table (Boston `1610612738`, Houston `1610612745`). The ESPN rows mark
@@ -55,19 +62,15 @@ Boston `home = 0` and Houston `home = 1`, so its side mapping gives the same
 team IDs. All 1,312 project-2019 official game IDs have this exact ESPN game
 coverage.
 
-## Smallest safe path
+## Remaining safe path
 
-1. Build **separate, research-only candidate** `player_games` outputs for
-   **2019 and 2021**. Join ESPN rows to the official game table by exact
-   `game_id`; derive team IDs from the ESPN home flag; use ESPN starter and
-   minute fields; validate the same existing gates and keep a source manifest.
-2. Do not overwrite the canonical 2023-26 table and do not add these
-   unlicensed-derived rows to a public release bundle or API.
-3. Retain 2022-23 malformed games in quarantine. Repair them only with pinned
-   official `BoxScoreTraditionalV3` JSON. Do not expand the minute tolerance.
-4. For 2017-18 and the 171 missing 2020 games, acquire a separately pinned,
-   rights-reviewed official box-score source before construction. The event and
-   matchup sources cannot substitute for starters and total minutes.
+1. Finish the resumable `--all-games` official cache so accepted games no longer
+   depend on the unlicensed ESPN fallback.
+2. Rebuild the same separate table and require identical 2018--2023 coverage.
+3. Keep 2017 blocked until a source supplies trustworthy starters; do not infer
+   them from minutes or relax the gate.
+4. Do not overwrite canonical current tables or redistribute raw official or
+   ESPN rows in the public release bundle.
 
 The existing `build_player_games` function already implements the relevant
 ESPN fallback join, including home/away team-ID mapping. A historical candidate
