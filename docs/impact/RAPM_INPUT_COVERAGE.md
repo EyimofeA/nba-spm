@@ -38,10 +38,21 @@ there is no 2026 cache.
 
 ## Immediate, bounded repair
 
-`configs/ingest/cdnnba_2026_playoffs_patch.json` downloads one pinned 1.49 MB
-CDN playoff partition. It can restore the source event coverage for the 24
-2026 playoff games after the normal game, player-box, lineup, and possession
-builders are rerun. It does not bypass their minute-reconciliation gate.
+`configs/ingest/cdnnba_2026_playoffs_patch.json` pins the available 1.49 MB CDN
+playoff partition. Direct inspection confirms that it has 60 of 85 games. It
+does **not** contain the 25-game tail, so rerunning the standard builders cannot
+restore those possessions.
+
+`configs/ingest/current_lineup_v3_playoff_tail_2026.json` pins a licensed V3
+file with all 85 games. V3 supplies event order and substitutions, but no native
+possession owner. It is a lineup source only.
+
+`configs/ingest/gabriel_2026_playoff_tail_lineups.json` pins four research-only
+files that cover the 25-game tail. All 25 game IDs are present, event keys are
+unique, maximum final scores match the official game table, and every
+non-substitution row has exact five-versus-five lineups. The upstream repository
+does not declare a license. These files remain quarantined and cannot create
+canonical possessions without an independently validated possession source.
 
 Gabriel Adebayo's `merged_playbyplay` repository is a targeted fallback for
 the nine regular-season quarantines and the remaining failed playoff game.
@@ -76,6 +87,24 @@ All other audited 2024--26 partitions were unchanged. The adapter writes a
 separate merged candidate (`possessions_repaired.parquet` and
 `possession_lineup_segments_repaired.parquet`); it never overwrites the
 canonical inputs.
+
+### Pinned V3 substitution repair
+
+`nba-impact build-v3-cdn-lineup-repair` aligns a pinned V3 substitution to a
+CDN ordinal event only when game, period, clock, team, incoming player, and
+substitution direction agree. CDN remains the source for event order, scores,
+and possession ownership.
+
+Two additional regular-season games pass every gate:
+
+| Game | Project season | Maximum official-minute error |
+|---|---:|---:|
+| `0022301210` | 2024 | 0.4 seconds |
+| `0022400061` | 2025 | 0.1 seconds |
+
+Games `0022300339` and `0022500264` remain quarantined because one or more V3
+substitutions cannot be mapped under the full ordinal key. The candidate keeps
+separate outputs and does not weaken the production gate.
 
 ## Boundary
 

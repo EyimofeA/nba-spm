@@ -501,6 +501,7 @@ def command_build_v3_cdn_lineup_repair(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     snapshot = build_v3_cdn_lineup_repair_candidate(
         args.root,
+        args.v3_root,
         args.player_games,
         args.game_dim,
         args.alignment_output,

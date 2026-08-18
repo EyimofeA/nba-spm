@@ -2,7 +2,16 @@
   "provider": "cdechoch/nba-data-archive",
   "source": "https://huggingface.co/datasets/cdechoch/nba-data-archive",
   "license": "Apache-2.0",
-  "purpose": "Complete the missing 2025-26 playoff ordinal event partition before rebuilding current possessions and lineups.",
+  "purpose": "Pin and audit the available 2025-26 CDN playoff partition. The pinned file confirms the upstream cutoff: it contains 60 of 85 games and does not fill the 25-game tail.",
+  "verified_game_count": 60,
+  "expected_game_count": 85,
+  "verified_game_ids_missing_from_source": [
+    "0042500204", "0042500205", "0042500206", "0042500207", "0042500214",
+    "0042500224", "0042500234", "0042500235", "0042500236", "0042500301",
+    "0042500302", "0042500303", "0042500304", "0042500311", "0042500312",
+    "0042500313", "0042500314", "0042500315", "0042500316", "0042500317",
+    "0042500401", "0042500402", "0042500403", "0042500404", "0042500405"
+  ],
   "tasks": [
     {
       "name": "cdnnba_2026_playoffs",
