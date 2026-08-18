@@ -2410,7 +2410,7 @@ sequences, but only 80 of 82 games are within two possessions. Games
 `0042300134` and `0042300163` fail that gate. Keep historical playoffs
 research-only and exclude them from the first Normal RAPM fit.
 
-## 2026-08-18 — Matched historical V3 versus legacy RAPM
+## 2026-08-18 — Matched historical V3 versus legacy RAPM (superseded)
 
 **Question:** Do the historical V3 possession and terminal-lineup candidate and
 the legacy terminal-lineup cache produce materially different RAPM ratings on
@@ -2429,8 +2429,9 @@ correlations were 0.971–0.982 and net-rating RMSE was 0.233–0.348 points per
 the matched games. Held-out metrics are source-specific retrodictions using
 observed test lineups, not forecasts.
 
-**Decision:** Keep this as research evidence only. The sources have similar
-player ordering but are not interchangeable at the possession level. V3 must
+**Decision:** Superseded by the corrected 2017--23 run below. Keep this as a
+provenance record only. The sources have similar player ordering but are not
+interchangeable at the possession level. V3 must
 still pass historical ordinal-lineup and official-minute reconciliation before
 it can replace the legacy research cache. Artifact:
 `artifacts/research/historical_matched_rapm/historical_matched_rapm_v1_f49c0fdc102e`.
@@ -2442,17 +2443,22 @@ the validated 2017 starter rule, and the final seven-season strict lineup build?
 
 **Method:** Add 2017 to the frozen comparison. Restrict both sources to identical
 regular-season game IDs. Fit the same terminal-lineup, zero-prior
-`3000/3000/300` ridge separately to each source. Keep the chronological 20%
-held-out retrodiction diagnostic unchanged.
+`3000/3000/300` ridge separately to each source. Persist one chronological 20%
+holdout split and score both sources against the same official final margin.
+Hash the comparison code, RAPM code, official scores, source tables, and QA
+ledgers. Repeat rating agreement at 500, 1,000, and 2,000 possessions per side.
 
 **Result:** The V3 candidate accepts 7,136 matched games and 1,425,380
 possessions. Net-rating Pearson correlation versus legacy is 0.971--0.981;
-net-rating RMSE is 0.298--0.350 points per 100. V3 has lower held-out margin
-RMSE in one of seven seasons. Its mean RMSE is 0.118 points per game higher,
-mean MAE is 0.112 higher, and mean margin correlation is 0.011 lower.
+net-rating RMSE is 0.298--0.350 points per 100. At 2,000 possessions on each
+side in both sources, net Pearson remains 0.970--0.982. V3 reconstructs official
+held-out margins more accurately, with 0.60--0.97 points RMSE versus
+1.32--1.97 for legacy. V3 has lower held-out prediction RMSE in two of seven
+seasons. Its mean prediction RMSE is 0.085 points per game higher, mean MAE is
+0.059 higher, and mean margin correlation is 0.013 lower.
 
 **Decision:** The corrected run passes a narrow source-compatibility check but
 does not support a predictive promotion. Keep V3 research-only until the full
 official player-game cache is complete and the official-preferred rebuild
 reproduces the accepted-game and comparison gates. Artifact:
-`artifacts/research/historical_matched_rapm/historical_matched_rapm_v1_5cdea91ec419`.
+`artifacts/research/historical_matched_rapm/historical_matched_rapm_v1_9fb68e0fd785`.

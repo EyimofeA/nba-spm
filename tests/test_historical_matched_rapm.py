@@ -1,11 +1,15 @@
 import pandas as pd
 import pytest
+import numpy as np
 
 from nba_impact.models.historical_matched_rapm import (
     MatchedRapmConfig,
+    _official_margin_metrics,
+    _rating_comparison,
     adapt_v3_terminal_lineups,
     _regular_game_ids,
 )
+from nba_impact.models.rapm import build_design
 
 
 def _v3_rows():
@@ -62,3 +66,53 @@ def test_v3_adapter_rejects_overlapping_lineup():
     segments.loc[1, "away_player_1"] = 1
     with pytest.raises(ValueError, match="ten unique players"):
         adapt_v3_terminal_lineups(possessions, segments)
+
+
+def test_official_margin_metrics_use_common_target():
+    frame = pd.DataFrame(
+        {
+            "home_poss": [1, 1],
+            "pts": [1.0, 2.0],
+            **{f"a{i}": [10 + i, 10 + i] for i in range(1, 6)},
+            **{f"h{i}": [i, i] for i in range(1, 6)},
+            "season": [2017, 2017],
+            "date": [pd.Timestamp("2016-10-25"), pd.Timestamp("2016-10-26")],
+            "period": [1, 1],
+            "num": [1, 1],
+            "gameid": ["g1", "g2"],
+        }
+    )
+    design = build_design(frame)
+    metrics = _official_margin_metrics(
+        design,
+        np.zeros(design.X.shape[1]),
+        0.0,
+        np.array([False, True]),
+        np.array([True, False]),
+        {"g2": 10.0},
+    )
+
+    assert metrics["margin_target"] == "official_final_score"
+    assert metrics["margin_rmse"] == 10.0
+    assert metrics["games_with_reconstructed_margin_mismatch"] == 1
+    assert metrics["max_abs_reconstructed_margin_error"] == 8.0
+
+
+def test_rating_comparison_applies_exposure_to_both_sources_and_sides():
+    base = pd.DataFrame(
+        {
+            "player_id": [1, 2],
+            "offense_per_100": [1.0, 2.0],
+            "defense_per_100": [0.0, 1.0],
+            "net_per_100": [1.0, 3.0],
+            "off_possessions": [1500, 1500],
+            "def_possessions": [1500, 900],
+        }
+    )
+    legacy = base.copy()
+    legacy.loc[0, "off_possessions"] = 999
+
+    result = _rating_comparison(base, legacy, minimum_possessions=1000)
+
+    assert result["minimum_possessions_per_source_side"] == 1000
+    assert result["matched_players"] == 0

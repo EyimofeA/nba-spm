@@ -38,13 +38,21 @@ roots = {
     season: Path(f"data/lake/silver/candidates/historical_v3_{season}_regular_main")
     for season in range(2017, 2024)
 }
-run_matched_comparison(roots, "rapm/data/possession_cache", "artifacts")
+run_matched_comparison(
+    roots,
+    "rapm/data/possession_cache",
+    "data/lake/bronze/official_game_scores/official_game_scores.parquet",
+    "artifacts",
+)
 ```
 
-The checked run is version `historical_matched_rapm_v1_5cdea91ec419`.
+The checked run is version `historical_matched_rapm_v1_9fb68e0fd785`.
 It writes `season_coverage.parquet`, `rating_comparison.parquet`,
-`game_margin_comparison.parquet`, and `run.json` under the matching directory
-in `artifacts/research/historical_matched_rapm/`.
+`rating_comparison_by_exposure.parquet`, `game_margin_comparison.parquet`,
+`game_splits.parquet`, and `run.json` under the matching directory in
+`artifacts/research/historical_matched_rapm/`. The run hashes its comparison
+code, RAPM code, official-score input, candidate possession and segment inputs,
+and both candidate QA ledgers.
 
 ## Results
 
@@ -72,25 +80,34 @@ correlations, RMSE values, and rank correlations.  Do not summarize these as
 validation of V3 accuracy.  They measure source sensitivity under different
 possession boundaries and lineup assignments.
 
+The agreement is not an artifact of low-exposure shrinkage. Requiring at least
+2,000 possessions on offense and defense in both sources leaves 210--262
+players per season. Net Pearson correlation remains 0.970--0.982 and net
+Spearman correlation remains 0.963--0.978. Net RMSE is 0.347--0.412 points per
+100 at that threshold.
+
 ## Held-out game metric
 
-The same source-specific design supports a chronological within-season split.
-The last 20% of matched games are held out.  A source is fit on its earlier
-rows and predicts the held-out games using their observed lineups.  This is a
-lineup-conditioned retrodiction, not a forecast of a game before lineups are
-known.  The artifact reports RMSE, MAE, margin correlation, calibration, and
-unknown-player exposure for both sources.
+The same source-specific design supports one persisted chronological within-
+season split. The last 20% of matched games are held out. Both sources use the
+same game IDs and are scored against the same official final-score margin. A
+source is fit on its earlier rows and predicts the held-out games using their
+observed lineups. This is a lineup-conditioned retrodiction, not a forecast of
+a game before lineups are known. The artifact reports RMSE, MAE, margin
+correlation, calibration, unknown-player exposure, and each source's margin-
+reconstruction error.
 
 This metric is useful for checking whether a source changes the fit's
 retrodictive behavior.  It is not a promotion gate.  The V3 and legacy
 possession totals differ on the same games, so a difference in game RMSE cannot
 be attributed to lineup quality alone.
 
-The V3 candidate had lower held-out margin RMSE in one of seven seasons. Its
-mean RMSE was 0.118 points per game higher, its mean MAE was 0.112 points per
-game higher, and its mean margin correlation was 0.011 lower. These are small
-source-sensitivity differences, but they provide no evidence that the V3
-candidate is a more predictive RAPM input.
+V3 reconstructs official margins more accurately: held-out reconstruction RMSE
+is 0.60--0.97 points per game, versus 1.32--1.97 for legacy. That supports the
+V3 event parser's score contract. It does not make V3 RAPM more predictive. V3
+has lower held-out prediction RMSE in two of seven seasons. Its mean prediction
+RMSE is 0.085 points per game higher, mean MAE is 0.059 higher, and mean margin
+correlation is 0.013 lower.
 
 ## Boundary and next step
 
