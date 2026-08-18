@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Distribution } from "../charts/bars";
 import { Figure, Legend } from "../charts/frame";
 import { MultiLine } from "../charts/lines";
 import { Pizza, SKILLS, Slice, pizzaLegend } from "../charts/pizza";
@@ -9,13 +8,11 @@ import {
   Catalog,
   COMPONENT_LABEL,
   Component,
-  LeaderboardRow,
   ModelId,
   Player,
   PlayerIndex,
   Role,
   RoleSide,
-  possessions,
   rating,
   resolveModel,
   missingModelNote,
@@ -23,7 +20,6 @@ import {
 import {
   COMPONENT_COLOR,
   SERIES,
-  fmtInt,
   fmtRating,
   ordinalSuffix,
 } from "../lib/viz";
@@ -37,8 +33,6 @@ type PlayerViewProps = {
   onModel: (model: ModelId) => void;
   component: Component;
   onComponent: (component: Component) => void;
-  peers: LeaderboardRow[];
-  peerSeason: number;
   index: PlayerIndex[];
   comparePlayer: Player | null;
   onCompare: (id: number) => void;
@@ -72,8 +66,6 @@ function PlayerBody({
   onModel,
   component,
   onComponent,
-  peers,
-  peerSeason,
   index,
   comparePlayer,
   onCompare,
@@ -125,32 +117,7 @@ function PlayerBody({
 
   // Left unmemoized on purpose: the compiler handles it, and a hand-written dep
   // list on `active.prefix` is something it cannot verify.
-  const swarm = peers
-    .filter((row) => possessions(row) >= 500)
-    .flatMap((row) => {
-      const value = rating(row, active.prefix, component);
-      return value === undefined
-        ? []
-        : [
-            {
-              id: row.PLAYER_ID,
-              name: row.PLAYER_NAME,
-              team: row.TEAM_ABBREVIATION,
-              value,
-            },
-          ];
-    });
-  const mine = swarm.find((row) => row.id === player.PLAYER_ID);
-  const rank = mine
-    ? (() => {
-        const better = swarm.filter((row) => row.value > mine.value).length;
-        return {
-          place: better + 1,
-          of: swarm.length,
-          percentile: (1 - better / swarm.length) * 100,
-        };
-      })()
-    : null;
+  const heroValue = rating(current, active.prefix, component);
 
   return (
     <>
@@ -166,9 +133,6 @@ function PlayerBody({
             <span className="chip">
               {season - 1}–{String(season).slice(2)}
             </span>
-            <span className="chip">
-              {current ? `${fmtInt(possessions(current as never))} poss` : "—"}
-            </span>
             {roles?.offense && (
               <span className="chip">{roles.offense.primary_role}</span>
             )}
@@ -177,11 +141,13 @@ function PlayerBody({
         </div>
         <div style={{ textAlign: "right" }}>
           <div
-            className={`hero-figure ${net !== undefined && net < 0 ? "neg" : "pos"}`}
+            className={`hero-figure ${heroValue !== undefined && heroValue < 0 ? "neg" : "pos"}`}
           >
-            {fmtRating(net)}
+            {fmtRating(heroValue)}
           </div>
-          <div className="hero-caption">Net impact · {season}</div>
+          <div className="hero-caption">
+            {COMPONENT_LABEL[component]} impact · {season}
+          </div>
         </div>
       </div>
 
@@ -230,7 +196,7 @@ function PlayerBody({
         {comparePlayer ? (
           <ComparisonTable left={player} right={comparePlayer} season={season} model={model} />
         ) : (
-          <p className="note">Choose a second player to compare offense, defense, net, and possessions.</p>
+          <p className="note">Choose a second player to compare offense, defense, and net.</p>
         )}
       </section>
 
@@ -262,7 +228,6 @@ function PlayerBody({
                   <th scope="col">Off</th>
                   <th scope="col">Def</th>
                   <th scope="col">Net</th>
-                  <th scope="col">Poss</th>
                 </tr>
               </thead>
               <tbody>
@@ -276,7 +241,6 @@ function PlayerBody({
                     <td>{fmtRating(rating(row, active.prefix, "offense"))}</td>
                     <td>{fmtRating(rating(row, active.prefix, "defense"))}</td>
                     <td>{fmtRating(rating(row, active.prefix, "net"))}</td>
-                    <td>{fmtInt(possessions(row as never))}</td>
                   </tr>
                 ))}
               </tbody>
@@ -382,47 +346,6 @@ function PlayerBody({
           </section>
         </div>
 
-        {rank && (
-          <Figure
-            kicker={`Against the ${peerSeason} field`}
-            title={`${COMPONENT_LABEL[component]} among rated players`}
-            note={`Every player-season with 500 or more possessions on the smaller side. ${player.PLAYER_NAME} ranks ${rank.place} of ${rank.of} — ${ordinalSuffix(rank.percentile)} percentile.`}
-            table={
-              <table className="mini">
-                <thead>
-                  <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Player</th>
-                    <th scope="col">{COMPONENT_LABEL[component]}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...swarm]
-                    .sort((a, b) => b.value - a.value)
-                    .slice(0, 40)
-                    .map((row, position) => (
-                      <tr
-                        key={row.id}
-                        className={
-                          row.id === player.PLAYER_ID ? "flag" : undefined
-                        }
-                      >
-                        <td>{position + 1}</td>
-                        <td>{row.name}</td>
-                        <td>{fmtRating(row.value)}</td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            }
-          >
-            <Distribution
-              rows={swarm}
-              highlight={player.PLAYER_ID}
-              label={COMPONENT_LABEL[component]}
-            />
-          </Figure>
-        )}
       </div>
     </>
   );
@@ -461,7 +384,7 @@ function ComparisonTable({ left, right, season, model }: { left: Player; right: 
   const rows: Component[] = ["offense", "defense", "net"];
   return <div className="comparison-grid">
     <div className="comparison-player"><PlayerHeadshot id={left.PLAYER_ID} name={left.PLAYER_NAME} /><b>{left.PLAYER_NAME}</b><span>{leftRow?.TEAM_ABBREVIATION ?? "—"}</span></div>
-    <table className="mini comparison-table"><thead><tr><th scope="col">Metric</th><th scope="col">{left.PLAYER_NAME}</th><th scope="col">{right.PLAYER_NAME}</th></tr></thead><tbody>{rows.map((key) => <tr key={key}><td>{COMPONENT_LABEL[key]}</td><td>{fmtRating(rating(leftRow, leftActive.prefix, key))}</td><td>{fmtRating(rating(rightRow, rightActive.prefix, key))}</td></tr>)}<tr><td>Poss</td><td>{leftRow ? fmtInt(possessions(leftRow)) : "—"}</td><td>{rightRow ? fmtInt(possessions(rightRow)) : "—"}</td></tr></tbody></table>
+    <table className="mini comparison-table"><thead><tr><th scope="col">Metric</th><th scope="col">{left.PLAYER_NAME}</th><th scope="col">{right.PLAYER_NAME}</th></tr></thead><tbody>{rows.map((key) => <tr key={key}><td>{COMPONENT_LABEL[key]}</td><td>{fmtRating(rating(leftRow, leftActive.prefix, key))}</td><td>{fmtRating(rating(rightRow, rightActive.prefix, key))}</td></tr>)}</tbody></table>
     <div className="comparison-player"><PlayerHeadshot id={right.PLAYER_ID} name={right.PLAYER_NAME} /><b>{right.PLAYER_NAME}</b><span>{rightRow?.TEAM_ABBREVIATION ?? "—"}</span></div>
   </div>;
 }

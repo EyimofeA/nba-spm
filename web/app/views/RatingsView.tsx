@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Distribution, ImpactBars, ImpactDatum, impactLegend } from "../charts/bars";
-import { Figure, Legend } from "../charts/frame";
 import {
   Catalog,
   LeaderboardRow,
@@ -13,7 +11,6 @@ import {
   possessions,
   rating,
   resolveModel,
-  missingModelNote,
 } from "../lib/data";
 import { fmtInt, fmtRating, symmetricBound } from "../lib/viz";
 import { MinPossField, ModelField, SeasonField, TeamField } from "./controls";
@@ -30,7 +27,6 @@ export function RatingsView({
   minPoss,
   onMinPoss,
   onPlayer,
-  selected,
 }: {
   catalog: Catalog;
   rows: LeaderboardRow[];
@@ -41,7 +37,6 @@ export function RatingsView({
   minPoss: number;
   onMinPoss: (value: number) => void;
   onPlayer: (id: number) => void;
-  selected?: number;
 }) {
   const [team, setTeam] = useState("All");
   const [roleSide, setRoleSide] = useState<RoleSide>("offense");
@@ -84,7 +79,7 @@ export function RatingsView({
     [rows],
   );
 
-  const shaped = useMemo<ImpactDatum[]>(
+  const shaped = useMemo(
     () =>
       rows
         .filter((row) => possessions(row) >= minPoss)
@@ -122,8 +117,6 @@ export function RatingsView({
     shaped.map((row) => row.net),
     3,
   );
-  const top = sorted.slice(0, 15);
-
   function sortBy(key: SortKey) {
     if (key === sortKey) setOrder(order === "desc" ? "asc" : "desc");
     else {
@@ -184,59 +177,7 @@ export function RatingsView({
         </label>
       </div>
 
-      <div className="grid">
-        <Figure
-          kicker={`Top 15 by ${sortKey === "poss" ? "possessions" : sortKey}`}
-          title="How the leaders get there"
-          legend={<Legend items={impactLegend} />}
-          note={
-            <>
-              Offense and defense are separate estimates that add to net, and
-              both are positive when the player helps. Net is labelled at the
-              row end; per-side values are in the tooltip and the table.
-              {missingModelNote(rows) ? ` ${missingModelNote(rows)}` : ""}
-            </>
-          }
-          table={
-            <table className="mini">
-              <thead>
-                <tr>
-                  <th scope="col">Player</th>
-                  <th scope="col">Off</th>
-                  <th scope="col">Def</th>
-                  <th scope="col">Net</th>
-                </tr>
-              </thead>
-              <tbody>
-                {top.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.name}</td>
-                    <td>{fmtRating(row.offense)}</td>
-                    <td>{fmtRating(row.defense)}</td>
-                    <td>{fmtRating(row.net)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          }
-        >
-          <ImpactBars rows={top} onSelect={(row) => onPlayer(row.id)} />
-        </Figure>
-
-        <Figure
-          kicker={`${active.label} · ${season}`}
-          title="Where the selected player sits"
-          note="The highlighted dot is the selected player. The distribution uses the same season, model, side, and possession floor as the table."
-        >
-          <Distribution
-            rows={shaped.map((row) => ({ id: row.id, name: row.name, team: row.team, value: row.net }))}
-            highlight={selected}
-            label={`${active.label} net distribution`}
-            onSelect={(row) => onPlayer(row.id)}
-          />
-        </Figure>
-
-        <section>
+      <section>
           <div className="section-head" style={{ marginTop: 8 }}>
             <div>
               <p className="kicker">Full board</p>
@@ -318,13 +259,7 @@ export function RatingsView({
               </tbody>
             </table>
           </div>
-          <p className="note">
-            {active.label}: {active.note} Possessions show the smaller of
-            offensive and defensive exposure. Small samples pull toward the
-            model’s center, so read low-possession rows with care.
-          </p>
-        </section>
-      </div>
+      </section>
     </>
   );
 }

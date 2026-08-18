@@ -176,6 +176,7 @@ export function Figure({
   legend,
   table,
   tableLabel = "Table",
+  defaultView = "chart",
   children,
 }: {
   kicker?: string;
@@ -185,9 +186,10 @@ export function Figure({
   legend?: ReactNode;
   table?: ReactNode;
   tableLabel?: string;
+  defaultView?: "chart" | "table";
   children: ReactNode;
 }) {
-  const [view, setView] = useState<"chart" | "table">("chart");
+  const [view, setView] = useState<"chart" | "table">(defaultView);
   return (
     <section className="card">
       <div className="card-head">

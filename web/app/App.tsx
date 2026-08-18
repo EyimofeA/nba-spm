@@ -371,7 +371,6 @@ export function App() {
           <>
             {tab === "home" && (
               <HomeView
-                catalog={catalog}
                 rows={rows}
                 onGo={(next) => navigate(next)}
                 onPlayer={openPlayer}
@@ -388,7 +387,6 @@ export function App() {
                 minPoss={minPoss}
                 onMinPoss={setMinPoss}
                 onPlayer={openPlayer}
-                selected={player?.PLAYER_ID}
               />
             )}
             {tab === "landscape" && (
@@ -415,8 +413,6 @@ export function App() {
                 onModel={setModel}
                 component={component}
                 onComponent={setComponent}
-                peers={rows}
-                peerSeason={season}
                 index={index}
                 comparePlayer={comparePlayer}
                 onCompare={openComparison}

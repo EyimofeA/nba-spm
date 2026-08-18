@@ -3,16 +3,14 @@
 import { useMemo } from "react";
 import { ImpactBars, ImpactDatum, impactLegend } from "../charts/bars";
 import { Figure, Legend } from "../charts/frame";
-import { Catalog, LeaderboardRow, possessions, rating } from "../lib/data";
+import { LeaderboardRow, possessions, rating } from "../lib/data";
 import { fmtRating } from "../lib/viz";
 
 export function HomeView({
-  catalog,
   rows,
   onGo,
   onPlayer,
 }: {
-  catalog: Catalog;
   rows: LeaderboardRow[];
   onGo: (tab: "ratings" | "landscape" | "research") => void;
   onPlayer: (id: number) => void;
@@ -52,12 +50,6 @@ export function HomeView({
           <br />
           More context.
         </h1>
-        <p className="lede">
-          Every rating on this site is points per 100 possessions. Offense and
-          defense are estimated separately, and both are positive when the
-          player helps. The ratings describe seasons that already happened —
-          they are not forecasts.
-        </p>
         <div
           style={{ display: "flex", gap: 8, marginTop: 24, flexWrap: "wrap" }}
         >
@@ -113,43 +105,6 @@ export function HomeView({
       >
         <ImpactBars rows={leaders} onSelect={(row) => onPlayer(row.id)} />
       </Figure>
-
-      <div className="section-head">
-        <div>
-          <p className="kicker">Three models</p>
-          <h2>Built in this order</h2>
-        </div>
-        <span className="meta">{catalog.methods.aio_equation}</span>
-      </div>
-      <div className="grid three">
-        <article className="card">
-          <p className="kicker">Step one · SPM</p>
-          <h3>Statistics</h3>
-          <p className="note" style={{ marginTop: 8 }}>
-            A statistical model that predicts one season of impact from box,
-            tracking, playtype, and matchup features. The rated season is never
-            in its own training labels.
-          </p>
-        </article>
-        <article className="card">
-          <p className="kicker">Reference · RAPM</p>
-          <h3>Lineups</h3>
-          <p className="note" style={{ marginTop: 8 }}>
-            A ridge regression on possessions that separates each player from
-            the other nine on the floor. RAPM uses no prior, so it is the
-            independent reference rather than part of AIO.
-          </p>
-        </article>
-        <article className="card">
-          <p className="kicker">Step two · AIO</p>
-          <h3>Combined</h3>
-          <p className="note" style={{ marginTop: 8 }}>
-            The all-in-one rating. SPM sets the center, then one centered ridge
-            fit updates it with that season’s possessions.
-          </p>
-        </article>
-      </div>
-
     </>
   );
 }

@@ -139,16 +139,6 @@ export function LandscapeView({
             high={`+${netBoundFor(points).toFixed(1)}`}
           />
         }
-        note={
-          <>
-            Each dot is one player. Dot size is possessions on the
-            smaller side, so thin samples look thin. Colour restates net — the
-            sum of the two axes — which is what makes the two-way corner read at
-            a glance. Only the highest-net names are labelled; hover or open the
-            table for the rest. A 300-possession floor applies here so the plane
-            is not dominated by noise.
-          </>
-        }
         table={
           <table className="mini">
             <thead>

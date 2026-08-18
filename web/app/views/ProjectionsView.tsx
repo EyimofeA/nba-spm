@@ -84,21 +84,13 @@ export function ProjectionsView({
           <p className="kicker">{season} baseline</p>
           <h1>Projections</h1>
         </div>
-        <span className="meta">Research baseline · not a forecast</span>
       </div>
-
-      <p className="lede" style={{ marginTop: 0, marginBottom: 20 }}>
-        This ages each returning player’s latent rating one year and holds every
-        team’s roster and minutes fixed. Trades, rookies, injuries, and schedule
-        are absent, so treat it as a baseline the models can be measured against
-        — not a prediction of the standings.
-      </p>
 
       <div className="grid">
         <Figure
           kicker="Teams"
           title="Projected net rating"
-          note="Rosters and minutes are frozen at last season’s returning players. Season 2027 stays reserved for confirmation, so nothing here is scored against it."
+          defaultView="table"
           table={
             <table className="mini">
               <thead>
@@ -131,7 +123,7 @@ export function ProjectionsView({
           kicker="Players"
           title="Fifteen highest projected"
           legend={<Legend items={impactLegend} />}
-          note="Aged one year from the latent rating. Select a row to open the player’s history."
+          defaultView="table"
           table={
             <table className="mini">
               <thead>
