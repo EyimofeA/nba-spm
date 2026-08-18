@@ -1,12 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ImpactBars, ImpactDatum, impactLegend } from "../charts/bars";
+import { useEffect, useMemo, useState } from "react";
+import { Distribution, ImpactBars, ImpactDatum, impactLegend } from "../charts/bars";
 import { Figure, Legend } from "../charts/frame";
 import {
   Catalog,
   LeaderboardRow,
   ModelId,
+  RolePoint,
+  RoleSide,
+  loadRoleMap,
   possessions,
   rating,
   resolveModel,
@@ -37,12 +40,37 @@ export function RatingsView({
   minPoss: number;
   onMinPoss: (value: number) => void;
   onPlayer: (id: number) => void;
+  selected?: number;
 }) {
   const [team, setTeam] = useState("All");
+  const [roleSide, setRoleSide] = useState<RoleSide>("offense");
+  const [roleFilter, setRoleFilter] = useState("All");
+  const [roleRows, setRoleRows] = useState<RolePoint[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>("net");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
 
   const active = resolveModel(rows, model);
+
+  useEffect(() => {
+    if (!(catalog.catalog.role_seasons[roleSide] ?? []).includes(season)) {
+      return;
+    }
+    let live = true;
+    void loadRoleMap(roleSide, season)
+      .then((next) => { if (live) setRoleRows(next); })
+      .catch(() => { if (live) setRoleRows([]); });
+    return () => { live = false; };
+  }, [catalog, roleSide, season]);
+
+  const roleNames = useMemo(
+    () => [...new Set(roleRows.filter((row) => row.Season === season).map((row) => row.raw_role))].sort(),
+    [roleRows, season],
+  );
+  const rolePlayerIds = useMemo(
+    () => new Set(roleRows.filter((row) => row.Season === season && (roleFilter === "All" || row.raw_role === roleFilter)).map((row) => row.PLAYER_ID)),
+    [roleRows, roleFilter, season],
+  );
+  const activeRoleFilter = roleNames.includes(roleFilter) ? roleFilter : "All";
   const teams = useMemo(
     () =>
       [
@@ -60,6 +88,7 @@ export function RatingsView({
       rows
         .filter((row) => possessions(row) >= minPoss)
         .filter((row) => team === "All" || row.TEAM_ABBREVIATION === team)
+        .filter((row) => activeRoleFilter === "All" || rolePlayerIds.has(row.PLAYER_ID))
         .map((row) => ({
           id: row.PLAYER_ID,
           name: row.PLAYER_NAME,
@@ -70,7 +99,7 @@ export function RatingsView({
           net: rating(row, active.prefix, "net") ?? 0,
           poss: possessions(row),
         })),
-    [rows, minPoss, team, active.prefix],
+    [rows, minPoss, team, activeRoleFilter, rolePlayerIds, active.prefix],
   );
 
   const sorted = useMemo(() => {
@@ -141,6 +170,20 @@ export function RatingsView({
         <ModelField rows={rows} value={model} onChange={onModel} />
         <TeamField teams={teams} value={team} onChange={setTeam} />
         <MinPossField value={minPoss} onChange={onMinPoss} />
+        <label className="field">
+          <span>Role side</span>
+          <select value={roleSide} onChange={(event) => setRoleSide(event.target.value as RoleSide)}>
+            <option value="offense">Offense</option>
+            <option value="defense">Defense</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>Role</span>
+          <select value={activeRoleFilter} onChange={(event) => setRoleFilter(event.target.value)} disabled={!roleNames.length}>
+            <option value="All">All roles</option>
+            {roleNames.map((role) => <option key={role} value={role}>{role}</option>)}
+          </select>
+        </label>
       </div>
 
       <div className="grid">
@@ -180,6 +223,19 @@ export function RatingsView({
           }
         >
           <ImpactBars rows={top} onSelect={(row) => onPlayer(row.id)} />
+        </Figure>
+
+        <Figure
+          kicker={`${active.label} · ${season}`}
+          title="Where the selected player sits"
+          note="The highlighted dot is the selected player. The distribution uses the same season, model, side, and possession floor as the table."
+        >
+          <Distribution
+            rows={shaped.map((row) => ({ id: row.id, name: row.name, team: row.team, value: row.net }))}
+            highlight={selected}
+            label={`${active.label} net distribution`}
+            onSelect={(row) => onPlayer(row.id)}
+          />
         </Figure>
 
         <section>

@@ -10,7 +10,7 @@
    ========================================================================= */
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
   /* surfaces & ink */
   --page: #f9f9f7;
@@ -57,6 +57,32 @@
   --mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
   --shell: clamp(16px, 4vw, 44px);
   --radius: 10px;
+}
+
+/* Dark is the launch surface. Light remains available through the toggle. */
+:root:not([data-theme="light"]) {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface-1: #1a1a19;
+  --surface-2: #232322;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+  --grid: #2c2c2a;
+  --baseline: #383835;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.24);
+  --wash: rgba(255, 255, 255, 0.05);
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --pos: #3987e5;
+  --neg: #e66767;
+  --mid: #383835;
+  --success-text: #0ca30c;
 }
 
 /* Dark values are declared under both scopes: the media query covers the OS
@@ -346,6 +372,27 @@ button {
 .site-footer p + p {
   margin-top: 4px;
 }
+
+/* Player identity and comparison stay compact so the rating remains primary. */
+.player-identity { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.player-headshot { display: grid; place-items: end center; width: 86px; height: 86px; overflow: hidden; border: 1px solid var(--border); border-radius: 50%; background: var(--surface-2); color: var(--text-secondary); font: 700 22px var(--mono); flex: none; }
+.player-headshot img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; }
+.team-logo { display: inline-grid; place-items: center; width: 22px; height: 22px; margin-left: -5px; border-radius: 50%; background: var(--surface-2); overflow: hidden; vertical-align: middle; }
+.team-logo img { width: 18px; height: 18px; object-fit: contain; }
+.team-logo.fallback { width: auto; height: auto; padding: 2px 5px; border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); font: 10px var(--mono); }
+.compare-card { margin-top: 14px; }
+.compare-search { position: relative; max-width: 360px; margin-top: 14px; }
+.compare-search input { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); outline: none; }
+.compare-search input:focus { border-color: var(--border-strong); }
+.compare-results { position: absolute; z-index: 12; top: 42px; left: 0; right: 0; padding: 4px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface-1); box-shadow: 0 12px 30px -12px #000; }
+.compare-results button { display: block; width: 100%; padding: 7px 9px; border: 0; border-radius: 5px; background: transparent; color: var(--text-primary); text-align: left; font-size: 12px; }
+.compare-results button:hover { background: var(--wash); }
+.comparison-grid { display: grid; grid-template-columns: 120px minmax(0, 1fr) 120px; align-items: center; gap: 16px; margin-top: 16px; }
+.comparison-player { display: grid; justify-items: center; gap: 5px; text-align: center; font-size: 12px; }
+.comparison-player span { color: var(--text-muted); font: 10px var(--mono); }
+.comparison-player .player-headshot { width: 58px; height: 58px; font-size: 15px; }
+.comparison-table { margin: 0; }
+.comparison-table th:not(:first-child), .comparison-table td:not(:first-child) { text-align: right; }
 
 .toast {
   position: fixed;
@@ -1286,6 +1333,13 @@ table.mini td .sub {
 .stale {
   opacity: 0.55;
   transition: opacity 0.15s;
+}
+
+@media (max-width: 700px) {
+  .player-identity { align-items: flex-start; }
+  .player-headshot { width: 62px; height: 62px; }
+  .comparison-grid { grid-template-columns: 1fr; }
+  .comparison-player { display: flex; align-items: center; justify-content: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {

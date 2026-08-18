@@ -26,7 +26,7 @@ export const MODELS: {
   },
   {
     id: "rapm",
-    label: "Normal RAPM",
+    label: "RAPM",
     prefix: "normal_rapm_",
     note: "Zero-prior one-season ridge on possessions.",
   },

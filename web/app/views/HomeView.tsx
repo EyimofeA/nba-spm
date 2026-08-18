@@ -173,7 +173,7 @@ export function HomeView({
           <h3>Lineups</h3>
           <p className="note" style={{ marginTop: 8 }}>
             A ridge regression on possessions that separates each player from
-            the other nine on the floor. Normal RAPM uses no prior, so it is the
+            the other nine on the floor. RAPM uses no prior, so it is the
             independent reference rather than part of AIO.
           </p>
         </article>
@@ -187,46 +187,6 @@ export function HomeView({
         </article>
       </div>
 
-      <div className="section-head">
-        <div>
-          <p className="kicker">How to read a rating</p>
-          <h2>Four rules</h2>
-        </div>
-      </div>
-      <section className="card">
-        <ol className="def-list">
-          <li>
-            <b>Scale</b>
-            <span>
-              +3.0 means the model estimates about three more points per 100
-              possessions for the team with that player on the floor, after
-              separating teammates and opponents.
-            </span>
-          </li>
-          <li>
-            <b>Sides</b>
-            <span>
-              Offense and defense add to net. A positive defensive rating means
-              the player prevents points.
-            </span>
-          </li>
-          <li>
-            <b>Sample</b>
-            <span>
-              The possession figure is the smaller of offensive and defensive
-              exposure. Small samples pull toward the model’s center, so read
-              low-possession rows with care.
-            </span>
-          </li>
-          <li>
-            <b>Scope</b>
-            <span>
-              These ratings describe past seasons. They are not forecasts, and
-              no rating here carries a published interval yet.
-            </span>
-          </li>
-        </ol>
-      </section>
     </>
   );
 }

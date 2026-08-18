@@ -98,7 +98,7 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
             <p className="note">
               SPM predicts one season of impact from box, tracking, playtype,
               and matchup features. One ridge RAPM fit is then centered on that
-              prediction. Normal RAPM is the separate zero-prior fit — the
+              prediction. RAPM is the separate zero-prior fit — the
               reference model, not a part of AIO.
             </p>
           </div>

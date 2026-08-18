@@ -63,6 +63,7 @@ export function App() {
 
   const [rows, setRows] = useState<LeaderboardRow[]>([]);
   const [player, setPlayer] = useState<Player | null>(null);
+  const [comparePlayer, setComparePlayer] = useState<Player | null>(null);
   const [playerSeason, setPlayerSeason] = useState(2024);
   const [roleSide, setRoleSide] = useState<RoleSide>("offense");
 
@@ -119,6 +120,15 @@ export function App() {
     navigate("player", id);
   };
 
+  const openComparison = async (id: number) => {
+    if (!catalog) return;
+    try {
+      setComparePlayer(await loadPlayer(id, index, catalog.shards));
+    } catch {
+      setError("Comparison player unavailable.");
+    }
+  };
+
   /* -------------------------------------------------------------- data --- */
 
   // The ratings board and the landscape read the same season slice.
@@ -130,6 +140,25 @@ export function App() {
       try {
         const next = await loadSeason(season);
         if (live) setRows(next);
+        // A blank visit opens on a real rated player. Explicit hashes keep
+        // their requested view, and the player itself comes from the loaded
+        // snapshot rather than a fabricated current-season value.
+        if (live && !window.location.hash.slice(1)) {
+          const defaultRow = [...next]
+            .filter((row) => Number.isFinite(row.PLAYER_ID))
+            .sort((a, b) => {
+              const value = (row: LeaderboardRow) =>
+                typeof row.aio_net === "number"
+                  ? row.aio_net
+                  : typeof row.normal_rapm_net === "number"
+                    ? row.normal_rapm_net
+                    : typeof row.spm_net === "number"
+                      ? row.spm_net
+                      : -Infinity;
+              return value(b) - value(a);
+            })[0];
+          if (defaultRow) navigate("player", defaultRow.PLAYER_ID);
+        }
       } catch {
         if (live) setError("Season unavailable.");
       } finally {
@@ -341,6 +370,7 @@ export function App() {
                 minPoss={minPoss}
                 onMinPoss={setMinPoss}
                 onPlayer={openPlayer}
+                selected={player?.PLAYER_ID}
               />
             )}
             {tab === "landscape" && (
@@ -369,6 +399,9 @@ export function App() {
                 onComponent={setComponent}
                 peers={rows}
                 peerSeason={season}
+                index={index}
+                comparePlayer={comparePlayer}
+                onCompare={openComparison}
               />
             )}
             {tab === "roles" && (
@@ -387,17 +420,7 @@ export function App() {
       </main>
 
       <footer className="site-footer">
-        <p>
-          All ratings are points per 100 possessions. Offense and defense are
-          estimated separately, and both are positive when the player helps.
-        </p>
-        <p className="muted">
-          Retrospective research on frozen runs
-          {seasons.length
-            ? `, ${seasons[0] - 1}\u2013${String(seasons[seasons.length - 1]).slice(2)}`
-            : ""}
-          . Not a forecast, and no rating here carries a published interval yet.
-        </p>
+        <p>Retrospective NBA impact research · points per 100 possessions.</p>
       </footer>
 
       {error && (

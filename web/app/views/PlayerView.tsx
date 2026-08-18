@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Distribution } from "../charts/bars";
 import { Figure, Legend } from "../charts/frame";
 import { MultiLine } from "../charts/lines";
@@ -12,6 +12,7 @@ import {
   LeaderboardRow,
   ModelId,
   Player,
+  PlayerIndex,
   Role,
   RoleSide,
   possessions,
@@ -38,6 +39,9 @@ type PlayerViewProps = {
   onComponent: (component: Component) => void;
   peers: LeaderboardRow[];
   peerSeason: number;
+  index: PlayerIndex[];
+  comparePlayer: Player | null;
+  onCompare: (id: number) => void;
 };
 
 /** Guard only. The body below always has a player, so its hooks are unconditional. */
@@ -67,13 +71,24 @@ function PlayerBody({
   onComponent,
   peers,
   peerSeason,
+  index,
+  comparePlayer,
+  onCompare,
 }: PlayerViewProps & { player: Player }) {
+  const [compareQuery, setCompareQuery] = useState("");
   const active = resolveModel(player.annual, model);
   const seasons = player.annual.map((row) => row.Season);
   const current =
     player.annual.find((row) => row.Season === season) ?? player.annual.at(-1);
   const profile = player.profiles.find((row) => row.Season === season);
   const roles = player.roles.find((row) => row.Season === season);
+  const compareMatches = useMemo(() => {
+    const needle = compareQuery.trim().toLocaleLowerCase();
+    if (needle.length < 2) return [];
+    return index
+      .filter((item) => item.id !== player.PLAYER_ID && item.name.toLocaleLowerCase().includes(needle))
+      .slice(0, 6);
+  }, [compareQuery, index, player.PLAYER_ID]);
 
   const net = rating(current, active.prefix, "net");
   const spmCenter = rating(current, "spm_", component);
@@ -137,11 +152,14 @@ function PlayerBody({
   return (
     <>
       <div className="player-hero">
-        <div>
+        <div className="player-identity">
+          <PlayerHeadshot id={player.PLAYER_ID} name={player.PLAYER_NAME} />
+          <div>
           <p className="kicker">{active.label} · points per 100 possessions</p>
           <h1>{player.PLAYER_NAME}</h1>
           <div className="id-line">
             <span className="chip">{current?.TEAM_ABBREVIATION ?? "—"}</span>
+            <TeamLogo team={current?.TEAM_ABBREVIATION} />
             <span className="chip">
               {season - 1}–{String(season).slice(2)}
             </span>
@@ -151,6 +169,7 @@ function PlayerBody({
             {roles?.offense && (
               <span className="chip">{roles.offense.primary_role}</span>
             )}
+          </div>
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
@@ -180,6 +199,37 @@ function PlayerBody({
         </label>
         <ComponentToggle value={component} onChange={onComponent} />
       </div>
+
+      <section className="card compare-card">
+        <div className="card-head">
+          <div>
+            <p className="kicker">Comparison</p>
+            <h2>Put two players side by side</h2>
+          </div>
+        </div>
+        <div className="compare-search">
+          <input
+            aria-label="Find a player to compare"
+            placeholder="Find a player to compare"
+            value={compareQuery}
+            onChange={(event) => setCompareQuery(event.target.value)}
+          />
+          {compareMatches.length > 0 && (
+            <div className="compare-results">
+              {compareMatches.map((item) => (
+                <button type="button" key={item.id} onClick={() => { onCompare(item.id); setCompareQuery(""); }}>
+                  {item.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        {comparePlayer ? (
+          <ComparisonTable left={player} right={comparePlayer} season={season} model={model} />
+        ) : (
+          <p className="note">Choose a second player to compare offense, defense, net, and possessions.</p>
+        )}
+      </section>
 
       <div className="grid">
         <Figure
@@ -379,6 +429,44 @@ function PlayerBody({
       </div>
     </>
   );
+}
+
+function PlayerHeadshot({ id, name }: { id: number; name: string }) {
+  const [failed, setFailed] = useState(false);
+  const initials = name.split(/\s+/).map((part) => part[0]).filter(Boolean).slice(0, 2).join("");
+  return (
+    <div className="player-headshot" aria-label={`${name} headshot`}>
+      {failed ? initials : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={`https://cdn.nba.com/headshots/nba/latest/260x190/${id}.png`} alt="" onError={() => setFailed(true)} />
+      )}
+    </div>
+  );
+}
+
+function TeamLogo({ team }: { team?: string | null }) {
+  const [failed, setFailed] = useState(false);
+  if (!team || failed) return <span className="team-logo fallback" aria-label={team ?? "Team unavailable"}>{team ?? "—"}</span>;
+  return (
+    <span className="team-logo" aria-label={`${team} logo`}>
+      {/* ESPN's public team-logo CDN is a presentation asset; fall back to the abbreviation offline. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={`https://a.espncdn.com/i/teamlogos/nba/500/${team.toLowerCase()}.png`} alt="" onError={() => setFailed(true)} />
+    </span>
+  );
+}
+
+function ComparisonTable({ left, right, season, model }: { left: Player; right: Player; season: number; model: ModelId }) {
+  const leftActive = resolveModel(left.annual, model);
+  const rightActive = resolveModel(right.annual, model);
+  const leftRow = left.annual.find((row) => row.Season === season) ?? left.annual.at(-1);
+  const rightRow = right.annual.find((row) => row.Season === season) ?? right.annual.at(-1);
+  const rows: Component[] = ["offense", "defense", "net"];
+  return <div className="comparison-grid">
+    <div className="comparison-player"><PlayerHeadshot id={left.PLAYER_ID} name={left.PLAYER_NAME} /><b>{left.PLAYER_NAME}</b><span>{leftRow?.TEAM_ABBREVIATION ?? "—"}</span></div>
+    <table className="mini comparison-table"><thead><tr><th scope="col">Metric</th><th scope="col">{left.PLAYER_NAME}</th><th scope="col">{right.PLAYER_NAME}</th></tr></thead><tbody>{rows.map((key) => <tr key={key}><td>{COMPONENT_LABEL[key]}</td><td>{fmtRating(rating(leftRow, leftActive.prefix, key))}</td><td>{fmtRating(rating(rightRow, rightActive.prefix, key))}</td></tr>)}<tr><td>Poss</td><td>{leftRow ? fmtInt(possessions(leftRow)) : "—"}</td><td>{rightRow ? fmtInt(possessions(rightRow)) : "—"}</td></tr></tbody></table>
+    <div className="comparison-player"><PlayerHeadshot id={right.PLAYER_ID} name={right.PLAYER_NAME} /><b>{right.PLAYER_NAME}</b><span>{rightRow?.TEAM_ABBREVIATION ?? "—"}</span></div>
+  </div>;
 }
 
 /**

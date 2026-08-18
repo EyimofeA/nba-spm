@@ -19,7 +19,7 @@ export const metadata: Metadata = {
  * Stamps the saved theme before first paint so the page never flashes the wrong
  * surface, and so the toggle can read the current theme straight off the DOM.
  */
-const themeScript = `try{var t=localStorage.getItem("impact-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+const themeScript = `try{var t=localStorage.getItem("impact-theme")||"dark";if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){document.documentElement.dataset.theme="dark"}`;
 
 export default function RootLayout({
   children,
