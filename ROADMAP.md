@@ -102,12 +102,11 @@ dead ends. Updated 2026-08-17. See `docs/README.md` for the document index,
 
 ## Active next task
 
-Finish the strict possession-lineup repair for the 10 quarantined regular and
-playoff games using the pinned Gabriel fallback files. Map players to canonical
-teams, preserve event order, conserve the final score, and require ten valid
-players at every RAPM assignment. Do not weaken the existing QA gates. Then
-rebuild the affected 2024--2026 Normal RAPM seasons and compare exact common
-players before replacing the current artifacts.
+Obtain a better event or lineup source for the nine Gabriel fallback games that
+failed the strict repair gate. The adapter repaired `0022300535`; the 2024
+regular-season input now covers 1,228 of 1,230 games. The rebuilt 2024 rating is
+nearly unchanged (net correlation 0.99975; mean absolute change 0.0079 points
+per 100). Do not weaken the existing QA gates to close the remaining gaps.
 
 The precision-aware SPM-prior challenger is deferred. Its reviewed 2018--21
 schedule cannot be produced by the frozen feature history, and the invalid
@@ -221,3 +220,4 @@ now would break reproducibility links.
 - Full 2014--26 SPM null refresh: `single_season_spm_v1_47b3bd9b17`
 - Full 2014--26 base features: `statistical_features_v1_65446dd3e2`
 - Full 2014--26 expanded features: `statistical_features_v2_b808fc1bf1`
+- Repaired 2024--26 Normal RAPM: `current_single_season_rapm_targets_v1_b4cdb51de8`

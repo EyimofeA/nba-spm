@@ -2293,3 +2293,20 @@ as a null result and keep public SPM/AIO at 2017--24. Publish Normal RAPM throug
 2026. Repair the 10 targeted lineup failures without weakening QA. Current
 defense needs new information, especially 2026 DFG and scorer-matchup coverage,
 not another identical refit.
+
+## 2026-08-18 — Strict Gabriel repair closes one game
+
+**Method:** Use canonical CDN possession ownership and event order. Join the
+Gabriel on-court states through canonical player-game teams. Require final-score
+conservation, ten unique players per segment, unique keys, and player-minute
+errors no larger than five seconds.
+
+**Result:** Game `0022300535` passes with 185 possessions and 219 lineup
+segments. Nine targets fail without guessed lineups. The repaired 2024 fit has
+1,228 regular-season games. On 572 common players, net correlation versus the
+prior fit is 0.99975, mean absolute change is 0.0079 points per 100, and maximum
+absolute change is 0.4982.
+
+**Decision:** Keep the one passing repair. Keep all nine failures quarantined.
+Use `current_single_season_rapm_targets_v1_b4cdb51de8` for the current Normal
+RAPM snapshot. Better source data, not looser QA, is the next repair path.
