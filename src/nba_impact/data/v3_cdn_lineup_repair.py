@@ -19,7 +19,12 @@ import pandas as pd
 from .game_dim import canonical_game_id
 from .lineups import _elapsed_seconds, _normalize_name, _player_aliases
 from .manifest import sha256_file, write_json_atomic
-from .possessions import attach_ordinal_lineups
+from .possessions import (
+    _add_elapsed_seconds,
+    attach_ordinal_lineups,
+    collapse_cdn_possessions,
+    reconcile_action_points,
+)
 
 
 REPAIR_GAME_IDS = (
@@ -327,6 +332,48 @@ def replay_aligned_lineups(
     return pd.DataFrame(outputs), pd.DataFrame(quality)
 
 
+def validate_candidate_possessions(
+    possessions: pd.DataFrame, segments: pd.DataFrame, games: pd.DataFrame
+) -> tuple[dict[str, int], set[str]]:
+    """Apply the required production-equivalent output gates to this candidate."""
+    failures: dict[str, set[str]] = defaultdict(set)
+    if possessions.empty or segments.empty:
+        return {"empty_candidate_output": 1}, set(games["game_id"].astype(str))
+    score_check = possessions.groupby("game_id", as_index=False).agg(
+        home_points=("home_points", "sum"), away_points=("away_points", "sum")
+    ).merge(games[["game_id", "home_score", "away_score"]], on="game_id", validate="one_to_one")
+    for row in score_check.loc[
+        score_check["home_points"].ne(score_check["home_score"])
+        | score_check["away_points"].ne(score_check["away_score"])
+    ].itertuples(index=False):
+        failures[str(row.game_id)].add("official_score_mismatch")
+    for game_id in possessions.loc[possessions.duplicated("possession_id", keep=False), "game_id"].astype(str):
+        failures[game_id].add("duplicate_possession_id")
+    for game_id in segments.loc[segments.duplicated("possession_segment_id", keep=False), "game_id"].astype(str):
+        failures[game_id].add("duplicate_possession_segment_id")
+    for row in segments.itertuples(index=False):
+        home = {int(getattr(row, f"home_player_{index}")) for index in range(1, 6)}
+        away = {int(getattr(row, f"away_player_{index}")) for index in range(1, 6)}
+        if len(home) != 5 or len(away) != 5 or home.intersection(away):
+            failures[str(row.game_id)].add("invalid_ten_player_segment")
+    segment_points = segments.groupby("possession_id", as_index=False).agg(
+        game_id=("game_id", "first"), segment_points=("points", "sum")
+    )
+    point_check = possessions[["possession_id", "game_id", "points"]].merge(
+        segment_points, on=["possession_id", "game_id"], how="left", validate="one_to_one"
+    )
+    for game_id in point_check.loc[point_check["points"].ne(point_check["segment_points"]), "game_id"].astype(str):
+        failures[game_id].add("segment_point_mismatch")
+    issues = {
+        "official_score_mismatch_games": sum("official_score_mismatch" in value for value in failures.values()),
+        "duplicate_possession_ids": sum("duplicate_possession_id" in value for value in failures.values()),
+        "duplicate_segment_ids": sum("duplicate_possession_segment_id" in value for value in failures.values()),
+        "invalid_ten_player_segments": sum("invalid_ten_player_segment" in value for value in failures.values()),
+        "segment_point_mismatch_games": sum("segment_point_mismatch" in value for value in failures.values()),
+    }
+    return issues, set(failures)
+
+
 def _load_events(root: Path, source: str, game_ids: tuple[str, ...], columns: list[str]) -> tuple[pd.DataFrame, list[Path]]:
     paths = sorted((root / source).rglob("*.parquet"))
     if not paths:
@@ -341,11 +388,14 @@ def _load_events(root: Path, source: str, game_ids: tuple[str, ...], columns: li
 def build_v3_cdn_lineup_repair_candidate(
     event_root: str | Path,
     v3_event_root: str | Path,
+    event_states_path: str | Path,
     player_games_path: str | Path,
     game_dim_path: str | Path,
     alignment_destination: str | Path,
     stints_destination: str | Path,
     assigned_actions_destination: str | Path,
+    possessions_destination: str | Path,
+    segments_destination: str | Path,
     quality_destination: str | Path,
     report_destination: str | Path,
     manifest_dir: str | Path,
@@ -353,7 +403,11 @@ def build_v3_cdn_lineup_repair_candidate(
     """Write a separate, non-production candidate for four predeclared games."""
     root = Path(event_root)
     v3_root = Path(v3_event_root)
-    player_path, game_path = Path(player_games_path), Path(game_dim_path)
+    player_path, game_path, states_path = (
+        Path(player_games_path),
+        Path(game_dim_path),
+        Path(event_states_path),
+    )
     players, games = pd.read_parquet(player_path), pd.read_parquet(game_path)
     players = players.loc[players["game_id"].isin(REPAIR_GAME_IDS)].copy()
     games = games.loc[games["game_id"].isin(REPAIR_GAME_IDS)].copy()
@@ -378,12 +432,27 @@ def build_v3_cdn_lineup_repair_candidate(
             quality["game_id"].isin(alignment_failure_games), "failure_reasons"
         ].fillna("").map(lambda text: "|".join(filter(None, [text, "strict_alignment_failed"])))
     valid_games = set(quality.loc[quality["passed"], "game_id"].astype(str))
+    dimension_columns = [
+        "game_id", "season_start", "season_end", "season_label", "season_type", "game_date",
+        "home_team_id", "away_team_id", "home_score", "away_score",
+    ]
+    event_states = pd.read_parquet(
+        states_path,
+        columns=["game_id", "actionNumber", "period", "clock", "home_points_added", "away_points_added"],
+    )
+    candidate_actions = cdn.loc[cdn["game_id"].isin(valid_games)].merge(
+        games[dimension_columns], on="game_id", validate="many_to_one"
+    )
+    candidate_actions = _add_elapsed_seconds(candidate_actions)
+    candidate_actions, point_stats = reconcile_action_points(candidate_actions, event_states)
     attached_frames: list[pd.DataFrame] = []
     for game_id in sorted(valid_games):
         try:
             attached_frames.append(
                 attach_ordinal_lineups(
-                    cdn.loc[cdn["game_id"].eq(game_id)].sort_values("orderNumber", kind="stable"),
+                    candidate_actions.loc[candidate_actions["game_id"].eq(game_id)].sort_values(
+                        "orderNumber", kind="stable"
+                    ),
                     stints.loc[stints["game_id"].eq(game_id)],
                 )
             )
@@ -403,10 +472,24 @@ def build_v3_cdn_lineup_repair_candidate(
         else pd.DataFrame(columns=[*cdn.columns, *_LINEUP_COLUMNS, "ordinal_stint_id"])
     )
     assigned_actions = assigned_actions.loc[assigned_actions["game_id"].isin(valid_games)].copy()
+    possessions, segments = collapse_cdn_possessions(assigned_actions)
+    possession_issues, possession_failure_games = validate_candidate_possessions(possessions, segments, games)
+    if possession_failure_games:
+        for game_id in possession_failure_games:
+            quality.loc[quality["game_id"].eq(game_id), "passed"] = False
+            quality.loc[quality["game_id"].eq(game_id), "failure_reasons"] = quality.loc[
+                quality["game_id"].eq(game_id), "failure_reasons"
+            ].map(lambda text: "|".join(filter(None, [text, "candidate_possession_gate_failed"])))
+        valid_games -= possession_failure_games
+        assigned_actions = assigned_actions.loc[assigned_actions["game_id"].isin(valid_games)].copy()
+        stints = stints.loc[stints["game_id"].isin(valid_games)].copy()
+        possessions, segments = collapse_cdn_possessions(assigned_actions)
     paths = {
         "alignment": Path(alignment_destination),
         "stints": Path(stints_destination),
         "assigned_actions": Path(assigned_actions_destination),
+        "possessions": Path(possessions_destination),
+        "possession_lineup_segments": Path(segments_destination),
         "quality": Path(quality_destination),
         "report": Path(report_destination),
     }
@@ -415,8 +498,10 @@ def build_v3_cdn_lineup_repair_candidate(
     alignment.to_parquet(paths["alignment"], index=False)
     stints.to_parquet(paths["stints"], index=False)
     assigned_actions.to_parquet(paths["assigned_actions"], index=False)
+    possessions.to_parquet(paths["possessions"], index=False)
+    segments.to_parquet(paths["possession_lineup_segments"], index=False)
     quality.to_parquet(paths["quality"], index=False)
-    source_paths = sorted(set(cdn_paths + v3_paths + [player_path, game_path]))
+    source_paths = sorted(set(cdn_paths + v3_paths + [player_path, game_path, states_path]))
     outcome_columns = ["game_id", "orderNumber", "possession", "scoreHome", "scoreAway"]
     canonical_outcomes = cdn.loc[cdn["game_id"].isin(valid_games), outcome_columns].sort_values(
         ["game_id", "orderNumber"], kind="stable"
@@ -442,6 +527,10 @@ def build_v3_cdn_lineup_repair_candidate(
         "cdn_possession_outcomes_hash_after": assigned_outcome_hash,
         "cdn_possession_outcomes_unchanged": outcome_hash == assigned_outcome_hash,
         "assigned_action_row_count": int(len(assigned_actions)),
+        "candidate_possession_row_count": int(len(possessions)),
+        "candidate_segment_row_count": int(len(segments)),
+        "candidate_possession_issues": possession_issues,
+        "point_reconciliation": point_stats,
         "minute_tolerance_seconds": 5.0,
         "v3_parse_failures": parse_failures.to_dict("records"),
         "period_start_failures": period_start_failures.to_dict("records"),

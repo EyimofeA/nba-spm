@@ -5,6 +5,7 @@ import pandas as pd
 from nba_impact.data.v3_cdn_lineup_repair import (
     align_v3_substitutions_to_cdn,
     replay_aligned_lineups,
+    validate_candidate_possessions,
 )
 
 
@@ -126,3 +127,30 @@ def test_replay_emits_only_exact_ten_player_states() -> None:
         assert len(home) == len(away) == 5
         assert not home.intersection(away)
     assert lineup_columns
+
+
+def test_candidate_possession_gate_requires_score_unique_ids_ten_players_and_point_conservation() -> None:
+    possessions = pd.DataFrame(
+        [{
+            "game_id": "002", "possession_id": "002:001", "points": 2,
+            "home_points": 2, "away_points": 0,
+        }]
+    )
+    segments = pd.DataFrame(
+        [{
+            "game_id": "002", "possession_id": "002:001", "possession_segment_id": "002:001:s01",
+            "points": 2,
+            **{f"home_player_{index}": index for index in range(1, 6)},
+            **{f"away_player_{index}": index + 10 for index in range(1, 6)},
+        }]
+    )
+    games = pd.DataFrame([{"game_id": "002", "home_score": 2, "away_score": 0}])
+
+    issues, failed = validate_candidate_possessions(possessions, segments, games)
+
+    assert not any(issues.values())
+    assert not failed
+    segments.loc[0, "points"] = 1
+    issues, failed = validate_candidate_possessions(possessions, segments, games)
+    assert issues["segment_point_mismatch_games"] == 1
+    assert failed == {"002"}

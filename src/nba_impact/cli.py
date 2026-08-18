@@ -494,7 +494,6 @@ def command_build_lineups(args: argparse.Namespace) -> int:
     ensure_owned_dirs()
     snapshot = build_lineup_stints(
         args.root,
-        args.v3_root,
         args.player_games,
         args.game_dim,
         args.output,
@@ -530,11 +529,14 @@ def command_build_v3_cdn_lineup_repair(args: argparse.Namespace) -> int:
     snapshot = build_v3_cdn_lineup_repair_candidate(
         args.root,
         args.v3_root,
+        args.event_states,
         args.player_games,
         args.game_dim,
         args.alignment_output,
         args.stints_output,
         args.assigned_actions_output,
+        args.possessions_output,
+        args.segments_output,
         args.quality_output,
         args.report_output,
         args.manifest_dir,
@@ -546,6 +548,8 @@ def command_build_v3_cdn_lineup_repair(args: argparse.Namespace) -> int:
                 "snapshot_id": snapshot["snapshot_id"],
                 "passed_games": snapshot["passed_game_ids"],
                 "quarantined_games": snapshot["quarantined_game_ids"],
+                "possessions": snapshot["candidate_possession_row_count"],
+                "segments": snapshot["candidate_segment_row_count"],
                 "report": str(args.report_output),
             },
             indent=2,
@@ -2264,6 +2268,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     repair_lineups.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
     repair_lineups.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    repair_lineups.add_argument("--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet")
     repair_lineups.add_argument(
         "--alignment-output", type=Path, default=SILVER_ROOT / "candidates" / "v3_cdn_lineup_alignment.parquet"
     )
@@ -2274,6 +2279,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--assigned-actions-output",
         type=Path,
         default=SILVER_ROOT / "candidates" / "v3_cdn_assigned_actions.parquet",
+    )
+    repair_lineups.add_argument(
+        "--possessions-output",
+        type=Path,
+        default=SILVER_ROOT / "candidates" / "v3_cdn_possessions.parquet",
+    )
+    repair_lineups.add_argument(
+        "--segments-output",
+        type=Path,
+        default=SILVER_ROOT / "candidates" / "v3_cdn_possession_lineup_segments.parquet",
     )
     repair_lineups.add_argument(
         "--quality-output", type=Path, default=SILVER_ROOT / "candidates" / "v3_cdn_lineup_quality.parquet"
