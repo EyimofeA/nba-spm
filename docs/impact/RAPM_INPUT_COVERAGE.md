@@ -160,7 +160,7 @@ official player-minute inputs are pinned: play-by-play alone is not lineup-ready
 
 The retired PlayByPlayV2 endpoint now returns empty data, so the local complete
 V3 archive is the historical event source. The frozen V3 owner state machine
-passes independent CDN validation in project seasons 2024 and 2025. Core
+passes independent regular-season CDN validation in project seasons 2024 and 2025. Core
 action-owner agreement is 99.93% in both seasons; the exact full owner sequence
 matches in 93.6% and 91.9% of games.
 
@@ -170,6 +170,11 @@ remain rejected. This closes the historical possession-outcome layer as a
 validated research candidate, not as exact ground truth. It is still not
 RAPM-ready because ordinal lineups are not attached. See
 `HISTORICAL_V3_POSSESSIONS.md`.
+
+Playoff transfer remains research-only. The 2025 playoff validation passes,
+but the 2024 check misses the within-two-possession gate in 2 of 82 games even
+with 99.98% core action-owner agreement. Historical playoff rows are excluded
+from the first Normal RAPM fit.
 
 ## Integrated current candidate
 

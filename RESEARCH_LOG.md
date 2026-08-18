@@ -2403,3 +2403,9 @@ and remain rejected; every other regular-season and playoff partition passes.
 it exact ground truth or RAPM-ready. Promotion requires ordinal ten-player
 lineups, official-minute reconciliation, and a matched comparison with the
 independent legacy terminal-lineup migration.
+
+**Playoff check:** The unchanged rules pass the 2025 playoff gate. The 2024
+check has 99.98% core action-owner agreement and 92.7% exact full-game
+sequences, but only 80 of 82 games are within two possessions. Games
+`0042300134` and `0042300163` fail that gate. Keep historical playoffs
+research-only and exclude them from the first Normal RAPM fit.
