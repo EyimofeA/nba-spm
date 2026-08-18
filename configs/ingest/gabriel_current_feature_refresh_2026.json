@@ -1,0 +1,79 @@
+{
+  "provider": "gabriel1200 public aggregate repositories",
+  "purpose": "Research-only refresh of the current 2025-26 box, playtype, and aggregate tracking inputs. Raw inputs are not public release assets.",
+  "task_defaults": {
+    "license": "not-declared-by-upstream",
+    "max_attempts": 20,
+    "connect_timeout_seconds": 30,
+    "read_timeout_seconds": 300,
+    "retry_initial_seconds": 2,
+    "retry_max_seconds": 300
+  },
+  "tasks": [
+    {
+      "name": "gabriel_player_sheet_2025_current",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2025.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2025.parquet",
+      "provider": "gabriel1200/player_sheets",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2025,
+      "expected_min_rows": 500,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME"]
+    },
+    {
+      "name": "gabriel_player_sheet_2026_current",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2026.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2026.parquet",
+      "provider": "gabriel1200/player_sheets",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2026,
+      "expected_min_rows": 500,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME"]
+    },
+    {
+      "name": "gabriel_playtype_current",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/782ec8b4c09fdfb023f06dbcd3e601123cf6d698/playtype.csv",
+      "destination": "gabriel_site_data/revision=782ec8b/playtype.csv",
+      "provider": "gabriel1200/site_Data",
+      "source_revision": "782ec8b4c09fdfb023f06dbcd3e601123cf6d698",
+      "expected_min_rows": 40000,
+      "required_columns": ["Player", "year", "playtype"]
+    },
+    {
+      "name": "gabriel_tracking_current",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/782ec8b4c09fdfb023f06dbcd3e601123cf6d698/tracking.csv",
+      "destination": "gabriel_site_data/revision=782ec8b/tracking.csv",
+      "provider": "gabriel1200/site_Data",
+      "source_revision": "782ec8b4c09fdfb023f06dbcd3e601123cf6d698",
+      "expected_min_rows": 10000,
+      "required_columns": ["PLAYER_ID", "PLAYER", "year", "type"]
+    },
+    {
+      "name": "gabriel_dfg_current",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/782ec8b4c09fdfb023f06dbcd3e601123cf6d698/dfg.csv",
+      "destination": "gabriel_site_data/revision=782ec8b/dfg.csv",
+      "provider": "gabriel1200/site_Data",
+      "source_revision": "782ec8b4c09fdfb023f06dbcd3e601123cf6d698",
+      "expected_min_rows": 5000,
+      "required_columns": ["PLAYER", "year", "DFGA"]
+    },
+    {
+      "name": "gabriel_rim_dfg_current",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/782ec8b4c09fdfb023f06dbcd3e601123cf6d698/rimdfg.csv",
+      "destination": "gabriel_site_data/revision=782ec8b/rimdfg.csv",
+      "provider": "gabriel1200/site_Data",
+      "source_revision": "782ec8b4c09fdfb023f06dbcd3e601123cf6d698",
+      "expected_min_rows": 5000,
+      "required_columns": ["PLAYER", "year", "DFGA"]
+    },
+    {
+      "name": "gabriel_hustle_current",
+      "url": "https://raw.githubusercontent.com/gabriel1200/site_Data/782ec8b4c09fdfb023f06dbcd3e601123cf6d698/hustle.csv",
+      "destination": "gabriel_site_data/revision=782ec8b/hustle.csv",
+      "provider": "gabriel1200/site_Data",
+      "source_revision": "782ec8b4c09fdfb023f06dbcd3e601123cf6d698",
+      "expected_min_rows": 1000,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME", "year"]
+    }
+  ]
+}

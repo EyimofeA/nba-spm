@@ -59,8 +59,8 @@ export function App() {
   const [error, setError] = useState("");
 
   // Filters live at the shell so every view below reads the same slice.
-  const [season, setSeason] = useState(2024);
-  const [model, setModel] = useState<ModelId>("aio");
+  const [season, setSeason] = useState(2026);
+  const [model, setModel] = useState<ModelId>("rapm");
   const [component, setComponent] = useState<Component>("net");
   const [minPoss, setMinPoss] = useState(0);
 
@@ -81,11 +81,10 @@ export function App() {
     Promise.all([loadCatalog(), loadIndex()])
       .then(([nextCatalog, nextIndex]) => {
         if (!live) return;
-        // Open on the newest season supported by the default AIO model. RAPM
-        // continues through 2026, but choosing that season here would render
-        // an empty AIO card and no role/skill context on first visit.
-        const aio = nextCatalog.catalog.models.find((item) => item.id === "aio");
-        const latest = Math.max(...(aio?.seasons.length ? aio.seasons : nextCatalog.catalog.seasons));
+        // Open on the most recent complete rating season. AIO/SPM remain
+        // available as historical model selections where their validated
+        // public artifacts exist.
+        const latest = Math.max(...nextCatalog.catalog.seasons);
         setCatalog(nextCatalog);
         setIndex(nextIndex);
         setSeason(latest);

@@ -7,7 +7,7 @@ Updated 2026-08-18. This note covers season labels 2025 and 2026, which mean the
 
 - Use the 2025 feature panel for diagnosis and research.
 - Do not publish a 2025 annual AIO from the frozen SPM model.
-- Do not build a 2026 annual AIO. The source season is incomplete.
+- A research-only 2025--26 AIO exists; it is not a public release candidate.
 - Do not tune the frozen model on the inspected 2025 result.
 
 ## Feature coverage
@@ -52,9 +52,9 @@ possible players were active or that every source statistic was non-zero.
 | Selected source family | Selected fields | 2025 observed / eligible | 2026 observed / eligible | Current artifact | Status |
 |---|---:|---:|---:|---|---|
 | Box/player-sheet base | Core box and rate fields | 379 / 379 | 385 / 385 | `statistical_features_v1_5db80fc1de` | present, but 2026 exposure is partial |
-| Playtype/zTS | 1 selected field (`zts_pct_points`) | 378 / 379 | 0 / 385 | `playtype_features_v1_b84ebdf73e` | 2026 blocker; 2025 one unmatched ID |
-| DFG/rim/hustle tracking | 10 selected defense fields | 379 / 379 | 0 / 385 | `defensive_tracking_features_v1_b0bf4ef279` | 2026 blocker |
-| Scorer-adjusted matchup defense | 8 selected defense fields | 0 / 379 | 0 / 385 | `matchup_defense_features_v1_b265e245c4` | 2025--26 blocker; artifact stops before 2025 |
+| Playtype/zTS | 1 selected field (`zts_pct_points`) | 378 / 379 | 385 / 385 | `playtype_features_v1_ba00f6fe96` | observed in the refreshed source; 2025 has one unmatched ID |
+| DFG/rim/hustle tracking | 10 selected defense fields | 379 / 379 | 0 / 385 | `defensive_tracking_features_v1_b0bf4ef279` | 2026 DFG/rim blocker; new hustle data alone does not close the family |
+| Scorer-adjusted matchup defense | 8 selected defense fields | 379 / 379 | 0 / 385 | `matchup_defense_features_v1_86d13d7357` | 2025 observed; 2026 blocker |
 
 At the complete feature-panel level, only 97 of 569 2025 rows and 105 of 582
 2026 rows are finite across all 127 offense columns; the corresponding counts

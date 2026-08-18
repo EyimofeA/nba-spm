@@ -97,7 +97,10 @@ from nba_impact.models.annual_spm_priors import (
     build_forward_chained_annual_spm_priors,
     build_leave_one_season_out_annual_spm_priors,
 )
-from nba_impact.models.annual_aio_ratings import build_annual_aio_ratings
+from nba_impact.models.annual_aio_ratings import (
+    build_annual_aio_ratings,
+    build_current_annual_aio_ratings,
+)
 from nba_impact.models.annual_defense_ridge_nested import run_annual_defense_ridge_nested
 from nba_impact.models.annual_defense_features_nested import run_annual_defense_features_nested
 from nba_impact.models.defense_role_challenger import run_defense_role_challenger
@@ -1690,6 +1693,25 @@ def command_build_annual_aio_ratings(args: argparse.Namespace) -> int:
         args.cache_dir,
         args.priors,
         args.names,
+        artifact_root=args.artifact_root,
+        seasons=tuple(args.seasons),
+        lambda_off=args.lambda_off,
+        lambda_def=args.lambda_def,
+        lambda_home=args.lambda_home,
+    )
+    register_model_run(args.registry, run)
+    print(json.dumps(run, indent=2))
+    return 0
+
+
+def command_build_current_annual_aio_ratings(args: argparse.Namespace) -> int:
+    ensure_owned_dirs()
+    run = build_current_annual_aio_ratings(
+        args.possessions,
+        args.segments,
+        args.priors,
+        args.names,
+        args.player_games,
         artifact_root=args.artifact_root,
         seasons=tuple(args.seasons),
         lambda_off=args.lambda_off,
@@ -3510,6 +3532,23 @@ def build_parser() -> argparse.ArgumentParser:
     annual_aio.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
     annual_aio.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     annual_aio.set_defaults(func=command_build_annual_aio_ratings)
+
+    current_annual_aio = subparsers.add_parser(
+        "build-current-annual-aio-ratings",
+        help="Build research-only AIO from canonical current possession inputs.",
+    )
+    current_annual_aio.add_argument("--priors", type=Path, required=True)
+    current_annual_aio.add_argument("--seasons", type=_season_list, default=(2024, 2025, 2026))
+    current_annual_aio.add_argument("--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet")
+    current_annual_aio.add_argument("--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet")
+    current_annual_aio.add_argument("--names", type=Path, default=PLAYER_NAMES)
+    current_annual_aio.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
+    current_annual_aio.add_argument("--lambda-off", type=float, default=3000.0)
+    current_annual_aio.add_argument("--lambda-def", type=float, default=3000.0)
+    current_annual_aio.add_argument("--lambda-home", type=float, default=300.0)
+    current_annual_aio.add_argument("--artifact-root", type=Path, default=ARTIFACT_ROOT)
+    current_annual_aio.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    current_annual_aio.set_defaults(func=command_build_current_annual_aio_ratings)
 
     rolling_peaks = subparsers.add_parser(
         "build-rolling-rapm-peaks",
