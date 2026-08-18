@@ -236,6 +236,13 @@ publish RAPM from it until exact ordinal lineups and official player minutes
 pass. Order V3 events by `actionId`; use `actionNumber` only as a guarded
 cross-source validation key.
 
+Historical V3 ordinal lineup work is documented in
+`docs/impact/HISTORICAL_V3_LINEUPS.md`. Use exact same-game/team roster aliases,
+preserve explicit suffixes before falling back to suffix-stripped names, and
+never use fuzzy name matching. A game emits no rows unless every action has a
+valid ten-player state and official player minutes reconcile within five
+seconds.
+
 The verified points-only event layer covers 2017–2026: 20 partitions, 12,812
 games, and zero final-score mismatches. Its contract and anomaly handling are
 in `docs/impact/SCORING_EVENTS_2017_2026.md`. It is suitable for scoring-state
