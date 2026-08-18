@@ -146,6 +146,34 @@ def test_historical_substitution_resolves_compound_surname_and_first_abbreviatio
     assert pairs["in_player_id"].tolist() == [1, 2]
 
 
+def test_historical_substitution_transliterates_roster_diacritics_before_tokenizing() -> None:
+    players = pd.DataFrame(
+        [
+            {"game_id": "0021700001", "team_id": 10, "player_id": 1, "player_name": "Nikola Jokić"},
+            {"game_id": "0021700001", "team_id": 10, "player_id": 2, "player_name": "Dario Šarić"},
+        ]
+    )
+    v3 = pd.DataFrame(
+        [
+            {
+                "game_id": "0021700001", "actionId": 3, "actionNumber": 3, "period": 1,
+                "clock": "PT05M00.00S", "actionType": "Substitution",
+                "description": "SUB: Jokic FOR Other", "personId": 9, "teamId": 10,
+            },
+            {
+                "game_id": "0021700001", "actionId": 4, "actionNumber": 4, "period": 1,
+                "clock": "PT04M00.00S", "actionType": "Substitution",
+                "description": "SUB: Saric FOR Other", "personId": 8, "teamId": 10,
+            },
+        ]
+    )
+
+    pairs, failures = parse_historical_v3_substitutions(v3, players)
+
+    assert failures.empty
+    assert pairs["in_player_id"].tolist() == [1, 2]
+
+
 def test_historical_substitution_uses_suffix_before_ambiguous_surname() -> None:
     players = pd.DataFrame(
         [

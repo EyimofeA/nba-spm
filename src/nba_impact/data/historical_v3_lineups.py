@@ -39,7 +39,11 @@ def _require_columns(frame: pd.DataFrame, columns: set[str], source: str) -> Non
 def _name_aliases(name: object) -> set[str]:
     """Return conservative aliases for a player-game roster name."""
     text = str(name or "").strip()
-    tokens = re.findall(r"[A-Za-z0-9]+", text)
+    # V3 substitution descriptions usually omit diacritics. Transliterate
+    # before tokenization so names such as Jokić, Nurkić, and Šarić retain the
+    # final consonant instead of becoming the non-matching Jok, Nurki, or ari.
+    ascii_text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    tokens = re.findall(r"[A-Za-z0-9]+", ascii_text)
     if not tokens:
         return set()
     suffix = tokens[-1] if tokens[-1].casefold().strip(".") in _SUFFIXES else None
