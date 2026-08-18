@@ -229,6 +229,13 @@ per legacy row and has no within-possession substitution timing. It is for
 historical terminal-lineup research only; do not merge it into the canonical
 current-event tables.
 
+The separate historical V3 possession state machine is documented in
+`docs/impact/HISTORICAL_V3_POSSESSIONS.md`. Its frozen 2024 development and
+2025 validation gates pass, but it remains a research candidate. Do not fit or
+publish RAPM from it until exact ordinal lineups and official player minutes
+pass. Order V3 events by `actionId`; use `actionNumber` only as a guarded
+cross-source validation key.
+
 The verified points-only event layer covers 2017–2026: 20 partitions, 12,812
 games, and zero final-score mismatches. Its contract and anomaly handling are
 in `docs/impact/SCORING_EVENTS_2017_2026.md`. It is suitable for scoring-state

@@ -156,6 +156,21 @@ HTTP 403. This is only an availability probe, not a season-completeness claim.
 Do not start a large historical Live download until historical starter and
 official player-minute inputs are pinned: play-by-play alone is not lineup-ready.
 
+### Historical V3 possession candidate
+
+The retired PlayByPlayV2 endpoint now returns empty data, so the local complete
+V3 archive is the historical event source. The frozen V3 owner state machine
+passes independent CDN validation in project seasons 2024 and 2025. Core
+action-owner agreement is 99.93% in both seasons; the exact full owner sequence
+matches in 93.6% and 91.9% of games.
+
+The separate 2017--2023 build accepts 8,863 games and 1,768,472 possession
+rows. Eight 2017 regular-season games fail exact team-score conservation and
+remain rejected. This closes the historical possession-outcome layer as a
+validated research candidate, not as exact ground truth. It is still not
+RAPM-ready because ordinal lineups are not attached. See
+`HISTORICAL_V3_POSSESSIONS.md`.
+
 ## Integrated current candidate
 
 `possessions_complete.parquet` combines the canonical base, the one strict

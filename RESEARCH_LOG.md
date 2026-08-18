@@ -2377,3 +2377,29 @@ Normal RAPM unchanged. Do not spend bandwidth on a historical Live sweep until
 historical starter and official player-minute inputs are pinned. The next
 repair must improve lineup evidence or validate a new ordinal reconstruction,
 not repeat the same clock-based replay.
+
+## 2026-08-18 — V3 possession inference clears its frozen validation gate
+
+**Question:** Can the complete local V3 action archive supply defensible
+historical possession owners when the retired PlayByPlayV2 endpoint returns no
+data and pre-2024 CDN possession tags are unavailable?
+
+**Method:** Order primary V3 actions by `actionId`. Infer owner changes from
+shots, free throws, turnovers, rebounds, fouls, and jump balls. Fix the rules on
+project season 2024, then apply them unchanged to project season 2025. Compare
+to CDN possession owners by the guarded action-number key. Build action points
+from made-shot and made-free-throw descriptions and require exact official
+team-score conservation.
+
+**Result:** Core action-owner agreement is 99.934% in 2024 and 99.932% in the
+untouched 2025 validation. Exact full-game owner sequences are 93.577% and
+91.870%; possession counts are within two for 99.756% and 99.106% of games.
+Mean count bias is -0.056 and -0.111 possessions per game. All frozen gates
+pass. The complete 2017--2023 candidate accepts 8,863 games and 1,768,472
+possessions. Eight 2017 regular-season games fail exact team-score conservation
+and remain rejected; every other regular-season and playoff partition passes.
+
+**Decision:** Build a separate historical V3 possession candidate. Do not call
+it exact ground truth or RAPM-ready. Promotion requires ordinal ten-player
+lineups, official-minute reconciliation, and a matched comparison with the
+independent legacy terminal-lineup migration.
