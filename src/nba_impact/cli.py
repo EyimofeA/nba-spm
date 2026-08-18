@@ -26,6 +26,7 @@ from nba_impact.data.game_dim import build_game_dimension
 from nba_impact.data.identity import build_identity_dimensions
 from nba_impact.data.lineups import build_lineup_stints
 from nba_impact.data.live_playoff_completion import build_live_playoff_completion
+from nba_impact.data.historical_v3_lineups import build_historical_v3_lineup_candidate
 from nba_impact.data.v3_cdn_lineup_repair import build_v3_cdn_lineup_repair_candidate
 from nba_impact.data.matchup_defense_features import build_matchup_defense_features
 from nba_impact.data.manifest import (
@@ -661,6 +662,36 @@ def command_build_possessions(args: argparse.Namespace) -> int:
                 "issues": snapshot["issues"],
                 "warnings": snapshot["warnings"],
                 "path": snapshot["path"],
+            },
+            indent=2,
+        )
+    )
+    return 0 if snapshot["passed"] else 2
+
+
+def command_build_historical_v3_lineups(args: argparse.Namespace) -> int:
+    """Build a strict, separately stored historical V3 lineup candidate."""
+    ensure_owned_dirs()
+    snapshot = build_historical_v3_lineup_candidate(
+        args.v3_root,
+        args.player_games,
+        args.official_game_scores,
+        args.stints_output,
+        args.quality_output,
+        args.report_output,
+        args.manifest_dir,
+        project_season=args.project_season,
+        season_type=args.season_type,
+    )
+    register_snapshot(args.registry, snapshot)
+    print(
+        json.dumps(
+            {
+                "snapshot_id": snapshot["snapshot_id"],
+                "passed_games": snapshot["passed_game_count"],
+                "quarantined_games": snapshot["quarantined_game_count"],
+                "stints": snapshot["stint_row_count"],
+                "report": str(args.report_output),
             },
             indent=2,
         )
@@ -2486,6 +2517,48 @@ def build_parser() -> argparse.ArgumentParser:
     repair_lineups.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
     repair_lineups.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     repair_lineups.set_defaults(func=command_build_v3_cdn_lineup_repair)
+
+    historical_v3_lineups = subparsers.add_parser(
+        "build-historical-v3-lineups",
+        help="Build a strict, separate historical V3 ordinal-lineup candidate.",
+    )
+    historical_v3_lineups.add_argument(
+        "--v3-root",
+        type=Path,
+        default=BRONZE_ROOT / "nba_data_archive_scoring" / "revision=dfa8fa43",
+        help="Pinned NBA Stats V3 root; actionId is the only event order.",
+    )
+    historical_v3_lineups.add_argument(
+        "--player-games",
+        type=Path,
+        default=SILVER_ROOT / "historical_espn_player_games.parquet",
+        help="Separate historical player-game candidate with starter and minute evidence.",
+    )
+    historical_v3_lineups.add_argument(
+        "--official-game-scores",
+        type=Path,
+        default=BRONZE_ROOT / "official_game_scores" / "official_game_scores.parquet",
+    )
+    historical_v3_lineups.add_argument("--project-season", type=int, required=True)
+    historical_v3_lineups.add_argument("--season-type", choices=("regular", "playoffs"), default="regular")
+    historical_v3_lineups.add_argument(
+        "--stints-output",
+        type=Path,
+        default=SILVER_ROOT / "candidates" / "historical_v3_lineup_stints.parquet",
+    )
+    historical_v3_lineups.add_argument(
+        "--quality-output",
+        type=Path,
+        default=SILVER_ROOT / "candidates" / "historical_v3_lineup_quality.parquet",
+    )
+    historical_v3_lineups.add_argument(
+        "--report-output",
+        type=Path,
+        default=SILVER_ROOT / "candidates" / "historical_v3_lineup_report.json",
+    )
+    historical_v3_lineups.add_argument("--manifest-dir", type=Path, default=MANIFEST_ROOT)
+    historical_v3_lineups.add_argument("--registry", type=Path, default=REGISTRY_PATH)
+    historical_v3_lineups.set_defaults(func=command_build_historical_v3_lineups)
 
     possessions = subparsers.add_parser(
         "build-possessions",
