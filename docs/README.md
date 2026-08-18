@@ -20,6 +20,8 @@ Start at the repository root:
 - [`impact/ROADMAP.md`](impact/ROADMAP.md) — detailed RAPM and all-in-one plan;
 - [`impact/CURRENT_FEATURE_QUALITY.md`](impact/CURRENT_FEATURE_QUALITY.md) —
   2025/2026 statistical-feature coverage, drift, and frozen-SPM confirmation;
+- [`impact/CURRENT_2026_REFRESH.md`](impact/CURRENT_2026_REFRESH.md) — pinned
+  current data, the 2014--2026 SPM null result, and RAPM input readiness;
 - [`impact/FACTOR_DECOMPOSITION.md`](impact/FACTOR_DECOMPOSITION.md) — factor
   feature families, public benchmark formulas, and AIO explanation contract;
 - [`impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`](impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md) —

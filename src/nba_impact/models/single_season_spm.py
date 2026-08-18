@@ -160,22 +160,26 @@ def _selected_single_season_features(reference_run_path: str | Path) -> dict[str
 def _external_annual(raw_root: Path, seasons: tuple[int, ...]) -> pd.DataFrame:
     rows = []
     for season in seasons:
-        bpm = parse_bpm_html(
-            (raw_root / "basketball_reference_bpm" / f"season={season}" / "page.html").read_text(),
-            season,
-        )
-        xrapm = parse_xrapm_html(
-            (raw_root / "xrapm" / f"season={season}" / "page.html").read_text(),
-            season,
-        )
-        rows.append(
-            bpm.merge(
-                xrapm,
+        season_rows = []
+        bpm_path = raw_root / "basketball_reference_bpm" / f"season={season}" / "page.html"
+        if bpm_path.exists():
+            season_rows.append(parse_bpm_html(bpm_path.read_text(), season))
+        xrapm_path = raw_root / "xrapm" / f"season={season}" / "page.html"
+        if xrapm_path.exists():
+            season_rows.append(parse_xrapm_html(xrapm_path.read_text(), season))
+        if not season_rows:
+            continue
+        combined = season_rows[0]
+        for frame in season_rows[1:]:
+            combined = combined.merge(
+                frame,
                 on=["season", "normalized_name"],
                 how="outer",
                 validate="one_to_one",
             )
-        )
+        rows.append(combined)
+    if not rows:
+        return pd.DataFrame(columns=["season", "normalized_name"])
     return pd.concat(rows, ignore_index=True)
 
 
@@ -184,7 +188,8 @@ def _external_source_hashes(raw_root: Path, seasons: tuple[int, ...]) -> dict[st
     for season in seasons:
         for source in ("basketball_reference_bpm", "xrapm"):
             path = raw_root / source / f"season={season}" / "page.html"
-            hashes[str(path.resolve())] = sha256_file(path)
+            if path.exists():
+                hashes[str(path.resolve())] = sha256_file(path)
     return hashes
 
 

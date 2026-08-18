@@ -349,7 +349,7 @@ def build_player_skill_features(
             "Features are descriptive tracking skills and roles, not causal player credit.",
             "Shot expectations use leave-one-player-out season and defender-distance bucket averages.",
             "Hustle coverage begins in 2018; missing seasons remain missing rather than becoming zero.",
-            "The 2025 source snapshot is partial and is excluded by the default season contract.",
+            "Source coverage varies by season; inspect season_profile.parquet before model use.",
         ],
     }
     write_json_atomic(run, output / "run.json")

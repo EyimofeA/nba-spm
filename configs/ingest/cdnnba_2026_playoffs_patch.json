@@ -7,7 +7,7 @@
     {
       "name": "cdnnba_2026_playoffs",
       "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/cdnnba/po_2025.parquet",
-      "destination": "nba_data_archive/cdnnba/season=2025/playoffs.parquet",
+      "destination": "nba_data_archive/cdnnba/revision=dfa8fa43/season=2025/playoffs.parquet",
       "provider": "cdechoch/nba-data-archive",
       "license": "Apache-2.0",
       "source_revision": "dfa8fa43f89ae2ca6c18db524edc2050a6bb2286",

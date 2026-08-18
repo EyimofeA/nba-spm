@@ -67,6 +67,8 @@ def test_single_season_spm_builds_oof_and_final_outputs(tmp_path: Path) -> None:
             ("basketball_reference_bpm", bpm),
             ("xrapm", xrapm),
         ):
+            if season == 2020 and source == "xrapm":
+                continue
             page = tmp_path / "raw" / source / f"season={season}" / "page.html"
             page.parent.mkdir(parents=True, exist_ok=True)
             page.write_text(html)
@@ -108,11 +110,11 @@ def test_single_season_spm_builds_oof_and_final_outputs(tmp_path: Path) -> None:
     disagreement = pd.read_parquet(output / "defensive_disagreements.parquet")
     assert len(oof) == 16
     assert len(leaderboard) == 16
-    assert len(disagreement) == 16
+    assert len(disagreement) == 12
     assert not oof.duplicated(["PLAYER_ID", "Season"]).any()
     assert run["models"]["offense"]["features"] == ["f1", "f2", "zts_pct_points"]
-    assert run["quality"]["xrapm_matched_rows"] == 16
-    assert run["quality"]["high_exposure_xrapm_matched_rows"] == 16
+    assert run["quality"]["xrapm_matched_rows"] == 12
+    assert run["quality"]["high_exposure_xrapm_matched_rows"] == 12
     assert run["quality"]["nonfinite_prediction_values"] == 0
     assert "season_2017_high_exposure" in {
         row["scope"] for row in run["metrics"]["external"]

@@ -80,8 +80,10 @@ dead ends. Updated 2026-08-17. See `docs/README.md` for the document index,
   above 1,000 possessions per side, net correlation is 0.897 with BPM and 0.762
   with xRAPM. xRAPM remains a multi-window external comparator.
 - The old 1997–2024 RAPM archive remains valuable but is stale after 2024.
-- The full 2025 box, playtype, DFG, rim, and hustle panel passes structural QA.
-  The 2026 player sheet is partial at 81.8% of recent possession exposure.
+- The pinned 2025 and 2026 player sheets now pass structural QA. The refreshed
+  2026 sheet has 582 players and 100.5% of the median 2024--2025 possession
+  exposure. Playtype and player-skill features reach 2026; DFG/rim DFG stop in
+  2025 and scorer-matchup aggregates stop in 2024.
 - Frozen annual SPM missed its untouched 2025 confirmation. Offense/defense/net
   RMSE is 1.102/1.154/1.610; defense correlation is 0.331. Do not promote or tune
   this run on 2025.
@@ -100,13 +102,12 @@ dead ends. Updated 2026-08-17. See `docs/README.md` for the document index,
 
 ## Active next task
 
-Freeze the rolling three-season direct AIO challenger. Carry the selected eight
-matchup-defense features into the defense factor group. Recompute pooled counts,
-rates, and shrinkage from source totals; do not average annual rates. Keep the
-split roles as descriptive outputs and subgroup diagnostics. Do not include the
-rejected role or role-interaction blocks in the first challenger. Use 2014--21
-for development, treat 2022--25 as inspected diagnostics, and keep Season 2027
-untouched.
+Finish the strict possession-lineup repair for the 10 quarantined regular and
+playoff games using the pinned Gabriel fallback files. Map players to canonical
+teams, preserve event order, conserve the final score, and require ten valid
+players at every RAPM assignment. Do not weaken the existing QA gates. Then
+rebuild the affected 2024--2026 Normal RAPM seasons and compare exact common
+players before replacing the current artifacts.
 
 The precision-aware SPM-prior challenger is deferred. Its reviewed 2018--21
 schedule cannot be produced by the frozen feature history, and the invalid
@@ -114,12 +115,12 @@ schedule cannot be produced by the frozen feature history, and the invalid
 reference. Keep annual AIO, matchup factors, trajectories, and peaks research-
 only. WP neural work stays paused on the Mac.
 
-The public product is live at `https://nba-impact-lab.mofe.chatgpt.site` with
-the validated 2017--24 ratings. The 2024 legacy-to-canonical annual RAPM bridge
-passed, but the canonical 2014--25 SPM refresh did not improve the historical
-mean and still failed in 2025. Keep the current public model pinned. Do not
-rerun the same annual specification again without a new feature or target-drift
-hypothesis.
+The public product is live at `https://nba-impact-lab.mofe.chatgpt.site`.
+Normal RAPM covers 2017--26. SPM and AIO remain the validated 2017--24 model.
+The full 2014--26 SPM refresh was flat-to-worse on the exact 2017--24 comparison,
+and its 2025/2026 defensive correlations were 0.332/0.378. Keep that refresh as
+a null result. Do not rerun the same annual specification without a new feature
+or target-drift hypothesis.
 
 Slow-network policy: each immutable file resumes from `.partial`, retries up to
 20 times with exponential jitter, and waits up to five minutes for the next bytes.
@@ -217,3 +218,6 @@ now would break reproducibility links.
 - Forward role stabilization: `role_stabilization_v1_f5b426dd5d`
 - Canonical annual target bridge: `canonical_annual_target_panel_v1_4586bd2f72`
 - Canonical-label annual SPM refresh: `single_season_spm_v1_c4be58c72e`
+- Full 2014--26 SPM null refresh: `single_season_spm_v1_47b3bd9b17`
+- Full 2014--26 base features: `statistical_features_v1_65446dd3e2`
+- Full 2014--26 expanded features: `statistical_features_v2_b808fc1bf1`

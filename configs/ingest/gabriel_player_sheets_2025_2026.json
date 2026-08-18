@@ -1,0 +1,47 @@
+{
+  "provider": "gabriel1200/player_sheets",
+  "source": "https://github.com/gabriel1200/player_sheets",
+  "source_revision": "a86cbe4c9cacff69906cb63600e76c558c83494e",
+  "license": "not-declared-by-upstream",
+  "purpose": "Pinned 2025 and 2026 aggregate player-season inputs for the SPM refresh audit.",
+  "tasks": [
+    {
+      "name": "gabriel_player_sheet_2025",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/a86cbe4c9cacff69906cb63600e76c558c83494e/year_totals/2025.csv",
+      "destination": "gabriel_player_sheets/revision=a86cbe4/year_totals/2025.csv",
+      "provider": "gabriel1200/player_sheets",
+      "license": "not-declared-by-upstream",
+      "source_revision": "a86cbe4c9cacff69906cb63600e76c558c83494e",
+      "expected_min_rows": 500,
+      "required_columns": [
+        "PLAYER_ID",
+        "PLAYER_NAME",
+        "TEAM_ABBREVIATION",
+        "AGE",
+        "GP",
+        "MIN",
+        "POSS",
+        "year"
+      ]
+    },
+    {
+      "name": "gabriel_player_sheet_2026",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/a86cbe4c9cacff69906cb63600e76c558c83494e/year_totals/2026.csv",
+      "destination": "gabriel_player_sheets/revision=a86cbe4/year_totals/2026.csv",
+      "provider": "gabriel1200/player_sheets",
+      "license": "not-declared-by-upstream",
+      "source_revision": "a86cbe4c9cacff69906cb63600e76c558c83494e",
+      "expected_min_rows": 500,
+      "required_columns": [
+        "PLAYER_ID",
+        "PLAYER_NAME",
+        "TEAM_ABBREVIATION",
+        "AGE",
+        "GP",
+        "MIN",
+        "POSS",
+        "year"
+      ]
+    }
+  ]
+}

@@ -12,11 +12,13 @@ candidates and their promotion gates, read `docs/win_probability/ARCHITECTURES.m
 Before changing a public model claim, read `research/estimands.yml` and
 `research/season_exposure.yml`. Season 2027 is reserved as untouched annual
 confirmation. Do not use it for development, debugging, or model selection.
-The public site is `https://nba-impact-lab.mofe.chatgpt.site`. Its ratings stay
-pinned to the validated 2017--24 model. The canonical 2024 RAPM transition
-passed, but the 2014--25 SPM refresh did not improve the historical result and
-2025 still failed. Do not publish that refresh or repeat it without a new,
-predeclared hypothesis.
+The public site is `https://nba-impact-lab.mofe.chatgpt.site`. Normal RAPM is
+available for 2017--26. SPM and AIO stay pinned to the validated 2017--24 model.
+The canonical 2024 RAPM transition passed. A full 2014--26 SPM refresh also
+failed to improve the matched 2017--24 result; its 2025 and 2026 defense folds
+were weak. Read `docs/impact/CURRENT_2026_REFRESH.md` before any current AIO or
+SPM work. Do not publish the refresh or repeat it without a new, predeclared
+hypothesis.
 Treat the older untracked `PROJECT.md` and
 `IDEAS.md` as historical RAPM context, not the current task queue.
 

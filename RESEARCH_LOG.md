@@ -2265,3 +2265,31 @@ fold remains weak at correlation 0.6140/0.3336/0.5030 and RMSE
 path. Do not replace the public 2017--24 leaderboard. The label migration does
 not explain the 2025 failure, so the next model work must diagnose feature and
 defensive-target drift instead of refitting the same specification again.
+
+## 2026-08-18 — Full 2026 data repairs exposure, not defensive SPM
+
+**Question:** Was the weak current SPM result caused by the partial 2026 player
+sheet, and does a full 2014--26 refit improve the frozen public model?
+
+**Method:** Pin 2025/2026 player sheets at Gabriel revision `a86cbe4`. Rebuild
+one-season base, playtype, defensive tracking, player-skill, and expanded
+features. Run `single_season_spm_v1_47b3bd9b17` with the same histogram-GBM
+offense model, ridge defense model, fixed 127/68 inputs, and leave-one-season-
+out evaluation. Compare only the common 2017--24 folds to the public annual
+SPM. Also audit clean possession-lineup coverage and download only the 10
+Gabriel team files needed for quarantined-game repair.
+
+**Result:** The 2026 player sheet has 582 unique players and an exposure ratio
+of 1.005 versus the 2024--25 median. The 6,942-row base and expanded panels
+have no duplicate keys or invalid bounded values. On common 2017--24 folds,
+net RMSE/correlation changes from 1.3556/0.6219 to 1.3591/0.6206. Defense
+changes from 0.9210/0.5526 to 0.9267/0.5475. The 2025 and 2026 defense
+correlations are 0.3322 and 0.3782. The clean RAPM input covers 1,227/1,230,
+1,226/1,230, and 1,228/1,230 regular games in 2024--26. The 2026 playoff CDN
+source still stops at 60/85 games.
+
+**Decision:** The partial 2026 sheet was not the main problem. Keep the new SPM
+as a null result and keep public SPM/AIO at 2017--24. Publish Normal RAPM through
+2026. Repair the 10 targeted lineup failures without weakening QA. Current
+defense needs new information, especially 2026 DFG and scorer-matchup coverage,
+not another identical refit.
