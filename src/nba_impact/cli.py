@@ -42,6 +42,7 @@ from nba_impact.data.shot_defense import build_shot_defense_events
 from nba_impact.data.possessions import build_possessions
 from nba_impact.data.scoring_events import build_scoring_event_dataset
 from nba_impact.data.rapm_readiness import audit_rapm_inputs
+from nba_impact.data.gabriel_fallback_repairs import build_gabriel_fallback_repairs
 from nba_impact.data.statistical_features import build_statistical_feature_windows
 from nba_impact.data.statistical_features_v2 import build_statistical_features_v2
 from nba_impact.models.rapm import (
@@ -303,6 +304,35 @@ def command_audit_rapm_inputs(args: argparse.Namespace) -> int:
         for issue in row["issues"]:
             print(f"  {issue}")
     print(json.dumps({"passed": report["passed"], "output": str(destination)}, indent=2))
+    return 0 if report["passed"] else 2
+
+
+def command_build_gabriel_fallback_repairs(args: argparse.Namespace) -> int:
+    """Build a separate merged input that contains only passing target repairs."""
+    report = build_gabriel_fallback_repairs(
+        args.manifest,
+        args.fallback_root,
+        args.event_root,
+        args.event_states,
+        args.game_dim,
+        args.player_games,
+        args.possessions,
+        args.segments,
+        args.output,
+        args.segments_output,
+        args.report,
+    )
+    print(
+        json.dumps(
+            {
+                "passed": report["passed"],
+                "repaired_games": report["repaired_games"],
+                "blocked_games": report["blocked_games"],
+                "report": str(args.report),
+            },
+            indent=2,
+        )
+    )
     return 0 if report["passed"] else 2
 
 
@@ -2023,6 +2053,30 @@ def build_parser() -> argparse.ArgumentParser:
         "--output", type=Path, default=MANIFEST_ROOT / "rapm_input_readiness.json"
     )
     rapm_input_audit.set_defaults(func=command_audit_rapm_inputs)
+
+    gabriel_repairs = subparsers.add_parser(
+        "build-gabriel-fallback-repairs",
+        help="Create a separate canonical-input candidate from passing Gabriel target repairs.",
+    )
+    gabriel_repairs.add_argument(
+        "--manifest", type=Path,
+        default=PROJECT_ROOT / "configs" / "ingest" / "gabriel_merged_playbyplay_quarantine_fallbacks.json",
+    )
+    gabriel_repairs.add_argument("--fallback-root", type=Path, default=BRONZE_ROOT)
+    gabriel_repairs.add_argument("--event-root", type=Path, default=BRONZE_ROOT / "nba_data_archive")
+    gabriel_repairs.add_argument("--event-states", type=Path, default=SILVER_ROOT / "event_states.parquet")
+    gabriel_repairs.add_argument("--game-dim", type=Path, default=SILVER_ROOT / "game_dim.parquet")
+    gabriel_repairs.add_argument("--player-games", type=Path, default=SILVER_ROOT / "player_games.parquet")
+    gabriel_repairs.add_argument("--possessions", type=Path, default=SILVER_ROOT / "possessions.parquet")
+    gabriel_repairs.add_argument("--segments", type=Path, default=SILVER_ROOT / "possession_lineup_segments.parquet")
+    gabriel_repairs.add_argument("--output", type=Path, default=SILVER_ROOT / "possessions_repaired.parquet")
+    gabriel_repairs.add_argument(
+        "--segments-output", type=Path, default=SILVER_ROOT / "possession_lineup_segments_repaired.parquet"
+    )
+    gabriel_repairs.add_argument(
+        "--report", type=Path, default=MANIFEST_ROOT / "gabriel_targeted_lineup_repairs.json"
+    )
+    gabriel_repairs.set_defaults(func=command_build_gabriel_fallback_repairs)
 
     player_games = subparsers.add_parser(
         "build-player-games",

@@ -47,11 +47,35 @@ Gabriel Adebayo's `merged_playbyplay` repository is a targeted fallback for
 the nine regular-season quarantines and the remaining failed playoff game.
 Its 2024 pilot had unique action numbers, a matching final score, and ten
 unique players on every non-substitution event. Substitution rows have
-transitional player lists by design. A fallback builder must join the source
-to canonical player-game team identities, retain the upstream action order,
-and reject a game unless its final score, all outcome-action lineups, and
-player-minute totals reconcile. Do not use the raw fallback directly as a
+transitional player lists by design.
+
+`nba-impact build-gabriel-fallback-repairs` is a separate, strict adapter. It
+uses canonical CDN action order and possession ownership, and observed Gabriel
+on-court states only. It maps players to the canonical player-game team, keeps
+only exact five-versus-five states, assigns non-outcome boundaries from an
+adjacent observed state, and permits an unobserved outcome only when identical
+observed lineups bracket it. The adapter rejects a candidate unless final
+score, possession and segment keys, every ten-player segment, and official
+player-minute totals all reconcile. Do not use the raw fallback directly as a
 RAPM table.
+
+### Targeted repair pilot, 2026-08-18
+
+The ten downloaded fallback files were evaluated without changing the
+canonical tables. One game passed all gates:
+
+| Game | Result | Effect on RAPM-ready coverage |
+|---|---|---|
+| `0022300535` | Repaired | 2024 regular: 1,227 / 1,230 to **1,228 / 1,230** |
+| `0022300339`, `0022400061`, `0022400821` | Blocked | An upstream substitution cannot be mapped to a direct observed post-substitution state. |
+| `0022400771` | Blocked | An outcome-adjacent violation lacks two-sided lineup continuity. |
+| `0022301210`, `0022400223`, `0022500264`, `0022500643` | Blocked | Official player-minute error is 136.0, 115.0, 78.4, and 48.0 seconds respectively; the 5-second gate is retained. |
+| `0042500205` | Blocked | The matching canonical 2026 playoff CDN event partition is absent, so no possession output can be created safely. |
+
+All other audited 2024--26 partitions were unchanged. The adapter writes a
+separate merged candidate (`possessions_repaired.parquet` and
+`possession_lineup_segments_repaired.parquet`); it never overwrites the
+canonical inputs.
 
 ## Boundary
 
