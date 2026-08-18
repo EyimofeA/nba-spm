@@ -11,7 +11,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CourtSignal",
   description:
-    "NBA player impact in points per 100 possessions: SPM, RAPM, AIO, and roles.",
+    "Basketball player impact in points per 100 possessions: SPM, RAPM, AIO, and roles.",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
 };
 
