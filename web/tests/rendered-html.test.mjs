@@ -19,7 +19,7 @@ test("server-renders the compact ratings product shell", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>NBA Impact Lab<\/title>/i);
+  assert.match(html, /<title>CourtSignal<\/title>/i);
   assert.match(html, /Loading/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
 

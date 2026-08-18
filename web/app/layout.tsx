@@ -9,9 +9,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NBA Impact Lab",
+  title: "CourtSignal",
   description:
-    "Player impact in points per 100 possessions: SPM, RAPM, AIO, roles, and aging.",
+    "NBA player impact in points per 100 possessions: SPM, RAPM, AIO, and roles.",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
 };
 

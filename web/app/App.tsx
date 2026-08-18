@@ -276,10 +276,10 @@ export function App() {
         <a
           className="wordmark"
           href="#home"
-          aria-label="NBA Impact Lab, overview"
+          aria-label="CourtSignal, overview"
         >
-          <b>NBA Impact</b>
-          <span>Lab</span>
+          <b>Court</b>
+          <span>Signal</span>
         </a>
         <div className="masthead-spacer" />
         <div className="search" ref={searchRef}>

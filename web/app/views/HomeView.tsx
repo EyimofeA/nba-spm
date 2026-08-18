@@ -44,7 +44,7 @@ export function HomeView({
           borderBottom: "1px solid var(--border)",
         }}
       >
-        <p className="kicker">NBA Impact Lab</p>
+        <p className="kicker">CourtSignal · NBA player impact</p>
         <h1 style={{ maxWidth: "18ch", fontSize: "clamp(38px, 6.4vw, 74px)" }}>
           One number.
           <br />
