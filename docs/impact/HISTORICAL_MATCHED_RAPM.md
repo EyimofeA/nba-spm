@@ -36,12 +36,12 @@ from nba_impact.models.historical_matched_rapm import run_matched_comparison
 
 roots = {
     season: Path(f"data/lake/silver/candidates/historical_v3_{season}_regular_main")
-    for season in range(2018, 2024)
+    for season in range(2017, 2024)
 }
 run_matched_comparison(roots, "rapm/data/possession_cache", "artifacts")
 ```
 
-The checked run is version `historical_matched_rapm_v1_f49c0fdc102e`.
+The checked run is version `historical_matched_rapm_v1_5cdea91ec419`.
 It writes `season_coverage.parquet`, `rating_comparison.parquet`,
 `game_margin_comparison.parquet`, and `run.json` under the matching directory
 in `artifacts/research/historical_matched_rapm/`.
@@ -54,16 +54,17 @@ because V3 has not passed every historical game through its lineup gates.
 
 | season | matched games | V3 possessions | legacy possessions | points delta (V3 - legacy) |
 |---:|---:|---:|---:|---:|
-| 2018 | 529 | 104,292 | 103,270 | +808 |
-| 2019 | 1,117 | 226,110 | 224,140 | +1,937 |
-| 2020 | 893 | 181,484 | 179,606 | +1,671 |
-| 2021 | 890 | 178,777 | 176,839 | +1,588 |
-| 2022 | 1,055 | 209,817 | 207,842 | +1,826 |
-| 2023 | 1,085 | 217,853 | 215,351 | +2,083 |
+| 2017 | 941 | 183,171 | 181,044 | +1,809 |
+| 2018 | 1,014 | 199,696 | 197,616 | +1,634 |
+| 2019 | 1,139 | 230,514 | 228,515 | +1,982 |
+| 2020 | 949 | 192,896 | 190,767 | +1,926 |
+| 2021 | 892 | 179,181 | 177,240 | +1,591 |
+| 2022 | 1,077 | 214,138 | 212,130 | +1,843 |
+| 2023 | 1,124 | 225,784 | 223,211 | +2,156 |
 
 Matched-player agreement is high but not exact.  Across seasons, net-rating
-Pearson correlation is 0.971–0.982 and net-rating RMSE is 0.233–0.348 points
-per 100.  Net Spearman correlation is 0.963–0.979.  Defense agreement is
+Pearson correlation is 0.971–0.981 and net-rating RMSE is 0.298–0.350 points
+per 100.  Net Spearman correlation is 0.964–0.975.  Defense agreement is
 slightly weaker than offense in 2020 and 2023.
 
 The artifact contains the complete per-season offense, defense, and net
@@ -85,11 +86,19 @@ retrodictive behavior.  It is not a promotion gate.  The V3 and legacy
 possession totals differ on the same games, so a difference in game RMSE cannot
 be attributed to lineup quality alone.
 
+The V3 candidate had lower held-out margin RMSE in one of seven seasons. Its
+mean RMSE was 0.118 points per game higher, its mean MAE was 0.112 points per
+game higher, and its mean margin correlation was 0.011 lower. These are small
+source-sensitivity differences, but they provide no evidence that the V3
+candidate is a more predictive RAPM input.
+
 ## Boundary and next step
 
 The result supports a narrow conclusion: the two terminal-lineup sources give
 similar player ordering on their matched historical games, with meaningful but
-small rating differences.  It does not prove that either source has the right
-within-possession lineup timing.  Before V3 can replace the legacy research
-cache, complete the historical ordinal-lineup QA and reconcile official player
-minutes.  Keep this comparison and its hashes as a provenance record.
+small rating differences. It does not prove that either source has the right
+within-possession lineup timing, and it does not support a predictive promotion.
+Keep V3 as a versioned research candidate while the full official player-game
+cache is completed. Use the legacy source as the public historical reference
+until the official-only rebuild reproduces these gates. Keep this comparison
+and its hashes as a provenance record.

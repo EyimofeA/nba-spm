@@ -32,7 +32,7 @@ from nba_impact.models.rapm import (
 class MatchedRapmConfig:
     """Frozen settings for the comparison experiment."""
 
-    seasons: tuple[int, ...] = (2018, 2019, 2020, 2021, 2022, 2023)
+    seasons: tuple[int, ...] = (2017, 2018, 2019, 2020, 2021, 2022, 2023)
     lambda_off: float = 3000.0
     lambda_def: float = 3000.0
     lambda_home: float = 300.0
@@ -245,4 +245,3 @@ def run_matched_comparison(
     }
     write_json_atomic(run, output / "run.json")
     return run
-

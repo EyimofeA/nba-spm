@@ -34,7 +34,7 @@ Start at the repository root:
   ordinal lineup reconstruction, pre-backfill coverage, and promotion gates;
 - [`impact/HISTORICAL_MATCHED_RAPM.md`](impact/HISTORICAL_MATCHED_RAPM.md) —
   research-only matched V3 versus legacy terminal-lineup RAPM comparison for
-  2018–23;
+  2017–23;
 - [`impact/FACTOR_DECOMPOSITION.md`](impact/FACTOR_DECOMPOSITION.md) — factor
   feature families, public benchmark formulas, and AIO explanation contract;
 - [`impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`](impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md) —

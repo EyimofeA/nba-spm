@@ -2434,3 +2434,25 @@ player ordering but are not interchangeable at the possession level. V3 must
 still pass historical ordinal-lineup and official-minute reconciliation before
 it can replace the legacy research cache. Artifact:
 `artifacts/research/historical_matched_rapm/historical_matched_rapm_v1_f49c0fdc102e`.
+
+## 2026-08-18 — Corrected 2017--23 matched historical RAPM
+
+**Question:** Does the source-compatibility result survive the Unicode name fix,
+the validated 2017 starter rule, and the final seven-season strict lineup build?
+
+**Method:** Add 2017 to the frozen comparison. Restrict both sources to identical
+regular-season game IDs. Fit the same terminal-lineup, zero-prior
+`3000/3000/300` ridge separately to each source. Keep the chronological 20%
+held-out retrodiction diagnostic unchanged.
+
+**Result:** The V3 candidate accepts 7,136 matched games and 1,425,380
+possessions. Net-rating Pearson correlation versus legacy is 0.971--0.981;
+net-rating RMSE is 0.298--0.350 points per 100. V3 has lower held-out margin
+RMSE in one of seven seasons. Its mean RMSE is 0.118 points per game higher,
+mean MAE is 0.112 higher, and mean margin correlation is 0.011 lower.
+
+**Decision:** The corrected run passes a narrow source-compatibility check but
+does not support a predictive promotion. Keep V3 research-only until the full
+official player-game cache is complete and the official-preferred rebuild
+reproduces the accepted-game and comparison gates. Artifact:
+`artifacts/research/historical_matched_rapm/historical_matched_rapm_v1_5cdea91ec419`.

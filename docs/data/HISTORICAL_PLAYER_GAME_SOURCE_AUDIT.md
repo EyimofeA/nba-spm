@@ -9,11 +9,13 @@ per player-game, official game and team IDs, starter status, and played
 minutes for project seasons 2017 through 2023?
 
 The current answer is **yes for every official game in project seasons
-2018--2023** after a 3,260-game official BoxScoreTraditionalV3 repair cache.
-Project season 2017 remains blocked: its 1,309 cached official boxes do not
-provide a valid five-starter state under the unchanged contract. The separate
-candidate is still research-only and is not the canonical current player-game
-table. Do not weaken the current gates to make 2017 pass.
+2017--2023**. Cached official BoxScoreTraditionalV3 rows are preferred. The
+remaining 2018--23 games use the strict research-only ESPN fallback while the
+immutable official cache is completed. Project season 2017 uses the versioned
+`official_box_first_five_v1` rule because its position field is not a valid
+starter marker. That rule is restricted to 2017 and passed 10,073 independent
+later team-record comparisons. The separate candidate is still research-only
+and is not the canonical current player-game table.
 
 Project season means the season end year. For example, project season 2019 is
 the 2018-19 NBA season. Official game counts include regular season and
@@ -23,6 +25,7 @@ playoffs, but not Play-In games.
 
 | Source | Local material and pinned provenance | Required fields | Result |
 | --- | --- | --- | --- |
+| Official NBA Stats boxes | `bronze/nba_stats_boxscores_historical/`; resumable immutable per-game BoxScoreTraditionalV3 payloads | game/team/player IDs, response order, position and minutes | Preferred source. Exact five-player markers are used in 2018--23. In 2017 only, the first five response rows per team are accepted under `official_box_first_five_v1`; later official and ESPN comparisons agreed 10,073/10,073 team records. Raw rows do not enter public bundles. |
 | ESPN player boxes | `bronze/llimllib_nba_data/espn/player_box.parquet`; 213,970 rows, 9,021,318 bytes, SHA-256 `85be23af3026992d3a680f556e8bceb01ce94de5e15bed9df66e29a9aff06ead`; `llimllib/nba_data` revision `3519bb36e8f70a8bb61bfbf4b6c37e1fbb0f9c2c`; licence `not_declared_research_only` | `game_id`, `player_id`, `team`, home/away flag, `starter`, `minutes_played`, `played`; `team_id` is null in 2022-23 | The only local source with native starter flags and player minutes. `home` can map to the official home or away team ID. Research-only; do not redistribute its rows. |
 | NBA Stats player-game mirror | `bronze/llimllib_nba_data/player_game_logs.parquet`; 92,841 rows, 4,278,492 bytes; same revision and licence status | `gameId`, `teamId`, `personId`, position and minutes | Not a historical solution. It has sparse, incomplete 2017-23 game coverage and no explicit starter flag. The current code's `position != ""` rule is a fallback convention, not official starter evidence. |
 | Official final scores | `bronze/official_game_scores/official_game_scores.parquet`; 12,812 verified games | `game_id`, date, home/away team IDs, final scores | Gives the authoritative game universe and a safe home/away-to-team-ID bridge. It does not contain player rows or starters. |
@@ -43,7 +46,7 @@ five seconds, matching the existing builder.
 
 | Project season | Official games | Strict accepted | Decision |
 | --- | ---: | ---: | --- |
-| 2017 | 1,309 | 0 | Cached official rows fail the five-starter gate; blocked. |
+| 2017 | 1,309 | 1,309 | **Complete candidate with versioned first-five rule.** |
 | 2018 | 1,312 | 1,312 | **Complete candidate.** |
 | 2019 | 1,312 | 1,312 | **Complete candidate.** |
 | 2020 | 1,142 | 1,142 | **Complete candidate.** |
@@ -51,10 +54,10 @@ five seconds, matching the existing builder.
 | 2022 | 1,317 | 1,317 | **Complete candidate.** |
 | 2023 | 1,314 | 1,314 | **Complete candidate.** |
 
-The rebuilt table has 168,428 player-game rows across 7,562 accepted games.
-Every accepted team-game has five starters and satisfies the five-second team
-minute gate. All 1,309 rejected games are from project season 2017 and fail both
-home and away starter-count checks.
+The combined separate candidates have 202,038 player-game rows across 8,871
+accepted games. Every accepted team-game has five starters and satisfies the
+five-second team-minute gate. The 2017 candidate has 33,610 rows and zero
+rejected games. Its starter inference source is recorded on every row.
 
 Sample identity check: game `0021800512` is Boston at Houston in the official
 score table (Boston `1610612738`, Houston `1610612745`). The ESPN rows mark
@@ -66,9 +69,9 @@ coverage.
 
 1. Finish the resumable `--all-games` official cache so accepted games no longer
    depend on the unlicensed ESPN fallback.
-2. Rebuild the same separate table and require identical 2018--2023 coverage.
-3. Keep 2017 blocked until a source supplies trustworthy starters; do not infer
-   them from minutes or relax the gate.
+2. Rebuild the same separate table and require identical 2017--2023 coverage.
+3. Keep the 2017 first-five rule frozen and versioned. Do not extend it to
+   another season or replace it with a minutes-based inference.
 4. Do not overwrite canonical current tables or redistribute raw official or
    ESPN rows in the public release bundle.
 

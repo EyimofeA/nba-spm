@@ -90,11 +90,15 @@ Annual SPM labels use one-season regular-season Normal RAPM targets. The target
 builder fits each season independently with the same `3000/3000/300` penalties.
 The current reference run `rapm_v0_01b5084f0a` covers the validated current
 2024–26 scope. The historical legacy cache supports research-only annual
-targets through 2024. The historical V3 program is not yet a complete 2017--23
-RAPM input. A strict 2023 pilot now has ordinal lineups attached for 1,085 of
-1,230 regular-season games, while the remaining games and historical seasons
-still require the same season-level build and QA. The 2017 possession candidate
-also retains eight rejected games.
+targets through 2024. The historical V3 program now has strict season-level
+research candidates for 2017--23. The frozen build emits 7,136 regular-season
+games, 1,425,380 possessions, and 1,728,895 ordinal lineup segments. Season
+coverage ranges from 892 to 1,139 accepted games. All failed games remain in
+the quality ledger. A matched-source comparison gives net-rating Pearson
+correlations of 0.971--0.981 versus the legacy terminal-lineup source, but the
+V3 candidate improves held-out game RMSE in only one of seven seasons. Keep it
+research-only until the immutable official player-game cache is complete and
+the official-preferred rebuild reproduces the frozen gates.
 
 ## 3. Annual SPM: exact target, windows, learners, and features
 

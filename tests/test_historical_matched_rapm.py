@@ -53,6 +53,7 @@ def test_regular_game_filter_excludes_playoffs():
 def test_config_keeps_frozen_penalties():
     config = MatchedRapmConfig()
     assert (config.lambda_off, config.lambda_def, config.lambda_home) == (3000.0, 3000.0, 300.0)
+    assert config.seasons == (2017, 2018, 2019, 2020, 2021, 2022, 2023)
     assert config.rapm(2018).seasons == (2018,)
 
 
@@ -61,4 +62,3 @@ def test_v3_adapter_rejects_overlapping_lineup():
     segments.loc[1, "away_player_1"] = 1
     with pytest.raises(ValueError, match="ten unique players"):
         adapt_v3_terminal_lineups(possessions, segments)
-
