@@ -235,10 +235,13 @@ current-event tables.
 
 The separate historical V3 possession state machine is documented in
 `docs/impact/HISTORICAL_V3_POSSESSIONS.md`. Its frozen 2024 development and
-2025 validation gates pass, but it remains a research candidate. Do not fit or
-publish RAPM from it until exact ordinal lineups and official player minutes
-pass. Order V3 events by `actionId`; use `actionNumber` only as a guarded
-cross-source validation key.
+2025 validation gates pass. Strict ordinal lineups and official player-minute
+gates now emit 7,136 regular-season games for 2017--23. Seven isolated RAPM
+fits and the matched legacy comparison are complete. The source passes a narrow
+compatibility check but does not improve held-out prediction, so keep it
+research-only while the full official player-game cache finishes. Order V3
+events by `actionId`; use `actionNumber` only as a guarded cross-source
+validation key.
 
 Historical V3 ordinal lineup work is documented in
 `docs/impact/HISTORICAL_V3_LINEUPS.md`. Use exact same-game/team roster aliases,
