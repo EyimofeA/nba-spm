@@ -6,48 +6,14 @@ import { MultiLine } from "../charts/lines";
 import { COMPONENT_LABEL, Catalog, Component } from "../lib/data";
 import { COMPONENT_COLOR, fmtInt, fmtRating } from "../lib/viz";
 
-const QUEUE = [
-  {
-    when: "NEXT",
-    title: "All-in-one challenger",
-    body: "Freeze the three-season factor groups with the eight selected matchup-defense features. Pool counts from source totals; do not average annual rates.",
-  },
-  {
-    when: "NEXT",
-    title: "Role-relative skill",
-    body: "Measure skill inside a role before making any role-fit claim. Require support and overlap checks first.",
-  },
-  {
-    when: "NEXT",
-    title: "Career trajectories",
-    body: "Keep the annual state-space filter as the research challenger against the fixed time-decay baseline. Promote nothing without a new untouched season.",
-  },
-  {
-    when: "LATER",
-    title: "Defense from tracking",
-    body: "Individual defender ratings wait for exact guarding data. Assignment data measures matchups, not causal credit.",
-  },
-  {
-    when: "LATER",
-    title: "Roster calculator",
-    body: "Define a lineup and roster net-rating contract with exposure floors and shrinkage. Combination ratings are not isolated causal effects.",
-  },
-  {
-    when: "LATER",
-    title: "Calibrated uncertainty",
-    body: "Publish intervals for SPM and AIO only after they are calibrated on held-out seasons.",
-  },
-  {
-    when: "NOT NOW",
-    title: "Neural sequence models",
-    body: "Tabular baselines still win on identical rows. Any sequence work needs prefix-invariant causal tokens and cloud compute.",
-  },
-  {
-    when: "NOT NOW",
-    title: "More subset searches",
-    body: "The 2017–24 folds are inspected. New feature claims need new data or a predeclared nested design.",
-  },
-];
+const IMPORTANCE = [
+  ["Offense", "Shooting / scoring / spacing", 90, 0.2719],
+  ["Offense", "Public composites", 8, 0.1081],
+  ["Offense", "Rebounding / screening", 6, 0.0106],
+  ["Defense", "Disruption", 3, 0.1167],
+  ["Defense", "Creation / passing", 24, 0.0816],
+  ["Defense", "Rebounding / screening", 6, 0.0793],
+] as const;
 
 export function ResearchView({ catalog }: { catalog: Catalog }) {
   const [source, setSource] = useState<"rapm" | "aio">("rapm");
@@ -116,11 +82,45 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
 
         <section className="card prose-grid">
           <div>
+            <p className="kicker">Inputs</p>
+            <h2>What each model reads</h2>
+            <p className="note">
+              RAPM reads possession points, home offense, and the ten players on
+              court—no box-score features. SPM uses 127 offense and 68 defense
+              columns from box, tracking, playtype, and matchup data. zTS is in
+              offense. Roles were tested but were not selected. AIO uses the
+              same possession design as RAPM, centered on the held-out SPM.
+            </p>
+          </div>
+          <table className="mini">
+            <thead>
+              <tr>
+                <th scope="col">Side</th>
+                <th scope="col">Feature family</th>
+                <th scope="col">Columns</th>
+                <th scope="col">RMSE Δ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {IMPORTANCE.map(([side, family, features, delta]) => (
+                <tr key={`${side}-${family}`}>
+                  <td>{side}</td>
+                  <td>{family}</td>
+                  <td>{features}</td>
+                  <td>{delta.toFixed(4)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        <section className="card prose-grid">
+          <div>
             <p className="kicker">Forward test</p>
             <h2>Earlier seasons only</h2>
             <p className="note">
               Each season’s SPM is trained on earlier seasons only, then scored
-              against that season’s normal RAPM. Errors are weighted by the
+              against that season’s RAPM. Errors are weighted by the
               square root of the smaller possession count. The published ratings
               use leave-one-season-out centers, which may also see later
               seasons, so this stricter table is the honest accuracy check.
@@ -157,7 +157,7 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
             <p className="kicker">Direction check</p>
             <h2>Next year and last year</h2>
             <p className="note">
-              The frozen held-out SPM at one season is compared with normal RAPM
+              The frozen held-out SPM at one season is compared with RAPM
               in the next season and in the previous season, over the same
               matched transitions. Net correlation is almost equal in both
               directions, so the agreement is not explained by player
@@ -419,28 +419,6 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
               </span>
             </li>
           </ul>
-        </section>
-
-        <section>
-          <div className="section-head" style={{ marginTop: 8 }}>
-            <div>
-              <p className="kicker">Queue</p>
-              <h2>Planned, not proven</h2>
-            </div>
-            <span className="meta">
-              Each item needs a frozen metric contract and a reserved
-              confirmation season
-            </span>
-          </div>
-          <div className="queue">
-            {QUEUE.map((item) => (
-              <article key={item.title} data-when={item.when}>
-                <p className="kicker">{item.when}</p>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-              </article>
-            ))}
-          </div>
         </section>
       </div>
     </>
