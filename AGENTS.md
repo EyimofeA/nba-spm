@@ -12,8 +12,12 @@ candidates and their promotion gates, read `docs/win_probability/ARCHITECTURES.m
 Before changing a public model claim, read `research/estimands.yml` and
 `research/season_exposure.yml`. Season 2027 is reserved as untouched annual
 confirmation. Do not use it for development, debugging, or model selection.
-The public site is `https://nba-impact-lab.mofe.chatgpt.site`. Normal RAPM is
-available for 2017--26. SPM and AIO stay pinned to the validated 2017--24 model.
+The current public site is `https://nba-impact-lab.mofe.chatgpt.site`. The UI
+calls the zero-prior baseline `RAPM`; use `normal RAPM` only when a technical
+document must distinguish it from prior-centered variants. RAPM is available
+for 2017--26. SPM and AIO stay pinned to the validated 2017--24 model. External
+Cloudflare Worker hosting is configured but not live until account login and a
+custom domain are supplied.
 The canonical 2024 RAPM transition passed. A full 2014--26 SPM refresh also
 failed to improve the matched 2017--24 result; its 2025 and 2026 defense folds
 were weak. Read `docs/impact/CURRENT_2026_REFRESH.md` before any current AIO or
@@ -293,8 +297,8 @@ Forward-only role display run `role_stabilization_v1_f5b426dd5d` selects a
 layer only. Keep raw memberships available and never use the stable hard label
 as an SPM feature. The public site now shows raw single-season roles only; the
 stable layer stays out of the web snapshot. The static derived-data web client
-loads one annual table or one role map at a time. It offers AIO, normal RAPM,
-and SPM through one model selector and shows no win-probability result.
+loads one annual table or one role map at a time. It offers AIO, RAPM, and SPM
+through one model selector and shows no win-probability result.
 Regenerate it with `nba-impact build-web-snapshot` after changing pinned
 ratings, roles, player sheets, or the aging curve.
 
