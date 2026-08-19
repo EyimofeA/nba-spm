@@ -3,6 +3,20 @@
 export type Component = "net" | "offense" | "defense";
 export type ModelId = "aio" | "rapm" | "spm";
 export type RoleSide = "offense" | "defense";
+export type MatchupRow = {
+  PLAYER_ID: number;
+  PLAYER_NAME: string;
+  TEAM_ABBREVIATION: string | null;
+  Season: number;
+  offense_elo: number;
+  defense_elo: number;
+  net_elo: number;
+  offense_matchup_possessions: number;
+  defense_matchup_possessions: number;
+  window_start_season: number;
+  window_end_season: number;
+  time_decay: number;
+};
 
 export const COMPONENTS: Component[] = ["net", "offense", "defense"];
 export const COMPONENT_LABEL: Record<Component, string> = {
@@ -230,6 +244,8 @@ export const loadTeamProjections = () =>
   load<TeamProjection[]>("/data/projection-teams.json");
 export const loadPlayerProjections = () =>
   load<PlayerProjection[]>("/data/projection-players.json");
+export const loadMatchups = (season: number) =>
+  load<MatchupRow[]>(`/data/matchup-elo-${season}.json`);
 
 export async function loadPlayer(
   id: number,

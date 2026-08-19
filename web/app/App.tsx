@@ -11,11 +11,14 @@ import {
   RoleSide,
   loadCatalog,
   loadIndex,
+  loadMatchups,
   loadPlayer,
   loadSeason,
+  MatchupRow,
 } from "./lib/data";
 import { HomeView } from "./views/HomeView";
 import { LandscapeView } from "./views/LandscapeView";
+import { MatchupsView } from "./views/MatchupsView";
 import { PlayerView } from "./views/PlayerView";
 import { RatingsView } from "./views/RatingsView";
 import { ResearchView } from "./views/ResearchView";
@@ -25,6 +28,7 @@ const TABS = [
   { id: "home", label: "Overview" },
   { id: "ratings", label: "Ratings" },
   { id: "landscape", label: "Landscape" },
+  { id: "matchups", label: "Matchups" },
   { id: "player", label: "Player" },
   { id: "roles", label: "Roles" },
   { id: "research", label: "Research" },
@@ -63,6 +67,8 @@ export function App() {
   const [minPoss, setMinPoss] = useState(0);
 
   const [rows, setRows] = useState<LeaderboardRow[]>([]);
+  const [matchupRows, setMatchupRows] = useState<MatchupRow[]>([]);
+  const [matchupSeason, setMatchupSeason] = useState(2026);
   const [player, setPlayer] = useState<Player | null>(null);
   const [comparePlayer, setComparePlayer] = useState<Player | null>(null);
   const [playerSeason, setPlayerSeason] = useState(2024);
@@ -156,6 +162,15 @@ export function App() {
       window.clearTimeout(start);
     };
   }, [catalog, season]);
+
+  useEffect(() => {
+    if (!catalog) return;
+    let live = true;
+    void loadMatchups(matchupSeason)
+      .then((next) => { if (live) setMatchupRows(next); })
+      .catch(() => { if (live) setMatchupRows([]); });
+    return () => { live = false; };
+  }, [catalog, matchupSeason]);
 
   // The route asked for a player; fetch its shard.
   const wanted = route.playerId;
@@ -373,6 +388,14 @@ export function App() {
                 onMinPoss={setMinPoss}
                 onPlayer={openPlayer}
                 selected={player?.PLAYER_ID}
+              />
+            )}
+            {tab === "matchups" && (
+              <MatchupsView
+                rows={matchupRows}
+                season={matchupSeason}
+                seasons={[2020, 2021, 2022, 2023, 2024, 2025, 2026]}
+                onSeason={setMatchupSeason}
               />
             )}
             {tab === "player" && (

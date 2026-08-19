@@ -82,6 +82,26 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
 
         <section className="card prose-grid">
           <div>
+            <p className="kicker">Next projects</p>
+            <h2>What we are testing next</h2>
+            <p className="note">
+              Shot-quality matchup ratings will separate rim and non-rim
+              opportunity from shotmaking, but stay exploratory until a
+              shot-level defender assignment is available. Combination RAPM
+              will test whether recurring 2–5-player groups add predictive
+              value beyond additive player RAPM.
+            </p>
+          </div>
+          <div className="tag-grid">
+            <span>Shot quality: event location, no defender-at-shot claim</span>
+            <span>Matchups: rim and non-rim models</span>
+            <span>Groups: pair RAPM before trios, fours, or fives</span>
+            <span>Promotion requires whole-game held-out improvement</span>
+          </div>
+        </section>
+
+        <section className="card prose-grid">
+          <div>
             <p className="kicker">Inputs</p>
             <h2>What each model reads</h2>
             <p className="note">
