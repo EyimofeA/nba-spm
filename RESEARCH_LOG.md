@@ -2627,3 +2627,28 @@ window requirements, and component centering.
 not fix defensive assignment, help, scheme, or context confounding. Do not add
 it to RAPM, SPM, AIO, or the public site before a predeclared chronological
 matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
+# 2026-08-19 — Shot-quality matchup and combination RAPM projects registered
+
+- The current event archive has coordinates, shot distance, action type, clock,
+  shooter, and result, so it can support a basic pre-shot expected field-goal
+  model. It does not have a defender credited to every shot.
+- The current matchup endpoint is player–defender aggregate data, not a
+  shot-level join. Assigning a shooter’s season shot profile to individual
+  defenders by overlap would be circular, so defender-specific shot-quality
+  Elo is blocked pending a permitted shot-level defender source.
+- Registered two projects in
+  `docs/impact/SHOT_QUALITY_MATCHUPS_AND_COMBINATION_RAPM.md`: rim/non-rim
+  expected-shot matchup research and staged 2–5-player interaction RAPM.
+  Neither is a production rating, SPM input, or AIO input.
+
+# 2026-08-19 — Player-neutral expected-shot v0 and source audit
+
+- Built `expected_shot_quality_v1_f5d343a852`: a logistic location/context
+  model with no shooter, defender, team, lineup, or outcome feature. It trained
+  on 2024, was isotonic-calibrated on 2025, and was evaluated once on untouched
+  2026 (season-end labels): 218,722 shots, Brier .23075, log loss .65413.
+  Rim and non-rim outputs remain separate.
+- Audited the public matchup endpoint and confirmed it is player-pair aggregate
+  data, not an event-level defender assignment. The permissible public route
+  supports shooter shot quality only. Defender-specific expected-shot matchups
+  remain blocked pending an explicitly licensed/rights-reviewed tracking source.
