@@ -332,6 +332,13 @@ and ordinal five-player lineups but no exact primary-defender label. Run
 only 0.089%, below its frozen 0.5% gate, and is `research_null`. Do not fit
 individual defender rankings or merge this block into the AIO without exact
 event-level guarding data.
+The player-neutral expected-shot baseline
+`expected_shot_quality_v1_f5d343a852` is a separate research artifact. Its
+five-on-five residual follow-up `lineup_shot_residual_v1_faf3e92d08` is also a
+research null: the largest fixed game-holdout RMSE reduction was 0.38% on rim
+shots, and it does not identify a primary defender. Do not expose its player
+rows, call them matchup results, or use them in RAPM, SPM, or AIO. See
+`docs/impact/SHOT_QUALITY_MATCHUPS_AND_COMBINATION_RAPM.md`.
 
 Win-probability research must use chronological seasons and post-action states.
 External comparisons use the resumable `ingest-espn-win-probability` command,

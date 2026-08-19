@@ -2652,3 +2652,17 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   data, not an event-level defender assignment. The permissible public route
   supports shooter shot quality only. Defender-specific expected-shot matchups
   remain blocked pending an explicitly licensed/rights-reviewed tracking source.
+
+# 2026-08-19 — Lineup-adjusted expected-shot residual fallback: research null
+
+- Built `lineup_shot_residual_v1_faf3e92d08` on the 2026 shot panel. The
+  player-neutral expected-shot baseline used only 2024 training and 2025
+  calibration data. The residual model used the ten observed players on court,
+  split all shots, rim, and non-rim, and held out complete 2026 games.
+- On 47,367 held-out shots, all-shot RMSE improved from 1.18082 to 1.18027
+  (0.05%). Rim improved from .92457 to .92104 (0.38%); non-rim improved from
+  1.26713 to 1.26691 (0.02%).
+- Decision: do not publish its player rows or treat its defense side as
+  individual shot contest. The current data identifies a five-on-five lineup,
+  not a defender at the shot. Retain this as a documented null and require a
+  permitted shot-level defender assignment before a defender-specific model.

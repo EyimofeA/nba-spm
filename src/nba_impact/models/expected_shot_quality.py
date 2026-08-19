@@ -142,6 +142,43 @@ def _player_aggregates(frame: pd.DataFrame, prediction: np.ndarray) -> pd.DataFr
     ).reset_index(drop=True)
 
 
+def fit_and_predict_expected_shots(
+    train: pd.DataFrame,
+    calibration: pd.DataFrame,
+    score: pd.DataFrame,
+    *,
+    c: float = 0.2,
+    max_iter: int = 300,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Fit the player-neutral model and return base and calibrated predictions.
+
+    This small public helper keeps every downstream shot-quality experiment on
+    the same identity-free feature contract.  ``score`` must be later than the
+    training and calibration data in any longitudinal use; this function does
+    not infer temporal ordering itself.
+    """
+    if train.empty or calibration.empty or score.empty:
+        raise ValueError("Expected-shot fitting requires nonempty train, calibration, and score frames.")
+    combined = pd.concat([train, calibration, score], ignore_index=True)
+    features, feature_names = _feature_frame(combined)
+    if set(feature_names) & FORBIDDEN_FEATURES:
+        raise AssertionError("Expected-shot design contains a forbidden identity or outcome feature.")
+    train_features = features[: len(train)]
+    calibration_features = features[len(train) : len(train) + len(calibration)]
+    score_features = features[len(train) + len(calibration) :]
+    scaler = StandardScaler()
+    train_features = scaler.fit_transform(train_features)
+    calibration_features = scaler.transform(calibration_features)
+    score_features = scaler.transform(score_features)
+    model = LogisticRegression(C=c, solver="lbfgs", max_iter=max_iter)
+    model.fit(train_features, train["shot_made"].to_numpy(dtype=int))
+    calibration_base = model.predict_proba(calibration_features)[:, 1]
+    calibrator = IsotonicRegression(out_of_bounds="clip")
+    calibrator.fit(calibration_base, calibration["shot_made"].to_numpy(dtype=int))
+    base_prediction = model.predict_proba(score_features)[:, 1]
+    return base_prediction, calibrator.predict(base_prediction)
+
+
 def run_expected_shot_quality(
     panel_path: str | Path,
     *,
@@ -171,25 +208,16 @@ def run_expected_shot_quality(
     if set(train_season_ends) & set(calibration_season_ends):
         raise ValueError("Expected-shot training and calibration seasons must not overlap.")
 
-    features, feature_names = _feature_frame(
-        pd.concat([train, calibration_frame, test], ignore_index=True)
-    )
+    _, feature_names = _feature_frame(pd.concat([train, calibration_frame, test], ignore_index=True))
     if set(feature_names) & FORBIDDEN_FEATURES:
         raise AssertionError("Expected-shot design contains a forbidden identity or outcome feature.")
-    train_features = features[: len(train)]
-    calibration_features = features[len(train) : len(train) + len(calibration_frame)]
-    test_features = features[len(train) + len(calibration_frame) :]
-    scaler = StandardScaler()
-    train_features = scaler.fit_transform(train_features)
-    calibration_features = scaler.transform(calibration_features)
-    test_features = scaler.transform(test_features)
-    model = LogisticRegression(C=c, solver="lbfgs", max_iter=max_iter)
-    model.fit(train_features, train["shot_made"].to_numpy(dtype=int))
-    calibration_base = model.predict_proba(calibration_features)[:, 1]
-    calibrator = IsotonicRegression(out_of_bounds="clip")
-    calibrator.fit(calibration_base, calibration_frame["shot_made"].to_numpy(dtype=int))
-    base_prediction = model.predict_proba(test_features)[:, 1]
-    prediction = calibrator.predict(base_prediction)
+    base_prediction, prediction = fit_and_predict_expected_shots(
+        train,
+        calibration_frame,
+        test,
+        c=c,
+        max_iter=max_iter,
+    )
 
     metric_rows = [
         {**_metric_row(test, base_prediction, "all_base"), "calibrated": False},

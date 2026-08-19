@@ -51,9 +51,11 @@ contest type, shot-clock state, and a per-shot primary defender.
 
 **Outcome:** made field goal, with expected points `shot_value × P(make)`.
 
-**Pre-shot features only:** season, two-versus-three value, court location
-(`x`, `y`, distance, angle, and smooth location terms), NBA area/area-detail,
-action type/subtype, quarter/OT, game clock, and home/offense indicator.
+**Pre-shot features only:** two-versus-three value, court location (`x`, `y`,
+distance, angle, and smooth location terms), the derived five-zone class,
+period/OT, game clock, score differential before the attempt, and
+home/offense indicator. The model does not use season, action text, player,
+team, or lineup identity.
 
 **Excluded:** free throws, post-shot score, rebound/assist/block result,
 descriptions, future events, player identity, defender identity, and team
@@ -107,6 +109,31 @@ Before a defender-at-shot source exists, we may use current matchup FGA/FGM and
 a shooter's **own season-level** shot-quality profile to make a coarse matchup
 residual. It cannot distinguish which defenders induced which locations, so it
 is a diagnostic only and cannot be called suppression or contest skill.
+
+### Tested fallback: five-on-five lineup residual
+
+`lineup_shot_residual_v1_faf3e92d08` tested the strongest identification that
+the current event panel permits. The expected-shot model trained on 2024 and
+calibrated on 2025 scored 218,722 regular-season 2026 shots. A second ridge
+then used the five offensive and five defensive players on the floor to predict
+`actual points - expected points`. It fit separately for all shots, rim, and
+non-rim. Defensive coefficients mean that an opponent lineup's conversion was
+lower than expected; they do not mean that a specific player guarded the shot.
+
+The fixed whole-game holdout contained 47,367 shots from 1,228 games. The
+incremental signal is too small for a new metric:
+
+| 2026 holdout | Zero-residual RMSE | Lineup-residual RMSE | Relative reduction |
+|---|---:|---:|---:|
+| All shots | 1.18082 | 1.18027 | 0.05% |
+| Rim | .92457 | .92104 | 0.38% |
+| Non-rim | 1.26713 | 1.26691 | 0.02% |
+
+**Decision.** This is a research null. Do not publish the individual output,
+add it to matchup Elo, or put it into SPM/AIO. The rim result is directionally
+more useful than non-rim, but it remains a within-season diagnostic and is far
+below a defensible promotion threshold. A shot-level defender source remains
+the required next input.
 
 The source audit is maintained in
 [SHOT_LEVEL_DEFENDER_SOURCE_AUDIT.md](../data/SHOT_LEVEL_DEFENDER_SOURCE_AUDIT.md).
@@ -163,9 +190,7 @@ resampling is prohibited.
 
 ## Immediate next implementation
 
-1. Build and calibrate the shooter-only expected-shot v0 on 2023–25; reserve
-   2026 for an untouched calibration report.
-2. Locate or acquire a permitted shot-level defender-assignment source before
-   attempting defender-specific expected shot quality.
-3. Run pair-only combination RAPM first, with frozen filtering and game-held-out
-   validation. Stop if it does not beat additive RAPM.
+1. Obtain a permitted shot-level defender-assignment source before attempting
+   defender-specific expected shot quality.
+2. Pre-register and run pair-only combination RAPM, with frozen filtering and
+   game-held-out validation. Stop if it does not beat additive RAPM.
