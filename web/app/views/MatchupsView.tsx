@@ -119,18 +119,6 @@ export function MatchupsView({
         </p>
       </section>
 
-      <section className="card matchup-intro">
-        <p className="kicker">Shot-quality check</p>
-        <h2>No new player rating</h2>
-        <p>
-          We tested whether the ten players on court explain field-goal points
-          above a location-and-context baseline. On held-out 2026 games, the
-          error reduction was 0.05% overall, 0.38% at the rim, and 0.02%
-          elsewhere. That is not enough signal to add a shot-quality matchup
-          ranking here.
-        </p>
-      </section>
-
       <section>
         <div className="section-head" style={{ marginTop: 18 }}>
           <div>
