@@ -1,0 +1,58 @@
+schema_version: experiment_preregistration_v1
+experiment_id: predictive_backbone_race_v1
+status: preregistered
+created_at: 2026-08-19
+estimand_id: next_season_annual_impact_v1
+
+hypothesis: >-
+  The stat-based predictive SPM and the pure rating-history models
+  (frozen 0.80 time-decay filter, causal AR(1) state-space filter) have
+  never been scored against each other on identical next-season rows.
+  This race establishes which backbone is stronger before any combination.
+
+candidate_change: >-
+  None. This is a frozen, no-tuning comparison of existing pinned runs.
+  No model, feature, or fold changes are permitted inside this experiment.
+
+comparators:
+  - predictive_spm_raw (run predictive_spm_v1_cb5666f6db)
+  - predictive_spm_calibrated (same run)
+  - time_decay_filtered (run time_decayed_trajectory_v1_8ed684a8aa, filtered_net
+    at the origin season as the next-year forecast, matching its frozen convention)
+  - state_space_filtered (run annual_state_space_trajectory_v1_f150bcde08,
+    filtered_net at the origin season, matching its frozen convention)
+  - persistence (annual_net at the origin season)
+
+data_contract:
+  target_panel: canonical_annual_target_panel_v1_2d9ff74ca3
+  forecast_seasons: [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+  identical_rows: >-
+    Every comparator is scored on exactly the same player-seasons: players with
+    a predictive-SPM forecast row, a state-space and time-decay filtered value
+    at the origin season, and an actual target at the forecast season.
+  primary_population: at least 1,000 possessions on both sides in the target
+    season, matching the frozen history-model evaluation gate
+  secondary_population: all matched rows, reported as a diagnostic
+  weighting: square root of the smaller target-season possession count
+  information_cutoff: every comparator uses only origin-season and earlier data
+
+evaluation:
+  primary_metric: equal-fold-mean weighted net RMSE, forecast seasons 2019-2024
+  confirmation_seasons: [2025, 2026] scored once, no retuning
+  secondary_metrics: weighted correlation; paired per-fold deltas against each
+    history model on identical rows
+
+decision_rules:
+  - If either history model beats predictive SPM mean weighted net RMSE across
+    2019-2024, the next experiment makes history the backbone and tests whether
+    stat features add value on top.
+  - If predictive SPM beats both history models, the next experiment tests the
+    reverse combination.
+  - If the top two are within 0.05 mean RMSE, declare a tie and build the
+    combination either way.
+  - Season 2027 stays reserved.
+
+stopping_rules:
+  - No tuning of any comparator. All inputs are pinned runs.
+  - Scoring 2025 and 2026 happens exactly once.
+  - Any comparator change requires a new experiment id.

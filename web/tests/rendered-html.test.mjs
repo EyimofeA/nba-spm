@@ -19,14 +19,14 @@ test("server-renders the compact ratings product shell", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>NBA Impact<\/title>/i);
+  assert.match(html, /<title>CourtSignal<\/title>/i);
   assert.match(html, /Loading/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
 
-  for (const section of ["home", "ratings", "player", "roles", "projections", "research"]) {
+  for (const section of ["home", "ratings", "player", "roles", "research"]) {
     assert.match(html, new RegExp(`href="#${section}"`), `missing ${section} section link`);
   }
-  assert.doesNotMatch(html, /ideas\s*&\s*to-do/i);
+  assert.doesNotMatch(html, /href="#matchups"/i);
   assert.match(html, /points per 100 possessions/i);
   assert.doesNotMatch(html, /win probability|brier|stable role/i);
 });

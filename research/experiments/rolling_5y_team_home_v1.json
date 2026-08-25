@@ -1,0 +1,50 @@
+{
+  "experiment_id": "rolling_5y_team_home_v1",
+  "status": "frozen_research_contract",
+  "estimand_id": "trailing_observed_lineup_rapm_v1",
+  "hypothesis": "A partially pooled home-court deviation for each franchise improves next-season game-margin prediction beyond one global home effect.",
+  "season_range": [2014, 2026],
+  "window_seasons": 5,
+  "selection_seasons": [2019, 2020, 2021, 2022, 2023],
+  "reused_diagnostic_seasons": [2024, 2025, 2026],
+  "untouched_confirmation_season": 2027,
+  "model": {
+    "lambda_off": 3000.0,
+    "lambda_def": 3000.0,
+    "lambda_global_home": 300.0,
+    "team_home_lambdas": [30.0, 100.0, 300.0, 1000.0, 3000.0, 10000.0, 30000.0],
+    "team_home_parameterization": "one global signed home column plus 30 signed home-team deviation columns; solve a KKT system imposing an exposure-weighted zero mean on team deviations so global and team penalties remain distinct",
+    "season_scoring_environment": "remove each training-season mean before fitting player effects",
+    "prior": "zero"
+  },
+  "data": {
+    "possessions_2014_2023": "legacy terminal-lineup cache",
+    "possessions_2024_2026": "canonical event terminal lineups",
+    "team_map_2014_2016": "official NBA LeagueGameLog research-lab extension",
+    "team_map_2017_2026": "pinned official NBA game-scores panel",
+    "require_complete_game_join": true
+  },
+  "selection": {
+    "primary": "equal-season mean next-season game-margin RMSE",
+    "secondary": "equal-season mean game-margin MAE",
+    "rmse_tolerance": 0.01,
+    "tie_break": "larger team-home lambda"
+  },
+  "promotion_gate": {
+    "minimum_relative_diagnostic_rmse_improvement": 0.005,
+    "maximum_diagnostic_mae_increase": 0.0,
+    "maximum_diagnostic_correlation_decline": 0.005,
+    "minimum_selection_fold_win_fraction": 0.7,
+    "minimum_diagnostic_fold_win_fraction": 0.6666666667,
+    "paired_bootstrap_draws": 2000,
+    "paired_bootstrap_seed": 20260829,
+    "required_probability_mse_improvement": 0.95
+  },
+  "restrictions": [
+    "Select the team penalty on 2019-2023 only, then score only the selected candidate on reused 2024-2026 diagnostics.",
+    "No travel, altitude, rest, time decay, team strength, or score-state feature enters this experiment.",
+    "Team deviations are nuisance controls, not franchise talent ratings.",
+    "Season 2027 is not loaded."
+  ],
+  "forbidden_interpretation": "A team-specific home coefficient is not causal altitude, travel, crowd, referee, or arena evidence. This reused historical experiment cannot promote a public model."
+}

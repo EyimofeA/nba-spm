@@ -1,0 +1,29 @@
+{
+  "experiment_id": "time_decay_actual_age_5y_rapm_v1",
+  "status": "frozen_research_contract",
+  "estimand_id": "current_age_conditioned_five_year_rapm_v1",
+  "selection_train_seasons": [2020, 2021, 2022, 2023, 2024],
+  "selection_test_season": 2025,
+  "diagnostic_train_seasons": [2021, 2022, 2023, 2024, 2025],
+  "diagnostic_test_season": 2026,
+  "final_fit_seasons": [2022, 2023, 2024, 2025, 2026],
+  "untouched_confirmation_season": 2027,
+  "half_lives_years": [null, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0],
+  "age_penalties": [1000.0, 10000.0, 100000.0],
+  "player_penalties": [1500.0, 3000.0, 6000.0],
+  "base_age_penalty": 10000.0,
+  "base_player_penalty": 3000.0,
+  "lambda_home": 300.0,
+  "reference_age": 27,
+  "minimum_age": 19,
+  "maximum_age": 43,
+  "paired_game_bootstrap_draws": 2000,
+  "paired_game_bootstrap_seed": 20260825,
+  "rules": [
+    "Select half-life first, age penalty second, and a shared offense-defense player penalty third on Season 2025 only.",
+    "Always compare with an unweighted, no-age 3000/3000/300 five-year RAPM on identical games.",
+    "Score the candidate using each player's actual age in the scored season.",
+    "Publish current-age player coefficients by adding the observed final-season age effect; do not publish an all-age-27 leaderboard.",
+    "Season 2026 is a reused diagnostic and Season 2027 remains untouched."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "code": "derived_box_v2_residual",
+  "description": "NEW: gen006 derived features + minutes residual SPM",
+  "type": "build",
+  "use_columns": "new_only",
+  "alpha": 1000,
+  "c_grid": [
+    2.0
+  ],
+  "search_folds_only": true,
+  "residual": true
+}

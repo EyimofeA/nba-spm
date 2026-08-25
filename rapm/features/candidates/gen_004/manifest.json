@@ -1,0 +1,9 @@
+{
+  "code": "tracking_core",
+  "description": "Tracking core — drives/touches/passing/shot quality + poss shape",
+  "prior": "spmv2_subset",
+  "feature_tier": "tracking_core",
+  "alpha": 1000,
+  "c_grid": [2.0, 4.0],
+  "search_folds_only": true
+}

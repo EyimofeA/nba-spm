@@ -1,0 +1,10 @@
+{
+  "code": "derived_box_v1",
+  "description": "NEW engineered: ratios, interactions, window z-scores (not base parquet cols)",
+  "type": "build",
+  "prior": "spmv2_subset",
+  "use_columns": "new_only",
+  "alpha": 1000,
+  "c_grid": [2.0, 4.0],
+  "search_folds_only": true
+}

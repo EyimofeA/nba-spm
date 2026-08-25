@@ -1,0 +1,74 @@
+schema_version: experiment_preregistration_v1
+experiment_id: predictive_spm_v1
+status: preregistered
+created_at: 2026-08-17
+estimand_id: next_season_annual_impact_v1
+
+hypothesis: >-
+  Current-season box, tracking, playtype, and matchup features predict a
+  player's next-season single-season normal RAPM better than last-season RAPM
+  alone (persistence), because the statistical mapping denoises one noisy
+  annual observation.
+
+candidate_change: >-
+  Add a true next-season predictive SPM beside the existing same-season
+  forward-chained priors. The pair panel joins season-s features to season-s+1
+  single-season normal RAPM targets on PLAYER_ID. Each forecast season T trains
+  only on pairs whose target season is strictly before T (expanding window).
+
+comparators:
+  - persistence_last_season_rapm
+  - predictive_spm_raw
+  - predictive_spm_calibrated
+
+arms:
+  raw: >-
+    Frozen annual_spm_v1 learners and selected features. Histogram GBM for
+    offense, ridge for defense. No new feature or learner search.
+  calibrated: >-
+    Raw forecasts rescaled by a per-side weighted affine map (slope and
+    intercept of target on prediction). Calibration parameters come only from
+    leave-one-target-season-out predictions inside the training pairs of the
+    same fold. A nonpositive or nonfinite slope invalidates the arm for that
+    fold; no fallback rescaling is allowed.
+
+data_contract:
+  features: statistical_features_v2_b808fc1bf1 (unified 2014-2026 panel)
+  targets: canonical_annual_target_panel_v1_2d9ff74ca3 (legacy terminal cache
+    through 2023, canonical event terminal lineups from 2024)
+  feature_reference_run: single_season_spm_v1_bff6060df6
+  population: consecutive-season players; rookies are out of scope by design
+  diagnostic_folds: [2019, 2020, 2021, 2022, 2023, 2024]
+  confirmation_folds: [2025, 2026]
+  untouched_confirmation_seasons: [2027]
+  information_cutoff: no pair whose target season equals or exceeds the forecast season may enter training or calibration
+  weighting: square root of the smaller target-season possession count
+
+evaluation:
+  primary_metric: equal-fold-mean held-out weighted net RMSE against persistence
+  secondary_metrics:
+    - weighted correlation
+    - dispersion ratio sd(prediction) / sd(target)
+    - weighted calibration slope
+  identical_rows: every comparator is scored on the same evaluated player-seasons per fold; persistence coverage is reported
+  per_side_reporting: offense and defense reported separately; net is their sum
+
+promotion_gate:
+  gate_1_diagnostics: >-
+    Calibrated or raw mean weighted net RMSE across the 2019-2024 diagnostic
+    folds beats persistence by more than 0.03 points per 100.
+  gate_2_confirmation: >-
+    The same arm beats persistence weighted net RMSE in both 2025 and 2026.
+  gate_3_calibration: >-
+    The winning arm's defense dispersion ratio is inside [0.85, 1.15] in both
+    confirmation folds.
+  final_requirement: pass untouched 2027 before any production or API promotion.
+
+stopping_rules:
+  - No feature, learner, hyperparameter, or fold-set change after any fold has
+    been scored. Any such change invalidates this run and requires a new
+    experiment id.
+  - Do not tune on 2025 or 2026 outcomes; they are scored once.
+  - Season 2027 stays reserved.
+  - If all gates fail, record the null and keep descriptive annual SPM as the
+    only SPM product.

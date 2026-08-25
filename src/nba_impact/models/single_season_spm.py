@@ -143,12 +143,18 @@ def build_single_season_rapm_targets(
 
 def _selected_single_season_features(reference_run_path: str | Path) -> dict[str, tuple[str, ...]]:
     reference = json.loads((Path(reference_run_path) / "run.json").read_text())
+    # Older research manifests stored this under ``selected_features``.  The
+    # current annual runs store the exact frozen list beside each serialized
+    # model.  Read both so a valid pinned run can reproduce its own contract.
     selected = reference.get("selected_features", {})
+    model_features = reference.get("models", {})
     output = {}
     for side in ("offense", "defense"):
         values = tuple(
             feature
-            for feature in selected.get(side, ())
+            for feature in selected.get(
+                side, model_features.get(side, {}).get("features", ())
+            )
             if not feature.endswith(TEMPORAL_SUFFIXES)
         )
         if not values:

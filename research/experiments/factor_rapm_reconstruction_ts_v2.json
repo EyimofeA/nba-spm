@@ -1,0 +1,23 @@
+{
+  "experiment_id": "factor_rapm_reconstruction_ts_v2",
+  "status": "frozen_research_contract",
+  "estimand_id": "factor_rapm_reconstruction_ts_v2",
+  "seasons": [2024, 2025, 2026],
+  "development_season": 2024,
+  "selection_season": 2025,
+  "reused_diagnostic_season": 2026,
+  "untouched_confirmation_season": 2027,
+  "alphas": [0.1, 1.0, 10.0, 100.0],
+  "factor_penalties": {"lambda_off": 3000, "lambda_def": 3000, "lambda_home": 300},
+  "minimum_target_possessions_per_side": 1000,
+  "player_bootstrap_draws": 2000,
+  "player_bootstrap_seed": 20260825,
+  "rules": [
+    "Fit true-shooting, turnover, and offensive-rebound RAPM separately within each season.",
+    "Weight true-shooting opportunity rows by 2 times FGA plus 0.88 times FTA.",
+    "Fit separate offense and defense mappers; define predicted net as their sum.",
+    "Select ridge alpha using 2024 to predict 2025, then refit on 2024-25 and diagnose on reused 2026.",
+    "Use square-root minimum-side target possessions as player-season weights, never as features.",
+    "Do not interpret reconstruction coefficients as causal factor weights or a production player rating."
+  ]
+}

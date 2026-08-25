@@ -1,0 +1,22 @@
+{
+  "experiment_id": "age_adjusted_full_1997_2026_v1",
+  "status": "frozen_research_contract",
+  "estimand_id": "same_age_full_1997_2026_rapm_v1",
+  "seasons": [1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "selection_test_season": 2025,
+  "reused_diagnostic_season": 2026,
+  "untouched_confirmation_season": 2027,
+  "reference_age": 27,
+  "minimum_age": 19,
+  "maximum_age": 43,
+  "age_penalties": [100, 1000, 10000],
+  "player_penalties": {"lambda_off": 3000, "lambda_def": 3000, "lambda_home": 300},
+  "paired_game_bootstrap_draws": 2000,
+  "paired_game_bootstrap_seed": 20260825,
+  "rules": [
+    "This is the complete 30-season 1997-2026 span; do not describe it as 29 seasons.",
+    "Fit separate offense and points-allowed defense age indicators jointly with player and home coefficients.",
+    "Age 27 is omitted; player coefficients answer the same-age-27 counterfactual.",
+    "Select the age penalty on 2025, diagnose once on reused 2026, and never load 2027."
+  ]
+}

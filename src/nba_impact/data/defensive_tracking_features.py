@@ -46,12 +46,22 @@ def _name_key(value: object) -> str:
     return re.sub(r"[^a-z0-9]+", "", text)
 
 
-def _load_box(source_dir: str | Path, seasons: tuple[int, ...]) -> tuple[pd.DataFrame, dict[str, str]]:
+def _load_box(
+    source_dir: str | Path,
+    seasons: tuple[int, ...],
+    *,
+    source_overrides: dict[int, str | Path] | None = None,
+) -> tuple[pd.DataFrame, dict[str, str]]:
     outputs = []
     hashes = {}
+    source_overrides = source_overrides or {}
     for season in seasons:
-        path = Path(source_dir) / f"{season}.csv"
-        frame = pd.read_csv(path, low_memory=False)
+        path = Path(source_overrides.get(season, Path(source_dir) / f"{season}.csv"))
+        frame = (
+            pd.read_parquet(path)
+            if path.suffix.lower() in {".parquet", ".pq"}
+            else pd.read_csv(path, low_memory=False)
+        )
         required = {"PLAYER_ID", "PLAYER_NAME", "DefPoss"}
         if missing := sorted(required - set(frame.columns)):
             raise ValueError(f"Box source {path} is missing {missing}.")
@@ -226,8 +236,11 @@ def build_defensive_tracking_features(
     *,
     artifact_root: str | Path,
     seasons: tuple[int, ...] = tuple(range(2014, 2025)),
+    box_source_overrides: dict[int, str | Path] | None = None,
 ) -> dict:
-    box, box_hashes = _load_box(box_source_dir, seasons)
+    box, box_hashes = _load_box(
+        box_source_dir, seasons, source_overrides=box_source_overrides
+    )
     dfg = pd.read_csv(dfg_source, low_memory=False)
     rim = pd.read_csv(rim_dfg_source, low_memory=False)
     hustle = pd.read_csv(hustle_source, low_memory=False)
@@ -239,6 +252,10 @@ def build_defensive_tracking_features(
         raise ValueError("Defensive tracking feature keys are not unique.")
     config = {
         "seasons": list(seasons), "dfg_prior_attempts": 200.0, "rim_prior_attempts": 100.0,
+        "box_source_overrides": {
+            str(season): str(Path(path).resolve())
+            for season, path in sorted((box_source_overrides or {}).items())
+        },
         "source_hashes": {"dfg": sha256_file(dfg_source), "rim_dfg": sha256_file(rim_dfg_source),
                           "hustle": sha256_file(hustle_source), "box": box_hashes},
         "builder_sha256": sha256_file(Path(__file__)),

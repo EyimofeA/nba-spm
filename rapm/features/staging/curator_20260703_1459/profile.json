@@ -1,0 +1,52 @@
+{
+  "path": "/Users/eadebayo/Documents/Projects/Sports Analytics/Basketball/New SPM/rapm/features/staging/curator_20260703_1459",
+  "files": [
+    {
+      "file": "playtype.csv",
+      "sha256": "3503146f6a38eff8ca2ae39c7c838dacd2c90ec739b8e5f10b1b41b8a12d6d22",
+      "rows": 5000,
+      "cols": [
+        "Position",
+        "Player",
+        "Team",
+        "GP",
+        "% Time",
+        "Poss",
+        "Points",
+        "PPP",
+        "FGm",
+        "FGM",
+        "FGA",
+        "FG%",
+        "aFG%",
+        "%TO",
+        "%FT",
+        "%SF",
+        "%Score",
+        "year",
+        "playtype",
+        "And\u00a0One Freq%",
+        "Percentile",
+        "FTFreq%",
+        "TOVFreq%",
+        "SFFreq%",
+        "And\u00a0OneFreq%",
+        "ScoreFreq%",
+        "AND ONEFREQ%",
+        "PLAYER_ID",
+        "team_id",
+        "TEAM_NAME",
+        "And One Freq%",
+        "TEAM_ID",
+        "SEASON_ID",
+        "TEAM_ABBREVIATION",
+        "PLAY_TYPE",
+        "TYPE_GROUPING",
+        "FGMX"
+      ],
+      "join_rate_2024": 0.1912
+    }
+  ],
+  "blocklist_hits": [],
+  "ok": false
+}

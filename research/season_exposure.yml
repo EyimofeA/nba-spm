@@ -1,5 +1,5 @@
 schema_version: season_exposure_v1
-updated_at: 2026-08-12
+updated_at: 2026-08-25
 policy: A season is not independent confirmation after its targets or leaderboards influence a model decision.
 
 season_groups:
@@ -24,9 +24,9 @@ season_groups:
     prohibited_claim: feature or hyperparameter selection followed by confirmation on the same season
 
   - seasons: [2026]
-    status: current_partial_and_exposed
-    permitted_use: infrastructure, current descriptive RAPM, and data-completeness checks
-    prohibited_claim: complete annual AIO confirmation
+    status: heavily_reused_confirmation
+    permitted_use: infrastructure, descriptive ratings, and explicitly reused challenger diagnostics
+    prohibited_claim: independent promotion evidence or untouched annual AIO confirmation
 
   - seasons: [2027]
     status: reserved_untouched

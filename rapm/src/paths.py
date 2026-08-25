@@ -3,13 +3,33 @@
 All RAPM scripts resolve paths through this module so they work regardless of
 the directory they are launched from.
 """
+import os
 from pathlib import Path
 
 RAPM_ROOT = Path(__file__).resolve().parent.parent
 PROJECT_ROOT = RAPM_ROOT.parent
+FEATURES_DIR = RAPM_ROOT / "features"
+
+
+def _load_env() -> None:
+    """Load PROJECT_ROOT/.env into os.environ (existing env vars win). No deps."""
+    env_file = PROJECT_ROOT / ".env"
+    if not env_file.exists():
+        return
+    for _line in env_file.read_text().splitlines():
+        _line = _line.strip()
+        if not _line or _line.startswith("#") or "=" not in _line:
+            continue
+        _k, _, _v = _line.partition("=")
+        os.environ.setdefault(_k.strip(), _v.strip().strip('"').strip("'"))
+
+
+_load_env()
 
 DATA = RAPM_ROOT / "data"
+POSSESSION_CACHE = DATA / "possession_cache"   # per-season parquet snapshots of `matchups`
 OUTPUTS = RAPM_ROOT / "outputs"
+VIEWER_DIR = OUTPUTS / "viewer"
 DUMP = OUTPUTS / "dump"
 RAPM_RESULTS = OUTPUTS / "rapm_results"
 DIAGNOSTICS_DIR = OUTPUTS / "diagnostics"
@@ -68,10 +88,21 @@ JOINT_CAREER_PEAK_3YR_CSV = JOINT_CAREER_DIR / "joint_career_peak_3yr.csv"
 JOINT_CAREER_CONTEXT_CSV = JOINT_CAREER_DIR / "joint_career_context.csv"
 JOINT_CAREER_META_JSON = JOINT_CAREER_DIR / "joint_career_meta.json"
 
+# Static viewers (build_human_viewer.py)
+HUMAN_VIEWER_HTML = VIEWER_DIR / "human.html"
+AGENT_VIEWER_HTML = VIEWER_DIR / "agent.html"
+RAPM_ALL_WINDOWS_CSV = RAPM_RESULTS / "final_20260703_hl250" / "rapm_all_windows.csv"
+PRAPM_PANEL_CSV = DATA / "prapm_panel_windows.csv"
+PRAPM_ALL_WINDOWS_CSV = RAPM_RESULTS / "final_prapm_season_spm_c4" / "rapm_all_windows.csv"
+LEADERBOARD_CSV = FEATURES_DIR / "leaderboard.csv"
+RESULTS_TSV = FEATURES_DIR / "results.tsv"
+REGISTRY_JSONL = FEATURES_DIR / "registry.jsonl"
+
 
 def ensure_dirs() -> None:
     for p in (
         DATA,
+        POSSESSION_CACHE,
         OUTPUTS,
         DUMP,
         RAPM_RESULTS,
@@ -80,5 +111,7 @@ def ensure_dirs() -> None:
         CAREER_DIR,
         AGING_DIR,
         JOINT_CAREER_DIR,
+        FEATURES_DIR,
+        VIEWER_DIR,
     ):
         p.mkdir(parents=True, exist_ok=True)

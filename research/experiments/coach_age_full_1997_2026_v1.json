@@ -1,0 +1,21 @@
+{
+  "experiment_id": "coach_age_full_1997_2026_v1",
+  "status": "frozen_research_contract",
+  "seasons": [1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "selection_test_season": 2025,
+  "reused_diagnostic_season": 2026,
+  "untouched_confirmation_season": 2027,
+  "player_penalties": {"lambda_off": 3000, "lambda_def": 3000, "lambda_home": 300},
+  "age_penalty": 10000,
+  "coach_penalties": [10000, 30000, 100000, 300000],
+  "minimum_age": 19,
+  "maximum_age": 43,
+  "reference_age": 27,
+  "paired_game_bootstrap_draws": 2000,
+  "paired_game_bootstrap_seed": 20260826,
+  "rules": [
+    "Fit player, age, coach, and home coefficients jointly.",
+    "Select the coach penalty on 2025 and use 2026 once as a reused diagnostic.",
+    "Do not load Season 2027."
+  ]
+}

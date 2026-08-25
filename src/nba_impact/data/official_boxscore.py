@@ -7,6 +7,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import requests
 from nba_api.stats.endpoints import boxscoretraditionalv3
@@ -14,6 +15,9 @@ from tenacity import Retrying, retry_if_exception_type, stop_after_attempt, wait
 
 from .game_dim import canonical_game_id
 from .manifest import sha256_file, write_json_atomic
+
+
+OFFICIAL_FIRST_FIVE_STARTER_FALLBACK_VERSION = "official_box_first_five_v1"
 
 
 def _validated_box(payload: dict, game_id: str) -> dict:
@@ -36,7 +40,7 @@ def load_official_boxscore_rows(root: str | Path) -> tuple[pd.DataFrame, list[Pa
         box = _validated_box(json.loads(path.read_text()), game_id)
         for side in ("homeTeam", "awayTeam"):
             team = box[side]
-            for player in team["players"]:
+            for source_row_order, player in enumerate(team["players"]):
                 statistics = player.get("statistics") or {}
                 minutes = statistics.get("minutes") or ""
                 records.append(
@@ -48,12 +52,56 @@ def load_official_boxscore_rows(root: str | Path) -> tuple[pd.DataFrame, list[Pa
                         "first_name": str(player.get("firstName") or ""),
                         "family_name": str(player.get("familyName") or ""),
                         "starter_position": str(player.get("position") or "").strip(),
+                        "source_row_order": source_row_order,
                         "comment": str(player.get("comment") or ""),
                         "minutes": minutes,
                         "player_game_source": "nba_stats_boxscore_v3_repair",
                     }
                 )
     return pd.DataFrame(records), paths
+
+
+def infer_official_starters(
+    rows: pd.DataFrame, *, first_five_fallback_game_ids: set[str] | None = None
+) -> pd.DataFrame:
+    """Infer official starters, using a frozen first-five fallback only when needed.
+
+    Modern V3 boxscores mark exactly five starters per team in ``position``.
+    Older V3 payloads can also populate that field for bench players. For those
+    payloads, the NBA response order is used only after a complete, ordered,
+    unique team roster passes validation. The selected source is emitted for
+    each row so the fallback cannot be mistaken for an explicit marker.
+    """
+    required = {"game_id", "team_id", "player_id", "starter_position", "source_row_order"}
+    if missing := sorted(required - set(rows.columns)):
+        raise ValueError(f"Official boxscore rows are missing starter inference columns: {missing}")
+    allowed_fallbacks = set(first_five_fallback_game_ids or ())
+    output = rows.copy()
+    output["source_row_order"] = pd.to_numeric(output["source_row_order"], errors="raise").astype("int64")
+    output["starter"] = False
+    output["starter_inference_source"] = ""
+    for (game_id, team_id), index in output.groupby(["game_id", "team_id"], sort=False).groups.items():
+        group = output.loc[index].sort_values("source_row_order", kind="stable")
+        orders = group["source_row_order"].to_numpy()
+        if (
+            len(group) < 5
+            or group["player_id"].isna().any()
+            or group["player_id"].duplicated().any()
+            or not np.array_equal(orders, np.arange(len(group)))
+        ):
+            raise ValueError(f"{game_id}/{team_id}: invalid official player row order for starter fallback")
+        explicit = group["starter_position"].fillna("").astype(str).str.strip().ne("")
+        if int(explicit.sum()) == 5:
+            output.loc[group.index, "starter"] = explicit.to_numpy()
+            output.loc[group.index, "starter_inference_source"] = "official_position_exact_five"
+        elif str(game_id) in allowed_fallbacks:
+            output.loc[group.index[:5], "starter"] = True
+            output.loc[group.index, "starter_inference_source"] = OFFICIAL_FIRST_FIVE_STARTER_FALLBACK_VERSION
+        else:
+            raise ValueError(
+                f"{game_id}/{team_id}: official position markers do not identify exactly five starters"
+            )
+    return output
 
 
 def ingest_official_boxscores(

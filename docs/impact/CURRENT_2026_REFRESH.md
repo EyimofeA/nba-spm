@@ -104,6 +104,19 @@ artifact is `current_single_season_rapm_targets_v1_8f2a6f2e0a`.
 
 AIO is one centered ridge fit. It is not arithmetic addition of SPM and RAPM.
 SPM supplies the coefficient center. Possessions supply the likelihood. The
-current canonical 2025--2026 path supports zero-prior Normal RAPM, but it does
-not yet support the centered-prior AIO adapter. Do not publish a 2025 or 2026
-AIO until that adapter exists and the weak defensive prior is handled.
+current canonical path now has a separate centered-prior adapter and was run
+for 2025--26. It uses terminal lineups, 3000/3000/300 penalties, the canonical
+regular-season silver tables, and leave-one-season-out SPM priors.
+
+| Season | Players | Games | Possession rows | Player-prior coverage | Lineup-slot prior coverage |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 2025 | 569 | 1,226 | 247,630 | 100% | 100% |
+| 2026 | 582 | 1,228 | 249,547 | 100% | 100% |
+
+The run is
+`current_annual_aio_ratings_v1_4124208d43`. It passes duplicate-key and
+offense-plus-defense-equals-net checks, but is deliberately marked
+`research_current_aio_not_for_public_release`: the 2014--26 SPM refresh did
+not clear the frozen 2017--24 validation gate, and the 2026 defensive prior
+still lacks observed DFG/rim-DFG and scorer-adjusted matchup inputs. The
+public AIO remains 2017--24.

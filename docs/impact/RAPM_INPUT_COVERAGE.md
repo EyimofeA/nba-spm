@@ -20,7 +20,7 @@ partition passes. It does not run a model.
 
 | Project season | Canonical RAPM-ready games | Status |
 |---|---:|---|
-| 2017--2023 | 3,343 regular-season games in a separate strict legacy migration | The original clean action-level table has not been built. Only 3,631 all-type cache games whose terminal-lineup rows conserve to an official final score are emitted. |
+| 2017--2023 | 7,250 / 8,289 regular-season games in separate strict V3 research candidates | Possession ownership, action order, terminal ordinal lineups, official score, and player minutes pass. The completed 8,871-game official box-score cache is the starter/minute source. The independent strict legacy migration remains available for 3,343 regular-season games. The V3 candidates are not canonical or public. |
 | 2024 regular | 1,229 / 1,230 | One game remains quarantined after Gabriel and V3 repairs. |
 | 2024 playoffs | 82 / 82 | Passes. |
 | 2025 regular | 1,227 / 1,230 | Three games remain quarantined after V3 repair. |
@@ -160,16 +160,30 @@ official player-minute inputs are pinned: play-by-play alone is not lineup-ready
 
 The retired PlayByPlayV2 endpoint now returns empty data, so the local complete
 V3 archive is the historical event source. The frozen V3 owner state machine
-passes independent CDN validation in project seasons 2024 and 2025. Core
+passes independent regular-season CDN validation in project seasons 2024 and 2025. Core
 action-owner agreement is 99.93% in both seasons; the exact full owner sequence
 matches in 93.6% and 91.9% of games.
 
-The separate 2017--2023 build accepts 8,863 games and 1,768,472 possession
-rows. Eight 2017 regular-season games fail exact team-score conservation and
-remain rejected. This closes the historical possession-outcome layer as a
-validated research candidate, not as exact ground truth. It is still not
-RAPM-ready because ordinal lineups are not attached. See
-`HISTORICAL_V3_POSSESSIONS.md`.
+The separate all-type 2017--2023 possession build accepts 8,863 games and
+1,768,472 possession rows. Eight 2017 regular-season games fail exact team-
+score conservation and remain rejected. The strict regular-season lineup
+attachment then accepts 7,250 games, 1,448,146 possessions, and 1,756,230
+ordinal lineup segments. Every accepted action maps once, each segment has ten
+unique players, and official player minutes reconcile within five seconds.
+
+The matched legacy comparison uses identical regular-season games, one
+persisted chronological split, and official final margins. Net-rating Pearson
+correlation is 0.971--0.981; it remains 0.969--0.982 after requiring 2,000
+possessions per side in both sources. V3 reconstructs official margins more
+accurately, but its RAPM has lower held-out prediction RMSE in only two of seven
+seasons. Keep it as a validated research input, not exact ground truth or a
+public source replacement. See `HISTORICAL_V3_POSSESSIONS.md`,
+`HISTORICAL_V3_LINEUPS.md`, and `HISTORICAL_MATCHED_RAPM.md`.
+
+Playoff transfer remains research-only. The 2025 playoff validation passes,
+but the 2024 check misses the within-two-possession gate in 2 of 82 games even
+with 99.98% core action-owner agreement. Historical playoff rows are excluded
+from the first Normal RAPM fit.
 
 ## Integrated current candidate
 
@@ -191,4 +205,7 @@ the validated 2017--24 SPM/AIO and treat the newer SPM refresh as a null.
 ## Boundary
 
 This page measures input availability, not model quality. The public 2017--24
-SPM/AIO ratings remain frozen. Normal RAPM can use the integrated current run.
+SPM/AIO ratings remain frozen. RAPM can use the integrated current run for
+2024--26. The 2017--23 V3 fits remain versioned research artifacts while the
+immutable official player-game cache and official-preferred reproducibility
+check finish.

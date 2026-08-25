@@ -6,6 +6,10 @@ Start at the repository root:
 - [`ROADMAP.md`](../ROADMAP.md) — current short queue;
 - [`RESEARCH_LOG.md`](../RESEARCH_LOG.md) — append-only experiment record;
 - [`README.md`](../README.md) — commands and repository overview.
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — production, research, and legacy
+  boundaries plus the current RAPM/SPM/AIO contracts;
+- [`product/UI_GUIDE.md`](product/UI_GUIDE.md) — CourtSignal product, visual,
+  interaction, and copy rules.
 
 ## Active specifications
 
@@ -25,16 +29,26 @@ Start at the repository root:
   2025/2026 statistical-feature coverage, drift, and frozen-SPM confirmation;
 - [`impact/CURRENT_2026_REFRESH.md`](impact/CURRENT_2026_REFRESH.md) — pinned
   current data, the 2014--2026 SPM null result, and RAPM input readiness;
+- [`impact/UNIFIED_TIMELINE_2014_2026.md`](impact/UNIFIED_TIMELINE_2014_2026.md) —
+  unified 2014--26 terminal-lineup AIO run and chronological SPM train-window comparison;
 - [`impact/LEGACY_POSSESSION_MIGRATION.md`](impact/LEGACY_POSSESSION_MIGRATION.md) —
   strict historical cache migration, coverage, and terminal-lineup boundary;
 - [`impact/HISTORICAL_V3_POSSESSIONS.md`](impact/HISTORICAL_V3_POSSESSIONS.md) —
   validated V3 possession-owner state machine, frozen gates, and historical
   candidate boundary;
+- [`impact/HISTORICAL_V3_LINEUPS.md`](impact/HISTORICAL_V3_LINEUPS.md) — strict
+  ordinal lineup reconstruction, pre-backfill coverage, and promotion gates;
+- [`impact/HISTORICAL_MATCHED_RAPM.md`](impact/HISTORICAL_MATCHED_RAPM.md) —
+  research-only matched V3 versus legacy terminal-lineup RAPM comparison for
+  2017–23;
 - [`impact/FACTOR_DECOMPOSITION.md`](impact/FACTOR_DECOMPOSITION.md) — factor
   feature families, public benchmark formulas, and AIO explanation contract;
 - [`impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`](impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md) —
   current AIO audit, public-model feature map, interpretation, aging-safe
   validation, and execution order;
+- [`impact/MODEL_REPLICATION_SPEC.md`](impact/MODEL_REPLICATION_SPEC.md) — exact
+  RAPM, annual SPM, centered AIO, role, zTS, feature, window, and promotion
+  contracts from the checked-in code and pinned artifacts;
 - [`impact/BEHAVIOR_ROLES.md`](impact/BEHAVIOR_ROLES.md) — behavior-only role
   contract, stability gates, provisional interpretations, and AIO boundary;
 - [`impact/SIDE_ROLES_AND_DEFENSE.md`](impact/SIDE_ROLES_AND_DEFENSE.md) —
@@ -46,6 +60,9 @@ Start at the repository root:
   time-decay baseline, forward evaluation, and latent-state boundary;
 - [`impact/EXPECTED_POSSESSION_RAPM.md`](impact/EXPECTED_POSSESSION_RAPM.md) —
   causal possession-start context and residual-RAPM challenger contract;
+- [`impact/RUBBERBAND_ADJUSTMENT.md`](impact/RUBBERBAND_ADJUSTMENT.md) —
+  actual-clock, cross-fitted pre-possession score-margin curve and the boundary
+  before adjusted player RAPM;
 - [`modeling/PLAYBOOK.md`](modeling/PLAYBOOK.md) — NBA statistical modeling procedure;
 - [`modeling/EVIDENCE_POLICY.md`](modeling/EVIDENCE_POLICY.md) — evidence and claim standards;
 - [`planning/RESEARCH_DIAGNOSIS_2026-08-11.md`](planning/RESEARCH_DIAGNOSIS_2026-08-11.md) — accepted GPT Pro findings, live-repo corrections, and staged roadmap;
@@ -65,5 +82,5 @@ The root `ROADMAP.md` is authoritative when planning files conflict.
 - [`historical/TODO_2026-06-11.md`](historical/TODO_2026-06-11.md);
 - [`historical/CRITIQUE_2026-06-11.md`](historical/CRITIQUE_2026-06-11.md).
 
-Root `PROJECT.md` and `IDEAS.md` are untracked legacy working documents. Do not
-delete or treat them as the active task queue.
+Root `PROJECT.md` and `IDEAS.md` are legacy working documents. Preserve them,
+but do not treat them as the active task queue.

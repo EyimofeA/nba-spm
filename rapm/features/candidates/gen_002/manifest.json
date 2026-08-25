@@ -1,0 +1,12 @@
+{
+  "code": "tier1_box_only",
+  "description": "DEPRECATED ablation — subsets existing parquet, does not build new features",
+  "type": "subset",
+  "deprecated": true,
+  "deprecated_reason": "column filter only; use type=build for autoresearch",
+  "prior": "spmv2_subset",
+  "feature_tier": "tier1_box",
+  "alpha": 1000,
+  "c_grid": [2.0],
+  "search_folds_only": true
+}

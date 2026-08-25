@@ -1,0 +1,38 @@
+{
+  "experiment_id": "standalone_unit_rapm_v1",
+  "status": "completed_diagnostic",
+  "run_id": "standalone_unit_rapm_v1_460b34a3b1",
+  "estimand": "retrospective k-player unit impact on possession points",
+  "models": {
+    "reference": "one-player terminal-lineup zero-prior RAPM",
+    "challengers": [
+      "pair-only RAPM",
+      "trio-only RAPM",
+      "four-player-only RAPM",
+      "five-player-lineup-only RAPM"
+    ],
+    "forbidden_columns": [
+      "individual player offense",
+      "individual player defense",
+      "SPM prior",
+      "residual from one-player RAPM"
+    ]
+  },
+  "evaluation": {
+    "selection": {"train_seasons": [2020, 2021, 2022, 2023, 2024], "test_season": 2025},
+    "diagnostic": {"train_seasons": [2021, 2022, 2023, 2024, 2025], "test_season": 2026},
+    "primary_metric": "equal-game margin RMSE",
+    "paired_resampling_unit": "whole game",
+    "bootstrap_draws": 2000
+  },
+  "candidate_unit_penalties": [100, 300, 1000, 3000, 10000, 30000],
+  "home_penalty": 300,
+  "minimum_training_exposure": {"2": 500, "3": 250, "4": 100, "5": 50},
+  "fixed_rules": [
+    "Unit vocabulary and exposure floors use training possessions only.",
+    "Unseen test units receive a zero coefficient.",
+    "Baseline and challengers score identical test possessions and games.",
+    "Season 2027 is not loaded.",
+    "The 2026 result is a reused diagnostic, not untouched confirmation."
+  ]
+}

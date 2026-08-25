@@ -1,0 +1,41 @@
+{
+  "experiment_id": "rubberband_joint_clock_v1",
+  "status": "frozen_research_contract",
+  "estimand_id": "joint_clock_score_context_rapm_v1",
+  "seasons": [2024, 2025, 2026],
+  "selection_fit_seasons": [2024],
+  "selection_season": 2025,
+  "diagnostic_fit_seasons": [2024, 2025],
+  "diagnostic_season": 2026,
+  "untouched_confirmation_season": 2027,
+  "lineup_policy": "terminal",
+  "game_type": "regular",
+  "player_penalties": {
+    "lambda_off": 3000,
+    "lambda_def": 3000,
+    "lambda_home": 300
+  },
+  "clock_context": {
+    "time_buckets": 8,
+    "minutes_per_bucket": 6,
+    "margin_clip": 15,
+    "context_penalties": [1, 10, 30, 100, 300, 1000, 3000]
+  },
+  "paired_game_bootstrap_draws": 2000,
+  "paired_game_bootstrap_seed": 20260830,
+  "selection_metric": "neutral_player_only_game_margin_rmse",
+  "promotion_gate": {
+    "maximum_rmse_delta": 0,
+    "maximum_correlation_decline": 0.01,
+    "paired_rmse_interval_upper": 0
+  },
+  "rules": [
+    "Keep observed possession points unchanged.",
+    "Fit player, home, and eight actual-clock signed-margin columns jointly in one ridge system.",
+    "Scale clipped margin to [-1, 1] so the context penalty is comparable to the signed home column.",
+    "Select only the context penalty on 2025; player and home penalties remain fixed.",
+    "Score player ratings with context columns neutralized on identical games.",
+    "Use the observed score path only as a secondary conditional diagnostic.",
+    "Season 2027 is not loaded."
+  ]
+}

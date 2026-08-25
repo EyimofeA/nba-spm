@@ -1,0 +1,49 @@
+schema_version: experiment_preregistration_v1
+experiment_id: predictive_combo_sides_v1
+status: preregistered
+created_at: 2026-08-19
+estimand_id: next_season_annual_impact_v1
+
+hypothesis: >-
+  Offense and defense need different stat/history mixes. Defense is the weak
+  statistical lane, so its best blend should lean more on rating history than
+  offense does. Selecting each side separately should beat the single net
+  equal blend.
+
+candidate_change: >-
+  Replace the single net 50/50 blend with side-specific fixed-weight blends.
+  Combo(side) = w_side * stat_forecast(side) + (1 - w_side) *
+  state_space_filtered(side). Net is the sum of the two blended sides.
+
+data_contract:
+  sources: pinned runs predictive_spm_v1_cb5666f6db (raw_offense/raw_defense)
+    and annual_state_space_trajectory_v1_f150bcde08 (filtered_offense/
+    filtered_defense), canonical target panel, identical-row population and
+    possession gate carried over from predictive_backbone_race_v1_43db6c6446
+  candidate_weights_per_side: [0.00, 0.25, 0.50, 0.75, 1.00]
+  weighting: square root of the smaller target-season possession count
+
+evaluation:
+  selection_folds: [2019, 2020, 2021, 2022, 2023, 2024]
+  selection_rule: >-
+    Pick w_offense and w_defense independently, each minimizing that side's
+    mean weighted RMSE across selection folds. Ties resolve toward 0.50, then
+    toward more history (lower weight).
+  primary_metric: mean weighted net RMSE across selection folds, where net is
+    the sum of the two selected side blends
+  incumbent: the net equal blend from predictive_history_combo_v1_0a9c938a1e
+  confirmation_folds: [2025, 2026] scored exactly once after selection
+
+promotion_gate:
+  gate_1: side-selected net beats the incumbent's mean weighted net RMSE
+    across the 2019-2024 selection folds
+  gate_2: side-selected net loses to the incumbent by more than 0.01 in
+    neither confirmation fold
+  outcome_on_pass: replaces the net blend as research champion
+  outcome_on_fail: incumbent stands; record the null
+
+stopping_rules:
+  - One per-side selection each from five predeclared weights. No grids beyond
+    this, no interaction terms, no refitting of any parent model.
+  - Confirmation folds are scored once, after both weights are written down.
+  - Season 2027 stays reserved.

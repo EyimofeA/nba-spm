@@ -1,0 +1,36 @@
+{
+  "experiment_id": "rolling_5y_lambda_grid_v1",
+  "status": "frozen_research_contract",
+  "matrix_run_id": "rolling_5y_rapm_2014_2026_a7754bfb77",
+  "estimand": "next-season NBA regular-season game margin",
+  "selection_seasons": [2019, 2020, 2021, 2022, 2023],
+  "reused_diagnostic_seasons": [2024, 2025, 2026],
+  "untouched_confirmation_season": 2027,
+  "grid": {
+    "lambda_off": [250.0, 500.0, 1000.0, 2000.0, 3000.0, 4500.0, 6000.0],
+    "lambda_def": [500.0, 1000.0, 2000.0, 3000.0, 4500.0, 6000.0, 8000.0],
+    "lambda_home": [0.0, 100.0, 300.0, 1000.0]
+  },
+  "baseline": {
+    "lambda_off": 3000.0,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0
+  },
+  "selection": {
+    "primary": "equal-season mean Pearson correlation",
+    "secondary": "equal-season mean margin MAE",
+    "tie_tolerance_correlation": 0.0005,
+    "tie_break": "lower equal-season mean margin MAE"
+  },
+  "diagnostic_gate": {
+    "minimum_selection_correlation_gain": 0.002,
+    "minimum_diagnostic_correlation_gain": 0.0,
+    "maximum_diagnostic_mae_increase": 0.0,
+    "paired_bootstrap_draws": 2000,
+    "paired_bootstrap_seed": 20260825,
+    "paired_bootstrap_unit": "whole games stratified by season",
+    "required_mse_improvement_probability": 0.95
+  },
+  "evidence_status": "research_selection_and_reused_diagnostic",
+  "forbidden_interpretation": "The winning grid point is not validated or public. The diagnostic seasons were previously inspected, and Season 2027 remains untouched."
+}

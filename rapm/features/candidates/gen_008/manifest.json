@@ -1,0 +1,10 @@
+{
+  "code": "tracking_interactions_v1",
+  "description": "NEW: tier2 tracking ratios and interactions",
+  "type": "build",
+  "prior": "spmv2_subset",
+  "use_columns": "new_only",
+  "alpha": 1000,
+  "c_grid": [2.0],
+  "search_folds_only": true
+}

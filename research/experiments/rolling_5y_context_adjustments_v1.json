@@ -1,0 +1,49 @@
+{
+  "experiment_id": "rolling_5y_context_adjustments_v1",
+  "status": "frozen_research_contract",
+  "estimand_id": "trailing_observed_lineup_rapm_v1",
+  "hypothesis": "Possession-context nuisance controls can improve the next-season generalization of five-year zero-prior RAPM player ratings without using future data.",
+  "season_range": [2014, 2026],
+  "window_seasons": 5,
+  "selection_seasons": [2019, 2020, 2021, 2022, 2023],
+  "reused_diagnostic_seasons": [2024, 2025, 2026],
+  "untouched_confirmation_season": 2027,
+  "player_penalties": {
+    "lambda_off": 3000.0,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "lambda_context": 300.0
+  },
+  "variants": {
+    "no_home": {"home": false, "garbage_filter": false, "quarter_rubberband": false, "clock_fatigue": false},
+    "baseline_home": {"home": true, "garbage_filter": false, "quarter_rubberband": false, "clock_fatigue": false},
+    "garbage_filter": {"home": true, "garbage_filter": true, "quarter_rubberband": false, "clock_fatigue": false},
+    "quarter_rubberband": {"home": true, "garbage_filter": false, "quarter_rubberband": true, "clock_fatigue": false},
+    "clock_fatigue": {"home": true, "garbage_filter": false, "quarter_rubberband": false, "clock_fatigue": true},
+    "all_context": {"home": true, "garbage_filter": true, "quarter_rubberband": true, "clock_fatigue": true}
+  },
+  "context_definitions": {
+    "score_state": "Score margin before the current possession, reconstructed only from earlier possessions in the same game.",
+    "quarter_progress": "One-indexed possession rank divided by possession count within game and period.",
+    "garbage_filter": "Drop training rows when absolute pre-possession home margin is at least base(period)+8*(1-quarter_progress), with bases 25,20,17,12 for Q1,Q2,Q3,Q4+.",
+    "quarter_rubberband": "Four scale-standardized columns: offense score margin before possession interacted with Q1,Q2,Q3,Q4+.",
+    "clock_fatigue": "Legacy replication proxy clipped to [0,1]: 0.8*(min(period,4)-1)/3 + 0.2*quarter_progress. This is clock state, not observed player fatigue."
+  },
+  "evaluation": {
+    "primary": "next-season game-margin prediction using frozen player coefficients and the home coefficient only",
+    "secondary": "conditional next-season game-margin retrodiction including context columns; not a pregame forecast",
+    "identical_games": true,
+    "selection_rule": "maximize equal-season primary correlation; within 0.0005 choose lower primary RMSE",
+    "baseline": "baseline_home",
+    "paired_bootstrap_draws": 2000,
+    "paired_bootstrap_seed": 20260828,
+    "required_probability_mse_improvement": 0.95
+  },
+  "restrictions": [
+    "No time decay is tested in this experiment.",
+    "No context field enters the public RAPM without a separate promotion review.",
+    "Rubberband conditional scores cannot be interpreted as pregame prediction because live margin is not known before the game.",
+    "Season 2027 is not loaded."
+  ],
+  "forbidden_interpretation": "This is reused development evidence for a local research challenger, not untouched confirmation, causal effort adjustment, or a public-model promotion."
+}

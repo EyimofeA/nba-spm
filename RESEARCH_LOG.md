@@ -2403,3 +2403,1307 @@ and remain rejected; every other regular-season and playoff partition passes.
 it exact ground truth or RAPM-ready. Promotion requires ordinal ten-player
 lineups, official-minute reconciliation, and a matched comparison with the
 independent legacy terminal-lineup migration.
+
+**Playoff check:** The unchanged rules pass the 2025 playoff gate. The 2024
+check has 99.98% core action-owner agreement and 92.7% exact full-game
+sequences, but only 80 of 82 games are within two possessions. Games
+`0042300134` and `0042300163` fail that gate. Keep historical playoffs
+research-only and exclude them from the first Normal RAPM fit.
+
+## 2026-08-18 — Matched historical V3 versus legacy RAPM (superseded)
+
+**Question:** Do the historical V3 possession and terminal-lineup candidate and
+the legacy terminal-lineup cache produce materially different RAPM ratings on
+the same regular-season games?
+
+**Method:** Restrict both sources to the exact intersection of `002` regular-
+season game IDs in 2018–23. Use the V3 terminal ordinal segment for each
+possession. Fit each source separately with the frozen zero-prior ridge
+penalties 3000/3000/300. Compare matched-player offense, defense, and net
+correlations, RMSE, and Spearman rank correlations. Also report a chronological
+20% within-season held-out game-margin retrodiction.
+
+**Result:** Every V3 game was present in the legacy cache. Net-rating Pearson
+correlations were 0.971–0.982 and net-rating RMSE was 0.233–0.348 points per
+100. Candidate possession counts and point totals were consistently higher on
+the matched games. Held-out metrics are source-specific retrodictions using
+observed test lineups, not forecasts.
+
+**Decision:** Superseded by the corrected 2017--23 run below. Keep this as a
+provenance record only. The sources have similar player ordering but are not
+interchangeable at the possession level. V3 must
+still pass historical ordinal-lineup and official-minute reconciliation before
+it can replace the legacy research cache. Artifact:
+`artifacts/research/historical_matched_rapm/historical_matched_rapm_v1_f49c0fdc102e`.
+
+## 2026-08-18 — Corrected 2017--23 matched historical RAPM
+
+**Question:** Does the source-compatibility result survive the Unicode name fix,
+the validated 2017 starter rule, and the final seven-season strict lineup build?
+
+**Method:** Add 2017 to the frozen comparison. Restrict both sources to identical
+regular-season game IDs. Fit the same terminal-lineup, zero-prior
+`3000/3000/300` ridge separately to each source. Persist one chronological 20%
+holdout split and score both sources against the same official final margin.
+Hash the comparison code, RAPM code, official scores, source tables, and QA
+ledgers. Repeat rating agreement at 500, 1,000, and 2,000 possessions per side.
+
+**Result:** The V3 candidate accepts 7,136 matched games and 1,425,380
+possessions. Net-rating Pearson correlation versus legacy is 0.971--0.981;
+net-rating RMSE is 0.298--0.350 points per 100. At 2,000 possessions on each
+side in both sources, net Pearson remains 0.970--0.982. V3 reconstructs official
+held-out margins more accurately, with 0.60--0.97 points RMSE versus
+1.32--1.97 for legacy. V3 has lower held-out prediction RMSE in two of seven
+seasons. Its mean prediction RMSE is 0.085 points per game higher, mean MAE is
+0.059 higher, and mean margin correlation is 0.013 lower.
+
+**Decision:** The corrected run passes a narrow source-compatibility check but
+does not support a predictive promotion. Keep V3 research-only until the full
+official player-game cache is complete and the official-preferred rebuild
+reproduces the accepted-game and comparison gates. Artifact:
+`artifacts/research/historical_matched_rapm/historical_matched_rapm_v1_9fb68e0fd785`.
+
+## 2026-08-18 — Official-box reproducibility finds one exact identity gap
+
+**Question:** Does replacing the ESPN fallback with official player boxes keep
+the strict historical lineup accepted-game set stable?
+
+**Method:** Rebuild official-preferred player games for the complete 2017--20
+cache. Re-run the frozen 2019 and 2020 regular-season lineup contracts. Compare
+accepted game IDs and inspect every newly unresolved substitution.
+
+**Result:** The player-game builder accepted 5,075/5,075 games. Season 2020
+reproduced 949 lineup passes. Season 2019 initially fell from 1,139 to 1,102.
+All 103 new substitution parse failures across 39 lost games were player ID
+2403: official boxes use `Nene Hilario`, structured V3 names use `Hilario`, and
+substitution text uses `Nene`. Adding exact same-game/team event aliases and the
+versioned identity alias `2403 -> nene` raised 2019 to 1,141 passes. The
+possession-lineup adapter emitted all 1,141 games, 230,905 possessions, and
+279,555 segments with zero attachment rejects.
+
+**Decision:** Keep the exact alias fix. Do not add fuzzy or general first-name
+matching. The full 2017--23 official-preferred rebuild remains the final
+reproducibility gate.
+
+## 2026-08-18 — Official-box DNP rows cannot be substitution aliases
+
+**Question:** Why did the official-only 2021 lineup rebuild lose five games
+that passed with the earlier mixed player-game source?
+
+**Method:** Compare the accepted game IDs, inspect every new substitution parse
+failure, and reconcile the ambiguous names to official minutes and structured
+V3 identities.
+
+**Result:** All eight new failures were surname collisions caused by zero-minute
+DNP rows retained in official boxes: Grant/Robert Williams or Moses/Charlie
+Brown. Only the positive-minute player could have entered the observed game.
+Excluding zero-minute rows from the substitution alias map restored 892/1,080
+regular-season passes, exactly matching the prior accepted set. The attachment
+stage emitted all 892 games, 179,181 possessions, and 216,916 segments with
+zero rejects, duplicate keys, or invalid ten-player segments.
+
+**Decision:** Keep positive official minutes as an exact substitution-alias
+eligibility rule. This is not fuzzy matching and does not relax the five-second
+minute reconciliation gate. Retain zero-minute players in the underlying
+official player-game ledger for provenance.
+# 2026-08-18 — Complete official-box historical rebuild and matched source audit
+
+**Question.** Does a complete official 2017–23 starter/minute cache improve
+historical V3 RAPM readiness?
+
+**Method.** Downloaded 8,871 `BoxScoreTraditionalV3` JSON responses with
+resumable retries, atomic writes, and hash validation; rebuilt official-only
+player-games, strict V3 `actionId` lineups, and possession attachments; fit
+seven frozen terminal-lineup, zero-prior RAPM models; then compared each to the
+legacy source on the identical official-margin holdout games.
+
+**Result.** All 8,871 official boxes passed. The rebuild emitted 7,250 regular
+season games, 1,448,146 possessions, and 1,756,230 lineup segments, with zero
+attachment rejects. Net-rating Pearson agreement with legacy was .971–.981 and
+RMSE .299–.355 points per 100. The V3 parser reconstructed official final
+margins better in all seven seasons (mean 0.816 lower RMSE), but V3 RAPM won
+held-out prediction RMSE in only two seasons: mean delta was +.080 RMSE,
+.050 MAE, and −.012 correlation versus legacy.
+
+**Decision.** The official source spine is complete and is a compatibility
+proof, not a public-source replacement. Keep V3 historical RAPM research-only;
+legacy remains the public historical reference because the frozen prediction
+gate did not pass.
+
+## 2026-08-18 — Unified 2014--26 annual timeline and chronological SPM windows
+
+**Question.** Can one audited terminal-lineup interface produce annual RAPM,
+SPM, and AIO for every 2014--26 season, and how much history should SPM use?
+
+**Method.** Used the verified annual source transition: legacy score-conserved
+terminal possessions for 2014--23 and canonical event terminal lineups for
+2024--26. Refit the zero-prior RAPM side of the AIO for each season, trained
+leave-one-season-out retrospective SPM across all 13 seasons, and fit the
+centered AIO with those OOF priors. Then compared strictly earlier expanding,
+one-year, three-year, and five-year SPM training histories on identical
+2017--26 player-season targets.
+
+**Result.** The unified artifact has 6,942 player-seasons, 1,706 players, full
+prior coverage, no duplicate keys, no missing names, and exact component
+identities. Its zero-prior components reproduce the audited annual target panel
+exactly. Expanding history has the best mean chronological RMSE: offense
+1.0253, defense .9908, net 1.4307. Five-year is close but has worse RMSE on all
+three components; one-year is worst.
+
+**Decision.** Use expanding-history SPM for this research timeline and retain
+five-year as a sensitivity. Keep 2025--26 SPM/AIO research-only because the
+current defensive feature families remain incomplete and the pre-existing
+current-season validation gate failed. Full detail:
+`docs/impact/UNIFIED_TIMELINE_2014_2026.md`.
+
+## 2026-08-19 — Matchup Elo-scale v1
+
+**Question.** Can the existing scorer-versus-listed-defender matchup rows give
+one simple offensive score and one simple defensive score before a more complex
+matchup model is considered?
+
+**Method.** Fit a separate regularized two-way log-rate model for each regular
+season from 2018--26. The only inputs are scorer ID, listed defender ID,
+assigned partial possessions, and player points. The fitted equation is
+`log(PPP scorer,defender / league PPP) = offense scorer - defense defender`.
+Scores use an Elo display scale centered at 1500 on each side. This is a static
+Elo-scale transformation, not sequential Elo.
+
+**Result.** The run emitted 4,991 player-seasons for 1,394 players from nine
+source seasons and passed row identity, non-negative exposure, source-order,
+and synthetic recovery tests. The 2026 offensive top five were Giannis
+Antetokounmpo, Shai Gilgeous-Alexander, Luka Doncic, Kawhi Leonard, and Joel
+Embiid. The defensive ordering contains clear matchup-assignment and context
+signals, including implausible-looking high ranks for some players.
+
+**Decision.** Retain `matchup_elo_v1_09b1ed8860` as a descriptive research
+artifact only. Do not add it to RAPM, SPM, AIO, or the public site. Before any
+predictive test, define a chronological holdout and compare it with the
+existing scorer-adjusted matchup-feature baseline on identical rows. Details:
+`docs/impact/MATCHUP_ELO_V1.md`.
+
+## 2026-08-19 — Annual SPM versus BPM, xRAPM, and BoxPIPM-style baseline
+
+**Question.** On identical player-season rows, do the current annual SPM, BPM,
+xRAPM, and a transparent BoxPIPM-style baseline predict annual zero-prior RAPM
+best?
+
+**Method.** Used the pinned 2017--24 SPM OOF table. Restricted every comparison
+to the same 2,860 player-seasons with at least 1,000 offensive and defensive
+RAPM possessions and non-missing SPM, BPM, and xRAPM. Scored SPM and the
+BoxPIPM-style baseline natively. For BPM and xRAPM, fit a component-specific
+affine scale only on the other seven seasons before scoring the held-out season.
+The BoxPIPM-style baseline is a LOSO ridge using only 15 traditional per-100 box
+rates; it is not full PIPM.
+
+**Result.** Mean held-out net RAPM scores were: BoxPIPM-style RMSE 1.5585,
+correlation .5453; BPM 1.4944, .5792; SPM 1.4003, .6483; xRAPM 1.1080, .7936.
+SPM also beat BPM and BoxPIPM-style for offense and defense. xRAPM was strongest
+for all three components. It is not a clean box-only winner because it contains
+an adjusted-plus-minus prior and multiple information windows.
+
+**Decision.** BPM is the primary external box-model comparator. SPM has a real
+matched-row advantage over it. Keep xRAPM as a stronger but non-independent
+impact comparator. Keep BoxPIPM-style as a documented baseline and do not call
+it PIPM. Details: `docs/impact/BOX_PIPM_STYLE_V1.md`.
+
+## 2026-08-19 — Time-decayed matchup Elo challenger
+
+**Question.** Does a fixed three-season, time-decayed scorer/listed-defender
+rate model provide a stable alternative to the annual matchup Elo display?
+
+**Method.** Fitted trailing three-season windows ending 2020--26. Each row was
+weighted by assigned partial possessions times `0.70^(rating season - source
+season)`. Each source season was normalized by its own league matchup scoring
+rate before fitting the shared two-way ridge model.
+
+**Result.** The run emitted 5,472 player-seasons across seven complete windows,
+with 2.37--2.65 million effective assigned possessions per window. Unit tests
+verified row-order invariance, synthetic scorer/defender ordering, complete
+window requirements, and component centering.
+
+**Decision.** Stability is not validation. Retain
+`matchup_elo_time_decay_v1_f71da3382c` as research descriptive only. It does
+not fix defensive assignment, help, scheme, or context confounding. Do not add
+it to RAPM, SPM, AIO, or the public site before a predeclared chronological
+matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
+# 2026-08-19 — Shot-quality matchup and combination RAPM projects registered
+
+- The current event archive has coordinates, shot distance, action type, clock,
+  shooter, and result, so it can support a basic pre-shot expected field-goal
+  model. It does not have a defender credited to every shot.
+- The current matchup endpoint is player–defender aggregate data, not a
+  shot-level join. Assigning a shooter’s season shot profile to individual
+  defenders by overlap would be circular, so defender-specific shot-quality
+  Elo is blocked pending a permitted shot-level defender source.
+- Registered two projects in
+  `docs/impact/SHOT_QUALITY_MATCHUPS_AND_COMBINATION_RAPM.md`: rim/non-rim
+  expected-shot matchup research and staged 2–5-player interaction RAPM.
+  Neither is a production rating, SPM input, or AIO input.
+
+# 2026-08-19 — Player-neutral expected-shot v0 and source audit
+
+- Built `expected_shot_quality_v1_f5d343a852`: a logistic location/context
+  model with no shooter, defender, team, lineup, or outcome feature. It trained
+  on 2024, was isotonic-calibrated on 2025, and was evaluated once on untouched
+  2026 (season-end labels): 218,722 shots, Brier .23075, log loss .65413.
+  Rim and non-rim outputs remain separate.
+- Audited the public matchup endpoint and confirmed it is player-pair aggregate
+  data, not an event-level defender assignment. The permissible public route
+  supports shooter shot quality only. Defender-specific expected-shot matchups
+  remain blocked pending an explicitly licensed/rights-reviewed tracking source.
+
+# 2026-08-19 — Lineup-adjusted expected-shot residual fallback: research null
+
+- Built `lineup_shot_residual_v1_aeb57da06b` on the 2026 shot panel. The
+  player-neutral expected-shot baseline used only 2024 training and 2025
+  calibration data. The residual model used the ten observed players on court,
+  split all shots, rim, and non-rim, and held out complete 2026 games.
+- On 47,367 held-out shots, all-shot RMSE improved from 1.18082 to 1.18027
+  (0.05%). Rim improved from .92457 to .92104 (0.38%); non-rim improved from
+  1.26713 to 1.26691 (0.02%).
+- Decision: do not publish its player rows or treat its defense side as
+  individual shot contest. The current data identifies a five-on-five lineup,
+  not a defender at the shot. Retain this as a documented null and require a
+  permitted shot-level defender assignment before a defender-specific model.
+
+# 2026-08-19 — Predictive SPM v1: RMSE gates pass, calibration gate fails
+
+- Branch `codex/glm-predictive-spm`. Predeclared spec:
+  `research/experiments/predictive_spm_v1.yml`. Run:
+  `predictive_spm_v1_cb5666f6db`. New CLI command `build-predictive-spm`
+  (`src/nba_impact/models/predictive_spm.py`).
+- Design: consecutive-season pair panel (features at season s, canonical
+  one-season normal RAPM targets at s+1, 5,060 pairs / 978 players).
+  Expanding-window training; frozen annual_spm_v1 learners and features
+  (reference run `single_season_spm_v1_bff6060df6`, unified feature panel
+  `statistical_features_v2_b808fc1bf1`). Arms: persistence (last-season RAPM),
+  raw, and OOF-affine-calibrated. Rookies are out of scope by design.
+- Gate 1 (diagnostics 2019–24): PASS. Mean net weighted RMSE 1.6453 vs
+  persistence 1.9945; per-fold deltas −0.24 to −0.42, far beyond the +/−0.03
+  predeclared margin. Every fold favors the predictive SPM.
+- Gate 2 (confirmation 2025–26): PASS. Raw-vs-persistence net RMSE delta
+  −0.3853 (2025) and −0.2709 (2026). Scored once, no retuning.
+- Gate 3 (defense dispersion in [0.85, 1.15] on confirmation folds): FAIL.
+  Dispersion ratios: offense 0.452–0.462, defense 0.349–0.356. The OOF affine
+  calibration barely moves slopes (≈0.91–0.99) because within-training OOF
+  residuals carry same-season-style signal that true next-season forecasts
+  lack. Predictions are strongly under-dispersed against noisy next-season
+  labels.
+- Defense remains the weak lane: next-season correlation 0.18–0.35 versus
+  0.38–0.50 for offense.
+- Decision: no promotion. Gates 1–2 establish real next-season signal over
+  persistence; gate 3 requires a new predeclared uncertainty-aware calibration
+  experiment (new id), which may also unblock the precision-aware prior
+  contract by extending forward-only prior history below 2019.
+- Dead end recorded: same-run identity initially omitted the source hash and
+  the first persistence join keyed same-season targets (RMSE 0.0 artifact,
+  discarded before evaluation). Both fixed in this commit.
+
+# 2026-08-19 — Predictive backbone race: stat model and state space tie
+
+- Predeclared spec `research/experiments/predictive_backbone_race_v1.yml`.
+  Frozen comparison run `predictive_backbone_race_v1_43db6c6446`; no refits,
+  no tuning. Identical-row population with both-side possessions >= 1,000.
+- Mean weighted net RMSE, forecast seasons 2019-2024:
+  state_space_filtered 1.6827 | predictive_spm_raw 1.6832 |
+  calibrated 1.6843 | time_decay 0.80 filter 1.7819 | persistence 2.0276.
+- Top two are 0.0005 apart: a tie under the predeclared 0.05 rule. They trade
+  fold wins (state space takes 2019, 2020, 2023, 2026; predictive SPM takes
+  2021, 2022, 2024, 2025), which suggests complementary information.
+- Confirmation folds scored once: 2025 predictive SPM by 0.0016; 2026 state
+  space by 0.0284. No overall winner.
+- Simple 0.80 time-decay loses to both; persistence loses badly to everything.
+- Decision per the predeclared rule: tie -> the next predeclared experiment is
+  the combination (history backbone plus current-season stat features), not
+  another single-model comparison.
+
+# 2026-08-19 — Predictive-history combo v1: equal blend beats both parents
+
+- Predeclared spec `research/experiments/predictive_history_combo_v1.yml`.
+  Run `predictive_history_combo_v1_0a9c938a1e` on the race's identical rows.
+- Fixed-weight blends of predictive SPM raw and state-space filtered net;
+  weights fixed in the spec, estimated nowhere. Equal blend selected on
+  2019-24 (mean weighted net RMSE 1.6076 vs parents 1.6438 / 1.6465).
+- Gate 1 PASS: combo beats both parents across selection folds and wins every
+  individual selection fold.
+- Gate 2 PASS: confirmation scored once. 2025 combo 1.7206 vs parents 1.7514 /
+  1.7530; 2026 combo 1.8081 vs 1.8462 / 1.8246. Combo wins both.
+- Gate 3: blend moves defense dispersion further below 1.0 (0.35 -> 0.31),
+  i.e. it does not improve calibration; recorded as failing-if-read-literally.
+  Blending was never expected to fix dispersion; the uncertainty-aware
+  calibration experiment remains open.
+- Decision: equal blend is the research champion for next-season net impact,
+  pending an untouched Season 2027 check. Still research-only: no API or site
+  exposure. Next predeclared step when resumed: uncertainty-aware calibration
+  of the combo, then the 2027 confirmation contract.
+
+- User directive 2026-08-19: predictive-SPM/combo outputs stay local-only. If
+  any UI work happens, it is the local `web/` view against pinned runs. No
+  Worker origin, no public site, no API route until the 2027 confirmation
+  contract passes.
+
+# 2026-08-19 — Combo production-readiness push: side null, intervals pass
+
+- Side-specific blend spec `predictive_combo_sides_v1.yml`, run
+  `predictive_combo_sides_v1_2928ef3fb1`: NULL. Offense and defense each
+  independently selected the 0.50 stat weight from five predeclared values,
+  making the candidate identical to the incumbent (max diff 4.4e-16).
+  Hypothesis that defense leans more on rating history is rejected at
+  fold-mean level. Incumbent equal blend stands as champion.
+- Interval calibration spec `predictive_combo_intervals_v1.yml`, run
+  `predictive_combo_intervals_v1_efb18006be`: PASS on all three gates.
+  Empirical residual percentiles by exposure bucket, estimated on 2019-24
+  only. Pooled 2025-26 coverage: 80% interval 0.777 (gate [0.72, 0.88]),
+  50% interval 0.467 (gate [0.42, 0.58]); all bucket coverages inside their
+  bands. Point forecasts unchanged.
+- Frozen `predictive_combo_2027_confirmation_v1.yml` contract: when Season
+  2027 targets exist, the champion and interval table are scored exactly once
+  against both parents plus coverage bands; pass opens promotion review.
+- Exposure stays local_ui_only per user directive. Two dead scripts in /tmp;
+  one pandas ordering bug (selection slice copied before derived columns) and
+  one leftover dead line caught before any result was read.
+
+# 2026-08-22 — Independent backbone-combo replication and parametric intervals
+
+- Written on `codex/predictive-spm` in parallel with the
+  `predictive_history_combo_v1` line. Runs below are independent replications
+  with different frozen conventions; they corroborate, not replace, the
+  incumbent champion. The local-ui-only exposure boundary is respected.
+- Spec `research/experiments/predictive_backbone_combo_v1.yml`, run
+  `predictive_backbone_combo_v1_38c40ac73e`: frozen 50/50 mean of
+  predictive_spm_raw and state_space_filtered on identical primary rows
+  (2,619). Convention note: this experiment uses equal-fold-mean weighted net
+  RMSE; the earlier race pooled folds. Ranking is identical under both.
+- Selection 2019-24: combo 1.6076 vs spm_raw 1.6438, state_space 1.6465,
+  time_decay 1.7613, persistence 1.9958. Confirmation 2025-26 scored once:
+  combo 1.7644 vs 1.7888 and 1.7988. Predeclared decision: combo promoted.
+  Sensitivity weights 0.25/0.75 lose to 0.50 on selection and confirmation.
+- Dead end caught before acceptance: the first join read both filters at
+  `Window_End`, which equals the forecast season itself; parent RMSEs came
+  out ~0.3 better than the frozen race on identical rows. Cross-checking
+  against race `scored_rows` matched exactly only at
+  `Season == Target_Season - 1`. Join fixed; parents now reproduce the race's
+  pooled numbers up to the declared fold-mean convention.
+- Spec `research/experiments/forecast_dispersion_calibration_v1.yml`, run
+  `forecast_dispersion_calibration_v1_c825a1ef56`: per-side
+  `sd^2 = max(a + b/n, 1e-6)`, WLS fit on 2019-24 squared residuals only.
+  The exposure slope clips to zero on both sides: next-season error is
+  model-dominated, not label-noise-dominated. Confirmation 2025-26 gates all
+  pass once: dispersion 1.0035 / 1.0351 / 1.0251 (off/def/net, gate
+  [0.85, 1.15]); coverage68 0.6765 / 0.6913 / 0.6854 (gate +/-0.05). This is
+  a second, parametric interval calibration agreeing with the empirical
+  bucket table from `predictive_combo_intervals_v1`.
+- DARKO-style figures rendered by `build-projection-figures` into the
+  calibration run's `figures/`: top-6 fan charts with history line, forecast
+  dots, 68%/95% bands, actuals; plus coverage-by-season. matplotlib remains
+  outside the locked runtime; render with `uv run --with matplotlib`.
+  CLI import no longer requires it (lazy import in projection_figures).
+- Tests: `tests/test_predictive_backbone_combo.py` covers weighted moments,
+  predeclared decision branches, slope clipping, and gate summaries.
+- Next: hold. Season 2027 confirmation contract governs; no further tuning
+  on 2019-26.
+
+# 2026-08-22 - RAPM lab kickoff: charter, data audit, full-era simple APM
+
+- Chartered `rapm-lab/` in AGENTS.md as the from-scratch RAPM optimization
+  program (principal decision). Scripts: scrape_pbp.py (parked, see below),
+  apm.py. Writes only inside rapm-lab/ and outputs/.
+- Data audit result: the pre-2014 RAPM gap was already closed on disk.
+  rapm/data/possession_cache/matchups_{1997..2024}.parquet hold possession-
+  level rows with full 10-man lineups, points, and home flag (29 files;
+  2025 empty). Lockout seasons show the expected row dips (1999: 142k,
+  2012: 197k) - internal consistency check passed.
+- Direct NBA endpoint scraping is parked: stats.nba.com hangs from this
+  network (curl 0 bytes/40s) and cdn.nba.com liveData 403s old games. The
+  scraper keeps probe/dry-run rails (--probe-games, --max-games, manifest,
+  shape validation) for when a route exists. Event-grade 1997-2013 has a
+  proven public source: gabriel1200/merged_playbyplay old_data.
+- Simple APM (OLS, damp=1e-9) fit on 1997-2025: 6,644,989 possessions x
+  5,309 players, LSQR converged (414 iterations). Outputs/apm_1997_2025.csv.
+  High-exposure leaderboard passes anchors: Jokic +14.67, Embiid +13.67,
+  LeBron +13.14 (132k poss), CP3/KG/Draymond/Stockton next tier; bottom =
+  fringe bigs. This is the unregularized baseline for the whole program.
+- Loader-based OLS on 2014-26 (apm_2014_2026_loaderbase.csv) kept as a
+  teaching artifact: with ~3k-possession players it produces +111 NET
+  outliers - the visual argument for ridge.
+- Ledger: added shot-profile RAPM family, JE 6/8-factor, RAPTOR On-Off,
+  SPM-vs-BPM head-to-head, GPM/WOWYR blocked row, DRIP verification row
+  (expansion unverified), playtype backburner status, external sources and
+  verification-target section.
+
+- Advisory adopted (2026-08-22): future event-grade 1997-2013 ingest must pull official minutes/team totals alongside PBP on day one; lineup QA and 6/8-factor factor targets depend on them. Logged in IDEAS.md.
+
+- Terminology guard (2026-08-22): 6/8-factor work is a JE-style faithful
+  reconstruction unless his exact spec (targets, filters, lambda, luck
+  adjustment) is replicated and verified against his tables. Logged.
+
+- Provenance scan (2026-08-22): three RAPM sources stitched. (1) foundry
+  matchups caches 1997-2024 (complete 10-man lineups, 100% of rows); (2)
+  legacy terminal-lineup cache also covering 2014-23; (3) canonical CDN
+  possessions 2024-26. Measured seams: legacy vs cache on the SAME seasons
+  differ 195.0 vs 190.4 poss/game (~2.4% definition drift), pts/poss 1.090
+  vs ~1.075. 2023-24 seam: cache 245,167 rows / 1,243 games / 1.146 ppp vs
+  canonical 264,057 / 1,310 / 1.126. Rule: never mix sources inside one fit
+  window; single-source-per-season enforced in apm.py. Lockout/COVID dips
+  are real-world. League scoring drifted 1.05 -> 1.15 pts/poss over the era.
+- Identifiability note: pure OLS APM leaves one free direction (add c to all
+  offense coefs, subtract from all defense); LSQR settles it arbitrarily ->
+  uniformly negative DEF column. NET is identified; OFF/DEF split needs
+  ridge (unique min-norm solution) or an explicit normalization. Matches the
+  comment already in nba_impact/models/rapm.py.
+- Exact DREB/OREB RAPM confirmed feasible: rebounds are attributed events
+  (Gabriel PBP actionType=rebound with person_id, players_on, defender_id;
+  event_states carries actionType/personId). Target = 1 if defense secures
+  the miss; same lineup design. Historical path: REB factors 1997-2013 in
+  Gabriel old_data; 2014-16 is the thin era (terminal-lineup cache lacks
+  event attribution).
+
+- Gabes merged_playbyplay audit (2026-08-22): upstream = per-GAME csvs,
+  {season_end_year}_{game_id}.csv, regular (2...) + playoffs (4...).
+  Schema supersedes our local bronze copy: adds off_players_on /
+  def_players_on (5v5 split at every row), xLegacy/yLegacy shot coordinates,
+  poc_ok exactly-10-tracked QA flag, qualifier tags (2ndchance,
+  pointsinthepaint), full attribution chain (assister, steal, block,
+  foulDrawn person ids). Confirmed coverage: old_data archive 1997-2013
+  (RussDT ingest spec) + data/ 2021-2026 observed across all teams; exact
+  pre-2021 floor in data/ unverified pending clone/--list-years.
+  Candidate single backbone for ALL RAPM variants 1997-2026; canonical CDN
+  stays as independent cross-check for overlap seasons. Local bronze holds
+  only project_season=2024/2026 team-file aggregates.
+
+- Correction (2026-08-22): Gabriel upstream pbp_data holds per-game csvs from
+  season-end 2014 onward (e.g. 2014_21300001.csv), so 2013-14 through
+  2015-16 are NOT thin at the source - only not yet downloaded locally.
+  Single-source span confirmed: old_data (1997-2013) + pbp_data (2014-2026)
+  = full 1997-2026 in one schema. Gabriel is the CANDIDATE backbone, gated
+  on an audit vs official schedule/box scores (per-season game counts,
+  poc_ok rate, final-score agreement) before any fit uses it as sole input.
+
+- Gabes old_data schema audit (2026-08-22): NOT a reduced format. Team-file
+  parquets (e.g. ATL_1997_rs) carry the FULL modern schema - players_on,
+  off_players_on/def_players_on, xLegacy/yLegacy shot coordinates (verified
+  on a 1997-11-01 miss), poc_ok, qualifier tags, complete attribution chain.
+  Single-source span upgraded: shot-quality/luck-adjusted/playtype-adjacent
+  RAPMs are buildable 1997-2026 from Gabes alone.
+- BBRef crawl anomaly (2026-08-22): stage-5 box-link harvest returns low
+  counts for pre-1978 seasons (1974: 162, 1976: 62) vs expected ~600+ games.
+  Suspected monthly-page split or link-pattern drift on old _games pages.
+  Also: transient 502s are skip-not-retry in the current crawler. Follow-up:
+  per-season link-count audit vs official_game_scores after queue completes,
+  then a targeted top-up pass with monthly-page handling.
+
+- Lake-build requirement (2026-08-22): old_data is TEAM-FILE shaped - every
+  game appears from both teams' perspectives (ATL_1997_rs and MIA_1997_rs
+  each carry the same game). Any season-level lake build must de-duplicate
+  on (game_id, actionNumber) keeping a single perspective before row counts,
+  game counts, or fits. Verified: ATL_1997_rs alone = 39,525 rows (~482
+  actions/game), consistent with single-perspective per file, so dedupe key
+  above suffices.
+- Queue health check: overnight-pull confirmed ALIVE and progressing
+  (bbref_games reached 1989; cursor advancing) - the xrapm-timeout-exit
+  report was stale/misinformed; no restart needed. fetch() already logs and
+  skips individual failures by design.
+
+# 2026-08-22 - Normal RAPM v0 (lab): ridge, two windows, forward folds only
+
+- rapm-lab/rapm_ridge.py: lambdas 3000/3000/300, augmented LSQR, shared
+  train/test player universe. Windows use END-YEAR labels (canonical loader
+  convention) - LAST3 = canonical end-years 2024-2026 (743,946 possessions,
+  all event-grade); CAREER full fit = cache labels 1997-2023 +
+  canonical 2024-2026 (7,143,768 possessions). Single source per season.
+- Predictiveness is FORWARD-only after a leakage audit voided the earlier
+  leave-one-season-out variant (it trained on future seasons). Forward
+  folds train on strictly prior seasons plus the pre-window cache.
+- Results (game-margin corr | MAE, cold):
+  forward -> 2024: 0.382 | 5.74   forward -> 2025: 0.371 | 5.77
+  forward -> 2026: 0.362 | 5.95
+  Identical across windows because forward training sets converge.
+- Leaderboards. LAST3 top NET (>=6k poss): SGA +9.59, Jokic +9.48,
+  Kawhi +7.56, Giannis +7.49, Wembanyama +6.69, Derrick White +6.36,
+  Hartenstein, Diabate - defensive specialists rank correctly and the DEF
+  column carries real signal under ridge. CAREER top NET (>=20k poss):
+  Jokic +10.61, Garnett +9.35, LeBron +8.91 (141k poss), Paul +8.18,
+  Duncan +8.19, Stockton +7.75 - era-straddling anchors pass.
+- Known conventions/caveats: symmetric lambdas pin the OFF/DEF level split
+  by min-norm (NET identified; asymmetric lambda row already queued);
+  possession-level R-squared of lineup-only models is inherently small -
+  judge via aggregated game margins, not possession residuals.
+- Artifacts: outputs/rapm_last3.csv | outputs/rapm_career.csv |
+  rapm-lab/outputs/rapm_top15_last3.png | rapm_top15_career.png.
+
+# 2026-08-22 - Normal RAPM v0.1: intercept fix (supersedes v0 leaderboard)
+
+- Bug (principal caught it): no intercept column in the design. The league
+  scoring constant (~1.12 pts/poss) leaked into both player blocks via ridge
+  min-norm centering, pinning OFF at ~+11 and DEF at ~-11 for an AVERAGE
+  player - every defender looked elite, every scorer looked like a 20-pt
+  offensive engine. NET was unaffected (artifact cancels inside it).
+- Fix: intercept column added (lambda 1.0); home stays ±1 external factor.
+- Post-fix LAST3: SGA +9.55 (+7.0/+2.6), Jokic +9.46 (+8.4/+1.0),
+  Wembanyama +6.67 (+1.1/+5.6 - defense-first, correct),
+  White +6.37 (+2.9/+3.4 two-way). Post-fix CAREER: Jokic +10.61 (+8.9/+1.7),
+  Garnett +9.29 (+2.4/+6.9 defense-first, correct), Duncan +8.18 (+2.7/+5.5),
+  Curry +7.95 (+8.1/-0.1 offense-only, correct).
+- Predictiveness unchanged within noise (intercept changes split convention,
+  not signal): forward folds 0.378 / 0.364 / 0.353, MAE ~5.8-6.0.
+- Lesson logged: lineup-design matrices without an intercept force the
+  scoring constant into player coefficients; always carry one.
+
+- Overnight queue complete (2026-08-22 morning, exit 0): BBRef games pages
+  39/40 seasons 1957-96 (1973 missing - transient 502, top-up queued),
+  2,848 box scores fetched night one of the multi-night grind (resumable
+  manifest), verification sets (EPM/MAMBA/DARKO/xRAPM/Substack/DWRAPM)
+  landed, stats.nba.com probe still unreachable (skipped as designed).
+  Total 154 MB + Gabes 4.0 GB. Consolidated download root: data/downloads/
+  (daemon ROOT resolution) - rapm-lab/data/downloads merged in and removed;
+  manifests merged. Known follow-ups: (1) top-up NBA_1973 games page +
+  re-crawl any fetch_error rows; (2) pre-1978 link-count audit vs official
+  schedule; (3) old_data team-file dedup at lake build.
+
+- Lambda grid complete (dev-tuned): optimum lam_off=500, lam_def=2000,
+  forward mean corr 0.388 (vs symmetric 3000/3000 at 0.372). Surface is
+  flat in lambda_def across 2000-4500; lighter offense shrinkage wins on
+  event-grade data - supersedes the old foundry off-2000/def-4500 finding
+  for this substrate. Heatmap: outputs/lambda_grid_last3.png.
+- Bake-off launched (tune-bakeoff daemon, --fast): ridge_tuned vs lightgbm
+  vs extra_trees vs bilinear embeddings on identical forward folds.
+  First fold: ridge 0.395 vs LGBM 0.307 - linear ahead early, consistent
+  with the 2026 ledger's LGBM loss. Summary lands in
+  outputs/bakeoff_last3.csv on completion; process exit auto-notifies.
+- BBRef top-up crawler running (bbref-topup daemon): monthly schedule pages
+  for every sub-400-link season 1957-96 (old schedules are month-split),
+  fetch_error retries incl. 1973, then continued resumable box crawl.
+- Fixed latent --no-lgbm flag bug in tune_bakeoff.py (argparse rejected it
+  before the sys.argv check could fire).
+
+# 2026-08-24 - RAPM lab bake-off made sequential and resumable
+
+- Activated validation suite v1 with one explicit role assignment:
+  2024--2026 are development/selection folds, and Season 2027 is the untouched
+  single-shot confirmation. The persistence comparison is a rejection gate,
+  not confirmation.
+- Refactored `rapm-lab/tune_bakeoff.py` to build and release one fold at a
+  time instead of retaining three training frames and sparse designs. A
+  standalone fold now always includes every available earlier canonical
+  season, so running 2025 alone matches its training scope inside the default
+  three-fold command.
+- Added explicit model selection, fixed-lambda reuse, and output-path controls.
+  Each model-fold row remains append-only and completed pairs skip the fold
+  build entirely. `SuffStats` no longer retains an unused copy of the design.
+- Exact 2024 ridge smoke check with frozen development penalties 500/2000:
+  1,227 games, correlation 0.39522678134541767, MAE 5.749080145374502. This
+  matches the saved pre-refactor row exactly. An immediate rerun read the
+  checkpoint, built no fold, appended no duplicate, and exited in 0.53 seconds.
+- The nonlinear run resumed only after the exact smoke check. The completed
+  lambda surface remains selection evidence; it does not confirm 500/2000.
+
+- GPT Pro critique handoff created: rapm-lab/GPT_PRO_CRITIQUE_HANDOFF.md (also copied to ~/Downloads). It includes full IDEAS ledger synthesis, data/source state, formulation, validation suite, historical results, and explicit critique questions.
+- Completed all three development folds for ridge, LightGBM, and the fast
+  bilinear embedding model. Mean game-margin correlation / MAE: ridge
+  0.388/5.830, LightGBM 0.301/5.947, bilinear 0.296/6.771. Ridge wins both
+  metrics against each completed challenger in aggregate; this remains
+  development evidence only.
+- Fold-first execution was operationally reordered after the 2024 Extra Trees
+  fit ran for more than one hour without a checkpoint. Cheap models were
+  completed first, bilinear second, and Extra Trees moved to one persistent
+  fold per run. Model definitions, folds, and metrics did not change.
+- The 2024 Extra Trees fold eventually completed after roughly three hours:
+  correlation 0.270, MAE 5.929 over 1,227 games, versus ridge 0.395/5.749 on
+  identical games. By principal decision, do not run its 2025 or 2026 folds.
+  Preserve the one row as an incomplete diagnostic; never average it with the
+  three-fold models or describe it as a completed challenger.
+- Extra Trees is removed from default bake-off runs but remains an explicit
+  reproducibility option. Ridge is the development winner among completed
+  lab candidates. This does not replace the production 3000/3000/300 normal
+  RAPM penalties or constitute confirmation.
+- Persistence gate implemented in `rapm-lab/validate_persistence.py`. For each
+  held-out season T, it fits the same zero-prior 500/2000 coefficient model on
+  T-1 only, gives unseen players zero, and verifies exact game-count identity
+  against the candidate before comparison.
+- Ridge passes persistence in every development fold. Correlation, ridge versus
+  persistence: 2024 0.395/0.358, 2025 0.390/0.332, 2026 0.379/0.319. Mean
+  correlation is 0.388/0.336; mean MAE is 5.830/6.008. This rejects the
+  persistence-null explanation but remains development evidence, not 2027
+  confirmation. Output: `outputs/persistence_last3.csv`.
+
+# 2026-08-24 - Repository and RAPM lab consolidation
+
+- Merged the production package, modular web client, and research control plane
+  into the active repository. Stale UI branches remain historical snapshots and
+  do not enter the product.
+- Moved the only maintained lab implementation to `research/rapm_lab/`.
+  Canonical inputs remain in the main data contracts. Lab downloads, external
+  mirrors, and outputs now stay below the lab and are ignored by Git.
+- Preserved 1.3 GB of historical downloads, 5.1 GB of the Gabriel mirror, and
+  1.1 MB of experiment results. The Basketball Reference crawler stopped at a
+  resumable checkpoint after 28,974 box pages; no downloaded row was deleted.
+- Added safe command-line confirmation to the overnight queue. Asking for help
+  no longer starts a wait or a download. Fixed the Gabriel sparse checkout so
+  adding one source directory does not remove a previously fetched directory.
+- Imported the sequential bake-off and previous-season persistence gate. The
+  recorded 2024-26 results remain development evidence. Season 2027 remains
+  untouched confirmation.
+
+# 2026-08-25 - Unified five-year rolling RAPM and lambda matrices
+
+- Froze `rolling_5y_rapm_2014_2026_v1`: nine retrospective windows from
+  2014-18 through 2022-26. The model is zero-prior terminal-lineup RAPM with
+  3000 / 3000 / 300 offense / defense / home penalties. Each season's scoring
+  environment is removed before the player fit.
+- Used the explicit source transition already accepted by the annual research
+  timeline: legacy terminal possession caches through 2023 and canonical event
+  terminal lineups from 2024. The six unchanged windows ending 2018-23 exactly
+  reproduce the pinned legacy rolling artifact for offense, defense, and net.
+- The 2020-24 hybrid window remains close to the legacy-only 2024 reference:
+  matched-player correlations are .9960 offense, .9939 defense, and .9958 net.
+  Net RMSE is .1717 points per 100. This is source sensitivity, not model lift.
+- Completed all nine windows: 8,620 player-window rows, 1,706 distinct players,
+  and 1,167 eligible peak rows. Every rating is finite, names are complete,
+  keys are unique, and maximum `offense + defense = net` error is `8.88e-16`.
+- The first packaging pass correctly rejected 12 unresolved 2026 IDs. All 12
+  resolved from the canonical `player_games.parquet` crosswalk. No coefficient
+  or possession input changed.
+- Runtime was 597 seconds with 3.48 GB maximum resident memory. Execution was
+  sequential. The 2014-18 pilot took 65 seconds and peaked at 2.20 GB.
+- Stored nine sparse lambda-training packages and eight next-season evaluation
+  packages. Each contains `X'X`, centered `X'y`, player ordering, side exposure,
+  and game-aggregated held-out design/targets. Raw possession-level `X` is not
+  stored. Total run storage is 20 MB. Season 2027 was not loaded.
+- Solving the default penalties from stored matrices reproduces fitted ratings
+  within `1.22e-7` points per 100, inside the `1e-6` numerical tolerance implied
+  by the production conjugate-gradient solve. Across 2019-26 held-out seasons,
+  equal-season mean game-margin correlation is .3690, MAE 11.036 points, and
+  RMSE 14.070 points. These are the baseline for future lambda research, not a
+  selected penalty result.
+- The 2022-26 qualified net leaders are Nikola Jokic +10.04, Shai
+  Gilgeous-Alexander +7.62, Giannis Antetokounmpo +7.14, Derrick White +5.66,
+  and Alex Caruso +5.03 points per 100.
+- Local run: `rolling_5y_rapm_2014_2026_a7754bfb77` under
+  `research/rapm_lab/outputs/rolling_5y_2014_2026/`. Status remains research.
+
+# 2026-08-25 - Five-year rolling RAPM lambda grid is a null result
+
+- Froze and scored 196 offense / defense / home penalty combinations on the
+  stored rolling-five-year sufficient statistics. Selection used only
+  next-season 2019-23 results; the chosen setting was then evaluated once on
+  reused diagnostic Seasons 2024-26. Season 2027 was not loaded.
+- The correlation-first selection rule chose offense 2000, defense 1000, and
+  home 1000. On selection seasons it raised equal-season mean game-margin
+  correlation from .37084 to .37298 (+.00214), but worsened MAE from 10.6209
+  to 10.7366 (+.1157 points).
+- On reused diagnostics, correlation rose from .36587 to .37522 (+.00935),
+  while MAE worsened from 11.7277 to 11.7727 (+.0451) and RMSE worsened from
+  14.9358 to 14.9657.
+- A 2,000-draw paired whole-game bootstrap, stratified by season, estimated
+  baseline-minus-candidate MSE at -.9103 with a 95% interval of
+  [-2.1307, .3270]. Only 7.15% of draws favored the candidate on MSE.
+- The candidate fails the preregistered diagnostic MAE and paired-bootstrap
+  gates. Classification is `research_null`; retain 3000 / 3000 / 300 as the
+  five-year rolling baseline. This does not contradict the earlier 500 / 2000
+  lab result, which used a different training scope, source substrate, and
+  2024-26 development contract.
+- Local run: `lambda_grid_v1_ef9f6a7a5f` inside
+  `rolling_5y_rapm_2014_2026_a7754bfb77`. It contains all 1,568 fold scores,
+  3,681 diagnostic game predictions, and all bootstrap draws.
+
+# 2026-08-25 - Expanded RAPM penalty families remain research nulls
+
+- Froze `rolling_5y_lambda_frontier_v1` before execution. The search used
+  next-season 2019-23 for selection, reused 2024-26 only for diagnostics, and
+  never loaded Season 2027. Home remained fixed at 300 because the earlier
+  four-value home search was numerically immaterial.
+- Scored 169 distinct penalty configurations: 64 log-space Sobol scalar
+  candidates spanning 30-30,000 per side, seven scalar anchors, 75 local scalar
+  refinements, 18 full-covariance offense/defense candidates, and five
+  empirical-Bayes adaptation strengths. This produced 845 selection-fold fits.
+- The scalar correlation choice was offense 2317 / defense 1768. Its reused
+  diagnostic correlation was .37190 versus .36587 for 3000 / 3000, but RMSE
+  worsened from 14.93581 to 14.94091 and only 31.35% of 2,000 paired whole-game
+  draws favored it on MSE.
+- The scalar RMSE choice was offense 9043 / defense 6020. It had the strongest
+  adjacent-window stability, but diagnostic correlation fell to .34256 and
+  RMSE worsened to 15.01062. This is direct evidence that stability by itself
+  rewards over-shrinkage.
+- The bivariate correlation choice used offense 2317 / defense 1768 with a
+  +.25 published OFF/DEF prior correlation. Diagnostic correlation rose to
+  .37451, but MAE/RMSE worsened to 11.75905/14.95151. Only 16.3% of paired
+  draws favored it on MSE and 2.55% favored it on MAE.
+- The training-only GCV scalar choice was offense 2895 / defense 3816. It was
+  nearly the existing baseline and did not improve diagnostics. An independent
+  32-probe trace run reproduced the GCV ordering, so trace randomness does not
+  explain the null.
+- The empirical-Bayes implementation used a training-only 3000/3000 pilot,
+  posterior second moments, one type-II moment update, and bounded per-player
+  precision multipliers. Global side precisions were approximately 3260-3558
+  across selection folds. Full player adaptation produced roughly 1900-9400
+  10th-90th percentile precisions and won GCV reproducibly, but diagnostic
+  MAE/RMSE worsened to 11.76002/14.95504; paired MSE improvement probability
+  was only 13.4%.
+- The unadapted empirical-Bayes variance-component model changed diagnostic MAE
+  by only -0.00052, while correlation and RMSE worsened. Its paired improvement
+  probabilities were 57.35% MAE and 17.1% MSE: a statistical null, not a win.
+- Twelve heterogeneous synthetic recovery seeds favored full adaptive EB on
+  average net recovery (correlation .4756 vs .4606; RMSE 2.539 vs 2.578 for the
+  baseline), showing the mechanism can work when its heterogeneity assumptions
+  are true. It did not transfer to real held-out seasons and expanded the
+  latest sub-500-possession net tail from 4.25 to 6.43 points per 100.
+- Player relabeling invariance passed to `8.88e-16`; all stored ratings satisfy
+  offense + defense = net exactly; finalist keys and diagnostic game rows are
+  unique. Classification: multi-family research null. Retain 3000 / 3000 / 300.
+- Local run: `lambda_frontier_v1_45ccc734c0` inside
+  `rolling_5y_rapm_2014_2026_a7754bfb77`, with `audit.json` recording the
+  independent GCV and paired-game checks.
+
+# 2026-08-25 - Home helps error; garbage, rubberband, and clock fatigue do not
+
+- Froze six context ablations on five-year rolling RAPM. Each fold trained on
+  the preceding five seasons and scored the identical next season: 2019-23 for
+  selection and reused 2024-26 for diagnostics. Player penalties stayed at
+  3000 / 3000, home and context penalties at 300, and Season 2027 was not
+  loaded. No time decay was included.
+- The primary score used only frozen player ratings plus the fitted home term.
+  Rubberband and clock columns were zeroed at evaluation so they could not buy
+  apparent generalization by directly using live game state. A secondary
+  conditional score retained them and is explicitly not a pregame forecast.
+- Home reduced reused-diagnostic RMSE from 15.0512 to 14.9358 and MAE from
+  11.8529 to 11.7277 versus no-home. Correlation was effectively tied and
+  slightly lower (.36587 versus .36595). Retain the global home term.
+- Hard garbage filtering removed 920,959 of 9,358,559 training rows (9.84%).
+  It worsened selection correlation/RMSE from .37084/13.5503 to
+  .36888/13.6232 and diagnostic correlation/RMSE from .36587/14.9358 to
+  .35827/15.0383. Reject it for this five-year estimand.
+- Quarter-specific pre-possession offense margin raised primary selection
+  correlation to .37430 and diagnostic correlation to .37596, but worsened
+  RMSE to 13.7341 and 15.0155. The paired diagnostic baseline-minus-candidate
+  MSE was -2.3443 with 95% interval [-3.7928, -.8895]; only .1% of 2,000
+  whole-game bootstrap draws favored rubberband. Reject it: it changes ranking
+  while degrading calibrated game-margin error.
+- Including live quarter-margin terms in held-out predictions was catastrophic
+  (selection/diagnostic correlation -.1845/-.1214), consistent with the prior
+  endogeneity diagnosis: player quality creates the lead being controlled.
+- The legacy clock-fatigue proxy was numerically inert. Diagnostic correlation,
+  MAE, and RMSE were .36587, 11.72764, and 14.93577 versus .36587, 11.72766,
+  and 14.93581 for baseline. This proxy measures game-clock state, not observed
+  player fatigue; do not label it a fatigue adjustment.
+- The old fast-optimizer claim that home + quarter rubberband + fatigue
+  “worked” came from fitting and scoring the same random 30,000 possessions;
+  its reported MSE gain was only .000206. It is not out-of-sample evidence.
+- All 48 fold-variant rows are finite; variants scored identical games in each
+  season; tests passed. Classification: `research_null`. Local run:
+  `context_adjustments_v1_full_46dec665f1`.
+
+# 2026-08-25 - Team-specific home effects do not beat one global effect
+
+- **Question:** Does each NBA franchise have a repeatable home-court deviation
+  that improves future-game predictions beyond one global home coefficient?
+- **Data and design:** Added a verified official game-to-home-team map for
+  2014--16 to the existing 2017--26 panel. Every regular season contains all 30
+  teams and every modeled possession game resolves exactly once. Each fold uses
+  the preceding five regular seasons, terminal lineups, zero prior, and fixed
+  3000 / 3000 / 300 player/global-home penalties. Selection seasons are
+  2019--23; reused diagnostics are 2024--26; Season 2027 was not loaded.
+- **Algebra:** The raw global home column equals the sum of the 30 franchise
+  columns. The first pilot exposed that post-fit centering would not separate
+  the global and team penalties. That invalid full run was stopped. The final
+  implementation solves a KKT system that constrains the exposure-weighted mean
+  team deviation to zero during fitting. A synthetic test covers the constraint.
+- **Selection:** Seven team-deviation penalties from 30 to 30,000 were frozen.
+  Selection chose 30,000, the strongest shrinkage tested. Even there, mean
+  2019--23 RMSE was 13.5622 versus 13.5503 for global home, and the candidate
+  won only one of five folds.
+- **Diagnostics:** On 2024--26, team home worsened equal-season mean RMSE from
+  14.9358 to 14.9433 and MAE from 11.7277 to 11.7302. Correlation fell from
+  .36587 to .36510. It won one of three diagnostic folds by RMSE, by only
+  .0004 points in 2026.
+- **Paired uncertainty:** Across 2,000 whole-game bootstrap draws stratified by
+  season, baseline-minus-candidate MSE was -.2134 with a 95% interval of
+  [-.6265, .2064]. Only 15.35% of draws favored team home.
+- **Audit:** All variants scored identical unique games and actual margins; all
+  46 fold rows are finite; every fold/variant has 30 teams. The global baseline
+  reproduces the prior context run exactly for correlation, MAE, and RMSE.
+- **Verdict:** `research_null`. Retain one global home effect. Do not interpret
+  franchise deviations as altitude, travel, crowd, arena, or referee effects.
+  Run `team_home_v1_full_0ade8d3301` is local under
+  `research/rapm_lab/outputs/team_home/`.
+
+# 2026-08-25 - Conserved scoring channels exactly recover five-year RAPM
+
+- **Question:** Can the discrete possession outcome be decomposed without the
+  cost and non-additivity of a full multinomial player model?
+- **Design:** On the 2022--26 terminal-lineup regular-season panel, define three
+  additive targets: `1 * I(points=1)`, `2 * I(points=2)`, and
+  `points * I(points>=3)`. Fit all three with the same zero-prior
+  3000 / 3000 / 300 ridge design and remove each target's season scoring mean.
+  One sparse factorization solves all three right-hand sides.
+- **Quality:** The run covers 1,229,744 possessions, 6,141 games, and 1,029
+  players. Target and rating recomposition errors are zero at stored precision.
+  Every channel satisfies offense plus defense equals net to `8.88e-16`. The
+  summed rating matches canonical normal RAPM within `1.32e-7` points per 100;
+  intercept error is `4.01e-11`.
+- **Read:** Among players above 5,000 possessions per side, Nikola Jokic leads
+  total net and the two-point channel. Giannis Antetokounmpo leads the one-point
+  channel. Sam Hauser leads the three-plus channel. These are lineup-adjusted
+  associations with where points appeared, not individual shot-credit claims.
+- **Verdict:** The cheap additive decomposition works. It is more useful as the
+  first factorized RAPM baseline than a true multinomial fit because it exactly
+  conserves ordinary RAPM. A turnover / FT / 2P / 3P / OREB version needs an
+  explicit value ledger whose row components sum to observed or expected
+  possession value. Run `points_channel_rapm_v1_4507aab97c` is local under
+  `research/rapm_lab/outputs/points_channel_rapm/`.
+
+# 2026-08-25 - The rubber-band curve is real but does not improve this RAPM
+
+- **Empirical check:** Reused the 2022--26 terminal-lineup panel and the exact
+  five-year normal-RAPM fit. After removing fitted lineup, home, and season
+  scoring effects, grouped possession residuals by pre-possession offense
+  margin and quarter.
+- **Shape:** A linear fit changes residual efficiency by -0.085, -0.166,
+  -0.153, and -0.245 points per 100 for each point of offensive lead in
+  Q1 through Q4. Per 10 points, that is -0.85, -1.66, -1.53, and -2.45.
+  Quadratic coefficients are near zero in Q2 through Q4; the Q1 tail is sparse.
+- **Interpretation:** This supports a quarter-specific linear score-effect
+  description. It does not make live margin exogenous. Strong players help
+  create the leads being controlled, and strategic response also changes with
+  score.
+- **Decision:** Do not run another polynomial or cutoff grid. The already frozen
+  quarter-linear model worsened reused-diagnostic RMSE from 14.9358 to 15.0155,
+  and only 0.1% of paired whole-game draws favored it on MSE. Keep the empirical
+  curve as a descriptive team/game-state result, not a player-RAPM adjustment.
+
+# 2026-08-25 - Aging helps forecasts; interaction, multinomial, and coach challengers do not
+
+- **Contract:** Season 2027 was never loaded. Earlier seasons select model
+  settings and 2026 is reused diagnostic evidence. Baselines and challengers
+  score identical games. These experiments do not change production ratings.
+- **Aging:** The annual 2014--26 panel contains 5,053 adjacent transitions for
+  1,240 players. Stored age is integer-valued, so 0.1/0.5/1/2-year values are
+  kernel bandwidths, not true subannual observation intervals. A one-year
+  Gaussian smoother lowered net weighted RMSE from 2.0045 to 1.9904 for a
+  one-season input, 1.7707 to 1.7442 for three seasons, and 1.7440 to 1.7079
+  for five seasons. The first loses .0040 correlation; the latter two gain
+  .0113 and .0165. Use aging only to translate ratings forward. Descriptive
+  retrospective RAPM remains age-neutral.
+- **2--5-player interactions:** Fit one regularized unit layer to residuals
+  after player RAPM. Penalties were selected on 2025 and checked on 2026.
+  Pair, trio, and four-player layers worsened RMSE by .0345, .0702, and .0362.
+  The five-player layer improved RMSE by only .0039 and correlation by .0006,
+  which is effectively a null. These are conditional lineup associations, not
+  evidence of causal chemistry.
+- **Six-sided factor RAPM:** Built shooting-eFG, turnover, and offensive-rebound
+  surfaces for offense and defense on 743,946 2024--26 possessions. The ledger
+  maps 98.43% of 1,176,393 relevant events, with 431,452 shots, 95,583 turnover
+  possessions, and 302,567 resolved missed-shot rebound opportunities. The
+  sides use different denominators and do not sum to points impact. Retain as
+  descriptive skill surfaces, distinct from the exact conserved points-channel
+  decomposition.
+- **Multinomial RAPM:** Fit a 0/1/2/3-plus softmax lineup model. Alpha .001 won
+  the 2025 selection fold. On 2026, multinomial margin RMSE/correlation were
+  15.5084/.3326 versus 15.4732/.3344 for linear points RAPM. Its log loss
+  1.1109 was also worse than constant class rates at 1.1096. Classification:
+  `research_null` for prediction.
+- **Win-probability RAPM:** Used prior-season-trained player-neutral WP surfaces
+  to create a conserved possession-change target for 497,177 possessions and
+  2,454 games in 2025--26. Maximum game conservation error is `1.11e-16` and
+  terminal jumps are only .72% of absolute credit. Net correlates .738 with
+  exact-row points RAPM, but 2025-to-2026 net stability is only .125. Keep as
+  descriptive leverage credit, not player strength or a forecast.
+- **Coach RAPM:** Parsed 325 Basketball Reference coach-season rows and assigned
+  all 11,969 modeled 2017--26 games. Joint player/coach ridge selected the
+  strongest coach penalty tested, 100,000. On 2026, coach columns worsened RMSE
+  by .0147 and correlation by .0012. Coach, roster, franchise, assistants, and
+  organization remain too confounded for a portable public coach rating.
+- **Decision:** Retain terminal-lineup, zero-prior `3000 / 3000 / 300` RAPM as
+  the reference. Promote none of these challengers. The durable result summary
+  is `docs/impact/RAPM_FRONTIER_RESULTS_2026_08_25.md`; local runs are
+  `aging_resolution_v1_540ec99a49`, `lineup_interactions_v1_958fa5d618`,
+  `possession_outcome_rapm_v1_3b8d88046a`,
+  `win_probability_rapm_v1_f679b24223`, and `coach_rapm_v1_32b9c1065e`.
+
+# 2026-08-25 - Actual-clock rubber-band curve transfers to 2026
+
+- **Question:** After removing lineup expectations out of fold, how does an
+  offense's pre-possession lead change scoring as actual game time elapses?
+- **Repair:** The prior context experiment used possession order inside a
+  quarter as a clock proxy. The new contract uses exact possession-start elapsed
+  seconds on 743,946 canonical 2024--26 possessions. Five whole-game folds per
+  season produce lineup residuals with no held-game rows in their RAPM fit.
+- **Split:** 2024 develops the curve, 2025 selects among one/four/eight time
+  bins and margin caps, and exposed 2026 supplies reused diagnostics. Season
+  2027 was not loaded.
+- **Selection:** Eight actual six-minute bins with margin clipped at 15 won
+  2025 MSE. The neighboring 10-point cap is statistically tied: winner-minus-
+  runner-up MSE improvement `0.0000097`, 95% interval `[-0.0000283, 0.0000486]`.
+  Do not interpret 15 as a known strategy threshold.
+- **Curve:** The 2024--25 points-per-100 slope for each point of offense margin
+  is `+0.003, -0.056, -0.199, -0.176, -0.044, -0.147, -0.173, -0.524` across
+  the eight consecutive six-minute bins. The first six minutes show no effect;
+  the final six are the clear maximum. A ten-point lead in the final six minutes
+  corresponds to `-5.24` points per 100 versus the cross-fitted lineup baseline.
+- **Diagnostic:** On 2026, residual RMSE changes from `1.191592` to `1.191427`.
+  MSE improves 0.028%; all 2,000 fixed-prediction whole-game resamples favor the
+  curve, with interval `[0.000180, 0.000602]`. Pairwise annual slope correlation
+  is at least 0.691.
+- **Decision:** The score association is real, small, and late-game-heavy. It is
+  still endogenous game context, not causal effort or a garbage-time label.
+  Keep it local. The next gate must refit adjusted player RAPM and compare
+  future-game calibration and player stability on identical rows. Run
+  `rubberband_adjustment_v1_34be1ee621`; full specification in
+  `docs/impact/RUBBERBAND_ADJUSTMENT.md`.
+
+# 2026-08-25 - Clock and possession-progress adjusted RAPM do not clear the gate
+
+- **Question:** Does the empirical rubber-band curve change player RAPM in a
+  useful way, and can fixed possession progress reproduce the actual-clock
+  result on identical rows?
+- **Design:** Use the same 743,946 canonical 2024--26 terminal-lineup rows. Fit
+  the two eight-segment score curves on 2024--25 out-of-fold lineup residuals.
+  Actual clock uses six-minute segments. The proxy counts completed regulation
+  possessions before the current row in fixed 25-possession bins and never uses
+  final game length. Subtract only the signed-margin slope from points; do not
+  subtract the segment intercept. Fit zero-prior `3000 / 3000 / 300` player
+  RAPM on 2024--25 and score the same 1,228 reused 2026 games.
+- **Context result:** The eight clock and possession-progress slopes correlate
+  0.971. Residual RMSE falls from 1.191592 to 1.191427 with clock and from
+  1.191617 to 1.191461 with possession progress. The score association is real
+  but explains little possession variance.
+- **Player result:** Normal RAPM scores 15.473 RMSE and .334 correlation.
+  Clock-adjusted scores 15.491/.344; possession-adjusted scores 15.499/.343.
+  Paired RMSE-change intervals are `[-.043, +.079]` and `[-.036, +.087]`.
+  Conditional observed-score-path addback fails badly at 17.933 and 18.020
+  RMSE because score margin is endogenous.
+- **Ratings:** On the full descriptive 2024--26 refit, each adjusted net rating
+  correlates 0.991 with normal RAPM and moves by 0.239 points per 100 on
+  average. Complete qualified player leaderboards are saved and exposed only
+  in the local RAPM Lab.
+- **Decision:** Keep the descriptive rubber-band curve. Reject clock-adjusted
+  and possession-adjusted player ratings under the frozen gate. Season 2027 was
+  not loaded. Run `rubberband_progress_rapm_v2_b72716c2fb`.
+
+# 2026-08-25 - Corrected standalone pair through lineup RAPM
+
+- **Correction:** The earlier `lineup_interactions_v1_958fa5d618` experiment
+  fits residual unit layers after ordinary one-player RAPM. It does not answer
+  the requested standalone unit estimand and is now labeled accordingly.
+- **Design:** Pair RAPM contains only unordered two-player offense and defense
+  unit columns. Trio, four-man, and lineup RAPM analogously contain only units
+  of size three, four, or five. Each model also contains one signed home-offense
+  column. There are no individual player columns, player-RAPM predictions,
+  residual targets, or SPM priors.
+- **Split:** Five-season 2020--24 training selects ridge penalties on 2025.
+  Five-season 2021--25 training is refit and compared with one-player RAPM on
+  the same 1,228 reused-diagnostic 2026 games. Season 2027 is not loaded.
+- **Result:** One-player RAPM RMSE is 15.2962. Pair, trio, four-man, and lineup
+  RMSE values are 15.7676, 16.0763, 16.3187, and 16.5222. Their paired RMSE
+  deltas are +.471, +.780, +1.022, and +1.226. All 2,000 whole-game bootstrap
+  draws lose for every challenger; the respective 95% intervals are
+  `[.260, .688]`, `[.516, 1.043]`, `[.728, 1.329]`, and `[.884, 1.565]`.
+- **Coverage:** Training-only exposure floors produce 2026 test-slot coverage
+  of 41.4%, 21.7%, 10.5%, and 3.7% from pair through lineup. Unseen units get a
+  zero coefficient. Sparsity is therefore part of the result, especially for
+  higher orders.
+- **Decision:** Reject these standalone unit models as replacements for player
+  RAPM under the frozen specification. Keep them as a local descriptive
+  research view. Do not interpret a unit coefficient as individual value or
+  causal chemistry. Run `standalone_unit_rapm_v1_460b34a3b1`.
+
+# 2026-08-25 - JE categorical score-state curve replicated; adjusted ratings rejected
+
+- **Question:** Does JE's rubber-band pattern appear when exact pre-possession
+  score-margin indicators are fitted inside our RAPM, and do the resulting
+  player coefficients generalize better?
+- **Design:** Use 3,080,228 audited 2014--26 terminal-lineup possessions. Fit
+  offense, points-allowed defense, home, and 115 exact margin indicators
+  jointly on 2014--25. Margins below -57 or above +57 are top-coded. Player
+  penalties remain `3000 / 3000 / 300`; score indicators use alpha 1, matching
+  the public reproduction. Season 2026 is reused diagnostics; 2027 is untouched.
+- **Curve:** Relative to a tied score, an offense trailing by 10 scores `+4.80`
+  points per 100 and one trailing by 20 scores `+9.26`. Leading by 10 is
+  `-1.25`; leading by 20 is `-1.02`. The leading tail is noisier and weaker
+  than JE's published historical figure, but the asymmetric rubber-band shape
+  is present.
+- **Held-out result:** Normal player-only RAPM scores 15.436 RMSE and .353
+  correlation on the same 1,228 games. The score-state-controlled player
+  coefficients score 15.579/.365. RMSE worsens by .143; the paired 95% interval
+  is `[+.043, +.244]`. Adding the observed 2026 score path is invalid as a
+  forecast and scores 19.617 RMSE.
+- **Ratings:** The full descriptive adjusted net ratings correlate .985 with
+  normal RAPM and move .376 points per 100 on average.
+- **Decision:** Keep the JE curve as a local context diagnostic. Reject the
+  adjusted player rating. Do not call the curve causal effort or garbage time.
+  Run `rubberband_je_replication_v1_c8bdb4484d`.
+
+# 2026-08-25 - Same-age RAPM separates age context from player standardization
+
+- **Question:** Does controlling lineup age inside a 2014--26 RAPM improve
+  held-out game estimates, and does the resulting age-27 player rating improve
+  over ordinary RAPM?
+- **Design:** Add separate offense and points-allowed defense counts for every
+  integer age from 19 through 43, with age 27 omitted. Fit them jointly with
+  terminal-lineup player and home coefficients. Player penalties remain
+  `3000 / 3000 / 300`; age penalties 100, 1,000, and 10,000 are selected on
+  2025. Age coverage is 99.958% of 30,802,280 player-possession slots.
+- **Diagnostic:** On the same 1,228 reused 2026 games, normal RAPM scores
+  15.436 RMSE and .353 correlation. Age-27 player coefficients alone score
+  15.477/.341, a +.042 RMSE change with paired interval `[-.068, +.157]`.
+  Player coefficients plus actual lineup ages score 15.258/.380, a -.177
+  change with paired interval `[-.331, -.012]`; 98.0% of whole-game resamples
+  improve.
+- **Ratings:** The full age-27 net ratings correlate .962 with ordinary pooled
+  RAPM and move .364 points per 100 on average. The categorical curve is not a
+  smoothed biological aging curve and becomes noisy at sparse extreme ages.
+- **Decision:** Keep actual-age controls as a research context challenger.
+  Do not replace the reference leaderboard with age-27 ratings: they do not
+  improve neutral held-out prediction. Run `age_adjusted_rapm_v1_99ad4ffb22`.
+
+# 2026-08-25 - Three factor RAPMs reconstruct annual points RAPM
+
+- **Question:** Can annual shooting-eFG, turnover, and offensive-rebound RAPMs
+  estimate ordinary annual points RAPM after learning their scale on earlier
+  seasons?
+- **Data repair:** The 2024 V3 source has no explicit `shotValue`. Infer three
+  points only when the official description contains `3PT`; otherwise treat a
+  field goal as two points. This recovers 215,080 historical shot values. The
+  final ledger contains 743,946 possessions, 646,532 shots, and 302,567
+  resolved missed-shot rebound opportunities; 98.431% of relevant events map
+  to a canonical possession.
+- **Design:** Fit each factor separately by season with the same terminal-lineup
+  `3000 / 3000 / 300` ridge. Fit offense and defense reconstruction maps on
+  2024, select ridge alpha on 2025, refit on 2024--25, and diagnose qualified
+  2026 players. Player-season weights are the square root of minimum-side
+  target possessions and are not features.
+- **Result:** On 387 reused 2026 players, all three factors reconstruct net
+  RAPM with .964 correlation, .930 weighted R-squared, and .545 RMSE versus
+  2.052 for a mean-only baseline. Shooting alone reaches .718 R-squared;
+  turnover .174 and rebounding .222. All 2,000 player resamples favor the full
+  model over the mean baseline. Standardized offense coefficients are 1.204
+  shooting, .516 turnover, and .540 rebounding; defense values are .971, .495,
+  and .381.
+- **Decision:** The factors support a useful mechanistic representation of
+  ordinary RAPM. This is reconstruction, not independent validation or causal
+  attribution: the inputs and target share the same season and lineup design.
+  Run `factor_rapm_reconstruction_v1_ed61c90a5a`.
+
+# 2026-08-25 - Full RAPM Lab sweep and frozen production candidate
+
+- **Validation spine:** Development uses earlier seasons, 2025 selects a frozen
+  candidate, and 2026 is reused diagnostics on identical games. Comparisons use
+  game-margin RMSE, correlation, and paired whole-game resampling. Season 2027
+  remains untouched. Descriptive full fits never count as predictive evidence.
+- **Five-point rubber band:** On 3,080,228 possessions, trailing offenses score
+  `+1.90`, `+4.00`, `+5.11`, `+7.48`, and `+7.95` points per 100 in the -5
+  through -25 buckets versus a tie. Leading effects are much smaller and
+  negative. The selected differential-penalty candidate (`2317` offense,
+  `1768` defense) loses to `3000 / 3000` on 2026 by `+.017` RMSE; paired 95%
+  `[-.021, +.055]`. Keep the context curve and reject it from player RAPM.
+- **Differential penalties:** The broader five-year frontier also selects the
+  symmetric `3000 / 3000` baseline. Offense and defense penalties are allowed
+  to differ in research, but they did not improve the frozen points target.
+- **Age, 1997-2026:** The full fit uses 6,738,828 possessions and 35,532 games
+  with 99.979% age-slot coverage. Actual lineup-age controls improve 2026 RMSE
+  by `-.163`, paired 95% `[-.287, -.024]`. Age-27 player-only ratings worsen by
+  `+.052`. Keep age as contextual prediction control, not the reference rating.
+- **Coach, 1997-2026:** A joint player, age, coach, and home fit covers 191
+  coaches. Coach terms worsen 2026 RMSE by `+.0109`, paired 95%
+  `[+.0067, +.0151]`, so they fail prediction. Descriptive net coach ratings
+  correlate `.802` with xRAPM across 188 matched coaches; association is not
+  causal coaching value.
+- **Win-probability RAPM:** `3000` offense and `10000` defense narrowly beat
+  `3000 / 3000` by `.0057` game-total RMSE on reused 2026. Nine rolling
+  five-year windows from 2014-18 through 2022-26 conserve game WP credit within
+  `1.11e-15`. The gain is too small for a points-model claim; keep WP as a
+  leverage-credit research metric.
+- **TS factor reconstruction:** Annual true-shooting, turnover, and offensive-
+  rebound RAPMs train a side-specific ridge map on 2024, select alpha `100` on
+  2025, and diagnose on 387 qualified 2026 players. Net correlation is `.974`,
+  weighted R-squared `.948`, and RMSE `.470` versus `2.052` for the mean. TS
+  alone reaches `.730` R-squared. This reconstructs same-season points RAPM;
+  shared lineups and outcomes mean it is not independent validation.
+- **Pair bucketing:** Exposure buckets increase 2025 pair-slot coverage from
+  43.0% to 48.7% but lose. The hard-floor pair winner then loses to one-player
+  RAPM by `+.471` RMSE on 2026, paired 95% `[+.260, +.688]`. The preregistered
+  stop rule prevents wasteful age-adjusted trio, quartet, and lineup expansions.
+- **Target horizon:** On the same 2020-26 next seasons, equal-season mean RMSE
+  is `14.140` for five years, `14.177` for six, `14.183` for three, and `14.376`
+  for one. Use five-year RAPM as the stable/predictive SPM-target challenger;
+  keep one-year RAPM as the retrospective public estimand. This builds target
+  panels; it does not silently redefine the current annual SPM feature model.
+- **Five-year intervals:** Nine `3000 / 3000 / 300` rolling windows produce
+  8,620 player-window rows. Point estimates reproduce the validated sufficient-
+  statistics fit within `1.22e-7`. Published Lab intervals are fixed-window
+  homoskedastic ridge sampling intervals; they do not include game clustering,
+  ridge bias, or peak-window selection.
+- **Luck adjustment:** Replacing realized threes and free throws with leave-
+  current-game-out player-season empirical-Bayes expectations improves 2026
+  RMSE by `-.093`, but the paired 95% interval `[-.237, +.057]` crosses zero.
+  Keep as a challenger. The teammate-eFG fit excludes all 2,225 shots whose
+  shooter cannot be matched to the terminal offensive lineup and fits 644,307
+  valid shooter-removed rows; it remains descriptive, not causal spacing.
+- **External reproduction:** CourtSignal 2019 normal RAPM matches 527 Ryan
+  Davis tutorial players. Pearson correlations are `.937` offense, `.911`
+  defense, and `.934` net; net rank correlation is `.919`. Our net spread is
+  1.394 times the tutorial scale because the parsers, game coverage, home term,
+  regularization selection, recentering, and output rounding differ.
+- **Decision:** The local production candidate is rolling five-year terminal-
+  lineup, zero-prior `3000 / 3000 / 300` RAPM with fixed-window analytic
+  intervals. Do not add rubber-band, coach, age-27, pair-unit, multinomial, or
+  luck adjustments. Age context and luck adjustment remain challengers; TS
+  factors, WP credit, teammate eFG, and coach ratings remain research views.
+
+# 2026-08-25 - Teammate effects and observable play channels, 2024-2026
+
+- **Question:** Which players are associated with changes in their teammates'
+  scoring, turnovers, assists, steals, blocks, and rebounding after controlling
+  lineup context? How does ordinary lineup impact split across observable shot
+  and scoring outcomes?
+- **Teammate design:** Expand each valid opportunity into five focal-player
+  rows. Subtract the focal player's own event from the team target. Fit the
+  focal coefficient alongside separate nuisance blocks for the other four
+  same-side players and five opponents. The focal penalty is 3,000; teammate
+  and opponent nuisance penalties are 12,000 and 15,000 to account for their
+  four- and five-fold row exposure. Positive turnover values mean fewer
+  teammate turnovers. These coefficients remain descriptive associations.
+- **Data:** 743,946 regular-season possessions, 646,545 shot attempts, and
+  379,584 classified rebound opportunities from 2024-2026. Eligible source
+  event mapping is 98.443%. Named scorer attribution covers 98.651% of official
+  points; the scoring target itself uses exact canonical possession points.
+  Named assister, stealer, blocker, and rebounder lineup coverage is 99.704%,
+  99.769%, 98.251%, and 98.640%.
+- **Outcome channels:** Fit rim assists, transition points, three-point points,
+  free-throw points, non-rim two-point attempt frequency, and rim points using
+  a shared `3000 / 3000 / 300` possession design. A second table uses mutually
+  exclusive observable finish labels: transition, putback, cut, drive,
+  pull-up, post-like, jump shot, and other.
+- **Limit:** Finish labels come from shot descriptions and the official
+  fast-break qualifier. Basic play-by-play cannot identify pick-and-roll ball
+  handler, roll man, isolation, handoff, or post-up possessions reliably.
+  Therefore the result is not called Synergy playtype RAPM.
+- **Decision:** Keep both leaderboards in the localhost RAPM Lab. Do not add
+  these coefficients to production AIO or make causal spacing/teammate claims.
+
+# 2026-08-25 - Five-year time decay plus actual-age controls fails transfer
+
+- **Question:** Does a current-age-conditioned, time-decayed five-year RAPM
+  predict the next season better than ordinary unweighted five-year RAPM?
+- **Design:** Use 2020-2024 to select on 2025, then freeze and refit 2021-2025
+  for a reused 2026 diagnostic. Select half-life from no decay, 0.5, 1, 1.5, 2,
+  3, and 5 years; then age penalty from 1,000, 10,000, and 100,000; then shared
+  player penalty from 1,500, 3,000, and 6,000. Age enters as actual offensive
+  and defensive lineup-age controls. Published challenger ratings add each
+  active 2026 player's observed-age effect rather than standardizing everyone
+  to age 27.
+- **Selection:** A 5-year half-life, age penalty 1,000, and player penalty 6,000
+  improve 2025 game-margin RMSE from 14.855 to 14.472 (`-.383`) and correlation
+  from .369 to .415.
+- **Diagnostic:** On the same 1,228 reused 2026 games, ordinary five-year RAPM
+  scores 15.296 RMSE and .365 correlation. The frozen candidate scores 15.408
+  and .354: `+.112` RMSE, paired 95% `[-.038, +.265]`, with only 7.4% of game
+  resamples favoring the candidate.
+- **Decision:** Reject promotion. Keep ordinary unweighted, no-age five-year
+  RAPM as the stable production reference. Display the failed current-age
+  challenger locally so the negative result is auditable. Season 2027 remains
+  untouched.
+
+# 2026-08-25 - Joint actual-clock rubber-band columns do not improve RAPM
+
+- **Question:** Does the selected rubber-band shape work better when encoded
+  directly beside home and player columns instead of subtracted from points?
+- **Design:** Keep the possession target unchanged. Add eight actual six-minute
+  columns containing the offense's pre-possession margin clipped at 15 and
+  scaled to `[-1, 1]`. Fit those columns jointly with terminal-lineup offense,
+  defense, and home. Player penalties remain `3000 / 3000 / 300`; select only
+  context shrinkage on 2025 after fitting 2024, then refit 2024-25 and diagnose
+  on the same 1,228 reused 2026 games.
+- **Selection:** All context candidates lose to normal RAPM on 2025. The least
+  harmful candidate is the largest tested context penalty, 3,000: RMSE 15.067
+  versus 15.054. This boundary result favors shrinking the new columns away.
+- **Diagnostic:** Neutral player-only RMSE changes from 15.473 to 15.504
+  (`+.031`) while correlation changes from .334 to .344. The paired 95% RMSE
+  interval is `[-.035, +.100]`; 19.1% of resamples favor the candidate. The
+  full 2024-26 adjusted ratings correlate .990 with normal RAPM and move .262
+  points per 100 on average.
+- **Decision:** Reject promotion and retain normal RAPM. The empirical score
+  curve remains descriptive. Run `rubberband_joint_clock_v1_7f055889f9` is
+  local; Season 2027 was not loaded.
+
+# 2026-08-25 - Smooth age and signed score controls fail the blocked gate
+
+- **Question:** Do player ratings improve when the unchanged possession-points
+  model jointly adds smooth lineup age and pre-possession score state beside
+  player offense, player defense, and home?
+- **Design:** The score search compared ten signed buckets at 1-5, 6-10,
+  11-15, 16-20, and 21-plus points, clipped linear terms, and cubic splines.
+  The age search compared cubic offense and defense lineup-age splines with 4,
+  6, or 8 knots. Every model used `3000 / 3000 / 300` player and home penalties,
+  selected nuisance shrinkage after fitting 2020-24 and scoring 2025, then
+  refit 2021-25 and scored the same 1,228 reused 2026 games. Score context was
+  neutralized at prediction time; known lineup ages remained in the prediction.
+- **Coverage:** 1,656,346 possessions and 8,279 games. Age was known for
+  99.922% of player slots. Season 2027 was not loaded.
+- **Selection:** The least harmful score shape was the requested ten signed
+  buckets at the strongest tested penalty, 10,000. Age-only selected 4 knots
+  and penalty 100. The joint model also selected score penalty 10,000.
+- **Player-only diagnostic:** Normal RAPM scored 15.296 RMSE and .365
+  correlation. Removing all nuisance terms at prediction time, age-only scored
+  15.454, score-only 15.333, and age-plus-score 15.397. Their RMSE changes were
+  +.158, +.036, and +.101. Age-only's paired 95% interval was
+  `[+.011, +.304]`; the other two intervals crossed zero.
+- **Pregame-context diagnostic:** Known lineup ages remain available before a
+  game, while the future score path does not. Under that rule, age-only scored
+  15.284, a -.012 change with paired 95% `[-.161, +.129]`. Age-plus-score
+  scored 15.443, a +.147 change. Calibration slopes were .816 normal, .750
+  age-only, .738 score-only, and .662 joint; the higher correlations do not
+  compensate for poorer scale calibration.
+- **Decision:** Retain normal RAPM. Every player-only adjusted rating loses.
+  Known age is neutral in pregame prediction, and signed score buckets fail.
+  Runs `rubberband_score_signal_v1_deac872ede` and
+  `age_score_context_v1_7e8689fee8` remain local.
+
+# 2026-08-25 - External RAPM reproduction and plus-minus comparators
+
+- **Question:** Do CourtSignal's saved RAPM panels agree with independent RAPM
+  implementations, and how do non-RAPM plus-minus variants relate to the same
+  ratings?
+- **Alignment policy:** Use NBA player ID plus exact season or rolling window
+  whenever the reference provides IDs. Name-only comparisons use deterministic
+  accent and punctuation normalization, exclude ambiguous duplicate names, and
+  never use fuzzy matching. Every result is labeled `exact_key_scope`,
+  `same_window_weight_mismatch`, `different_estimand`, or `invalid_direct`.
+- **Exact RAPM checks:** Across 5,217 matched 2014-2023 player-seasons, Ryan
+  Davis net RAPM has Pearson `.967`, rank correlation `.962`, and a CourtSignal
+  scale slope of `1.391`. Ryan's labels use NBA season start years: `2018-23`
+  means the five seasons ending 2019-2023. Across 5,513 exact five-year rows,
+  net Pearson/rank correlation is `.957/.948`; across 5,869 exact three-year
+  rows it is `.980/.970`.
+  Ryan's annual luck-adjusted net RAPM is less aligned: Pearson `.777`.
+- **Current xRAPM:** The 2024-2026 net table matches 687 NBA IDs with Pearson
+  `.897`, rank correlation `.888`, and slope `.998`. This is not an exact model
+  replication because xRAPM gives less weight to 2024 and 2025 while the
+  CourtSignal three-year fit weights each possession equally.
+- **Different-estimand checks:** Pooled net Pearson correlations are `.574` for
+  official DARKO WOWY season averages (2017-2026), `.436` for RAPTOR on/off
+  (2014-2022), and `.634` for the local legacy AuPM (2014-2024). RAPTOR's
+  low-exposure tails explain its Pearson/rank divergence: requiring 1,000
+  minutes raises net Pearson/rank correlation to `.917/.912` across 2,449
+  player-seasons. The 2024 raw PBPStats on-court margin correlates `.711` with
+  one-year RAPM. These are descriptive agreement checks, not validation targets.
+- **AuPM reproduction:** The archived local formula reproduces the stored AuPM
+  column to maximum absolute error `1.78e-15`. It is a local historical formula
+  and is not labeled as canonical Ben Taylor AuPM.
+- **Game-level PM:** A transparent GPM-style ridge uses final home margin per
+  100 and signed player minute shares. Lambda `10` wins the 2024-to-2025
+  selection fold. Refit on 2024-2025, it scores 15.413 RMSE and `.334`
+  correlation on reused 2026 games. Its full 2024-2026 player ratings correlate
+  `.621` with three-year possession RAPM. Home advantage is the unpenalized
+  home-margin intercept, `+1.696` points per 100. It is not an exact WOWYR
+  reproduction.
+- **Long-span references:** The downloaded 1997-2024 file correlates `.944`
+  with the older exact-scope CourtSignal export, but the comparison is marked
+  invalid for current-model validation because the join is name-only and the
+  CourtSignal artifact came from a legacy engine. The downloaded 2017-2025
+  total-only file is not scored because no exact-window artifact exists; it is
+  not compared dishonestly with the 2014-2026 fit.
+- **Decision:** The independent same-key RAPM checks are strong enough to rule
+  out a gross sign, join, or scale failure. They do not replace future-game
+  validation. Keep all comparison data and leaderboards localhost-only under
+  run `external_reproduction_benchmark_v1_0a95702214`.

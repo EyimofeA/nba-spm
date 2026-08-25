@@ -1,0 +1,77 @@
+{
+  "experiment_id": "rolling_5y_lambda_frontier_v1",
+  "status": "frozen_research_contract",
+  "estimand_id": "trailing_observed_lineup_rapm_v1",
+  "matrix_run_id": "rolling_5y_rapm_2014_2026_a7754bfb77",
+  "selection_seasons": [2019, 2020, 2021, 2022, 2023],
+  "reused_diagnostic_seasons": [2024, 2025, 2026],
+  "untouched_confirmation_season": 2027,
+  "baseline": {
+    "lambda_off": 3000.0,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0
+  },
+  "scalar_search": {
+    "sobol_candidates": 64,
+    "sobol_seed": 20260825,
+    "lambda_off_bounds": [30.0, 30000.0],
+    "lambda_def_bounds": [30.0, 30000.0],
+    "lambda_home": 300.0,
+    "anchors": [
+      [3000.0, 3000.0],
+      [2000.0, 1000.0],
+      [500.0, 2000.0],
+      [100.0, 100.0],
+      [1000.0, 1000.0],
+      [10000.0, 10000.0],
+      [30000.0, 30000.0]
+    ],
+    "local_multipliers": [0.6, 0.8, 1.0, 1.25, 1.67],
+    "local_parents": ["selection_correlation", "selection_rmse", "training_gcv"]
+  },
+  "bivariate_search": {
+    "base_scalar_parents": ["selection_correlation", "selection_rmse", "training_gcv"],
+    "published_prior_correlations": [-0.75, -0.5, -0.25, 0.25, 0.5, 0.75]
+  },
+  "empirical_bayes": {
+    "pilot": {
+      "lambda_off": 3000.0,
+      "lambda_def": 3000.0,
+      "lambda_home": 300.0
+    },
+    "posterior_diagonal_probes": 16,
+    "posterior_seed": 20260826,
+    "adaptation_strengths": [0.0, 0.25, 0.5, 0.75, 1.0],
+    "local_signal_floor_fraction": 0.1,
+    "global_precision_bounds": [30.0, 30000.0],
+    "precision_multiplier_bounds": [0.25, 4.0],
+    "minimum_prior_variance": 1e-8
+  },
+  "training_gcv": {
+    "trace_probes": 12,
+    "seed": 20260827,
+    "aggregation": "equal-season mean log GCV",
+    "interpretation": "candidate generation diagnostic only"
+  },
+  "selection_rules": {
+    "correlation": "maximize equal-season mean Pearson correlation; within 0.0005 choose lower RMSE",
+    "rmse": "minimize equal-season mean game-margin RMSE; within 0.01 choose the more regularized scalar scale",
+    "gcv": "minimize equal-season mean log training GCV"
+  },
+  "validation": {
+    "synthetic_seeds": 12,
+    "synthetic_rows": 12000,
+    "synthetic_players": 100,
+    "stability_windows": [2025, 2026],
+    "high_exposure_floor_per_side": 2000,
+    "exposure_bands": [0, 500, 1500, 3000, 1000000000],
+    "identical_game_rows_required": true,
+    "player_relabeling_invariance_required": true,
+    "offense_plus_defense_identity_tolerance": 1e-10
+  },
+  "promotion": {
+    "attempted": false,
+    "reason": "All diagnostic seasons are reused or exposed. This experiment ranks research families but cannot promote a public model."
+  },
+  "forbidden_interpretation": "No result from this experiment is untouched confirmation, a causal player effect, or a public-model promotion. Season 2027 must not be loaded."
+}

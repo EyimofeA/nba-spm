@@ -1,181 +1,77 @@
-# New SPM
+# CourtSignal / NBA Impact
 
-NBA player-impact modeling workspace. Three sub-projects live side by side:
+One repository for NBA player-impact data, models, research evidence, and the
+CourtSignal site.
 
-- **SPM** — gradient-boosted predictions of Offensive / Defensive RAPM from box
-  and tracking stats. Produces a per-player _prior_ used by the RAPM run.
-- **RAPM** (`rapm/`) — ridge regression on play-by-play possessions, with
-  optional SPM priors and playoff / meta-column variants.
-- **zTS** (`zts/`) — playtype-adjusted relative True Shooting.
-- **NBA Impact** (`src/nba_impact/`) — canonical current events, lineups,
-  possessions, RAPM, and win-probability research with external benchmarks.
+## What is active
 
-See [`AGENTS.md`](./AGENTS.md) for the full layout, data flow, and rules.
-Follow [`ROADMAP.md`](./ROADMAP.md) for the active queue and
-[`docs/README.md`](./docs/README.md) for the documentation index. The frozen WP
-model card is in [`docs/win_probability/MODEL_CARD.md`](./docs/win_probability/MODEL_CARD.md).
-Sub-projects have their own charters in [`rapm/AGENTS.md`](./rapm/AGENTS.md)
-and [`zts/AGENTS.md`](./zts/AGENTS.md).
+- `src/nba_impact/`: canonical data and model package.
+- `research/`: estimands, season exposure, experiment plans, and release audit.
+- `artifacts/`: immutable model and feature runs.
+- `web/`: static CourtSignal client built from derived data.
+- `tests/`: model, data-contract, API, and release checks.
 
-## Quick start
+The root `src/*.py`, `rapm/`, and `zts/` directories are legacy research
+references. Do not extend them as production pipelines. See
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the exact boundary.
 
-Python 3.11+ is assumed.
+## Models
 
-```bash
-pip install -r requirements.txt
-```
+- **RAPM** estimates retrospective possession impact from the ten players on
+  court. The public reference uses a terminal lineup and no player-stat prior.
+- **SPM** learns offense and defense from player-season statistics. Each target
+  is a one-season RAPM rating.
+- **AIO** uses SPM as the prior mean and updates it with the same season's RAPM
+  possession evidence.
+- **zTS** measures shooting above the expectation implied by playtype mix. It is
+  an SPM feature, not an extra RAPM column.
 
-The clean package can also be installed with `pip install -e .`. Its current
-WP benchmark is resumable and compares identical play states:
+The validated release scope and research-only timelines are documented in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and controlled by `research/`.
 
-```bash
-uv run python -m nba_impact.cli ingest-espn-win-probability --seasons 2025-26
-uv run python -m nba_impact.cli benchmark-win-probability \
-  --model-run artifacts/models/win_probability_ablation/<run-id>
-uv run python -m nba_impact.cli compare-wp-lineup-strength
-uv run python -m nba_impact.cli compare-wp-possession
-uv run python -m nba_impact.cli compare-wp-stage1
-uv run python -m nba_impact.cli compare-wp-mlp
-uv run python -m nba_impact.cli compare-rapm-lineups
-uv run python -m nba_impact.cli tune-normal-rapm
-uv run python -m nba_impact.cli build-statistical-features
-uv run python -m nba_impact.cli fit-statistical-impact \
-  --features artifacts/features/statistical_impact/<run-id>/features.parquet
-uv run python -m nba_impact.cli compare-statistical-models \
-  --features artifacts/features/statistical_impact/<run-id>/features.parquet
-uv run python -m nba_impact.cli compare-statistical-direct-net \
-  --features artifacts/features/statistical_impact/<run-id>/features.parquet \
-  --component-run artifacts/models/statistical_model_comparison/<run-id>
-uv run python -m nba_impact.cli ablate-statistical-features \
-  --features artifacts/features/statistical_impact/<run-id>/features.parquet
-uv run python -m nba_impact.cli fit-optimized-statistical-aio \
-  --features artifacts/features/statistical_impact/<run-id>/features.parquet \
-  --ablation-run artifacts/models/statistical_feature_ablation/<run-id>
-uv run python -m nba_impact.cli build-statistical-features-v2 \
-  --base-features artifacts/features/statistical_impact/<v1-run-id>/features.parquet
-uv run python -m nba_impact.cli compare-statistical-features-v2 \
-  --features artifacts/features/statistical_impact/<v2-run-id>/features.parquet \
-  --baseline-run artifacts/models/statistical_aio/<run-id>
-uv run python -m nba_impact.cli build-statistical-priors \
-  --features artifacts/features/statistical_impact/<v2-run-id>/features.parquet \
-  --reference-run artifacts/models/statistical_feature_v2/<run-id>
-uv run python -m nba_impact.cli compare-prior-informed-rapm \
-  --priors artifacts/models/statistical_priors/<run-id>/priors.parquet
-uv run python -m nba_impact.cli ingest-external-impact
-uv run python -m nba_impact.cli benchmark-external-impact \
-  --priors artifacts/models/statistical_priors/<run-id>/priors.parquet \
-  --features artifacts/features/statistical_impact/<v2-run-id>/features.parquet
-uv run python -m nba_impact.cli build-statistical-features \
-  --window-ends 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024 \
-  --window-seasons 1
-uv run python -m nba_impact.cli build-statistical-features-v2 \
-  --base-features artifacts/features/statistical_impact/<annual-v1>/features.parquet \
-  --window-ends 2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024 \
-  --pooled-window-seasons 1
-uv run python -m nba_impact.cli build-single-season-rapm-targets
-uv run python -m nba_impact.cli build-time-decayed-trajectories \
-  --targets artifacts/models/single_season_rapm_targets/<run-id>/targets.parquet
-uv run python -m nba_impact.cli fit-single-season-spm \
-  --features artifacts/features/statistical_impact/<annual-v2>/features.parquet \
-  --targets artifacts/models/single_season_rapm_targets/<run-id>/targets.parquet \
-  --reference-run artifacts/models/statistical_feature_v2/<run-id>
-```
-
-The three-season canonical data rebuild is also resumable:
+## Start here
 
 ```bash
-uv run python -m nba_impact.cli ingest \
-  --manifest configs/ingest/nba_data_archive_2023.json
-uv run python -m nba_impact.cli ingest \
-  --manifest configs/ingest/gabriel_role_context_v1.json
-uv run python -m nba_impact.cli build-role-context-features \
-  --shooting-by-dribble-source data/lake/bronze/gabriel_site_data/revision=bc583cb/role_context/shooting_by_dribble_count.csv \
-  --jump-shot-by-dribble-source data/lake/bronze/gabriel_site_data/revision=bc583cb/role_context/jump_shot_dribble_context.csv
-uv run python -m nba_impact.cli build-shot-defense-events
-uv run python -m nba_impact.cli run-shot-defense-pilot
-uv run python -m nba_impact.cli build-game-dim
-uv run python -m nba_impact.cli build-event-states
-uv run python -m nba_impact.cli build-player-games
-uv run python -m nba_impact.cli build-lineups
-# Only when lineup QA identifies bad historical boxes:
-uv run python -m nba_impact.cli ingest-official-boxscores --seasons 2023-24
-uv run python -m nba_impact.cli build-player-games
-uv run python -m nba_impact.cli build-lineups
-uv run python -m nba_impact.cli build-possessions
-uv run python -m nba_impact.cli build-possession-start-context
-uv run python -m nba_impact.cli build-expected-possession-points
+uv sync
+uv run python -m nba_impact.cli --help
 ```
 
-### Regenerate the SPM prior
+Run the focused model checks:
 
 ```bash
-python src/fetch_playtypes.py    # refresh Synergy playtype POE features
-python src/train_spm.py          # fit Off + Def GBMs (LightGBM / XGBoost)
-python src/generate_priors.py    # write data/outputs/prior.csv
-python src/apply_prior.py        # Bayesian blend prior + observed RAPM
+uv run pytest tests/test_repository_boundaries.py tests/test_rapm.py \
+  tests/test_current_single_season_rapm.py tests/test_single_season_spm.py \
+  tests/test_annual_spm_priors.py tests/test_playtype_features.py
 ```
 
-Artifacts land in `models/current/` and `data/outputs/`.
-
-### Run ridge RAPM
-
-Requires a local MySQL with the `nba_api` database loaded from
-`rapm/data/Dump20240524.sql` and reachable at `/tmp/mysql.sock`.
+Run the client:
 
 ```bash
-cd rapm
-python src/rapm.py                     # experimental meta-column ridge
-python src/rapm_with_prior.py          # per-season ridge with SPM prior
-python src/playoff_rapm_with_prior.py  # 3-year playoff + prior variants
+cd web
+npm install
+npm run dev
+npm test
+npm run lint
 ```
 
-Results write to `rapm/outputs/dump/` (raw coefficients) and
-`rapm/outputs/rapm_results/` (human-readable).
-
-### Run ad hoc research
-
-Exploratory one-off studies live under `random research/`.
+Regenerate the production-safe web snapshot only after changing a pinned
+rating, role map, player sheet, or aging artifact:
 
 ```bash
-rapm/venv/bin/python "random research/age_adjusted_rookie_impact.py"
+uv run python -m nba_impact.cli build-web-snapshot
 ```
 
-This currently builds rookie cohorts from Basketball Reference debut seasons,
-joins RAPM aging outputs and Basketball Reference advanced metrics, and writes
-charts/CSVs to `random research/outputs/age_adjusted_rookie_impact/`.
+The client loads derived JSON only. Matchups data lives in `web/local-data/`
+and is available only from the local development server.
 
-## Layout (one level)
+## Operating documents
 
-```
-src/        SPM pipeline (train, infer, apply)
-models/     Serialized SPM models (current/ + rolling/)
-data/       raw/, processed/, outputs/
-rapm/       Ridge RAPM sub-project (src/, data/, outputs/)
-zts/        zTS sub-project (self-contained)
-notebooks/  Exploratory notebooks
-random research/  Ad hoc analysis scripts + generated research outputs
-archive/    Legacy scripts + old CSVs, read-only
-```
+- [`AGENTS.md`](AGENTS.md): repository rules.
+- [`ROADMAP.md`](ROADMAP.md): active queue.
+- [`docs/README.md`](docs/README.md): documentation index.
+- [`docs/modeling/PLAYBOOK.md`](docs/modeling/PLAYBOOK.md): statistical workflow.
+- [`docs/product/UI_GUIDE.md`](docs/product/UI_GUIDE.md): site contract and style.
+- [`RESEARCH_LOG.md`](RESEARCH_LOG.md): append-only evidence ledger.
 
-## Where things live
-
-| Need                   | Path                                                       |
-| ---------------------- | ---------------------------------------------------------- |
-| Training data          | `data/processed/smaller_player_stats_with_rapm.csv`        |
-| Inference data         | `data/processed/merged_per100_dataset.csv`                 |
-| Active models          | `models/current/spm_{off,def}_model.pkl`, `spm_scaler.pkl` |
-| Generated prior        | `data/outputs/prior.csv`                                   |
-| Per-possession DB dump | `rapm/data/Dump20240524.sql` (670 MB)                      |
-| RAPM outputs           | `rapm/outputs/{dump,rapm_results}/`                        |
-| zTS pipeline           | `zts/compute_zts.ipynb`                                    |
-| Rookie impact research | `random research/age_adjusted_rookie_impact.py`            |
-
-## Contributing
-
-Read `AGENTS.md` first. Key rules:
-
-1. Put new scripts under `src/` or `rapm/src/`, never at the workspace root.
-   Ad hoc analysis notebooks/scripts may live under `random research/`.
-2. Use `paths.py` constants — don't hardcode file paths in scripts.
-3. `archive/` is frozen history. Don't depend on anything inside it.
-4. Keep `zts/` self-contained.
+Do not start downloads, model fits, or deployments as side effects of a smoke
+test. Use the specific CLI and model specification for the requested run.

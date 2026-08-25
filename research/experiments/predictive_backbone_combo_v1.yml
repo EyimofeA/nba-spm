@@ -1,0 +1,63 @@
+schema_version: experiment_preregistration_v1
+experiment_id: predictive_backbone_combo_v1
+status: preregistered
+created_at: 2026-08-21
+estimand_id: next_season_annual_impact_v1
+
+hypothesis: >-
+  The predictive backbone race (predictive_backbone_race_v1_43db6c6446) ended
+  in a predeclared tie between the stat-based predictive SPM (raw) and the
+  AR(1) state-space filter, with complementary fold wins. A parameter-free
+  50/50 combination of the two forecasts therefore should beat both parents
+  on identical next-season rows.
+
+candidate_change: >-
+  Add exactly one candidate arm: the arithmetic mean of predictive_spm_raw_net
+  and state_space_filtered_net at each forecast season. No model is refit, no
+  feature changes, no weight search. Fixed-weight sensitivity values 0.25/0.75
+  are reported as diagnostics only and are forbidden from selection.
+
+comparators:
+  - combo_mean_50_50 (candidate)
+  - predictive_spm_raw (run predictive_spm_v1_cb5666f6db)
+  - state_space_filtered (run annual_state_space_trajectory_v1_f150bcde08)
+  - time_decay_filtered (run time_decayed_trajectory_v1_8ed684a8aa, filtered_net
+    at origin season, matching the race convention)
+  - persistence (last-season annual net RAPM)
+
+data_contract:
+  target_panel: canonical_annual_target_panel_v1_4586bd2f72
+  forecast_seasons: [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+  identical_rows: >-
+    Inner join on (PLAYER_ID, forecast season) across all comparators. Target
+    values and target-season possessions come from the canonical target panel;
+    every comparator target_net must agree with the panel within 1e-9 or the
+    run fails.
+  primary_population: at least 1,000 possessions on both sides in the target
+    season, matching the frozen history-model evaluation gate
+  secondary_population: all matched rows, reported as a diagnostic
+  weighting: square root of the smaller target-season possession count
+  information_cutoff: every comparator uses only origin-season and earlier data
+
+evaluation:
+  primary_metric: equal-fold-mean weighted net RMSE, forecast seasons 2019-2024
+  confirmation_seasons: [2025, 2026] scored once, no retuning
+  secondary_metrics: weighted correlation; paired per-fold deltas of the combo
+    against each parent on identical rows
+
+decision_rules:
+  - PROMOTE combo as backbone iff it strictly beats BOTH parents on the
+    selection metric AND strictly beats both parents on the mean of the two
+    confirmation seasons.
+  - If combo wins selection but fails confirmation, backbone = the better
+    parent by confirmation mean; ties resolve to state_space_filtered.
+  - If combo loses selection, backbone = state_space_filtered.
+  - The chosen backbone becomes the sole substrate for the predeclared
+    dispersion-calibration experiment; no other calibration work may start
+    first.
+  - Season 2027 stays reserved.
+
+stopping_rules:
+  - No tuning of any comparator; all inputs are pinned runs.
+  - Scoring 2025 and 2026 happens exactly once inside this experiment.
+  - Any weight, join, or population change requires a new experiment id.

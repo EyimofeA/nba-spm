@@ -1,0 +1,9 @@
+{
+  "code": "tier1_plus_poss_shape",
+  "description": "Box tier + log_poss shapes (minutes competitor without tracking)",
+  "prior": "spmv2_subset",
+  "feature_tier": "tier1_plus_derived",
+  "alpha": 1000,
+  "c_grid": [2.0],
+  "search_folds_only": true
+}

@@ -1,0 +1,25 @@
+{
+  "experiment_id": "rubberband_5pt_lambda_v1",
+  "status": "frozen_research_contract",
+  "estimand_id": "retrospective_terminal_lineup_points_per_100",
+  "seasons": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "selection_fit_seasons": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+  "selection_season": 2025,
+  "diagnostic_fit_seasons": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025],
+  "diagnostic_season": 2026,
+  "untouched_confirmation_season": 2027,
+  "lambda_home": 300.0,
+  "lambda_candidates": [
+    {"name": "baseline", "lambda_off": 3000.0, "lambda_def": 3000.0},
+    {"name": "selection_rmse_candidate", "lambda_off": 6044.074450209885, "lambda_def": 4770.106101884327},
+    {"name": "diagnostic_correlation_candidate", "lambda_off": 2317.42007699533, "lambda_def": 1768.2917459650844}
+  ],
+  "score_bucket": {"minimum": -25, "maximum": 25, "width": 5, "penalty": 1.0},
+  "paired_game_bootstrap_draws": 2000,
+  "paired_game_bootstrap_seed": 20260825,
+  "promotion_gate": {
+    "maximum_rmse_delta": 0.0,
+    "maximum_correlation_decline": 0.01,
+    "paired_rmse_interval_upper": 0.0
+  }
+}

@@ -1,5 +1,8 @@
 import vinext from "vinext";
-import { defineConfig } from "vite";
+import { readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { defineConfig, type Plugin } from "vite";
 import hostingConfig from "./.openai/hosting.json";
 import { sites } from "./build/sites-vite-plugin";
 
@@ -10,10 +13,33 @@ const { d1, r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
+const projectRoot = dirname(fileURLToPath(import.meta.url));
+const localResearchFile =
+  /^(matchup-elo-\d{4}|shot-quality-lineup-2026|rapm-lab)\.json$/;
+
+/** Serve local research data in development without shipping it. */
+const localResearchData = (): Plugin => ({
+  name: "local-research-data",
+  apply: "serve",
+  configureServer(server) {
+    server.middlewares.use("/data", async (request, response, next) => {
+      const name = request.url?.split("?")[0].replace(/^\//, "") ?? "";
+      if (!localResearchFile.test(name)) return next();
+      try {
+        const payload = await readFile(join(projectRoot, "local-data", name));
+        response.statusCode = 200;
+        response.setHeader("Content-Type", "application/json; charset=utf-8");
+        response.end(payload);
+      } catch {
+        response.statusCode = 404;
+        response.end("Not found");
+      }
+    });
+  },
+});
 
 const localBindingConfig = {
   main: "./worker/index.ts",
-  compatibility_flags: ["nodejs_compat"],
   d1_databases: d1
     ? [
         {
@@ -48,6 +74,7 @@ export default defineConfig(async () => {
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,
     plugins: [
+      localResearchData(),
       vinext(),
       sites(),
       cloudflare({

@@ -1,0 +1,10 @@
+{
+  "materialized": [
+    "tracking_interactions_v1",
+    "derived_box_v2_residual"
+  ],
+  "completed": [],
+  "gen_by_code": {
+    "derived_box_v2_residual": 10
+  }
+}

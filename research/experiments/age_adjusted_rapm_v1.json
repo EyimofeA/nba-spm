@@ -1,0 +1,23 @@
+{
+  "experiment_id": "age_adjusted_rapm_v1",
+  "status": "frozen_research_contract",
+  "estimand_id": "same_age_long_window_rapm_v1",
+  "seasons": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "selection_test_season": 2025,
+  "reused_diagnostic_season": 2026,
+  "untouched_confirmation_season": 2027,
+  "reference_age": 27,
+  "minimum_age": 19,
+  "maximum_age": 43,
+  "age_penalties": [100, 1000, 10000],
+  "player_penalties": {"lambda_off": 3000, "lambda_def": 3000, "lambda_home": 300},
+  "paired_game_bootstrap_draws": 2000,
+  "paired_game_bootstrap_seed": 20260825,
+  "rules": [
+    "Fit separate offense and points-allowed defense age indicators jointly with player and home coefficients.",
+    "Age 27 is the omitted reference; the player-only coefficient is interpreted as same-age 27 impact.",
+    "Select only the age penalty on 2025 conditional game-margin RMSE, then refit through 2025 and diagnose on reused 2026.",
+    "Use age known for the named season; never use Season 2027.",
+    "Missing player-season ages map to the reference age and must be reported as lineup-slot coverage."
+  ]
+}

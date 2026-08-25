@@ -1,0 +1,60 @@
+{
+  "experiment_id": "rubberband_score_signal_v1",
+  "status": "frozen_research_contract",
+  "estimand_id": "joint_score_signal_rapm_v1",
+  "age_score_estimand_id": "joint_age_score_context_rapm_v1",
+  "seasons": [2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "selection_fit_seasons": [2020, 2021, 2022, 2023, 2024],
+  "selection_season": 2025,
+  "diagnostic_fit_seasons": [2021, 2022, 2023, 2024, 2025],
+  "diagnostic_season": 2026,
+  "untouched_confirmation_season": 2027,
+  "lineup_policy": "terminal",
+  "game_type": "regular",
+  "player_penalties": {
+    "lambda_off": 3000,
+    "lambda_def": 3000,
+    "lambda_home": 300
+  },
+  "context_penalties": [10, 100, 300, 1000, 3000, 10000],
+  "age_spline": {
+    "degree": 3,
+    "n_knots": [4, 6, 8],
+    "penalties": [100, 300, 1000, 3000, 10000, 100000],
+    "minimum_age": 19,
+    "maximum_age": 43,
+    "reference_age": 27
+  },
+  "candidate_shapes": {
+    "signed_buckets": {
+      "bands": [[1, 5], [6, 10], [11, 15], [16, 20], [21, null]],
+      "separate_leading_and_trailing": true,
+      "tie_reference": true
+    },
+    "clipped_linear": {
+      "clips": [20, 30]
+    },
+    "cubic_spline": {
+      "clip": 30,
+      "degree": 3,
+      "n_knots": [4, 6, 8],
+      "knots": "training_quantiles"
+    }
+  },
+  "paired_game_bootstrap_draws": 2000,
+  "paired_game_bootstrap_seed": 20260832,
+  "promotion_gate": {
+    "maximum_rmse_delta": 0,
+    "maximum_correlation_decline": 0.01,
+    "paired_rmse_interval_upper": 0
+  },
+  "rules": [
+    "Keep possession points unchanged.",
+    "Fit score context jointly beside player and home columns.",
+    "Use five trailing seasons for both selection and diagnostic fits.",
+    "Fit spline knots on training rows only.",
+    "Select shape and context penalty only on 2025, then freeze for reused 2026 diagnostics.",
+    "Score neutral player-only predictions on identical games.",
+    "Season 2027 is not loaded."
+  ]
+}

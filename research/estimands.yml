@@ -1,5 +1,5 @@
 schema_version: estimand_registry_v1
-updated_at: 2026-08-14
+updated_at: 2026-08-25
 flagship_estimand_id: annual_retrospective_impact_v1
 
 estimands:
@@ -134,3 +134,80 @@ estimands:
     target_definition: shot-zone mix and make probability associated with the observed defensive unit
     intended_use: shot-defense data QA and model-feasibility research
     forbidden_interpretation: primary-defender impact, causal player defense, possession defense, or additive five-player credit
+
+  - estimand_id: rubberband_scoring_context_v1
+    name: Pre-possession score-margin scoring adjustment
+    status: research_only
+    unit: points_per_100_possessions
+    population: canonical NBA regular-season regulation possessions with exact terminal lineups and actual game clock
+    window_definition: 2024 development, 2025 selection, and reused 2026 diagnostic
+    information_cutoff_rule: score, actual game clock, home side, and observed lineup known before the possession begins
+    target_definition: expected out-of-fold lineup-residual points associated with offense score margin and game time
+    intended_use: estimate a descriptive rubber-band scoring adjustment for a preregistered RAPM target-correction test
+    forbidden_interpretation: causal effort, garbage-time truth, player impact, or a promoted RAPM adjustment
+
+  - estimand_id: rubberband_adjusted_rapm_v1
+    name: Score-context-normalized retrospective RAPM
+    status: research_null
+    unit: points_per_100_possessions
+    population: canonical NBA regular-season terminal-lineup possessions from 2024 through 2026
+    window_definition: fit score curves and player coefficients on 2024 through 2025, evaluate on reused 2026, then refit the descriptive leaderboard on 2024 through 2026
+    information_cutoff_rule: player lineups, home side, score margin, actual clock, and fixed pre-possession progress count are known before each possession
+    target_definition: observed points minus the fitted time-specific signed-margin slope term, with time-segment intercepts excluded
+    intended_use: compare actual-clock and fixed-possession-progress rubber-band normalization with zero-prior RAPM on identical games
+    forbidden_interpretation: causal effort, garbage-time truth, forecast, production rating, or proof that score-context normalization improves player measurement
+
+  - estimand_id: joint_clock_score_context_rapm_v1
+    name: Joint actual-clock score-context RAPM
+    status: research_only
+    unit: points_per_100_possessions
+    population: canonical NBA regular-season terminal-lineup possessions from 2024 through 2026
+    window_definition: select context shrinkage on 2025, evaluate on reused 2026, then refit a descriptive 2024 through 2026 leaderboard
+    information_cutoff_rule: terminal lineups, home side, pre-possession score margin, and actual possession-start clock
+    target_definition: unchanged possession points with eight actual-clock signed-margin columns fitted jointly beside player and home columns
+    intended_use: test whether direct score-context encoding improves neutral player RAPM on identical held-out games
+    forbidden_interpretation: causal effort, garbage-time truth, pregame forecast, production rating, or untouched confirmation
+
+  - estimand_id: joint_score_signal_rapm_v1
+    name: Joint score-signal RAPM
+    status: research_only
+    unit: points_per_100_possessions
+    population: NBA regular-season terminal-lineup possessions in a five-season trailing window
+    window_definition: fit 2020 through 2024 and select on 2025; refit 2021 through 2025 and diagnose on reused 2026
+    information_cutoff_rule: terminal lineups, home side, and pre-possession offense score margin
+    target_definition: unchanged possession points with categorical, clipped-linear, or training-only spline score-state columns fitted jointly beside players and home
+    intended_use: compare modern score-state encodings by neutral next-season game prediction
+    forbidden_interpretation: causal effort, garbage-time truth, pregame forecast, production rating, or untouched confirmation
+
+  - estimand_id: joint_age_score_context_rapm_v1
+    name: Joint age and score-context RAPM
+    status: research_null
+    unit: points_per_100_possessions
+    population: NBA regular-season terminal-lineup possessions in a five-season trailing window
+    window_definition: fit 2020 through 2024 and select on 2025; refit 2021 through 2025 and diagnose on reused 2026
+    information_cutoff_rule: terminal lineups, player ages, home side, and pre-possession offense score margin
+    target_definition: unchanged possession points with smooth offense and defense lineup-age columns and selected score-state columns fitted jointly beside players and home
+    intended_use: compare no adjustment, age only, score only, and age plus score under identical blocked evaluation
+    forbidden_interpretation: causal aging, causal effort, garbage-time truth, production rating, or untouched confirmation
+
+  - estimand_id: same_age_long_window_rapm_v1
+    name: Same-age long-window RAPM
+    status: research_only
+    unit: points_per_100_possessions
+    population: NBA regular-season players observed from 2014 through 2026
+    window_definition: pooled 2014 through 2026 regular seasons
+    information_cutoff_rule: terminal lineups, possession points, home side, and player age in the named season
+    target_definition: player offense and defense coefficients after jointly controlling for categorical lineup ages, standardized to age 27
+    intended_use: diagnose age composition in long-window RAPM and inspect a same-age counterfactual leaderboard
+    forbidden_interpretation: single-season impact, biological aging causality, career ranking, current ability, or forecast
+
+  - estimand_id: factor_rapm_reconstruction_ts_v2
+    name: TS factor RAPM reconstruction of annual points RAPM
+    status: research_only
+    unit: points_per_100_possessions
+    population: qualified NBA player-seasons from 2024 through 2026
+    window_definition: annual factor and points RAPM, with chronological cross-season mapping
+    information_cutoff_rule: 2024 development, 2025 selection, and reused 2026 diagnostics; Season 2027 untouched
+    target_definition: annual offense and defense points RAPM estimated from annual true-shooting, turnover, and offensive-rebound RAPMs
+    intended_use: test whether opportunity-specific factor RAPMs reconstruct ordinary points RAPM across seasons
+    forbidden_interpretation: causal factor credit, independent validation, future forecast, or production player rating

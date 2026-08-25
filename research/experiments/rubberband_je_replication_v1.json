@@ -1,0 +1,38 @@
+{
+  "experiment_id": "rubberband_je_replication_v1",
+  "status": "frozen_research_contract",
+  "estimand_id": "categorical_score_state_rapm_v1",
+  "seasons": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "fit_seasons": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025],
+  "reused_diagnostic_season": 2026,
+  "untouched_confirmation_season": 2027,
+  "lineup_policy": "terminal",
+  "game_type": "regular",
+  "score_state": {
+    "minimum": -57,
+    "maximum": 57,
+    "display_minimum": -25,
+    "display_maximum": 25,
+    "penalty": 1.0,
+    "reference": "tied_score"
+  },
+  "player_penalties": {
+    "lambda_off": 3000,
+    "lambda_def": 3000,
+    "lambda_home": 300
+  },
+  "paired_game_bootstrap_draws": 2000,
+  "paired_game_bootstrap_seed": 20260825,
+  "source_method": {
+    "original": "https://apbr.org/metrics/viewtopic.php?f=2&t=8501",
+    "public_reproduction": "https://github.com/sebasdarius/data_science_portfolio/blob/master/basketball_analysis/ist_rubberband_effect.ipynb"
+  },
+  "rules": [
+    "Use the audited unified 2014-26 regular-season terminal-lineup RAPM rows; fit through 2025 and reserve reused 2026 for diagnostics.",
+    "Fit one indicator for every exact pre-possession offense margin from -57 through +57, top-coding only rarer tails.",
+    "Fit player, home, and score-state terms jointly; use the project RAPM penalties for players and alpha 1 for score states.",
+    "Fit on 2014-25 and use 2026 only as reused diagnostics.",
+    "Compare both the neutral player-only prediction and the conditional observed-score-path prediction with normal RAPM on identical games.",
+    "Do not load Season 2027."
+  ]
+}

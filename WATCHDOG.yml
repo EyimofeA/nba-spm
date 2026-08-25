@@ -1,0 +1,3 @@
+advisors:
+  - name: default
+    model: openrouter/stealth/ox-alpha:max
