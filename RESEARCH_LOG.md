@@ -3707,3 +3707,33 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   out a gross sign, join, or scale failure. They do not replace future-game
   validation. Keep all comparison data and leaderboards localhost-only under
   run `external_reproduction_benchmark_v1_0a95702214`.
+
+# 2026-08-25 - DARKO WOWY and RAPTOR on/off reproductions
+
+- **DARKO public aggregation:** Downloaded 1,478 complete public player-game
+  Final Cut histories with zero failures. The simple unweighted season mean
+  reproduces every public offense, defense, and net season average across 5,497
+  player-seasons. All Pearson and rank correlations are 1.0. Maximum absolute
+  error is below `7.55e-15`. This verifies the public season-average operation,
+  not DARKO's private daily model or smoothing.
+- **RAPTOR table identity:** The local modern RAPTOR player table matches the
+  official FiveThirtyEight GitHub file across all 4,684 non-null on/off rows.
+  Offense, defense, and net values match exactly.
+- **RAPTOR-style reproduction:** Built the disclosed three-family courtmate
+  chain from regular-season possession lineups. The shared offense/defense fit
+  trains on 2014-2018 and is frozen for 2019-2022. For 1,000-minute seasons, the
+  proxy reaches `.9658` net Pearson and `.9575` rank correlation against the
+  published regular-season team-stint target across 1,036 player-seasons. This
+  target is distinct from the player CSV identity check, which combines regular
+  season and playoffs. Fitted coefficients are `+.5919` for opposition-adjusted own
+  on-court rating, `-.5964` for direct courtmates without the player, and
+  `+.2431` for second-order courtmate context. Courtmate context stays within
+  team for traded players, and second-order context excludes the focal player.
+- **Limit:** FiveThirtyEight did not publish its three coefficients, exact
+  opposition adjustment, or exact second-order weighting. The fit is labeled
+  `RAPTOR-on/off-inspired proxy`, never an exact algorithm reproduction. The
+  feature families are correlated, so their fitted coefficients are not causal
+  or individually identified player-value weights.
+- **Decision:** The public data paths, aggregation, signs, and high-exposure
+  behavior pass. Keep these checks local and diagnostic. They do not turn WOWY
+  or RAPTOR on/off into predictive targets for CourtSignal RAPM.
