@@ -1,0 +1,16 @@
+{
+  "experiment_id": "rapm_target_horizon_bakeoff_v1",
+  "status": "frozen_research_contract",
+  "seasons": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "rolling_horizons": [1, 3, 5, 6],
+  "full_span": [2014, 2026],
+  "common_evaluation_seasons": [2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "penalties": {"lambda_off": 3000, "lambda_def": 3000, "lambda_home": 300},
+  "untouched_confirmation_season": 2027,
+  "rules": [
+    "Every rolling horizon predicts the same common next seasons for comparison.",
+    "Season environments are removed before fitting player coefficients.",
+    "The full 2014-2026 fit is descriptive and receives no next-season score.",
+    "These panels are candidate SPM targets; this experiment does not refit the SPM feature model."
+  ]
+}

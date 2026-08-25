@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 from .manifest import sha256_file, write_json_atomic
-from .official_boxscore import load_official_boxscore_rows
+from .official_boxscore import infer_official_starters, load_official_boxscore_rows
 
 
 _OFFICIAL_COLUMNS = (
@@ -134,7 +134,12 @@ def build_historical_espn_player_games(
             official_boxes["team_id"] = pd.to_numeric(official_boxes["team_id"], errors="raise").astype("int64")
             official_boxes["player_id"] = pd.to_numeric(official_boxes["player_id"], errors="raise").astype("int64")
             official_boxes["starter_position"] = official_boxes["starter_position"].fillna("").astype(str).str.strip()
-            official_boxes["starter"] = official_boxes["starter_position"].ne("")
+            official_boxes = infer_official_starters(
+                official_boxes,
+                first_five_fallback_game_ids=set(
+                    official.loc[official["project_season"].eq(2017), "game_id"].astype(str)
+                ),
+            )
             official_boxes["minutes_seconds"] = official_boxes["minutes"].map(_minutes_to_seconds)
             official_groups = {
                 game_id: group.copy() for game_id, group in official_boxes.groupby("game_id", sort=False)
@@ -203,6 +208,10 @@ def build_historical_espn_player_games(
                 "issues": ";".join(issues),
                 "selected_source": source_kind,
                 "official_box_available": official_rows is not None,
+                "official_starter_inference_sources": (
+                    "|".join(sorted(set(official_rows["starter_inference_source"].astype(str))))
+                    if official_rows is not None else ""
+                ),
                 "source_rows": int(len(source)) if source is not None else 0,
                 "v3_available": meta is not None,
                 "max_period": int(meta["max_period"]) if meta is not None else pd.NA,
@@ -232,6 +241,7 @@ def build_historical_espn_player_games(
             frame["team_tricode"] = frame["team"]
             frame["player_name"] = frame["name"].fillna("").astype(str).str.strip()
             frame["starter_position"] = ""
+            frame["starter_inference_source"] = "espn_native_starter"
             frame["minutes"] = frame["minutes_played"]
             frame["espn_played"] = pd.to_numeric(frame["played"], errors="raise").astype(bool)
             frame["player_game_source"] = "espn_player_box_historical"
@@ -246,6 +256,7 @@ def build_historical_espn_player_games(
         "game_id", "season_start", "season_end", "season_label", "season_type", "game_date",
         "team_id", "team_tricode", "team_side", "player_game_source", "player_id", "player_name",
         "starter_position", "starter", "played", "minutes", "minutes_seconds", "espn_played",
+        "starter_inference_source",
     ]
     output_rows = pd.concat(rows, ignore_index=True) if rows else pd.DataFrame(columns=columns)
     output_rows = output_rows.loc[:, columns].sort_values(["game_id", "team_side", "starter", "player_id"])

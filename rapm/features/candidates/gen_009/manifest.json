@@ -1,0 +1,10 @@
+{
+  "code": "box_tracking_blend_v1",
+  "description": "NEW: combined derived box + tracking interaction features",
+  "type": "build",
+  "prior": "spmv2_subset",
+  "use_columns": "new_only",
+  "alpha": 1000,
+  "c_grid": [2.0],
+  "search_folds_only": true
+}

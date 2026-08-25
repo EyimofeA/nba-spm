@@ -1,0 +1,11 @@
+{
+  "code": "playtype_ppp_v1",
+  "description": "NEW from staging: playtype PPP by role (sparse until join fixed)",
+  "type": "build",
+  "prior": "spmv2_subset",
+  "use_columns": "new_only",
+  "staging_run": "curator_20260703_1459",
+  "alpha": 1000,
+  "c_grid": [2.0],
+  "search_folds_only": true
+}

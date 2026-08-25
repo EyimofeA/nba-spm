@@ -1,0 +1,19 @@
+{
+  "experiment_id": "wp_rapm_lambda_v1",
+  "status": "frozen_research_contract",
+  "selection_train_season": 2025,
+  "reused_diagnostic_season": 2026,
+  "untouched_confirmation_season": 2027,
+  "lambda_home": 300,
+  "lambda_candidates": [
+    [100, 100], [300, 300], [1000, 1000], [3000, 3000], [10000, 10000], [30000, 30000], [100000, 100000],
+    [1000, 3000], [3000, 1000], [3000, 10000], [10000, 3000], [10000, 30000], [30000, 10000]
+  ],
+  "selection_metric": "next_season_possession_wp_change_rmse",
+  "rules": [
+    "Fit only on 2025 conserved WP changes and score identical 2026 rows.",
+    "The WP surface is player-neutral and trained on the prior season.",
+    "Penalty tuning is diagnostic because both seasons have already been inspected.",
+    "Never interpret WP-RAPM as ordinary points impact or portable player strength."
+  ]
+}

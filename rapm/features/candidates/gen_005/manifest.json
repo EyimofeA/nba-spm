@@ -1,0 +1,9 @@
+{
+  "code": "spmv2_full",
+  "description": "Full SPM v2 pooled (56 cols) — baseline feature soup",
+  "prior": "spmv2",
+  "feature_tier": "all",
+  "alpha": 1000,
+  "c_grid": [2.0, 4.0],
+  "search_folds_only": false
+}

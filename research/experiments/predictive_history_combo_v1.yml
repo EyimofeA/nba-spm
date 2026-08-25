@@ -1,0 +1,54 @@
+schema_version: experiment_preregistration_v1
+experiment_id: predictive_history_combo_v1
+status: preregistered
+created_at: 2026-08-19
+estimand_id: next_season_annual_impact_v1
+
+hypothesis: >-
+  Because predictive_spm_v1 and annual_state_space_trajectory_v1 tied overall
+  but won different seasons, a fixed blend carries complementary information
+  and beats both parents on held-out seasons.
+
+candidate_change: >-
+  Add one combined forecast: a fixed weighted average of the predictive SPM
+  raw forecast and the state-space filtered value. Both are already in points
+  per 100 on the same scale, so blending needs no refitting and no new model.
+
+comparators:
+  - predictive_spm_raw (parent)
+  - state_space_filtered (parent)
+  - combo_w25 (0.25 stat + 0.75 history)
+  - combo_w50 (equal blend)
+  - combo_w75 (0.75 stat + 0.25 history)
+
+data_contract:
+  source_rows: scored_rows.parquet from predictive_backbone_race_v1_43db6c6446
+    (identical-row population, both-side possessions >= 1000, forecast
+    seasons 2019-2026, canonical target panel)
+  weighting: square root of the smaller target-season possession count
+  information_cutoff: >-
+    Blend weights are numbers fixed in this spec, estimated nowhere. No
+    parameter of any comparator is re-estimated.
+
+evaluation:
+  selection_folds: [2019, 2020, 2021, 2022, 2023, 2024]
+  selection_rule: choose the single combo weight with the best mean weighted
+    net RMSE across the selection folds; ties resolve toward equal blend
+  confirmation_folds: [2025, 2026] scored exactly once after selection
+  secondary_metrics: weighted correlation; dispersion ratio
+
+promotion_gate:
+  gate_1: the selected combo beats BOTH parents' mean weighted net RMSE across
+    the 2019-2024 selection folds
+  gate_2: the selected combo does not lose to either parent in either
+    confirmation fold (no more than +0.01 RMSE worse than the better parent)
+  gate_3: defense-side dispersion of the combo improves on the stat-model
+    parent's dispersion in both confirmation folds
+  outcome: pass means the combo becomes the research champion pending an
+    untouched Season 2027 check; any failure records the null
+
+stopping_rules:
+  - One weight selection from the three predeclared values, nothing else.
+  - If all three weights fail gate 1, record the null and stop; no grid
+    extension, no per-side weights, no refitting.
+  - Confirmation folds are scored once, after the weight is written down.

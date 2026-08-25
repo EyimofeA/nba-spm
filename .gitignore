@@ -1,17 +1,21 @@
-# environments & caches
-venv/
-rapm/venv/
+# Secrets
+.env
+
+# Python
 __pycache__/
 *.pyc
-.claude/
+.venv/
+*.egg-info/
+venv/
+
+# OS
 .DS_Store
 
-# frozen history (contains old secrets) — never push
-archive/
-
-# data & dumps — not redistributable / rebuildable from nba_api
-data/
-rapm/data/
-*.sql
-*.pkl
-*.joblib
+# Local research data and generated outputs
+/data/downloads/
+/data/lake/bronze/external_coaches/
+/data/lake/bronze/external_rapm/
+/data/lake/bronze/official_game_schedule_1997_2026/
+/research/rapm_lab/data/
+/research/rapm_lab/outputs/
+/research/rapm_lab/external/external/

@@ -1,0 +1,35 @@
+# Allowed external data sources for the Feature Foundry Data Curator.
+# New domains require user approval before editing this file.
+
+sources:
+  - id: nba_com
+    domain: nba.com
+    use: official stats pages and API endpoints
+
+  - id: basketball_reference
+    domain: basketball-reference.com
+    use: box score and advanced tables
+
+  - id: gabriel1200_github
+    domain: github.com/gabriel1200
+    use: site_Data mirror, playersheets, upstream CSV repos
+
+  - id: gabriel1200_raw
+    domain: raw.githubusercontent.com/gabriel1200
+    use: direct raw file fetch from gabriel1200 repos
+
+  - id: pbpstats
+    domain: pbpstats.com
+    use: possession- and play-level stats (profile before merge)
+
+scraping:
+  sleep_seconds_min: 2
+  sleep_seconds_max: 5
+  jitter: true
+  backoff:
+    initial_seconds: 5
+    multiplier: 2
+    max_retries: 5
+  user_agent: "SportsAnalyticsResearch/1.0 (local research; contact via repo owner)"
+  cache_dir: features/staging/cache
+  writes_to: features/staging

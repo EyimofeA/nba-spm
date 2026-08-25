@@ -1,0 +1,43 @@
+schema_version: confirmation_contract_v1
+contract_id: predictive_combo_2027_confirmation_v1
+status: frozen_pending_2027_data
+created_at: 2026-08-19
+estimand_id: next_season_annual_impact_v1
+
+champion:
+  point_forecast: equal blend of predictive_spm raw forecast and state-space
+    filtered value, per side and in net
+    (w_stat = 0.50 fixed by predictive_history_combo_v1_0a9c938a1e;
+     side-specific selection confirmed 0.50/0.50 in
+     predictive_combo_sides_v1_2928ef3fb1)
+  intervals: exposure-bucketed empirical residual percentiles from
+    predictive_combo_intervals_v1_efb18006be
+  parents_pinned:
+    - predictive_spm_v1_cb5666f6db
+    - annual_state_space_trajectory_v1_f150bcde08
+    - time_decayed_trajectory_v1_8ed684a8aa (race comparator only)
+
+confirmation_season: 2027
+population: players with 2026 features, a state-space filtered value through
+  2026, 2027 canonical targets, and at least 1,000 possessions on both sides
+  in 2027
+
+procedure_when_2027_data_exists:
+  - Rebuild nothing. Score the frozen formulas exactly as specified above.
+  - Primary gate: weighted net RMSE of the champion beats both parents on the
+    single 2027 fold.
+  - Interval gates: pooled 80 percent coverage inside [0.70, 0.90]; pooled 50
+    percent coverage inside [0.40, 0.60].
+  - One scoring pass. No redesign, reweighting, or rebucketing afterward
+    regardless of outcome.
+
+outcome_on_pass:
+  - Promotion review may begin. API/site exposure requires a separate release
+    review with the research_only label replaced by a declared forecast label.
+outcome_on_fail:
+  - Champion stays local-only research. A new predeclared experiment is
+    required before any further claim.
+
+standing_restrictions_until_pass:
+  - Local UI display only, with research_only labels.
+  - Season 2027 must not be used for any development, debugging, or selection.

@@ -58,6 +58,13 @@ Both seasons pass the frozen gate. The remaining sequence errors prevent a
 claim of exact historical ground truth. They are small enough to justify a
 quarantined challenger and sensitivity analysis after lineups pass.
 
+Playoff transfer is not fully cleared. The unchanged rules pass the 2025
+playoff gate, but the 2024 playoff check has 99.98% core action-owner
+agreement, 92.7% exact full-game sequences, and only 80 of 82 games within two
+possessions. Games `0042300134` and `0042300163` miss that count gate. Keep all
+historical playoff candidates research-only and out of the first Normal RAPM
+fit.
+
 ## Commands
 
 Validate the frozen rules:

@@ -1,13 +1,24 @@
 # Current Statistical Feature Quality
 
-Updated 2026-08-10. This note covers season labels 2025 and 2026, which mean the
+Updated 2026-08-18. This note covers season labels 2025 and 2026, which mean the
 2024–25 and 2025–26 NBA seasons.
+
+> **Supersession — current refresh.** The source-gap claims below are retained
+> as historical diagnosis, not current status. The current 2014--26 research
+> panel uses `statistical_features_v2_6bdb60a186`, which has 6,942 unique
+> player-seasons. Its 2026 block uses all 582 target-panel players, direct NBA
+> `LeagueDashPtDefend` DFG/rim-DFG dashboards, and official NBA
+> `BoxScoreMatchupsV3` across all 1,230 regular-season games. The derived
+> defensive-tracking and matchup artifacts pass their row-key, finiteness,
+> point-reconciliation, and exposure checks. The remaining research-only label
+> is about the explicit 2014--23 legacy to 2024--26 canonical RAPM source
+> transition, not missing 2025--26 feature families.
 
 ## Decision
 
 - Use the 2025 feature panel for diagnosis and research.
 - Do not publish a 2025 annual AIO from the frozen SPM model.
-- Do not build a 2026 annual AIO. The source season is incomplete.
+- A research-only 2025--26 AIO exists; it is not a public release candidate.
 - Do not tune the frozen model on the inspected 2025 result.
 
 ## Feature coverage
@@ -32,6 +43,76 @@ The 2026 base sheet has 81.8% of the prior two-season median offensive/defensive
 possession exposure. The feature builder marks it
 `structurally_validated_partial_latest_season`. Structural validity does not
 mean season completeness.
+
+## Exact selected SPM coverage audit (2025--26)
+
+The current research run
+`single_season_spm_v1_47b3bd9b17` selects exactly 127 offense and 68 defense
+columns. Its feature input is
+`statistical_features_v2_b808fc1bf1`, created 2026-08-17. The input artifact
+has all 195 column names because the builder median-neutral-fills missing
+merged-family values. A column being present in that parquet is therefore not
+evidence that the underlying source was observed for a player-season.
+
+The following table measures source-row exposure among the 1,000-possession
+eligible rows used by the selected SPM contract (`OffPoss >= 1000` and
+`DefPoss >= 1000`). “Observed” means a matching `PLAYER_ID` exists in the
+versioned source-family artifact for that season; it is not a claim that all
+possible players were active or that every source statistic was non-zero.
+
+| Selected source family | Selected fields | 2025 observed / eligible | 2026 observed / eligible | Current artifact | Status |
+|---|---:|---:|---:|---|---|
+| Box/player-sheet base | Core box and rate fields | 379 / 379 | 385 / 385 | `statistical_features_v1_5db80fc1de` | present, but 2026 exposure is partial |
+| Playtype/zTS | 1 selected field (`zts_pct_points`) | 378 / 379 | 385 / 385 | `playtype_features_v1_ba00f6fe96` | observed in the refreshed source; 2025 has one unmatched ID |
+| DFG/rim/hustle tracking | 10 selected defense fields | 379 / 379 | 0 / 385 | `defensive_tracking_features_v1_b0bf4ef279` | 2026 DFG/rim blocker; new hustle data alone does not close the family |
+| Scorer-adjusted matchup defense | 8 selected defense fields | 379 / 379 | 0 / 385 | `matchup_defense_features_v1_86d13d7357` | 2025 observed; 2026 blocker |
+
+At the complete feature-panel level, only 97 of 569 2025 rows and 105 of 582
+2026 rows are finite across all 127 offense columns; the corresponding counts
+for all 68 defense columns are 290 and 294. These are diagnostics, not an
+alternative eligibility rule. The selected model can run because missing
+values are neutral-filled, but a current SPM/AIO rebuild should not be called
+defensible while entire selected source families are absent for a season.
+
+The current feature run records this explicitly: `new_features=203`,
+`new_feature_missing_values_after_neutral_fill=0`, and a maximum pre-fill
+missing fraction of `0.4469893402477672`. The zero after-fill count is a
+pipeline invariant, not a coverage guarantee.
+
+## Smallest rights-aware refresh plan
+
+Do not silently replace the pinned source revision. The local ingest manifests
+pin Gabriel1200 `site_Data` at `bc583cb0188a6d5ae59d052d08ac0d6efe1b14fd`,
+while the repository currently reports a newer HEAD (`782ec8b4c09fdfb023f06dbcd3e601123cf6d698`)
+and a reorganized per-season layout. Both the existing manifest and the
+upstream repositories declare no license; keep the data research-only and do
+not put raw rows in the website bundle.
+
+The narrowest reproducible refresh is:
+
+1. Pin and QA Gabriel `player_sheets` 2025 and 2026 from a specific revision;
+   do not fit until row counts, required identifiers, exposure, and hashes are
+   recorded.
+2. Add a versioned adapter/manifest for the current per-season Gabriel
+   `site_Data` layout and fetch only the 2025--26 playtype, shooting, and
+   tracking files needed to reconstruct the normalized family artifacts.
+3. Obtain 2026 DFG/rim/hustle from a source with explicit redistribution
+   permission, or leave those fields unavailable. Gabriel's current tree does
+   not expose a 2026 DFG/rim pair and does not provide a reproducible 2026
+   hustle family in the audited layout.
+4. Extend the matchup source only after rights and provenance are documented.
+   Gabriel does not supply the eight scorer-adjusted matchup fields; the
+   selected matchup artifact is not current through 2025. If it cannot be
+   legally and reproducibly extended, remove the matchup block in a separately
+   versioned research challenger rather than neutral-filling it and calling
+   the result a refresh.
+5. Rebuild each family into a new hash-addressed artifact, rerun the exact
+   127/68 coverage table, and only then refit SPM/AIO. No existing public table
+   should be overwritten in place.
+
+This plan requires a small, auditable current download, not a bulk NBA archive.
+The two hard blockers are current 2026 tracking coverage and current
+scorer-adjusted matchup coverage; possession data alone does not resolve them.
 
 ## Frozen 2025 confirmation
 

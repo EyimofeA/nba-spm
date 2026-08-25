@@ -1,0 +1,37 @@
+{
+  "experiment_id": "rubberband_progress_rapm_v1",
+  "status": "completed_conditional_diagnostic",
+  "run_id": "rubberband_progress_rapm_v1_904b95fd02",
+  "estimand_id": "rubberband_adjusted_rapm_v1",
+  "seasons": [2024, 2025, 2026],
+  "curve_training_seasons": [2024, 2025],
+  "reused_diagnostic_season": 2026,
+  "untouched_confirmation_season": 2027,
+  "lineup_policy": "terminal",
+  "game_type": "regular",
+  "player_penalties": {
+    "lambda_off": 3000,
+    "lambda_def": 3000,
+    "lambda_home": 300
+  },
+  "clock_spec": {
+    "time_buckets": 8,
+    "margin_clip": 15
+  },
+  "possession_progress_spec": {
+    "time_buckets": 8,
+    "combined_regulation_possessions_per_bucket": 25,
+    "margin_clip": 15
+  },
+  "paired_game_bootstrap_draws": 2000,
+  "paired_game_bootstrap_seed": 20260825,
+  "rules": [
+    "Use the same canonical 2024-26 possession and terminal-lineup rows for every model.",
+    "Define possession progress from the count before the possession and a fixed 25-possession bucket. Do not divide by final game possessions.",
+    "Estimate both score curves from out-of-fold lineup residuals.",
+    "Subtract only the signed-margin slope term from the RAPM target, not the bucket intercept.",
+    "Fit score curves on 2024-25 and use 2026 only as reused diagnostics.",
+    "Add the known pre-possession context term back when scoring observed 2026 points.",
+    "Do not load Season 2027."
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "run_id": "curator_20260703_1459",
+  "sources": [
+    "playtype"
+  ],
+  "playersheets_dir": "/Users/eadebayo/Documents/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals",
+  "n_playersheet_seasons": 58,
+  "ts": "2026-07-03T14:59:54.873446+00:00"
+}

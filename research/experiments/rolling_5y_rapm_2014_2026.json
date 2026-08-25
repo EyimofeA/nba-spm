@@ -1,0 +1,46 @@
+{
+  "experiment_id": "rolling_5y_rapm_2014_2026_v1",
+  "status": "active_research",
+  "estimand": "retrospective regular-season terminal-lineup RAPM points per 100 possessions",
+  "season_range": [2014, 2026],
+  "window_seasons": 5,
+  "window_ends": [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "transition_season": 2024,
+  "sources": {
+    "2014_2023": "score-conserved legacy possession cache with terminal lineups",
+    "2024_2026": "canonical event possessions with ordinal terminal lineups"
+  },
+  "model": {
+    "prior": "zero",
+    "lambda_off": 3000.0,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "season_scoring_environment": "remove each season mean before fitting player effects"
+  },
+  "peak_eligibility": {
+    "minimum_possessions_per_side_per_season": 1000
+  },
+  "reference_run_id": "rolling_rapm_peaks_v1_a8a612143c",
+  "lambda_research": {
+    "store_training_sufficient_statistics": true,
+    "evaluation_rule": "score each five-year fit on the immediately following regular season",
+    "evaluation_seasons": [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+    "stored_train_objects": ["X_transpose_X", "X_transpose_centered_y", "player_order", "offense_exposure", "defense_exposure"],
+    "stored_evaluation_objects": ["game_aggregated_X", "actual_margin", "intercept_multiplier", "unknown_player_slots"],
+    "raw_possession_design_stored": false,
+    "season_2027_policy": "untouched and not loaded"
+  },
+  "acceptance": {
+    "expected_windows": 9,
+    "expected_lambda_training_matrices": 9,
+    "expected_lambda_evaluation_matrices": 8,
+    "unchanged_source_window_ends": [2018, 2019, 2020, 2021, 2022, 2023],
+    "maximum_reference_component_error": 1e-10,
+    "maximum_component_identity_error": 1e-12,
+    "require_finite_ratings": true,
+    "require_unique_keys": true,
+    "require_complete_names": true
+  },
+  "evidence_status": "research_build_test",
+  "forbidden_interpretation": "This build is descriptive. It is not a forecast, a public-model promotion, or Season 2027 confirmation."
+}

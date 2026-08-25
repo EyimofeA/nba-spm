@@ -1,0 +1,15 @@
+{
+  "experiment_id": "pair_exposure_bucketing_v1",
+  "status": "frozen_research_contract",
+  "seasons": [2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "selection": {"train": [2020, 2021, 2022, 2023, 2024], "test": 2025},
+  "diagnostic": {"train": [2021, 2022, 2023, 2024, 2025], "test": 2026},
+  "order": 2,
+  "minimum_exposure": 500,
+  "strategies": ["hard_floor", "exposure_buckets", "inverse_exposure"],
+  "unit_penalties": [1000, 3000, 10000],
+  "home_penalty": 300,
+  "reference_penalties": {"offense": 3000, "defense": 3000, "home": 300},
+  "untouched_confirmation_season": 2027,
+  "stop_rule": "Do not run higher-order bucketed units unless the selected pair model beats hard-floor pair RAPM and one-player RAPM on reused 2026."
+}

@@ -1,0 +1,47 @@
+schema_version: experiment_preregistration_v1
+experiment_id: predictive_combo_intervals_v1
+status: preregistered
+created_at: 2026-08-19
+estimand_id: next_season_annual_impact_v1
+
+hypothesis: >-
+  Empirical residual percentiles from earlier forecast seasons produce
+  next-season prediction intervals with approximately nominal coverage,
+  making the combo champion safe to display with intervals.
+
+candidate_change: >-
+  Attach intervals to the incumbent equal blend (predictive_history_combo_v1).
+  Point forecasts are unchanged. Intervals come from a predeclared exposure-
+  bucketed empirical residual table.
+
+data_contract:
+  source_rows: identical-row population (both-side possessions >= 1000) from
+    predictive_combo_sides_v1_2928ef3fb1 predictions, which carry the
+    incumbent net blend and canonical targets
+  exposure_buckets: minimum of Poss_Off and Poss_Def in [1000, 1500),
+    [1500, 2500), [2500, inf)
+  interval_construction: >-
+    For each bucket, residual = target_net - incumbent_net on the selection
+    seasons 2019-2024. Interval bounds are the empirical 10th/90th percentiles
+    (80 percent interval) and 25th/75th percentiles (50 percent interval).
+    No distributional assumption, no smoothing across buckets.
+  information_cutoff: percentile tables use selection seasons only
+
+evaluation:
+  confirmation_seasons: [2025, 2026] pooled, scored exactly once
+  gate_1: pooled 2025-26 coverage of the 80 percent interval is inside
+    [0.72, 0.88]
+  gate_2: pooled 2025-26 coverage of the 50 percent interval is inside
+    [0.42, 0.58]
+  gate_3: every bucket's confirmation coverage of the 80 percent interval is
+    inside [0.68, 0.92]
+  outcome_on_pass: >-
+    Intervals may be displayed beside the champion in the local UI only, with
+    a research_only label. Production or API exposure still requires the
+    untouched Season 2027 confirmation.
+  outcome_on_fail: intervals stay forbidden; record the null
+
+stopping_rules:
+  - No bucket redefinition, percentile change, or shrinkage adjustment after
+    confirmation coverage is seen.
+  - Season 2027 stays reserved.

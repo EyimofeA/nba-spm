@@ -1,0 +1,15 @@
+{
+  "experiment_id": "production_5y_rapm_intervals_v1",
+  "status": "frozen_research_contract",
+  "source_run_id": "rolling_5y_rapm_2014_2026_a7754bfb77",
+  "window_ends": [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "window_seasons": 5,
+  "penalties": {"lambda_off": 3000, "lambda_def": 3000, "lambda_home": 300},
+  "method": "homoskedastic analytic ridge sampling covariance",
+  "untouched_confirmation_season": 2027,
+  "rules": [
+    "Use the validated 3000/3000/300 five-year normal RAPM point estimator.",
+    "Intervals apply to each fixed window and do not quantify peak selection or ridge bias.",
+    "Do not describe these intervals as game-cluster bootstrap intervals."
+  ]
+}

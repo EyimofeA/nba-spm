@@ -1,7 +1,7 @@
 # NBA Impact Roadmap
 
 This is the one file to follow remotely. `RESEARCH_LOG.md` contains evidence and
-dead ends. Updated 2026-08-17. See `docs/README.md` for the document index,
+dead ends. Updated 2026-08-25. See `docs/README.md` for the document index,
 `docs/impact/ROADMAP.md` for the detailed RAPM/all-in-one plan, and
 `docs/modeling/PLAYBOOK.md` for the common statistical modeling procedure.
 
@@ -99,6 +99,33 @@ dead ends. Updated 2026-08-17. See `docs/README.md` for the document index,
   net RMSE versus frozen 0.80 time decay by 0.125 in selection and 0.106 in the
   later diagnostic. It remains research-only until a new untouched annual
   confirmation exists.
+- Actual-clock rubber-band run `rubberband_adjustment_v1_34be1ee621` cross-fits
+  lineup residuals by whole game on 743,946 2024--26 possessions. The scoring
+  effect is near zero early and strongest in the final six minutes. It transfers
+  to reused 2026 diagnostics. The frozen adjusted-RAPM follow-up
+  `rubberband_progress_rapm_v2_b72716c2fb` compared actual clock with a
+  no-lookahead, fixed 25-possession progress proxy. Their eight slopes correlate
+  0.971, but both slightly worsen 2026 neutral game-margin RMSE. Keep the curve;
+  reject the adjusted ratings under this gate.
+- Standalone unit run `standalone_unit_rapm_v1_460b34a3b1` corrects the earlier
+  terminology: pair, trio, four-man, and lineup RAPM contain no one-player
+  columns. All four lose to one-player RAPM on the same reused 2026 games, with
+  increasing out-of-sample sparsity as unit size grows.
+- Joint score-signal run `rubberband_score_signal_v1_deac872ede` compared ten
+  signed 5-point buckets, clipped linear terms, and cubic splines under one
+  blocked gate. The selected bucket fit worsened reused 2026 RMSE by 0.036.
+  Joint age-score run `age_score_context_v1_7e8689fee8` separates player-only
+  ratings from pregame context. Player-only age, score, and joint fits worsen
+  RMSE by 0.158, 0.036, and 0.101. Known lineup age changes pregame RMSE by
+  -0.012 with a paired interval crossing zero. Retain normal RAPM.
+- External reproduction run `external_reproduction_benchmark_v1_0a95702214`
+  matches exact IDs and windows rather than fuzzy player names. Net RAPM
+  correlates `.967` with Ryan Davis annual player-seasons, `.957` across exact
+  five-year windows, `.980` across exact three-year windows, and `.897` with the
+  current unequal-weight xRAPM three-year table. DARKO WOWY, RAPTOR on/off,
+  AuPM, raw on-court margin, and a reproduced game-level PM ridge are retained
+  as different-estimand diagnostics, not validation targets. All tables remain
+  localhost-only in RAPM Lab.
 
 ## Active next task
 
@@ -221,3 +248,6 @@ now would break reproducibility links.
 - Full 2014--26 base features: `statistical_features_v1_65446dd3e2`
 - Full 2014--26 expanded features: `statistical_features_v2_b808fc1bf1`
 - Repaired 2024--26 Normal RAPM: `current_single_season_rapm_targets_v1_b4cdb51de8`
+- Actual-clock rubber-band estimate: `rubberband_adjustment_v1_34be1ee621`
+- Joint score-signal comparison: `rubberband_score_signal_v1_deac872ede`
+- Joint age-score comparison: `age_score_context_v1_7e8689fee8`

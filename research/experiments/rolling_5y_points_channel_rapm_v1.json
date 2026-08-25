@@ -1,0 +1,33 @@
+{
+  "experiment_id": "rolling_5y_points_channel_rapm_v1",
+  "status": "frozen_research_contract",
+  "estimand": "retrospective regular-season terminal-lineup points-channel RAPM per 100 possessions",
+  "window": [2022, 2026],
+  "sources": {
+    "2022_2023": "score-conserved legacy possession cache with terminal lineups",
+    "2024_2026": "canonical event possessions with ordinal terminal lineups"
+  },
+  "model": {
+    "prior": "zero",
+    "lambda_off": 3000.0,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "season_scoring_environment": "remove each channel's season mean before fitting",
+    "channels": {
+      "one_point": "1 if the possession scored exactly one point, else 0",
+      "two_point": "2 if the possession scored exactly two points, else 0",
+      "three_plus": "observed points if the possession scored at least three points, else 0"
+    }
+  },
+  "acceptance": {
+    "maximum_target_recomposition_error": 1e-12,
+    "maximum_rating_recomposition_error": 1e-10,
+    "maximum_channel_net_identity_error": 1e-10,
+    "maximum_canonical_rapm_error": 1e-6,
+    "maximum_intercept_recomposition_error": 1e-8,
+    "require_unique_player_ids": true,
+    "require_complete_names": true
+  },
+  "evidence_status": "research_build_test",
+  "forbidden_interpretation": "A channel coefficient is a lineup-adjusted association with where points appeared. It is not causal shot creation, a calibrated probability, or a public-model promotion."
+}

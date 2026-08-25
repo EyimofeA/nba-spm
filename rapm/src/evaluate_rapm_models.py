@@ -117,6 +117,42 @@ def regular_spec_configs(cfg: RunConfig) -> list[tuple[str, RunConfig]]:
     ]
 
 
+def subset_dm(dm, idx: np.ndarray):
+    """Shallow row-subset of a DesignMatrix (columns unchanged) for leak-free tuning."""
+    from dataclasses import replace as dc_replace
+
+    return dc_replace(
+        dm,
+        X=dm.X[idx],
+        y=dm.y[idx],
+        weights=dm.weights[idx],
+        gameids=dm.gameids[idx],
+        row_seasons=dm.row_seasons[idx],
+        kept_rows=int(len(idx)),
+        row_home_off=dm.row_home_off[idx] if dm.row_home_off is not None else None,
+        row_garbage=dm.row_garbage[idx] if dm.row_garbage is not None else None,
+    )
+
+
+def game_margin_metrics(dm, valid_idx: np.ndarray, y_pred: np.ndarray) -> dict:
+    """Aggregate possession points to per-game margins (home minus away points
+    across the validation possessions of each game) and score predicted vs actual."""
+    sign = np.where(dm.row_home_off[valid_idx], 1.0, -1.0)
+    df = pd.DataFrame({
+        "gameid": dm.gameids[valid_idx],
+        "m_true": dm.y[valid_idx] * sign,
+        "m_pred": y_pred * sign,
+    })
+    g = df.groupby("gameid", observed=True).agg(
+        m_true=("m_true", "sum"), m_pred=("m_pred", "sum"), n=("m_true", "size")
+    )
+    if len(g) < 3:
+        return {"margin_rmse": float("nan"), "margin_corr": float("nan"), "n_games": int(len(g))}
+    rmse = float(np.sqrt(np.mean((g["m_true"] - g["m_pred"]) ** 2)))
+    corr = float(np.corrcoef(g["m_true"], g["m_pred"])[0, 1])
+    return {"margin_rmse": rmse, "margin_corr": corr, "n_games": int(len(g))}
+
+
 def chronological_splits(dm) -> list[tuple[np.ndarray, np.ndarray]]:
     seasons = sorted(set(int(s) for s in dm.row_seasons))
     if len(seasons) >= 2:
@@ -135,14 +171,18 @@ def chronological_splits(dm) -> list[tuple[np.ndarray, np.ndarray]]:
 
 def score_splits(raw_rows: list[tuple], cfg: RunConfig, prior: dict[str, float] | None, method: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     dm = build_design_matrix(raw_rows, cfg)
+    splits = grouped_splits(dm.gameids, cfg.cv_folds) if method == "game_grouped_cv" else chronological_splits(dm)
+
+    # Leak-free lambda tuning: tune on the TRAINING side of the first split only,
+    # never on rows that any fold will validate on chronologically.
     if cfg.optimize_lambdas:
-        profile, lambda_scores = tune_lambdas(dm, cfg, prior)
+        tune_dm = subset_dm(dm, splits[0][0])
+        profile, lambda_scores = tune_lambdas(tune_dm, cfg, prior)
     else:
         profile = cfg.lambda_profile
         lambda_scores = pd.DataFrame([{**profile.as_dict(), "mean_rmse": np.nan, "stage": "fixed"}])
 
     zero_penalty, target_penalty, target = penalty_vectors(dm, cfg, profile, prior)
-    splits = grouped_splits(dm.gameids, cfg.cv_folds) if method == "game_grouped_cv" else chronological_splits(dm)
 
     rows = []
     calibration_rows = []
@@ -155,9 +195,14 @@ def score_splits(raw_rows: list[tuple], cfg: RunConfig, prior: dict[str, float] 
             target_penalty,
             target,
         )
+        # Score on the COMMON validation set: non-garbage possessions only, so
+        # specs with/without garbage-time filtering are comparable.
+        if dm.row_garbage is not None:
+            valid_idx = valid_idx[~dm.row_garbage[valid_idx]]
         y_pred = predict(dm.X[valid_idx], beta, intercept)
         y_true = dm.y[valid_idx]
         weights = dm.weights[valid_idx]
+        margin = game_margin_metrics(dm, valid_idx, y_pred)
         rows.append({
             "spec": cfg.spec,
             "season_type": cfg.season_type,
@@ -168,6 +213,7 @@ def score_splits(raw_rows: list[tuple], cfg: RunConfig, prior: dict[str, float] 
             "n_valid": int(len(valid_idx)),
             "rmse": weighted_rmse(y_true, y_pred, weights),
             "mae": weighted_mae(y_true, y_pred, weights),
+            **margin,
             **profile.as_dict(),
             "kept_possessions": dm.kept_rows,
             "dropped_garbage_time": dm.dropped_garbage_time,
@@ -204,16 +250,18 @@ def summarize(scores: pd.DataFrame) -> pd.DataFrame:
             total_valid=("n_valid", "sum"),
             rmse=("rmse", "mean"),
             mae=("mae", "mean"),
+            margin_rmse=("margin_rmse", "mean"),
+            margin_corr=("margin_corr", "mean"),
             lambda_off=("lambda_off", "mean"),
             lambda_def=("lambda_def", "mean"),
             lambda_meta=("lambda_meta", "mean"),
             lambda_season=("lambda_season", "mean"),
             dropped_garbage_time=("dropped_garbage_time", "max"),
         )
-        .sort_values(["method", "rmse"])
+        .sort_values(["method", "margin_rmse"])
     )
-    baseline = summary.groupby("method")["rmse"].transform("first")
-    summary["rmse_delta_vs_best"] = summary["rmse"] - baseline
+    baseline = summary.groupby("method")["margin_rmse"].transform("first")
+    summary["margin_rmse_delta_vs_best"] = summary["margin_rmse"] - baseline
     return summary
 
 

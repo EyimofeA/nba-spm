@@ -28,6 +28,7 @@ from sklearn.model_selection import GroupKFold, KFold
 
 from paths import (
     ALL_NAMES_CSV,
+    POSSESSION_CACHE,
     STANDARD_RAPM_DIAGNOSTICS,
     STANDARD_RAPM_DUMP,
     STANDARD_RAPM_RESULTS,
@@ -116,6 +117,13 @@ class DesignMatrix:
     kept_rows: int
     dropped_garbage_time: int
     meta: dict
+    # Per-row flags kept for evaluation: offense-is-home sign and garbage-time
+    # marker (all False when cfg.garbage_time dropped those rows).
+    row_home_off: np.ndarray | None = None
+    row_garbage: np.ndarray | None = None
+    row_dates: np.ndarray | None = None
+    row_margin_off: np.ndarray | None = None
+    row_periods: np.ndarray | None = None
 
 
 @dataclass
@@ -182,8 +190,34 @@ def connect_db():
     )
 
 
-def fetch_possessions(seasons: Iterable[int]) -> list[tuple]:
+_POSS_COLUMNS = [
+    "home_poss", "pts", "a1", "a2", "a3", "a4", "a5",
+    "h1", "h2", "h3", "h4", "h5", "season", "date", "period", "num", "gameid",
+]
+
+
+def fetch_possessions(seasons: Iterable[int], use_cache: bool = True) -> list[tuple]:
+    """Fetch possessions per season, using a local parquet cache to avoid
+    re-hitting MySQL on every run. Cache is per-season; delete a file in
+    POSSESSION_CACHE to force a refresh for that season."""
     seasons = list(seasons)
+    if not use_cache:
+        return _fetch_possessions_db(seasons)
+    rows: list[tuple] = []
+    for season in seasons:
+        cache_file = POSSESSION_CACHE / f"matchups_{season}.parquet"
+        if cache_file.exists():
+            df = pd.read_parquet(cache_file)
+        else:
+            season_rows = _fetch_possessions_db([season])
+            df = pd.DataFrame(season_rows, columns=_POSS_COLUMNS)
+            df["date"] = df["date"].astype(str)
+            df.to_parquet(cache_file, index=False)
+        rows.extend(df.itertuples(index=False, name=None))
+    return rows
+
+
+def _fetch_possessions_db(seasons: list[int]) -> list[tuple]:
     placeholders = ",".join(["%s"] * len(seasons))
     query = f"""
         SELECT home_poss, pts, a1, a2, a3, a4, a5, h1, h2, h3, h4, h5,
@@ -273,7 +307,8 @@ def _filtered_possessions(rows: list[tuple], cfg: RunConfig) -> tuple[list[dict]
         denom = max(1, max_num[(gameid, period)])
         progress = min(1.0, num / float(denom))
 
-        if cfg.garbage_time and abs(margin_home) >= gt_threshold(period, progress):
+        is_garbage = abs(margin_home) >= gt_threshold(period, progress)
+        if cfg.garbage_time and is_garbage:
             dropped += 1
         else:
             kept.append(
@@ -288,6 +323,7 @@ def _filtered_possessions(rows: list[tuple], cfg: RunConfig) -> tuple[list[dict]
                     "period": period,
                     "num": num,
                     "gameid": gameid,
+                    "is_garbage": is_garbage,
                 }
             )
 
@@ -359,6 +395,11 @@ def build_design_matrix(raw_rows: list[tuple], cfg: RunConfig) -> DesignMatrix:
     y = np.empty(len(possessions), dtype=np.float64)
     gameids = np.empty(len(possessions), dtype=object)
     row_seasons = np.empty(len(possessions), dtype=np.int32)
+    row_home_off = np.empty(len(possessions), dtype=bool)
+    row_garbage = np.empty(len(possessions), dtype=bool)
+    row_dates = np.empty(len(possessions), dtype=object)
+    row_margin_off = np.empty(len(possessions), dtype=np.float64)
+    row_periods = np.empty(len(possessions), dtype=np.int32)
 
     for i, poss in enumerate(possessions):
         for player in poss["off_players"]:
@@ -390,6 +431,11 @@ def build_design_matrix(raw_rows: list[tuple], cfg: RunConfig) -> DesignMatrix:
         y[i] = poss["pts"]
         gameids[i] = poss["gameid"]
         row_seasons[i] = int(poss["season"])
+        row_home_off[i] = bool(poss["home_poss"])
+        row_garbage[i] = bool(poss.get("is_garbage", False))
+        row_dates[i] = poss["date"]
+        row_margin_off[i] = float(poss["margin_from_offense"])
+        row_periods[i] = int(poss["period"])
 
     X = csr_matrix(
         (
@@ -415,6 +461,11 @@ def build_design_matrix(raw_rows: list[tuple], cfg: RunConfig) -> DesignMatrix:
             "season_type": cfg.season_type,
             "garbage_time": cfg.garbage_time,
         },
+        row_home_off=row_home_off,
+        row_garbage=row_garbage,
+        row_dates=row_dates,
+        row_margin_off=row_margin_off,
+        row_periods=row_periods,
     )
 
 

@@ -89,6 +89,8 @@ class RatingsApiConfig:
     normal_rapm_uncertainty_run_ids: dict[str, str] | None = None
     side_roles_run_id: str | None = None
     role_stabilization_run_id: str | None = None
+    annual_model_family: str = "annual_aio_ratings"
+    annual_artifact_root: str | None = None
 
     @classmethod
     def from_json(cls, path: str | Path) -> "RatingsApiConfig":
@@ -106,7 +108,12 @@ class RatingsStore:
     ) -> None:
         self.config = config
         artifact_root = Path(artifact_root)
-        self.annual_dir = artifact_root / "annual_aio_ratings" / config.annual_run_id
+        annual_root = (
+            Path(config.annual_artifact_root)
+            if config.annual_artifact_root is not None
+            else artifact_root
+        )
+        self.annual_dir = annual_root / config.annual_model_family / config.annual_run_id
         self.rolling_dir = artifact_root / "rolling_rapm_peaks" / config.rolling_run_id
         self.current_dir = artifact_root / "rapm" / config.current_rapm_run_id
         self.annual_manifest = _read_run(self.annual_dir / "run.json")

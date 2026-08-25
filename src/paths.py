@@ -3,9 +3,26 @@
 Every script under ``src/`` resolves its inputs/outputs through the constants
 defined here so no script has to care where it is invoked from.
 """
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def _load_env() -> None:
+    """Load ROOT/.env into os.environ (existing env vars win). No deps."""
+    env_file = ROOT / ".env"
+    if not env_file.exists():
+        return
+    for _line in env_file.read_text().splitlines():
+        _line = _line.strip()
+        if not _line or _line.startswith("#") or "=" not in _line:
+            continue
+        _k, _, _v = _line.partition("=")
+        os.environ.setdefault(_k.strip(), _v.strip().strip('"').strip("'"))
+
+
+_load_env()
 
 DATA = ROOT / "data"
 RAW = DATA / "raw"
