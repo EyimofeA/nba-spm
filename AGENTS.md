@@ -120,6 +120,13 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
 
 Canonical code: `src/nba_impact/models/five_year_target_spm.py`.
 
+- Sparse challenger `sparse_function_spm_v1_4f1ecaa353` uses seven offense
+  and five defense functions with fixed ridge alpha 3000. It lowers future
+  one-year RAPM RMSE but loses player correlation and two-fold team-win R²
+  (`.455` versus `.545`). Treat it as a null. Do not run its AIO update or tune
+  its frozen inputs after seeing this result; a user-authored sparse feature
+  contract is a separate future experiment.
+
 ### Same-season feature research
 
 - Stabilize every player-season against that season only. Do not use career,

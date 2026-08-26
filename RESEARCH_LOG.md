@@ -4184,3 +4184,28 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   close- and long-shot logistic models. The CourtSignal prototype uses one
   histogram GBM and a later within-season test. Modern SPM still lacks a
   permitted row-level source joining exact shot context to nearest defender.
+
+## 2026-08-26 - Sparse function-first five-year SPM
+
+- **Question:** Can one feature per declared player function retain the full
+  five-year SPM's downstream signal? The frozen challenger uses seven offense
+  fields and five defense fields. Separate ridge models use alpha 3000,
+  within-window feature z-scores, training-fold median imputation, and the
+  existing square-root possession weight. Roles and player demographics are
+  absent.
+- **Data and split:** Run `sparse_function_spm_v1_4f1ecaa353` rebuilds 8,620
+  complete 2014--26 five-year player windows from the pinned Gabriel sheets.
+  Historical predictions for 2021--26 use only earlier five-year RAPM labels.
+  The rebuilt 2018--23 inputs correlate at least `.9999999` with the stored
+  reference inputs. Season 2027 is absent.
+- **Primary result:** On identical 2021 and 2022 ratings applied to observed
+  next-season minutes, mean team-win R-squared falls from `.5446` for the full
+  five-year SPM to `.4547` for the sparse model. It loses both folds.
+- **Secondary result:** Across five next-season one-year RAPM folds, sparse net
+  RMSE improves from `1.9813` to `1.9027`, but Pearson falls from `.4241` to
+  `.3519` and Spearman from `.3308` to `.2727`. The compact ridge mainly
+  shrinks dispersion rather than preserving player ordering. Offense and
+  defense show the same pattern.
+- **Decision:** Null. Keep the full five-year SPM. Do not run the sparse AIO or
+  tune these hand-picked inputs after reading the result. A user-authored
+  function list will be a new frozen experiment, not a revision of this run.
