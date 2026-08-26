@@ -35,16 +35,24 @@ A public 2014-15 NBA shot-log snapshot does contain `SHOT_DIST`,
 shot result, and two/three-point value. It is useful for a historical prototype
 and functional-form checks, not as the production source for 2026 players.
 
-The historical prototype is now implemented as
-`historical_shot_quality_2015_v1_70e64472e0`. It matched 99.40% of 128,069
+The current historical prototype is
+`historical_shot_quality_2015_v1_c5258e797c`. It matched 99.40% of 128,069
 tracking shots to local play-by-play location/fast-break context within five
-seconds, trained on the first 675 games, and tested on the later 229 games:
+seconds. It also matched shooter and nearest-defender height on 99.83% of rows.
+The first 675 games train the model and the later 229 games test it:
 
 | Inputs | Test log loss | AUC | Log-loss gain vs location only |
 |---|---:|---:|---:|
 | Exact location + shot distance/value | 0.6450 | 0.6337 | 0.0000 |
 | + nearest-defender distance | 0.6381 | 0.6504 | 0.0069 |
-| + shot clock, dribbles, touch time, period, home, fast break | **0.6340** | **0.6576** | **0.0111** |
+| + shot clock, dribbles, touch time, period, home, fast break | 0.6340 | 0.6576 | 0.0111 |
+| + period clock and shooter-minus-defender height | **0.6336** | **0.6591** | **0.0115** |
+
+The last arm follows the inputs described in
+[Krishna Narsu's KOBE article](https://fansided.com/2015/09/28/introducing-kobe-a-measure-of-shot-quality/).
+It is not a literal reproduction. KOBE used separate close- and long-shot
+logistic models, while this prototype uses one histogram GBM and a later
+within-season test split.
 
 An earlier prototype included the PBP `assisted` flag and produced an absurd
 0.91 AUC. That run is marked invalid: an assist is recorded only after a make,
@@ -86,7 +94,15 @@ defender in a help scheme.
 
 ## Rim points saved and event stops
 
-Current rim points saved is:
+The raw basketball quantity is:
+
+```text
+rim_points_saved = 2 * rim_DFGA * (normal_rim_FG% - defended_rim_FG%)
+rim_points_saved_p100_raw = 100 * rim_points_saved / defensive_possessions
+```
+
+For example, 300 attempts at 55% against a 60% normal expectation save 30
+points. The current frozen SPM uses the stabilized version:
 
 ```text
 reliability = rim_DFGA / (rim_DFGA + 100)
@@ -96,6 +112,23 @@ rim_points_saved_p100 = -2 * rim_DFGA_p100 * stabilized_diff
 
 `stabilized_diff` is represented as a proportion in the final line; the code's
 percentage-point representation divides by 100. Positive values are better.
+The NBA defense dashboard's comparison FG% is the shooters' normal percentage
+for that defended shot-distance category. It is not a row-level location and
+contest xFG estimate.
+
+## Self-offensive-rebound-adjusted true shooting
+
+Gabriel's annual sheets contain the observed `SelfOReb` count. CourtSignal now
+calculates:
+
+```text
+self_oreb_adjusted_true_shooting_pct =
+    points / (2 * (FGA + 0.44 * FTA - SelfOReb))
+```
+
+This gives back the possession cost of misses the shooter recovered. It does
+not claim that every self-rebound creates an identical follow-up opportunity.
+The field is a research candidate and does not silently alter the frozen SPM.
 
 Gabriel's source calls this event sum `Stops`:
 

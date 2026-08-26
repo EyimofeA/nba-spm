@@ -4158,3 +4158,29 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** The richer expected-shot design is valid as a historical
   prototype. It cannot enter current SPM because no permitted modern source
   supplies exact location and nearest-defender distance on the same shot row.
+
+## 2026-08-26 - KOBE input completion and SelfORB/Rim Points Saved definitions
+
+- **Source correction:** Gabriel's pinned `54b57cf` annual sheets contain the
+  observed `SelfOReb` count. The resumable ingest now covers the previously
+  absent 2014--19 and 2024 files, so all 2014--26 model seasons have the field.
+- **SelfORB adjusted TS:** The feature builder now calculates
+  `PTS / (2 * (FGA + 0.44 * FTA - SelfOReb))`. It also emits `SelfOReb` per 100.
+  Run `statistical_features_v1_8df75d821e` validates 6,942 player-seasons with
+  no duplicate keys. Among 5,913 rows with at least 250 offensive possessions,
+  adjusted TS averages 1.02 percentage points above ordinary TS and correlates
+  `.9922` with it. These are research candidates; the frozen SPM feature list
+  is unchanged.
+- **Rim Points Saved correction:** The existing `rim_points_saved_p100` is the
+  empirical-Bayes stabilized field, using `DFGA / (DFGA + 100)`. The builder
+  now also emits `rim_points_saved_p100_raw`, the literal
+  `2 * rim_DFGA_p100 * (normal rim FG% - defended rim FG%)`. For 300 attempts,
+  60% normal shooting, and 55% defended shooting, the raw total is 30 points.
+- **KOBE-inspired rerun:** Run `historical_shot_quality_2015_v1_c5258e797c`
+  adds period clock and shooter-minus-nearest-defender height to the prior
+  context arm. Height-difference coverage is 99.83%. Test log loss improves
+  from `.6340` to `.6336`, and AUC rises from `.6576` to `.6591`.
+- **Boundary:** This is not a direct KOBE reproduction. Narsu used separate
+  close- and long-shot logistic models. The CourtSignal prototype uses one
+  histogram GBM and a later within-season test. Modern SPM still lacks a
+  permitted row-level source joining exact shot context to nearest defender.

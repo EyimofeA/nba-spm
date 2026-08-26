@@ -29,6 +29,7 @@ RELATIVE_FEATURES = (
     "DREB_p100", "PF_p100", "FTA_p100", "FG3A_p100", "drives_p100",
     "potential_assists_p100", "true_shooting_pct", "at_rim_frequency",
     "arc3_frequency", "shot_quality_average",
+    "self_oreb_adjusted_true_shooting_pct",
 )
 
 EXTRA_COUNTS = (

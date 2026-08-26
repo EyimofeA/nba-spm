@@ -20,6 +20,7 @@ DEFENSIVE_TRACKING_FEATURES = (
     "dfg_two_point_equivalent_saved_p100",
     "rim_dfga_p100",
     "rim_diff_pct_eb",
+    "rim_points_saved_p100_raw",
     "rim_points_saved_p100",
     "rim_matchup_attempt_share",
     "deflections_p100",
@@ -161,13 +162,20 @@ def compute_defensive_tracking_features(
         work = work.merge(key, on=["PLAYER_ID", "Season"], validate="one_to_one")
         reliability = work["_dfga"].clip(lower=0) / (work["_dfga"].clip(lower=0) + prior)
         work[f"{prefix}_dfga_p100"] = 100.0 * work["_dfga"] / work["DefPoss"].where(work["DefPoss"].gt(0))
+        work[f"{prefix}_diff_pct_raw"] = work["_diff"]
         work[f"{prefix}_diff_pct_eb"] = reliability * work["_diff"]
-        return work[["PLAYER_ID", "Season", f"{prefix}_dfga_p100", f"{prefix}_diff_pct_eb"]]
+        return work[[
+            "PLAYER_ID", "Season", f"{prefix}_dfga_p100",
+            f"{prefix}_diff_pct_raw", f"{prefix}_diff_pct_eb",
+        ]]
 
     overall = defense_shooting(dfg, "dfg", dfg_prior_attempts).rename(
         columns={"dfg_dfga_p100": "dfg_attempts_p100"}
     )
     rim_features = defense_shooting(rim, "rim", rim_prior_attempts)
+    rim_features["rim_points_saved_p100_raw"] = (
+        -2.0 * rim_features["rim_dfga_p100"] * rim_features["rim_diff_pct_raw"] / 100.0
+    )
     rim_features["rim_points_saved_p100"] = (
         -2.0 * rim_features["rim_dfga_p100"] * rim_features["rim_diff_pct_eb"] / 100.0
     )
@@ -211,6 +219,7 @@ def compute_defensive_tracking_features(
     output["dfg_two_point_equivalent_saved_p100"] = (
         -2.0 * output["dfg_attempts_p100"] * output["dfg_diff_pct_eb"] / 100.0
     )
+    output = output.drop(columns=["dfg_diff_pct_raw", "rim_diff_pct_raw"])
     output["rim_matchup_attempt_share"] = (
         output["rim_dfga_p100"] / output["dfg_attempts_p100"].where(
             output["dfg_attempts_p100"].gt(0)

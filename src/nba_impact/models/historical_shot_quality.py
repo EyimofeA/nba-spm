@@ -29,6 +29,11 @@ FEATURE_ARMS = {
         "x", "y", "shot_distance", "points_type", "nearest_defender_distance",
         "shot_clock", "dribbles", "touch_time", "period", "home", "fast_break",
     ),
+    "kobe_inspired_context": (
+        "x", "y", "shot_distance", "points_type", "nearest_defender_distance",
+        "shot_clock", "dribbles", "touch_time", "period", "clock_seconds",
+        "home", "fast_break", "height_difference_inches",
+    ),
 }
 
 
@@ -126,10 +131,46 @@ def _model() -> HistGradientBoostingClassifier:
     )
 
 
+def attach_player_heights(
+    shots: pd.DataFrame, player_sheet_path: str | Path
+) -> tuple[pd.DataFrame, dict]:
+    """Attach shooter-minus-nearest-defender height from one season's roster rows."""
+    path = Path(player_sheet_path)
+    source = (
+        pd.read_parquet(path, columns=["PLAYER_ID", "PLAYER_HEIGHT_INCHES"])
+        if path.suffix.lower() in {".parquet", ".pq"}
+        else pd.read_csv(
+            path, usecols=["PLAYER_ID", "PLAYER_HEIGHT_INCHES"], low_memory=False
+        )
+    )
+    source["PLAYER_ID"] = pd.to_numeric(source["PLAYER_ID"], errors="coerce")
+    source["PLAYER_HEIGHT_INCHES"] = pd.to_numeric(
+        source["PLAYER_HEIGHT_INCHES"], errors="coerce"
+    )
+    heights = source.dropna().groupby("PLAYER_ID")["PLAYER_HEIGHT_INCHES"].median()
+    output = shots.copy()
+    output["shooter_height_inches"] = pd.to_numeric(
+        output["player_id"], errors="coerce"
+    ).map(heights)
+    output["defender_height_inches"] = pd.to_numeric(
+        output["CLOSEST_DEFENDER_PLAYER_ID"], errors="coerce"
+    ).map(heights)
+    output["height_difference_inches"] = (
+        output["shooter_height_inches"] - output["defender_height_inches"]
+    )
+    return output, {
+        "height_source_players": int(heights.size),
+        "shooter_height_coverage": float(output["shooter_height_inches"].notna().mean()),
+        "defender_height_coverage": float(output["defender_height_inches"].notna().mean()),
+        "height_difference_coverage": float(output["height_difference_inches"].notna().mean()),
+    }
+
+
 def run_historical_shot_quality(
     shot_log_path: str | Path,
     pbp_paths: tuple[str | Path, ...],
     *,
+    player_sheet_path: str | Path,
     artifact_root: str | Path,
 ) -> dict:
     shot_log_path = Path(shot_log_path)
@@ -143,6 +184,7 @@ def run_historical_shot_quality(
         raise ValueError(f"Shot log is missing {missing}.")
     pbp = load_pbp_shot_context(pbp_paths)
     panel, join_quality = attach_pbp_context(shots, pbp)
+    panel, height_quality = attach_player_heights(panel, player_sheet_path)
     panel = panel.rename(
         columns={
             "SHOT_CLOCK": "shot_clock",
@@ -190,7 +232,7 @@ def run_historical_shot_quality(
     baseline_log_loss = float(metrics.loc[metrics["arm"].eq("location_only"), "log_loss"].iloc[0])
     metrics["log_loss_improvement_vs_location_only"] = baseline_log_loss - metrics["log_loss"]
 
-    probability = prediction["expected_make_full_context"]
+    probability = prediction["expected_make_kobe_inspired_context"]
     prediction["actual_points"] = prediction["points_type"] * prediction["made"]
     prediction["expected_points"] = prediction["points_type"] * probability
     prediction["points_above_expected"] = prediction["actual_points"] - prediction["expected_points"]
@@ -219,7 +261,11 @@ def run_historical_shot_quality(
         "season": 2015,
         "temporal_split": {"train_before": str(pd.Timestamp(cutoff).date()), "test_on_or_after": str(pd.Timestamp(cutoff).date())},
         "feature_arms": {name: list(values) for name, values in FEATURE_ARMS.items()},
-        "source_hashes": {"shot_log": sha256_file(shot_log_path), "pbp_files_combined": pbp_hash},
+        "source_hashes": {
+            "shot_log": sha256_file(shot_log_path),
+            "player_sheet": sha256_file(player_sheet_path),
+            "pbp_files_combined": pbp_hash,
+        },
         "pbp_file_count": len(pbp_paths),
         "builder_sha256": sha256_file(Path(__file__)),
     }
@@ -234,7 +280,12 @@ def run_historical_shot_quality(
         "status": "historical_research_prototype",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "config": config,
-        "quality": {**join_quality, "train_games": int(panel.loc[train, "GAME_ID"].nunique()), "test_games": int(panel.loc[test, "GAME_ID"].nunique())},
+        "quality": {
+            **join_quality,
+            **height_quality,
+            "train_games": int(panel.loc[train, "GAME_ID"].nunique()),
+            "test_games": int(panel.loc[test, "GAME_ID"].nunique()),
+        },
         "metrics": metrics.to_dict(orient="records"),
         "caveats": [
             "The public source covers only 2014-15 and has no declared data license; outputs are research-only.",
@@ -242,6 +293,7 @@ def run_historical_shot_quality(
             "The test is one within-season temporal split, not a modern-season validation.",
             "Fast-break context is fuzzy-matched to play-by-play within five seconds.",
             "The PBP assisted flag is excluded because assists are recorded only after made shots; zero dribbles and short touch time are the pre-shot pass proxies.",
+            "The KOBE-inspired arm adds shooter-minus-defender height and period clock, but it is a histogram GBM fit in one pooled shot model rather than Narsu's separate close-shot and long-shot logistic regressions.",
         ],
         "paths": {"metrics": "metrics.parquet", "shotmaking": "shotmaking.parquet", "closest_defender_residuals": "closest_defender_residuals.parquet"},
     }

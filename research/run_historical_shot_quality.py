@@ -17,6 +17,7 @@ def main() -> None:
     run = run_historical_shot_quality(
         ROOT / "data/lake/bronze/historical_shot_context/2015/shot_logs.csv",
         tuple(sorted(pbp.glob("2015_*.csv"))),
+        player_sheet_path=ROOT / "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2015.parquet",
         artifact_root=ROOT / "artifacts",
     )
     print(json.dumps(run, indent=2))

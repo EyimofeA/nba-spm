@@ -208,17 +208,32 @@ set rather than narrate those coefficients as defense skill.
 ### Current defense fields missing from this older table
 
 The deployed research feature contract is wider than the 50-feature defense
-matrix audited above. It already contains `rim_points_saved_p100`:
+matrix audited above. It contains a stabilized rim-points-saved field and the
+builder now also exposes the raw version:
 
 ```text
+rim_points_saved_p100_raw =
+    2 * rim_attempts_p100 * (normal_rim_FG% - defended_rim_FG%)
 rim_diff_pct_eb = rim_attempts / (rim_attempts + 100) * raw_rim_diff_pct
 rim_points_saved_p100 = -2 * rim_attempts_p100 * rim_diff_pct_eb / 100
 ```
 
-Positive is good. It estimates points prevented relative to the NBA's expected
-rim accuracy on shots for which the player was recorded as the nearest
-defender. It is still an observational comparator: shooter quality, help
-responsibility, fouls, exact rim location, and scheme are not jointly modeled.
+Positive is good. `rim_points_saved_p100` is the empirical-Bayes stabilized
+version retained by the frozen SPM. `rim_points_saved_p100_raw` is the literal
+calculation before shrinkage. The NBA dashboard comparator is the shooters'
+normal field-goal percentage for the defended rim-shot sample, not a modern
+tracking xFG model. Both fields are observational. Help responsibility, fouls,
+exact rim location, deterrence, and scheme are not jointly modeled.
+
+The box feature panel also contains:
+
+```text
+SelfORB adjusted TS% =
+    points / (2 * (FGA + 0.44 * FTA - self offensive rebounds))
+```
+
+`SelfOReb` is an observed source count. It is not imputed from total offensive
+rebounds. The current frozen SPM feature list does not use this new candidate.
 
 The feature builder now also emits `event_stops_p100`, matching Gabriel's public
 event-count definition:
