@@ -233,3 +233,14 @@ estimands:
     target_definition: annual offense and defense points RAPM estimated from annual true-shooting, turnover, and offensive-rebound RAPMs
     intended_use: test whether opportunity-specific factor RAPMs reconstruct ordinary points RAPM across seasons
     forbidden_interpretation: causal factor credit, independent validation, future forecast, or production player rating
+
+  - estimand_id: factor_target_sparse_spm_v1
+    name: Sparse statistical models of annual factor RAPM
+    status: research_only
+    unit: factor_rating_then_points_per_100_possessions
+    population: qualified NBA player-seasons from 2024 through 2026
+    window_definition: same-season features and annual factor targets, with 2024 development, 2025 selection, and reused 2026 diagnostics
+    information_cutoff_rule: only the named season's player statistics and leave-one-player-out recorded-team context; Season 2027 untouched
+    target_definition: separate offense and defense shooting-TS, turnover, and offensive-rebound RAPMs, followed by a learned side-specific map into ordinary points RAPM
+    intended_use: test whether small related feature sets estimate factor RAPM and whether teammate context improves that estimate
+    forbidden_interpretation: causal factor credit, teammate skill, independent validation, future forecast, production rating, or untouched confirmation

@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 
 from nba_impact.data.defensive_tracking_features import (
+    DEFENSIVE_TRACKING_FEATURES,
     _load_box as _load_defensive_box,
     compute_defensive_tracking_features,
 )
@@ -164,20 +165,23 @@ def build_annual_auxiliary_features(
         pd.to_numeric(rim["year"], errors="coerce").dropna().astype(int)
     )
     defensive["rim_source_observed"] = defensive["Season"].isin(actual_rim_seasons)
+    playtype_columns = [
+        column
+        for column in playtype.columns
+        if column not in {"PLAYER_ID", "Season"}
+    ]
     output = box[["PLAYER_ID", "Season"]].merge(
-        playtype[["PLAYER_ID", "Season", "zts_pct_points", "synergy_possessions"]],
+        playtype[["PLAYER_ID", "Season", *playtype_columns]],
         on=["PLAYER_ID", "Season"],
         how="left",
         validate="one_to_one",
     ).merge(
-        defensive[
-            [
-                "PLAYER_ID",
-                "Season",
-                "rim_points_saved_p100",
-                "rim_source_observed",
-            ]
-        ],
+        defensive[[
+            "PLAYER_ID",
+            "Season",
+            *DEFENSIVE_TRACKING_FEATURES,
+            "rim_source_observed",
+        ]],
         on=["PLAYER_ID", "Season"],
         how="left",
         validate="one_to_one",

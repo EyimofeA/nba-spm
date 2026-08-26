@@ -132,6 +132,13 @@ Canonical code: `src/nba_impact/models/five_year_target_spm.py`.
   offense feature set. That does not erase its predictive benchmark, but its
   side interpretation is not publication-clean. Correct and refit it before
   any promotion decision.
+- Factor-target run `factor_target_sparse_spm_v1_5b120e918f` predicts annual
+  shooting-TS, turnover, and offensive-rebound RAPMs from 2--5 directly related
+  fields per factor-side. The predicted factors reconstruct reused 2026 normal
+  RAPM at `.247` R² with teammate context versus `.200` without it. A direct
+  related-feature model reaches `.305`; oracle factor ratings reach `.948`.
+  Context improves four of six factor targets on 2026 after improving all six
+  on 2025. Keep it as a context ablation, not player skill or a public model.
 
 ### Same-season feature research
 
