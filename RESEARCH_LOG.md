@@ -4350,3 +4350,24 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   to the exact-stint run. Absolute values are not comparable to the public
   benchmark; all arms here still use identical rows. Full details are in
   `docs/impact/SPM_CHEATING_LADDER_V1.md`.
+
+## 2026-08-26 - PIPM as the prior, not the standalone metric
+
+- **Correction:** The cheating ladder did not answer whether PIPM is a better
+  prior for AIO. It compared standalone ratings. Run
+  `aio_prior_bakeoff_v1_0a3591a402` changes only the prior inside the same
+  one-season terminal-lineup `3000 / 3000 / 300` RAPM update.
+- **Design:** Five arms score identical 2022--24 future games: zero prior,
+  frozen five-year SPM, selected five-year SPM, forward-chained BoxPIPM-style,
+  and a PIPM-like box plus raw-on/off prior. All use center scale one. The box
+  and PIPM-like models train only on earlier five-year target windows.
+- **Result:** Mean game-margin RMSE is `13.8902` for selected five-year SPM,
+  `13.8360` for BoxPIPM-style and `13.8312` for PIPM-like. BoxPIPM wins 2022
+  and 2024 and loses 2023. Its mean gain is `0.0541` points per game. The paired
+  MSE interval against selected SPM is `[-2.6854, -0.5279]` over 10,000
+  season-stratified whole-game draws.
+- **Decision:** BoxPIPM-style earns a canonical 2025--26 follow-up. It does not
+  replace SPM from reused development evidence. The slightly better PIPM-like
+  arm is not preferred because raw same-season on/off double counts lineup
+  outcomes already present in the RAPM likelihood. Full details are in
+  `docs/impact/AIO_PRIOR_BAKEOFF_V1.md`.

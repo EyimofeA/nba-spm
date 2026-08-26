@@ -80,6 +80,12 @@ dead ends. Updated 2026-08-25. See `docs/README.md` for the document index,
   improves next-season net RAPM RMSE by `.002` and `.012` on the two reused
   folds. Retain the family for a later joint refit; do not change production or
   the frozen five-year research model from this small inspected gain.
+- Controlled run `aio_prior_bakeoff_v1_0a3591a402` replaces only the prior in
+  the same one-season `3000 / 3000 / 300` RAPM update. A BoxPIPM-style prior
+  lowers reused 2022--24 future-game RMSE by `.0541` versus selected five-year
+  SPM and wins two folds. Its paired MSE interval excludes zero. This earns a
+  canonical 2025--26 follow-up, not promotion. The raw-on/off PIPM-like arm is
+  rejected as a clean prior because it double counts lineup outcomes.
 - External benchmark `external_impact_benchmark_v1_bab43a4087` matches at least
   98.47% of SPM rows per window to minutes-weighted BPM and xRAPM. Among 2,295
   high-exposure player-windows, net SPM correlates 0.876 with BPM and 0.756 with
