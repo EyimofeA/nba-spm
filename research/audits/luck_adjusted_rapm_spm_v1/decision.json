@@ -1,0 +1,25 @@
+{
+  "created_at": "2026-08-26T05:00:49.817097+00:00",
+  "experiment_id": "luck_adjusted_rapm_spm_v1",
+  "game_winners": [
+    {
+      "arm": "normal_realized_points",
+      "margin_rmse": 15.054063059335624,
+      "test_season": 2025
+    },
+    {
+      "arm": "ft3p_player_skill_adjusted_joint",
+      "margin_rmse": 15.389806842219162,
+      "test_season": 2026
+    }
+  ],
+  "legacy_ft3p_rmse_delta": {
+    "2025": 0.065598071541487,
+    "2026": -0.08339320994496369
+  },
+  "promotion": false,
+  "reason": "Every broad luck arm loses future-game RMSE to normal RAPM in both reused diagnostics. Two luck target seasons are insufficient for chronological SPM model selection.",
+  "source_run_id": "luck_adjusted_rapm_v1_8580bb30e9",
+  "spm_verdict": "blocked_by_label_history: only 2024-25 have complete shot-level expectations before the 2026 output",
+  "verdict": "normal_realized_points_retained"
+}

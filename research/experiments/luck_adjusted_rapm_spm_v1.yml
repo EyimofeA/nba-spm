@@ -1,0 +1,60 @@
+schema_version: experiment_preregistration_v1
+experiment_id: luck_adjusted_rapm_spm_v1
+status: preregistered_reused_diagnostic
+estimand_id: luck_adjusted_player_impact_v1
+created_at: 2026-08-26
+
+arms:
+  - normal_realized_points
+  - opponent_luck_adjusted
+  - teammate_and_opponent_luck_adjusted
+  - full_expected_outcome
+
+season_policy:
+  expectation_development_end: 2024
+  diagnostic_seasons: [2025, 2026]
+  final_training_seasons: [2024, 2025]
+  output_season: 2026
+  forbidden_season: 2027
+
+data:
+  annual_shooting_start: 2014
+  annual_shooting_end: 2025
+  shot_event_seasons: [2024, 2025, 2026]
+  lineup_policy: terminal
+  game_types: [regular]
+
+shot_expectation:
+  logistic_c_grid: [0.05, 0.2, 1.0]
+  tuning_season: 2024
+  tuning_train_game_share: 0.7
+  current_game_out_folds: 3
+  features: player_neutral_location_clock_score_home_period
+
+shooting_skill:
+  categories: [ft, rim, short_mid, long_mid, corner_3, above_break_3]
+  prior_attempt_grid: [25.0, 50.0, 100.0, 200.0]
+  half_life_grid: [1.0, 2.0, 3.0, 5.0, null]
+  selection_seasons: [2019, 2020, 2021, 2022, 2023, 2024]
+  primary_metric: equal_season_binomial_log_loss
+  tie_break: [equal_season_brier, prior_attempts, half_life_label]
+
+rapm:
+  lambda_off: 3000.0
+  lambda_def: 3000.0
+  lambda_home: 300.0
+  prior_scale: 1.0
+
+interpretation:
+  normal_realized_points: ordinary joint points RAPM
+  opponent_luck_adjusted: normal offense plus expected-conversion defense
+  teammate_and_opponent_luck_adjusted: expected-conversion RAPM plus an offense-only pre-season empirical-Bayes shooter-skill add-back
+  full_expected_outcome: player-neutral expected conversion with no shooter-skill add-back
+
+stopping_rules:
+  - Select shot-model and empirical-Bayes settings using information through 2024 only.
+  - Treat 2025 and 2026 as reused diagnostics; do not redesign after scoring them.
+  - Reject Season 2027 before reading any input file.
+  - Keep every luck arm separate from normal RAPM.
+  - Do not promote a luck-adjusted SPM from only two target seasons.
+

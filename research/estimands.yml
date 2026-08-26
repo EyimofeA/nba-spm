@@ -102,6 +102,17 @@ estimands:
     intended_use: context-residual RAPM research against normal RAPM on identical games
     forbidden_interpretation: optical-tracking EPV, player-aware expected points, causal player value, or production rating before validation
 
+  - estimand_id: luck_adjusted_player_impact_v1
+    name: Conversion-adjusted retrospective player impact
+    status: research_null
+    unit: points_per_100_possessions
+    population: NBA regular-season players with terminal-lineup and shot-event coverage
+    window_definition: explicit complete seasons with whole-game-out or prior-season shot expectations
+    information_cutoff_rule: current game excluded from shot expectation; player shooting skill estimated only from seasons before the adjusted season
+    target_definition: normal points RAPM compared with opponent, teammate-and-opponent, and player-neutral expected-conversion variants
+    intended_use: test whether removing estimated shot-conversion residual improves future RAPM or future-game prediction
+    forbidden_interpretation: production RAPM, causal shooting credit, causal defense, primary-defender value, or validated luck-adjusted SPM
+
   - estimand_id: player_neutral_expected_possession_points_v1
     name: Player-neutral expected possession points
     status: research_null

@@ -3882,3 +3882,35 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   neutral RAPM center rather than fabricated forecasts.
 - **Decision:** Local research use only pending untouched confirmation and a
   complete player-population policy. No raw NBA data enters the bundle.
+
+## 2026-08-26 - Four-arm luck-adjusted RAPM target experiment
+
+- **Data:** Used 743,946 canonical 2024-26 terminal-lineup possessions, 654,376
+  field-goal attempts with location, complete FT events, and 2014-25 annual
+  player shooting histories. Mapped conversion events account for 99.00% of
+  possession points. No download was required.
+- **Expectations:** Selected player-neutral logistic regularization and
+  empirical-Bayes shooting half-lives/prior strengths through 2024 only.
+  Expected-shot predictions exclude the current game; 2025 and 2026 use only
+  earlier-season shots. Player skill add-backs use only seasons before the
+  adjusted season.
+- **Four arms:** Normal realized points; normal offense plus expected-conversion
+  defense; expected-conversion RAPM plus an offense-only repeatable-shooter
+  add-back; and fully player-neutral expected conversion.
+- **Game result:** Normal RAPM wins both reused diagnostics. Its RMSE is
+  `15.0541` in 2025 and `15.4732` in 2026. The three broad luck arms score
+  `15.5132/15.5675`, `15.6971/15.5693`, and `15.7966/15.7941`.
+- **Earlier result reproduced:** A separate player-skill FT/3P joint adjustment
+  changes RMSE by `+0.0656` in 2025 and `-0.0834` in 2026. The 2026 result is
+  close to the earlier documented `-0.093`, but its paired 95% interval is
+  `[-0.2318, +0.0717]`, and the same frozen arm loses in 2025.
+- **Future RAPM:** Expected-outcome arms lower future-normal-RAPM RMSE mainly by
+  compressing dispersion, while losing net correlation to normal RAPM in both
+  years. They therefore do not pass the downstream AIO gate.
+- **SPM stop:** Complete expected-outcome labels begin in 2024. Only 2024 and
+  2025 are legal training labels for a 2026 SPM, which is insufficient for the
+  required chronological feature and learner selection. No luck SPM was
+  forced or promoted.
+- **Decision:** Retain normal realized-points RAPM. Record all luck variants as
+  research nulls. Do not redesign on reused 2025/26 results. Season 2027 was
+  not loaded.
