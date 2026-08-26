@@ -1,0 +1,81 @@
+schema_version: experiment_preregistration_v1
+experiment_id: five_year_target_spm_v1
+status: preregistered_reused_diagnostic
+created_at: 2026-08-26
+estimand_id: five_year_target_statistical_impact_v1
+
+hypothesis: >-
+  An SPM trained on rolling five-year zero-prior RAPM labels produces a more
+  predictive player rating and a better prior for single-season RAPM than the
+  same frozen learners trained on one-season RAPM labels.
+
+model_contract:
+  feature_grain: one rolling five-year player window
+  annual_comparator_feature_grain: one player-season
+  five_year_label: zero-prior terminal-lineup RAPM for the same five seasons as the statistical feature window
+  annual_label: zero-prior terminal-lineup RAPM for the feature season
+  offense_learner: frozen histogram GBM
+  defense_learner: frozen ridge
+  additional_offense_features:
+    - zts_pct_points
+  additional_defense_features:
+    - dfg_attempts_p100
+    - dfg_diff_pct_eb
+    - rim_dfga_p100
+    - rim_diff_pct_eb
+    - rim_points_saved_p100
+    - deflections_p100
+    - charges_drawn_p100
+    - contested_2pt_p100
+    - contested_3pt_p100
+    - def_loose_balls_recovered_p100
+    - matchup_opponent_adjusted_points_saved_p100_eb
+    - matchup_fga_suppressed_vs_scorer_p100_eb
+    - matchup_shotmaking_points_saved_vs_scorer_p100_eb
+    - matchup_three_pa_suppressed_vs_scorer_p100_eb
+    - matchup_turnovers_forced_vs_scorer_p100_eb
+    - matchup_assists_suppressed_vs_scorer_p100_eb
+    - matchup_shooting_fouls_prevented_vs_scorer_p100_eb
+    - matchup_blocks_p100
+  net_identity: offense plus defense
+  sample_weight: square root of the smaller target exposure
+  minimum_five_year_training_ends: 3
+  rating_seasons: [2021, 2022, 2023, 2024, 2025, 2026]
+
+aio_contract:
+  likelihood_seasons: 1
+  lambda_off: 3000.0
+  lambda_def: 3000.0
+  lambda_home: 300.0
+  center_scale: 1.0
+  lineup_policy: terminal
+  game_types: [regular]
+  identity: SPM prior plus one-season possession likelihood, not arithmetic addition
+
+evaluation:
+  development_test_seasons: [2022, 2023, 2024]
+  reused_diagnostic_test_seasons: [2025, 2026]
+  untouched_confirmation_seasons: [2027]
+  primary: equal-season mean next-season game-margin RMSE
+  secondary:
+    - next-season game-margin correlation
+    - next-season one-season RAPM RMSE and correlation
+    - paired whole-game MSE interval
+  identical_rows: required within every test season
+  comparators:
+    - one-season zero-prior RAPM
+    - annual-target SPM
+    - annual-target SPM prior plus one-season RAPM
+    - five-year-target SPM
+    - five-year-target SPM prior plus one-season RAPM
+
+decision_rule: >-
+  The five-year-target AIO becomes the research SPM replacement only if it beats
+  the annual-target AIO on development mean game RMSE and in both reused
+  diagnostic seasons. Production promotion still requires untouched 2027.
+
+stopping_rules:
+  - Freeze the current feature list and learner families; this is a target-only comparison.
+  - Do not tune center scale, penalties, features, or models after scoring 2025 or 2026.
+  - Reject Season 2027 before loading any possession, feature, or target row.
+  - Keep the public SPM unchanged unless a later untouched confirmation passes.

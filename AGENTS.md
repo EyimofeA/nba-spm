@@ -104,6 +104,22 @@ Canonical code: `src/nba_impact/models/rapm.py` and
 Canonical code: `src/nba_impact/models/single_season_spm.py` and
 `src/nba_impact/models/annual_spm_priors.py`.
 
+### Five-year SPM research default
+
+- One row pools five seasons of player statistics; its label is RAPM over the
+  identical five seasons.
+- Complete windows run from 2018 through 2026. Historical fits train only on
+  earlier window ends.
+- The model retains the frozen 127 offense and 68 defense inputs and learners.
+- For AIO season `t`, this SPM is the prior and only season `t` possessions are
+  the likelihood. It is not a five-year RAPM likelihood.
+- Run `five_year_target_spm_v1_65550acb79` beat the annual-prior AIO and
+  zero-prior RAPM in next-season game-margin RMSE for every 2022--26 test.
+- Treat it as the research replacement, not a public promotion, until the
+  untouched 2027 confirmation.
+
+Canonical code: `src/nba_impact/models/five_year_target_spm.py`.
+
 ### Annual AIO
 
 - SPM supplies the coefficient prior mean.
@@ -142,7 +158,7 @@ predeclared hypothesis:
 - fractional possession attribution;
 - exact constrained RAPM solver;
 - another RAPM penalty search;
-- alternative SPM target horizons;
+- further SPM target-horizon tuning after the selected five-year run;
 - state-space promotion;
 - neural win-probability models on this Mac.
 - further tuning of the failed actual-age time-decay challenger;
