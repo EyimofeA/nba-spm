@@ -1,0 +1,42 @@
+schema_version: experiment_preregistration_v1
+experiment_id: predictive_current_aio_2026_v1
+status: preregistered_reused_diagnostic
+estimand_id: current_latent_strength_v1
+created_at: 2026-08-26
+
+hypothesis: >-
+  Five trailing seasons of zero-prior RAPM are the frozen possession backbone.
+  Exponential decay or a raw next-season SPM prior may improve future-game
+  margins, but neither is accepted unless it wins across 2020-24.
+
+development_seasons: [2020, 2021, 2022, 2023, 2024]
+reused_diagnostic_seasons: [2025, 2026]
+window_seasons: 5
+half_lives_years: [0.5, 1.0, 2.0, 3.0, 5.0, null]
+spm_prior_run: predictive_spm_trajectory_ablation_v1_8d310a2ad6
+spm_prior_method: raw
+spm_center_scale: 1.0
+
+rapm:
+  lambda_off: 3000.0
+  lambda_def: 3000.0
+  lambda_home: 300.0
+  lineup_policy: terminal
+  game_types: [regular]
+
+selection:
+  time_decay: equal-season mean future-game margin RMSE on 2020-24
+  final_arm: equal-season mean future-game margin RMSE on 2020-24
+  tie_break: lexical arm name
+  identical_games: required within every test season
+
+bootstrap:
+  draws: 2000
+  seed: 20260826
+
+stopping_rules:
+  - The raw SPM prior and age null are frozen before this run.
+  - No player penalty, center scale, half-life, or arm changes after diagnostics.
+  - Seasons 2025 and 2026 are reused diagnostics only.
+  - Season 2027 is rejected before possession data are read.
+

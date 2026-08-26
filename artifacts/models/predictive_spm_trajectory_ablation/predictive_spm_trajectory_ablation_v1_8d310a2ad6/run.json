@@ -1,0 +1,58 @@
+{
+  "created_at": "2026-08-26T04:27:26.899336+00:00",
+  "development_seasons": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "estimand_id": "next_season_strength_forecast_v1",
+  "experiment_id": "predictive_spm_trajectory_ablation_v1",
+  "forbidden_interpretation": "This is a reused next-season player-impact diagnostic, not an untouched confirmation, availability model, or retrospective season rating.",
+  "methods": [
+    "raw",
+    "shared_age",
+    "side_age",
+    "side_age_opportunity"
+  ],
+  "paths": {
+    "all_2026_predictions": "all_2026_predictions.parquet",
+    "development_summary": "development_summary.parquet",
+    "fold_metrics": "fold_metrics.parquet",
+    "selected_predictions": "selected_predictions.parquet"
+  },
+  "quality": {
+    "complete_origin_metadata_rows": 3491,
+    "excluded_missing_origin_metadata": 0,
+    "maximum_component_identity_error": 2.220446049250313e-16,
+    "prediction_rows": 3491,
+    "role_stratified_status": "not_run_no_frozen_time_safe_role_panel_through_2025",
+    "scored_rows": 12316,
+    "selected_rows": 3079
+  },
+  "reused_diagnostic_seasons": [
+    2025,
+    2026
+  ],
+  "ridge_alpha": 25.0,
+  "run_id": "predictive_spm_trajectory_ablation_v1_8d310a2ad6",
+  "selected_method": "raw",
+  "source_hashes": {
+    "contract": "8e5f9386075c69e6f0d788ae41ac531bbc8fefcbaf841c93e7557d5d15061af3",
+    "player_sheets": {
+      "2018": "f5d6848984398f63ebe2443bfbaa4f0004ce8b3f3e52e17aa57648ba316aeb78",
+      "2019": "592128b19eebc8de29fd90b66e2cd420ecf39a58f7f54dd8e623b029143bcd0b",
+      "2020": "fd7f62933e6fbad6610f58dff051181fd3eb3a481e305910c2d3ff9c98fb0fb7",
+      "2021": "40f426a6a3bfad664333a4721ec18ba56a413583a824198c7ecdd71e1f23c628",
+      "2022": "deb84af6ebecf428c2a159ac472248199ec125a1b78b62126ded71e135e92582",
+      "2023": "07d0ce9028bca9c0ffca46e81a8b66156ec31e8729bfd73c96c8fd2e53420816",
+      "2024": "46587d70f2fb517bc20629ddc30ba0b6952683d2570a373d259202df364e43a3",
+      "2025": "575987a927308bcf478c3b20d9022734d6ad5b75ec63098386b43e9898c2e5ec",
+      "2026": "3a8f611f5767397f0d39b19d70af9706181eab46ecf065837aa2a2936dc908fa"
+    },
+    "predictions": "9af772dc9d80a03a0340ce788f808311765494921b2320479437dda42dae435d",
+    "source_code": "b600141ed6dbfb184057de1be4fd73dcf6b8486d6a0c9d3b8d95b11683bcbb44"
+  },
+  "status": "research_ablation_complete"
+}

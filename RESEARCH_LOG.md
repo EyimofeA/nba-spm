@@ -3835,3 +3835,50 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   five-year zero-prior RAPM as the predictive history backbone. Do not force a
   full-strength SPM prior into that fit. Maximum loaded season was 2024;
   Seasons 2025, 2026, and 2027 were not used.
+
+## 2026-08-26 - Predictive SPM trajectory ablation
+
+- **Question:** Do age or lagged opportunity repair the frozen predictive SPM
+  before it is used as a current-strength prior?
+- **Method:** Compared the unchanged raw forecast with shared-age, separate
+  offense/defense age, and side-age-plus-lagged-minutes/games residual ridge
+  corrections. Every test season used only earlier target seasons. Selection
+  used equal-season weighted net RMSE over 2020-24; 2025-26 were reused
+  diagnostics only.
+- **Result:** Raw SPM wins development RMSE at `1.604696`. Side-age scores
+  `1.612733`, shared-age `1.612834`, and side-age plus opportunity `1.621506`.
+- **Decision:** Freeze the raw predictive SPM. Age and opportunity are clean
+  nulls for this model; neither enters the current-strength prior.
+
+## 2026-08-26 - Predictive current-strength AIO
+
+- **Method:** Fit terminal-lineup RAPM over five trailing seasons with fixed
+  `3000/3000/300` penalties. Selected exponential possession decay from
+  half-lives of `0.5`, `1`, `2`, `3`, `5`, and no decay on future-game margins
+  from 2020-24. Compared zero-prior and raw predictive-SPM-centered fits on
+  identical held-out games. No center-scale or player-penalty search was run.
+- **Result:** A two-year half-life wins. The decayed SPM-prior AIO has mean
+  development game-margin RMSE `13.7122`, versus `13.7429` for decay alone,
+  `13.7550` for an undecayed SPM-prior fit, and `13.7681` for five-year
+  zero-prior RAPM. It wins four of five folds. A 10,000-draw paired whole-game
+  bootstrap favors it over each frozen comparator. Reused 2025 and 2026 RMSEs
+  are `14.7719` and `15.1817`, versus `14.8551` and `15.2962` for the frozen
+  five-year zero-prior reference.
+- **Decision:** Keep `predictive_current_aio_2026_v1_c18e2472ec` as the
+  research current-strength champion. It is not confirmed or public. Season
+  2027 remains untouched.
+
+## 2026-08-26 - CourtSignal 2026 research bundle
+
+- **Artifact:** `courtsignal_2026_research_bundle_v1_3913f9efd6` joins two
+  explicitly different 2026 estimands: retrospective annual SPM and predictive
+  current-strength AIO.
+- **Lineage:** The annual SPM row is the 2026 out-of-fold prediction from
+  `single_season_spm_v1_47b3bd9b17`, trained on 2014-25. The predictive row
+  uses 2021-25 possessions, two-year decay, and a raw predictive-SPM prior
+  trained through 2025.
+- **Coverage:** The bundle contains 582 active 2026 players. A predictive prior
+  is available for 79.73%; rookies and nonconsecutive players receive the
+  neutral RAPM center rather than fabricated forecasts.
+- **Decision:** Local research use only pending untouched confirmation and a
+  complete player-population policy. No raw NBA data enters the bundle.

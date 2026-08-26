@@ -1,0 +1,40 @@
+schema_version: experiment_preregistration_v1
+experiment_id: predictive_spm_trajectory_ablation_v1
+status: preregistered_reused_diagnostic
+estimand_id: next_season_strength_forecast_v1
+created_at: 2026-08-26
+
+hypothesis: >-
+  A small aging correction may improve the frozen basketball-information SPM.
+  Lagged opportunity may reveal coach information, but it must remain a named
+  ablation because it is not a basketball skill and must not redefine
+  retrospective per-100 impact.
+
+source_predictions: predictive_spm_v1_9392b98d58
+development_seasons: [2020, 2021, 2022, 2023, 2024]
+reused_diagnostic_seasons: [2025, 2026]
+methods: [raw, shared_age, side_age, side_age_opportunity]
+ridge_alpha: 25.0
+
+methods_definition:
+  raw: frozen predictive SPM with no age or opportunity input
+  shared_age: one common smooth age residual curve with a side indicator
+  side_age: separate offense and defense smooth age residual curves
+  side_age_opportunity: side-age curves plus lagged minutes and games
+
+information_cutoff:
+  - Each test season trains residual corrections only on earlier target seasons.
+  - Forecast age equals prior-season observed age plus one.
+  - Minutes and games come only from the prior season.
+  - Season 2027 is rejected before any model or metadata input is read.
+
+selection:
+  primary: equal-season mean weighted net RMSE across 2020-2024
+  tie_break: lexical method name
+  weighting: square root of target-season minimum-side possessions
+
+stopping_rules:
+  - No ridge, knot, feature, or method search after 2025 or 2026 is scored.
+  - The winner may supply a predictive AIO prior but cannot change annual SPM.
+  - Rookies remain outside the frozen predictive-SPM population.
+

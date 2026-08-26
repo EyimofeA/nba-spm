@@ -27,14 +27,14 @@ estimands:
 
   - estimand_id: current_latent_strength_v1
     name: Current latent player strength
-    status: not_implemented
+    status: research_challenger
     unit: points_per_100_possessions
     population: active NBA players at an explicit date
-    window_definition: filtered state as of a stated date
-    information_cutoff_rule: only data available by that date
-    target_definition: latent ability after separating observation noise and time change
-    intended_use: current player comparison and roster scenarios
-    forbidden_interpretation: retrospective season impact
+    window_definition: five trailing regular seasons with exponential possession weighting selected on development seasons
+    information_cutoff_rule: only possessions, terminal lineups, and cross-fitted next-season SPM predictions available before the rated season
+    target_definition: two-year-half-life RAPM centered on a raw predictive-SPM prior, with offense and defense estimated jointly
+    intended_use: research comparison of current player strength and future-game margin prediction
+    forbidden_interpretation: retrospective season impact, public production rating, roster-only forecast, causal player value, or confirmed current ability
 
   - estimand_id: filtered_time_decayed_normal_rapm_proxy_v1
     name: Filtered time-decayed normal-RAPM trajectory
