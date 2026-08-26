@@ -1,0 +1,29 @@
+{
+  "experiment_id": "spm_target_horizon_full_v1",
+  "run_id": "spm_target_horizon_full_v1_f0777db1d4",
+  "status": "development_winner_frozen",
+  "development_seasons": [2020, 2021, 2022, 2023, 2024],
+  "retrospective_spm_target": "one_year_rapm",
+  "predictive_history_backbone": "five_year_zero_prior_rapm",
+  "future_game_mean_rmse": {
+    "5y_zero_prior": 13.768144,
+    "6y_zero_prior": 13.801007,
+    "3y_zero_prior": 13.818948,
+    "5y_spm_centered_aio": 13.826903,
+    "3y_spm_centered_aio": 13.832104,
+    "expanding_zero_prior": 13.854658,
+    "6y_spm_centered_aio": 13.855870,
+    "1y_spm_centered_aio": 13.873584,
+    "expanding_spm_centered_aio": 13.903366,
+    "1y_zero_prior": 13.969771
+  },
+  "paired_95_interval_challenger_minus_5y_zero_prior": {
+    "6y_zero_prior": [0.013358, 0.052734],
+    "3y_zero_prior": [0.005839, 0.095106],
+    "5y_spm_centered_aio": [0.029926, 0.087609],
+    "1y_spm_centered_aio": [0.020651, 0.188375]
+  },
+  "decision": "Keep one-year RAPM as the retrospective SPM target. Use five-year zero-prior RAPM as the frozen predictive history backbone. Do not use a fixed full-strength SPM center for the five-year fit because it worsened future-game RMSE in every development fold.",
+  "seasons_2025_2026_used": false,
+  "season_2027_loaded": false
+}
