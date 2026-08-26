@@ -4239,3 +4239,36 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Research null. Keep the full five-year SPM as baseline, correct
   its foul-field lineage before promotion, and do not run the hand-selected
   challenger's AIO update.
+
+## 2026-08-26 - Sparse factor-target SPM and teammate context
+
+- **Question:** Can small related feature sets estimate annual shooting-TS,
+  turnover and offensive-rebound RAPMs, and does leave-one-player-out teammate
+  context help? Run `factor_target_sparse_spm_v1_5b120e918f` trains on 2024,
+  selects per-target ridge penalties on 2025, refits on 2024--25 and diagnoses
+  387 qualified 2026 players. Season 2027 is untouched.
+- **Features:** Each of six factor-side heads uses two to five directly related
+  inputs. The context candidate adds two or three possession-weighted
+  same-team fields after subtracting the focal player's contribution. Context
+  covers spacing, creation, rim pressure, turnover burden, offensive load,
+  OREB, DREB, contests, event stops, deflections and rim points saved. Roles,
+  demographics, minutes, games, on/off and external metrics remain excluded.
+- **Factor targets:** Context improves all six 2025 selection RMSEs and four of
+  six reused 2026 RMSEs. On 2026 it raises turnover offense/defense R-squared
+  from `.266/.367` to `.295/.413`, offensive-rebound offense/defense from
+  `.279/.126` to `.432/.159`, and leaves shooting offense/defense flat at
+  `.217/.035` versus `.218/.037`.
+- **Normal RAPM reconstruction:** Oracle factor ratings reconstruct 2026 normal
+  net RAPM at `.470` RMSE, `.974` correlation and `.948` R-squared. Predicted
+  factors reach `1.835/.457/.200` without context and `1.781/.505/.247` with
+  context. Direct related-feature SPM reaches `1.794/.486/.236`; adding context
+  improves it to `1.710/.563/.305`. Mean-only RMSE is `2.052`.
+- **Interpretation:** The factor decomposition is sound when factor ratings are
+  observed. Sparse statistical estimation of the factor targets is the main
+  bottleneck. Teammate context is worth retaining for research, mainly for
+  turnover and rebounding; teammate spacing itself has little conditional
+  weight in this run.
+- **Caveats:** Same-season context can absorb team and scheme strength and is
+  not player skill. Annual `TEAM_ID` makes traded-player context approximate.
+  Defended-shot data end in 2025, so the 2026 shooting-defense test lacks the
+  observed rim/DFG family. This is reused diagnostic evidence, not promotion.

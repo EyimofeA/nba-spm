@@ -43,6 +43,9 @@ Start at the repository root:
   2017–23;
 - [`impact/FACTOR_DECOMPOSITION.md`](impact/FACTOR_DECOMPOSITION.md) — factor
   feature families, public benchmark formulas, and AIO explanation contract;
+- [`impact/FACTOR_TARGET_SPM.md`](impact/FACTOR_TARGET_SPM.md) — sparse
+  statistical models of shooting, turnover, and rebounding RAPM plus the
+  leave-one-player-out teammate-context ablation;
 - [`impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`](impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md) —
   current AIO audit, public-model feature map, interpretation, aging-safe
   validation, and execution order;

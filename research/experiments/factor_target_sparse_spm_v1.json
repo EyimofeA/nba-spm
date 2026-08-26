@@ -1,0 +1,46 @@
+{
+  "schema_version": "experiment_preregistration_v1",
+  "experiment_id": "factor_target_sparse_spm_v1",
+  "status": "frozen_research_contract",
+  "created_at": "2026-08-26",
+  "estimand_id": "factor_target_sparse_spm_v1",
+  "seasons": [2024, 2025, 2026],
+  "development_season": 2024,
+  "selection_season": 2025,
+  "reused_diagnostic_season": 2026,
+  "untouched_confirmation_season": 2027,
+  "minimum_normal_possessions_per_side": 1000,
+  "ridge_alphas": [1.0, 10.0, 100.0, 1000.0, 3000.0],
+  "factor_to_points_alpha": 100.0,
+  "targets": ["shooting_ts", "turnover", "offensive_rebound"],
+  "model_contract": {
+    "individual_only": "Each factor-side model receives only features with a direct basketball connection to that outcome.",
+    "teammate_context": "The candidate adds leave-one-player-out, possession-weighted same-team context fields. It never includes the focal player's own value in a teammate aggregate.",
+    "direct_normal_baseline": "A separate ridge predicts normal offense and defense RAPM from the union of the individual factor features.",
+    "factor_merge": "Separate offense and defense ridge maps convert the three predicted factor ratings into normal points RAPM. Net equals offense plus defense.",
+    "missing_values": "Training-fold median with missing indicators.",
+    "sample_weight": "Square root of the applicable factor exposure for factor targets and square root of minimum-side possessions for normal RAPM.",
+    "excluded": [
+      "roles",
+      "age",
+      "height",
+      "position",
+      "minutes",
+      "games",
+      "on-off",
+      "plus-minus",
+      "external impact ratings",
+      "team wins",
+      "team ratings"
+    ]
+  },
+  "selection_rule": "Choose alpha separately for each target-side and candidate using 2024 fits scored on 2025 weighted factor-target RMSE. Choose direct-normal alpha by 2025 side RMSE. Freeze all choices before reused 2026 diagnostics.",
+  "primary_comparison": "2026 normal RAPM weighted RMSE and correlation for individual factor decomposition, teammate-context factor decomposition, direct related-feature SPM, oracle factor reconstruction, and mean baseline.",
+  "secondary_comparison": "2026 weighted RMSE, correlation, and R-squared against each of the six factor RAPM targets.",
+  "stopping_rules": [
+    "Do not modify features or alphas after inspecting 2026.",
+    "Do not load Season 2027.",
+    "Do not promote teammate context as player skill. It is a descriptive context ablation.",
+    "Do not call the three-factor merge an exact additive decomposition because free throws, shot volume, and other residual scoring channels remain in normal RAPM."
+  ]
+}
