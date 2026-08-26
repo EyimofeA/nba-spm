@@ -54,6 +54,9 @@ Start at the repository root:
 - [`impact/SPM_OLD_VS_NEW.md`](impact/SPM_OLD_VS_NEW.md) — published annual SPM
   versus five-year research SPM, exact targets, training splits, selected
   feature additions, and the AIO prior update;
+- [`impact/AIO_PRIOR_BAKEOFF_V1.md`](impact/AIO_PRIOR_BAKEOFF_V1.md) — controlled
+  five-year SPM versus BoxPIPM-style prior comparison inside the same
+  single-season RAPM update;
 - [`impact/PUBLIC_AIO_BENCHMARK_V1.md`](impact/PUBLIC_AIO_BENCHMARK_V1.md) —
   pairwise public-metric agreement and the oracle-minutes team-win test;
 - [`impact/MODEL_REPLICATION_SPEC.md`](impact/MODEL_REPLICATION_SPEC.md) — exact

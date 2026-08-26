@@ -1,0 +1,51 @@
+schema_version: experiment_preregistration_v1
+experiment_id: aio_prior_bakeoff_v1
+status: preregistered_reused_development
+created_at: 2026-08-26
+estimand_id: annual_retrospective_impact_v1
+
+hypothesis: >-
+  Replacing the five-year SPM prior with a BoxPIPM-style or PIPM-like prior can
+  improve the same single-season RAPM posterior on next-season game margins.
+
+fixed_aio_contract:
+  likelihood_seasons: 1
+  lineup_policy: terminal
+  game_types: [regular]
+  lambda_off: 3000.0
+  lambda_def: 3000.0
+  lambda_home: 300.0
+  center_scale: 1.0
+  prior_units: points_per_100_mapped_to_coefficient_units
+  defense_sign: positive_good_before_mapping
+
+prior_arms:
+  - zero_prior_rapm
+  - five_year_spm
+  - selected_five_year_spm
+  - box_pipm_style_prior
+  - pipm_like_raw_onoff_prior
+
+evaluation:
+  rating_seasons: [2021, 2022, 2023]
+  test_seasons: [2022, 2023, 2024]
+  primary: equal-season mean next-season game-margin RMSE
+  secondary:
+    - next-season game-margin correlation
+    - paired whole-game MSE difference against selected_five_year_spm
+    - prior lineup-slot coverage
+  identical_games: required within every season
+  bootstrap_unit: whole_game_stratified_by_test_season
+  bootstrap_draws: 10000
+
+decision_rule: >-
+  A challenger must lower equal-season mean game-margin RMSE, win at least two
+  of three seasons, and have a paired 95 percent interval below zero. This run
+  cannot promote a model because all three seasons are reused development data.
+
+known_limitations:
+  - The BoxPIPM-style arm reproduces only the public box-score part of PIPM.
+  - The PIPM-like arm adds raw rather than fully luck-adjusted on-off context.
+  - Same-season on-off in a prior reuses lineup outcome information and can double count the RAPM likelihood.
+  - Season 2027 is not loaded.
+
