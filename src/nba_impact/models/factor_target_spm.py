@@ -137,18 +137,24 @@ def build_related_feature_panel(
 ) -> tuple[pd.DataFrame, dict]:
     """Build same-season individual and leave-one-out teammate features."""
     root = Path(player_sheet_dir)
+    requested = range(min(seasons) - 2, max(seasons) + 1)
+    available = [season for season in requested if (root / f"{season}.parquet").exists()]
+    if any(season not in available for season in seasons):
+        raise ValueError("A requested player-sheet season is unavailable.")
     loaded = {
         season: _load_source(root / f"{season}.parquet", season)[0]
-        for season in range(min(seasons) - 2, max(seasons) + 1)
+        for season in available
     }
+    first_available = min(loaded)
     outputs = []
     for season in seasons:
         raw = loaded[season]
         base = _aggregate_window([raw], season)
         seasonal = [
             _aggregate_window([loaded[value]], value)
-            for value in range(season - 2, season + 1)
+            for value in range(max(first_available, season - 2), season + 1)
         ]
+        seasonal = [seasonal[0]] * (3 - len(seasonal)) + seasonal
         engineered = _engineer_window(base, [raw], seasonal)
         identity = raw[
             ["PLAYER_ID", "PLAYER_NAME", "TEAM_ID", "TEAM_ABBREVIATION"]
@@ -181,7 +187,7 @@ def build_related_feature_panel(
         dfg_path=dfg_path,
         rim_dfg_path=rim_dfg_path,
         hustle_path=hustle_path,
-        seasons=tuple(range(min(seasons) - 2, max(seasons) + 1)),
+        seasons=tuple(available),
     )
     auxiliary_columns = [
         column
@@ -334,11 +340,15 @@ def _fit_factor_variant(
     *,
     candidate: str,
     include_context: bool,
+    feature_map: dict[tuple[str, str], tuple[str, ...]] | None = None,
+    context_map: dict[tuple[str, str], tuple[str, ...]] | None = None,
     alphas: tuple[float, ...],
     development_season: int,
     selection_season: int,
     diagnostic_season: int,
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, Pipeline], list[dict]]:
+    feature_map = INDIVIDUAL_FEATURES if feature_map is None else feature_map
+    context_map = CONTEXT_FEATURES if context_map is None else context_map
     development = panel.loc[panel["Season"].eq(development_season)]
     selection = panel.loc[panel["Season"].eq(selection_season)]
     train = panel.loc[panel["Season"].isin((development_season, selection_season))]
@@ -350,9 +360,9 @@ def _fit_factor_variant(
     diagnostic_metrics = []
     for factor in FACTORS:
         for side in SIDES:
-            feature_names = INDIVIDUAL_FEATURES[(factor, side)]
+            feature_names = feature_map[(factor, side)]
             if include_context:
-                feature_names = feature_names + CONTEXT_FEATURES[(factor, side)]
+                feature_names = feature_names + context_map[(factor, side)]
             target = f"target_{factor}_{side}"
             weight = _factor_weight(factor, side)
             candidates = []
@@ -431,11 +441,28 @@ def _fit_direct_variant(
     *,
     candidate: str,
     include_context: bool,
+    feature_map: dict[str, tuple[str, ...]] | None = None,
+    context_map: dict[str, tuple[str, ...]] | None = None,
     alphas: tuple[float, ...],
     development_season: int,
     selection_season: int,
     diagnostic_season: int,
 ) -> tuple[pd.DataFrame, pd.DataFrame, list[dict], dict[str, Pipeline]]:
+    if feature_map is None:
+        feature_map = {
+            side: _direct_feature_names(side, False) for side in SIDES
+        }
+    if context_map is None:
+        context_map = {
+            side: tuple(
+                dict.fromkeys(
+                    feature
+                    for factor in FACTORS
+                    for feature in CONTEXT_FEATURES[(factor, side)]
+                )
+            )
+            for side in SIDES
+        }
     development = panel.loc[panel["Season"].eq(development_season)]
     selection = panel.loc[panel["Season"].eq(selection_season)]
     train = panel.loc[panel["Season"].isin((development_season, selection_season))]
@@ -445,7 +472,9 @@ def _fit_direct_variant(
     selected = []
     models = {}
     for side in SIDES:
-        feature_names = _direct_feature_names(side, include_context)
+        feature_names = feature_map[side]
+        if include_context:
+            feature_names = tuple(dict.fromkeys((*feature_names, *context_map[side])))
         target = f"target_normal_{side}"
         candidates = []
         for alpha in alphas:

@@ -1,0 +1,29 @@
+{
+  "schema_version": "experiment_preregistration_v1",
+  "experiment_id": "five_year_spm_teammate_context_v1",
+  "status": "frozen_research_contract",
+  "created_at": "2026-08-26",
+  "estimand_id": "five_year_spm_teammate_context_v1",
+  "rating_seasons": [2021, 2022, 2023, 2024, 2025, 2026],
+  "selection_rating_season": 2024,
+  "diagnostic_rating_seasons": [2025, 2026],
+  "next_season_rating_seasons": [2024, 2025],
+  "untouched_confirmation_season": 2027,
+  "ridge_alphas": [1.0, 10.0, 100.0, 1000.0, 3000.0, 10000.0],
+  "model_contract": {
+    "baseline": "Exact stored predictions from five_year_target_spm_v1_65550acb79.",
+    "candidate": "Add a side-specific ridge prediction of the baseline's five-year RAPM residual using only pooled leave-one-player-out teammate context.",
+    "context_window": "Possession-weight annual context over the identical five seasons as the baseline rating.",
+    "chronology": "For rating season t, fit the residual correction only on stored predictions with window ends earlier than t.",
+    "sample_weight": "Square root of the smaller five-year target possession exposure."
+  },
+  "selection_rule": "Choose offense and defense correction penalties on the 2024 rating, then freeze them for 2025 and 2026.",
+  "primary_comparison": "Matched-player next-season one-year RAPM RMSE and correlation for 2024-to-2025 and 2025-to-2026.",
+  "secondary_comparison": "Same-window five-year RAPM residual fit in 2024, 2025 and 2026.",
+  "stopping_rules": [
+    "Do not change context fields or penalties after inspecting 2024.",
+    "Do not load Season 2027.",
+    "Do not treat same-team context as player skill or a causal teammate effect.",
+    "Do not promote from inspected 2025 or reused 2026 evidence."
+  ]
+}

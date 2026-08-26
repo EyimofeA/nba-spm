@@ -86,3 +86,40 @@ neutral fallbacks for the missing source family.
 Exact metrics, selected penalties, coefficients, predictions and context rows
 are under
 `artifacts/research/factor_target_spm/factor_target_sparse_spm_v1_5b120e918f`.
+
+## Full-feature ceiling
+
+Run `factor_target_full_feature_spm_v1_69496cee37` gives every factor head the
+available full SPM feature bank. Offense has all 127 frozen inputs. Defense has
+60 of 68 because the eight scorer-matchup fields stop before this 2024--26
+panel. The context version adds all six same-side teammate fields to every
+factor head.
+
+| 2026 target | Sparse R² | Full R² | Full plus context R² |
+| --- | ---: | ---: | ---: |
+| Shooting offense | .218 | .281 | .307 |
+| Shooting defense | .035 | .102 | .126 |
+| Turnover offense | .266 | .360 | .392 |
+| Turnover defense | .367 | .371 | .432 |
+| Offensive-rebound offense | .279 | .351 | .502 |
+| Offensive-rebound defense | .126 | .075 | .110 |
+
+More inputs help five of six factor heads before context. Offensive-rebound
+defense is the exception. All six full heads improve when teammate context is
+added. Shooting defense remains weak even after its R² roughly triples. The
+missing 2026 DFG and rim-DFG observations, absent scorer-matchup fields, noisy
+defender responsibility and annual target noise still limit that head.
+
+| 2026 normal-RAPM model | RMSE | Correlation | R² |
+| --- | ---: | ---: | ---: |
+| Oracle factor ratings | .470 | .974 | .948 |
+| Direct annual full-feature model plus context | 1.693 | .571 | .320 |
+| Full predicted factors plus context | 1.703 | .573 | .312 |
+| Sparse predicted factors plus context | 1.729 | .547 | .290 |
+| Direct annual full-feature model | 1.735 | .536 | .285 |
+| Full predicted factors | 1.764 | .530 | .261 |
+| Sparse predicted factors | 1.835 | .457 | .201 |
+
+The full factor route now lands within `.010` RMSE of the direct annual model.
+That is close enough to keep factorization as a useful research interface, but
+not enough to replace direct SPM. This remains a same-season reused diagnostic.

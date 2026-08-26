@@ -1,0 +1,62 @@
+{
+  "schema_version": "experiment_preregistration_v1",
+  "experiment_id": "factor_target_full_feature_spm_v1",
+  "status": "frozen_research_contract",
+  "created_at": "2026-08-26",
+  "estimand_id": "factor_target_full_feature_spm_v1",
+  "seasons": [2024, 2025, 2026],
+  "development_season": 2024,
+  "selection_season": 2025,
+  "reused_diagnostic_season": 2026,
+  "untouched_confirmation_season": 2027,
+  "minimum_normal_possessions_per_side": 1000,
+  "expected_rows_by_season": {
+    "2024": 365,
+    "2025": 381,
+    "2026": 387
+  },
+  "ridge_alphas": [1.0, 10.0, 100.0, 1000.0, 3000.0, 10000.0],
+  "factor_to_points_alpha": 100.0,
+  "expected_missing_features": {
+    "offense": [],
+    "defense": [
+      "matchup_opponent_adjusted_points_saved_p100_eb",
+      "matchup_fga_suppressed_vs_scorer_p100_eb",
+      "matchup_shotmaking_points_saved_vs_scorer_p100_eb",
+      "matchup_three_pa_suppressed_vs_scorer_p100_eb",
+      "matchup_turnovers_forced_vs_scorer_p100_eb",
+      "matchup_assists_suppressed_vs_scorer_p100_eb",
+      "matchup_shooting_fouls_prevented_vs_scorer_p100_eb",
+      "matchup_blocks_p100"
+    ]
+  },
+  "model_contract": {
+    "factor_full": "Each factor-side ridge receives every available feature from the frozen full SPM bank for that side.",
+    "overall_full_spm": "The overall offense and defense models use the frozen histogram-GBM and ridge learners with the identical available full feature banks.",
+    "teammate_context": "The context variants add six leave-one-player-out, possession-weighted same-team fields per side.",
+    "missing_values": "Training-fold median with missing indicators for ridge; the frozen SPM learners retain their existing missing-value pipeline.",
+    "sample_weight": "Square root of factor exposure for factor heads and square root of minimum-side possessions for normal RAPM.",
+    "excluded": [
+      "roles",
+      "age",
+      "height",
+      "position",
+      "minutes",
+      "games",
+      "on-off",
+      "plus-minus",
+      "external impact ratings",
+      "team wins",
+      "team ratings"
+    ]
+  },
+  "selection_rule": "Select factor-head ridge penalties using 2024 fits scored on 2025. Do not tune the frozen overall SPM learners. Refit on 2024-25 and diagnose once on reused 2026.",
+  "primary_comparison": "2026 normal-RAPM weighted RMSE and correlation for full overall SPM with and without teammate context.",
+  "secondary_comparison": "2026 factor-target R-squared and reconstructed normal-RAPM performance for sparse and full feature banks, with and without teammate context.",
+  "stopping_rules": [
+    "Do not change features, learners, alphas, or context definitions after inspecting 2026.",
+    "Do not load Season 2027.",
+    "Do not call teammate context player skill.",
+    "Do not call this a complete defense ceiling while the eight scorer-matchup fields and 2026 DFG sources are absent."
+  ]
+}

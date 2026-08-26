@@ -4272,3 +4272,47 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   not player skill. Annual `TEAM_ID` makes traded-player context approximate.
   Defended-shot data end in 2025, so the 2026 shooting-defense test lacks the
   observed rim/DFG family. This is reused diagnostic evidence, not promotion.
+
+## 2026-08-26 - Full-feature factor ceiling and overall SPM context
+
+- **Full factor ceiling:** Run `factor_target_full_feature_spm_v1_69496cee37`
+  gives each factor head the available frozen full SPM bank: all 127 offense
+  fields and 60 of 68 defense fields. The eight missing defense fields are the
+  scorer-matchup aggregates that stop before the 2024--26 panel. Ridge
+  penalties are selected on 2025 after a 2024 fit, then refit through 2025 for
+  one reused 2026 diagnostic. Season 2027 is absent.
+- **Factor result:** Full inputs improve five of six sparse heads. With all six
+  same-side teammate contexts, 2026 R-squared is `.307/.126` shooting
+  offense/defense, `.392/.432` turnover offense/defense and `.502/.110`
+  offensive-rebound offense/defense. Offensive-rebound defense remains better
+  under the sparse model. Full predicted factors plus context reconstruct
+  ordinary net RAPM at `1.703` RMSE, `.573` correlation and `.312` R-squared,
+  within `.010` RMSE of the direct annual full-feature model plus context.
+- **Defense interpretation:** The factor decomposition is not the main
+  failure. Oracle factor ratings still reconstruct ordinary RAPM at `.948`
+  R-squared. Shooting defense remains a measurement problem: the current panel
+  lacks the eight scorer-matchup fields, 2026 DFG and rim-DFG observations, and
+  shot-level defender responsibility. More generic features roughly triple
+  shooting-defense R-squared but leave it weak at `.126`.
+- **Actual five-year SPM context test:** Run
+  `five_year_spm_teammate_context_v1_13d270986a` starts from the exact stored
+  predictions in `five_year_target_spm_v1_65550acb79`. A chronological
+  second-stage ridge predicts remaining side-specific five-year RAPM error from
+  six pooled teammate-context fields per side. It selects penalties on the 2024
+  rating and freezes them for 2025 and 2026.
+- **Five-year result:** Same-window net RMSE improves by `.009`, `.012` and
+  `.014` in 2024, 2025 and 2026. On matched next-season annual RAPM, the 2024
+  rating improves 2025 RMSE from `1.471` to `1.469`; the 2025 rating improves
+  2026 from `1.520` to `1.508`. Offense, defense and net improve on both folds.
+  The correction is small and survives only reused evidence. Keep the context
+  family for a future joint refit; do not replace the frozen five-year SPM.
+- **Unrun primary benchmark:** The checkout lacks exact 2025--26 player-team
+  minute stints, so the preferred next-season team-win retrodiction cannot be
+  reproduced without assigning traded-player minutes to one annual team. Do
+  not weaken that benchmark. The current downstream result is next-season
+  annual RAPM on identical matched players.
+- **Data limits:** Complete pooled-context coverage is 87.5 percent and falls to
+  83.6 percent in the 2026 scored rows; the training-fold imputer handles the
+  remainder. Same-team context may absorb team and scheme strength, and annual
+  `TEAM_ID` makes traded-player context approximate. This is not causal
+  teammate value or independent confirmation.

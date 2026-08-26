@@ -45,7 +45,9 @@ Start at the repository root:
   feature families, public benchmark formulas, and AIO explanation contract;
 - [`impact/FACTOR_TARGET_SPM.md`](impact/FACTOR_TARGET_SPM.md) — sparse
   statistical models of shooting, turnover, and rebounding RAPM plus the
-  leave-one-player-out teammate-context ablation;
+  leave-one-player-out teammate-context ablation and full-feature ceiling;
+- [`impact/FIVE_YEAR_SPM_CONTEXT.md`](impact/FIVE_YEAR_SPM_CONTEXT.md) —
+  chronological teammate-context residual test on the frozen five-year SPM;
 - [`impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`](impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md) —
   current AIO audit, public-model feature map, interpretation, aging-safe
   validation, and execution order;
