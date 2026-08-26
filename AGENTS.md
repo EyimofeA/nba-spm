@@ -120,12 +120,18 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
 
 Canonical code: `src/nba_impact/models/five_year_target_spm.py`.
 
-- Sparse challenger `sparse_function_spm_v1_4f1ecaa353` uses seven offense
-  and five defense functions with fixed ridge alpha 3000. It lowers future
-  one-year RAPM RMSE but loses player correlation and two-fold team-win R²
-  (`.455` versus `.545`). Treat it as a null. Do not run its AIO update or tune
-  its frozen inputs after seeing this result; a user-authored sparse feature
-  contract is a separate future experiment.
+- Sparse challenger `sparse_function_spm_v1_4f1ecaa353` is invalid for its
+  declared feature contract: `ShootingFouls` is fouls committed, but the run
+  labeled it shooting fouls drawn and put it on offense. Its numerical output
+  remains reproducible but must not be used as a model-selection result.
+- Hand-selected challenger `hand_selected_sparse_spm_v1_f04379a684` fixes that
+  lineage and uses eight offense plus four defense functions. It lowers future
+  one-year RAPM RMSE but loses correlation and both team-win folds; team-win R²
+  is `.472` versus `.545`. Treat it as a research null and do not run its AIO.
+- The full five-year SPM baseline also contains the old mislabeled field in its
+  offense feature set. That does not erase its predictive benchmark, but its
+  side interpretation is not publication-clean. Correct and refit it before
+  any promotion decision.
 
 ### Same-season feature research
 

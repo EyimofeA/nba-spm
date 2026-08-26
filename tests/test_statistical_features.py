@@ -123,3 +123,25 @@ def test_builder_maps_new_underscore_schema_and_flags_partial_latest_season(
     assert features.loc[features["Window_End"].eq(2025), "offensive_fouls_p100"].iloc[0] == 3.0
     assert run["status"] == "structurally_validated_partial_latest_season"
     assert run["quality"]["latest_season_is_partial"] is True
+
+
+def test_builder_separates_shooting_fouls_drawn_from_committed(tmp_path) -> None:
+    source = tmp_path / "raw"
+    row = _season_row(1, OffPoss=200.0, DefPoss=100.0)
+    row.update(
+        {
+            "ShootingFouls": 8.0,
+            "TwoPtShootingFoulsDrawn": 6.0,
+            "ThreePtShootingFoulsDrawn": 2.0,
+        }
+    )
+    _write_sources(source, {2024: [row]})
+    run = build_statistical_feature_windows(
+        source,
+        artifact_root=tmp_path,
+        window_ends=(2024,),
+        window_seasons=1,
+    )
+    feature = pd.read_parquet(run["features_path"]).iloc[0]
+    assert feature["shooting_fouls_drawn_p100"] == pytest.approx(4.0)
+    assert feature["shooting_fouls_committed_p100"] == pytest.approx(8.0)

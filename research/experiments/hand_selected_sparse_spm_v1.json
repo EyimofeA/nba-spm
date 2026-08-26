@@ -1,0 +1,45 @@
+{
+  "schema_version": "experiment_preregistration_v1",
+  "experiment_id": "hand_selected_sparse_spm_v1",
+  "status": "exploratory_reused_history",
+  "created_at": "2026-08-26",
+  "estimand_id": "five_year_target_statistical_impact_v1",
+  "hypothesis": "The principal's twelve hand-selected basketball functions retain enough stable signal to match the full five-year SPM on next-season team wins.",
+  "model_contract": {
+    "feature_grain": "one complete rolling five-year player window",
+    "target": "zero-prior five-year RAPM over the identical seasons",
+    "learner": "separate offense and defense ridge regressions",
+    "ridge_alpha": 3000.0,
+    "feature_selection": "the first twelve metrics named by the principal, frozen before scoring",
+    "feature_standardization": "same-window player z-score, then training-only pipeline scaling",
+    "missing_values": "training-fold median with missing indicators",
+    "sample_weight": "square root of the smaller five-year offensive and defensive possession exposure",
+    "net_identity": "offense plus defense",
+    "excluded": [
+      "roles",
+      "age",
+      "height",
+      "position",
+      "minutes",
+      "games",
+      "on-off",
+      "plus-minus",
+      "external impact ratings",
+      "live-ball turnovers"
+    ]
+  },
+  "evaluation": {
+    "primary": "next-season team-win association using observed next-season minutes",
+    "primary_rating_seasons": [2021, 2022],
+    "secondary": "next-season one-year zero-prior RAPM on identical player rows",
+    "secondary_test_seasons": [2022, 2023, 2024, 2025, 2026],
+    "baseline": "full five-year SPM",
+    "untouched_confirmation_seasons": [2027]
+  },
+  "decision_rule": "Retain as a research challenger only if mean team-win R-squared does not decline versus the full five-year SPM. Do not promote publicly before Season 2027.",
+  "stopping_rules": [
+    "Do not tune the feature list or ridge alpha after reading these historical results.",
+    "Do not use Season 2027 for development or debugging.",
+    "Do not run an AIO posterior update unless the hand-selected SPM survives this gate."
+  ]
+}

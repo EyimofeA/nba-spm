@@ -65,7 +65,8 @@ TRACKING_RATE_SPECS = {
     "lost_ball_turnovers_p100": ("LostBallTurnovers", "OffPoss"),
     "travels_p100": ("Travels", "OffPoss"),
     "offensive_fouls_p100": ("Offensive Fouls", "OffPoss"),
-    "shooting_fouls_drawn_p100": ("ShootingFouls", "OffPoss"),
+    "shooting_fouls_drawn_p100": ("ShootingFoulsDrawn", "OffPoss"),
+    "shooting_fouls_committed_p100": ("ShootingFouls", "DefPoss"),
     "rebound_contests_p100": ("REB_CONTEST", "DefPoss"),
     "rebound_chances_p100": ("REB_CHANCES", "DefPoss"),
     "dreb_contests_p100": ("DREB_CONTEST", "DefPoss"),
@@ -148,6 +149,18 @@ def _load_source(path: Path, season: int) -> tuple[pd.DataFrame, int]:
     for canonical, alias in SOURCE_COLUMN_ALIASES.items():
         if canonical not in frame and alias in frame:
             frame[canonical] = frame[alias]
+    if "ShootingFoulsDrawn" not in frame:
+        drawn_columns = [
+            column
+            for column in ("TwoPtShootingFoulsDrawn", "ThreePtShootingFoulsDrawn")
+            if column in frame
+        ]
+        if drawn_columns:
+            frame["ShootingFoulsDrawn"] = (
+                frame[drawn_columns]
+                .apply(pd.to_numeric, errors="coerce")
+                .sum(axis=1, min_count=1)
+            )
     required = {"PLAYER_ID", "OffPoss", "DefPoss"}
     if missing := sorted(required - set(frame.columns)):
         raise ValueError(f"{path} is missing required columns {missing}.")

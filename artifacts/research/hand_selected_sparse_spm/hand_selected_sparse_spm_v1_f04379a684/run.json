@@ -1,0 +1,262 @@
+{
+  "caveats": [
+    "The team-win benchmark uses observed next-season minutes and is not a preseason forecast.",
+    "Only two team-win folds are available from the local source bundle.",
+    "Rim defended-shot data end in 2025; the 2026 five-year window pools 2022-25 observed rim data.",
+    "All evaluated seasons are reused historical diagnostics; Season 2027 remains untouched.",
+    "The fixed ridge alpha was not tuned on these outcomes."
+  ],
+  "config": {
+    "alpha": 3000.0,
+    "features": {
+      "defense": [
+        "event_stops_p100",
+        "rim_points_saved_p100",
+        "dreb_contests_p100",
+        "shooting_fouls_committed_p100"
+      ],
+      "offense": [
+        "PTS_p100",
+        "zts_pct_points",
+        "turnover_to_load_2017_eb",
+        "box_creation_2017_eb_p100",
+        "OREB_p100",
+        "crafted_spacing_stable_v1",
+        "offensive_load_2017_eb_p100",
+        "at_rim_fga_p100"
+      ]
+    },
+    "player_test_seasons": [
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "source_hashes": {
+      "annual_ratings": "d8787ae8aada5741b036fb17fb0d12a6ef91a1912f250018f093b8648f976031",
+      "bbref_totals_2021": "37f7ea7946e682b74ef2fccbe7c546f0b33bb96e6c20b8c4fc31f1147e860ed8",
+      "bbref_totals_2022": "751c352575c3dfad3d51ce535a9fbeed342556de95d6ece9709105b0a928c7d6",
+      "bbref_totals_2023": "f61fba1cc216d18b22920e19612a20cf8dc4fabfd080da5b8c79d797bb2a18ac",
+      "contract": "01d5f6090131880012cd25e88e7288f909dd89c8f1ceb9d38b835676481cea8c",
+      "dfg": "a4436466feaba8fa99a6d71b0ba2a4b79662a74d23e1df44aecd9fa75f0a46e3",
+      "five_year_targets": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707",
+      "full_predictions": "9dc07dd614e17ff5b1ebccdb0cf8bdaad545c91e61a56dd257826e0cea67660d",
+      "hustle": "41dcf3b33527d18280a425a8f18bb0beb1b5a97cb7860cf0bb7360a480ef0860",
+      "player_sheet_2014": "30ffc3f5090e76d9ddda98cb41ca72785e296430dae2aa3cad165318025f62dc",
+      "player_sheet_2015": "90ddc43dfffcc827e154677ef46f2a0c0b6c31b51784e27832869ea63c49dc20",
+      "player_sheet_2016": "62690961d72c732b7b0bcf6e8fb8d7921ce3c3715bb45a52d285171b831697b9",
+      "player_sheet_2017": "590d42a93951e43f55413582e65f4539a44b7257a24e531cf721f58ed135098e",
+      "player_sheet_2018": "e26f1af99c6ae9a8ba9632d5522079b4b2d38265ac2008ae9f9d8738bab83770",
+      "player_sheet_2019": "ebebe7174b1ab529eaa6299d6da73783420424e59bbb125d65925f1155675340",
+      "player_sheet_2020": "a8f0e782be214a72bee072781152d5ae637e5b80d508f46ee7efdb919d658065",
+      "player_sheet_2021": "7f542206d8a6206b25ff6397ef34d75fc9cb1c6315aab84b9c401c59ba6ca51f",
+      "player_sheet_2022": "4e46a94b3c9f85aeb0dfe49abc08340a4c86720e192783b0319ff0e375f0f95b",
+      "player_sheet_2023": "6d85fb54ac49f6c73e4d6dedacb216f2b28d5db475153d1bebffa9585ec1268d",
+      "player_sheet_2024": "beb5a5aceb7d1d3504529102a4c93eb4898ff525474ea75bd3babeeeb0e38ad3",
+      "player_sheet_2025": "8cbeab5559385f7be8226e168e4b2eceac3ce40029360fb770ff40770a7fc4ed",
+      "player_sheet_2026": "09a6a34855a3685e89ced2dcb2f79b60ed2ef97b9709b29d30848a3165fe7e2c",
+      "playtype": "3503146f6a38eff8ca2ae39c7c838dacd2c90ec739b8e5f10b1b41b8a12d6d22",
+      "rim_dfg": "3683d1c667403b0942bb135c03e2469409c8eb0d49785ea45fe2d1bcaf2157b6",
+      "source_code": "476dc486802c207f3b3e9f737f35a9e57801e1db4a3832dbff90047842d33198",
+      "team_identity_2021": "7f542206d8a6206b25ff6397ef34d75fc9cb1c6315aab84b9c401c59ba6ca51f",
+      "team_identity_2022": "4e46a94b3c9f85aeb0dfe49abc08340a4c86720e192783b0319ff0e375f0f95b",
+      "team_identity_2023": "6d85fb54ac49f6c73e4d6dedacb216f2b28d5db475153d1bebffa9585ec1268d",
+      "team_schedule_2021": "f326e8142726937ba106f32987a3c8c2c337cc470d95362e3004b6c8235c5cb2",
+      "team_schedule_2022": "916ceb8bee5dab16889e7c911290c185502a6d1a7d6c7e9f4a524b90d65f9a13",
+      "team_schedule_2023": "0327cbc2fab18c3459ae2d8f2e790bd77c7cda95ecd3979a011b13aee4b9f185"
+    },
+    "team_win_rating_seasons": [
+      2021,
+      2022
+    ]
+  },
+  "contract": {
+    "created_at": "2026-08-26",
+    "decision_rule": "Retain as a research challenger only if mean team-win R-squared does not decline versus the full five-year SPM. Do not promote publicly before Season 2027.",
+    "estimand_id": "five_year_target_statistical_impact_v1",
+    "evaluation": {
+      "baseline": "full five-year SPM",
+      "primary": "next-season team-win association using observed next-season minutes",
+      "primary_rating_seasons": [
+        2021,
+        2022
+      ],
+      "secondary": "next-season one-year zero-prior RAPM on identical player rows",
+      "secondary_test_seasons": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "untouched_confirmation_seasons": [
+        2027
+      ]
+    },
+    "experiment_id": "hand_selected_sparse_spm_v1",
+    "hypothesis": "The principal's twelve hand-selected basketball functions retain enough stable signal to match the full five-year SPM on next-season team wins.",
+    "model_contract": {
+      "excluded": [
+        "roles",
+        "age",
+        "height",
+        "position",
+        "minutes",
+        "games",
+        "on-off",
+        "plus-minus",
+        "external impact ratings",
+        "live-ball turnovers"
+      ],
+      "feature_grain": "one complete rolling five-year player window",
+      "feature_selection": "the first twelve metrics named by the principal, frozen before scoring",
+      "feature_standardization": "same-window player z-score, then training-only pipeline scaling",
+      "learner": "separate offense and defense ridge regressions",
+      "missing_values": "training-fold median with missing indicators",
+      "net_identity": "offense plus defense",
+      "ridge_alpha": 3000.0,
+      "sample_weight": "square root of the smaller five-year offensive and defensive possession exposure",
+      "target": "zero-prior five-year RAPM over the identical seasons"
+    },
+    "schema_version": "experiment_preregistration_v1",
+    "status": "exploratory_reused_history",
+    "stopping_rules": [
+      "Do not tune the feature list or ridge alpha after reading these historical results.",
+      "Do not use Season 2027 for development or debugging.",
+      "Do not run an AIO posterior update unless the hand-selected SPM survives this gate."
+    ]
+  },
+  "created_at": "2026-08-26T18:35:15.384460+00:00",
+  "decision": "Keep the full five-year SPM; the hand-selected model did not improve the primary team-win diagnostic.",
+  "experiment_id": "hand_selected_sparse_spm_v1",
+  "forbidden_interpretation": "Public SPM promotion, causal skill value, or untouched confirmation.",
+  "paths": {
+    "coefficients": "coefficients.parquet",
+    "feature_registry": "feature_registry.parquet",
+    "matched_player_predictions": "matched_player_predictions.parquet",
+    "models": "models",
+    "player_fold_metrics": "player_fold_metrics.parquet",
+    "player_summary": "player_summary.parquet",
+    "predictions": "predictions.parquet",
+    "team_win_coverage": "team_win_coverage.parquet",
+    "team_win_folds": "team_win_folds.parquet",
+    "team_win_source_coverage": "team_win_source_coverage.parquet",
+    "team_win_summary": "team_win_summary.parquet"
+  },
+  "quality": {
+    "component_identity_max_error": 0.0,
+    "defensive_source_join_quality": {
+      "dfg": {
+        "match_rate": 0.9944620253164557,
+        "matched_rows": 6285,
+        "source_rows": 6320,
+        "unmatched_names": [
+          "Brandon Boston Jr.",
+          "Jakob P\u00f6ltl",
+          "Jeenathan Williams",
+          "Jimmy Butler",
+          "Kenyon Martin Jr.",
+          "MJ Walker",
+          "Nigel Hayes",
+          "RJ Nembhard Jr.",
+          "Reggie Bullock",
+          "Tony Mitchell",
+          "Trey Jemison"
+        ]
+      },
+      "hustle": {
+        "match_rate": 1.0,
+        "matched_rows": 5003,
+        "source_rows": 5003,
+        "unmatched_names": []
+      },
+      "rim_dfg": {
+        "match_rate": 0.9948759007205764,
+        "matched_rows": 6213,
+        "source_rows": 6245,
+        "unmatched_names": [
+          "Brandon Boston Jr.",
+          "Jakob P\u00f6ltl",
+          "Jeenathan Williams",
+          "Jimmy Butler",
+          "Kenyon Martin Jr.",
+          "Nigel Hayes",
+          "Reggie Bullock",
+          "Tony Mitchell",
+          "Trey Jemison"
+        ]
+      }
+    },
+    "feature_rows": 8620,
+    "minimum_rim_source_seasons": 0,
+    "minimum_zts_source_seasons": 0,
+    "missing_fraction": {
+      "OREB_p100": 0.09837587006960556,
+      "PTS_p100": 0.09837587006960556,
+      "at_rim_fga_p100": 0.10870069605568446,
+      "box_creation_2017_eb_p100": 0.09837587006960556,
+      "crafted_spacing_stable_v1": 0.09837587006960556,
+      "dreb_contests_p100": 0.10058004640371229,
+      "event_stops_p100": 0.09837587006960556,
+      "offensive_load_2017_eb_p100": 0.09837587006960556,
+      "rim_points_saved_p100": 0.10870069605568446,
+      "shooting_fouls_committed_p100": 0.10846867749419954,
+      "turnover_to_load_2017_eb": 0.09837587006960556,
+      "zts_pct_points": 0.30661252900232017
+    },
+    "player_test_folds": 5,
+    "playtype_rows": 5140,
+    "playtype_seasons": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "prediction_rows": 5911,
+    "rim_2026_observed": false,
+    "rim_source_seasons": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "season_2027_loaded": false,
+    "team_win_folds": 2
+  },
+  "result": {
+    "candidate_next_season_net_pearson": 0.39860895460832907,
+    "candidate_next_season_net_rmse": 1.891286522043583,
+    "candidate_team_win_mean_r_squared": 0.472025919894223,
+    "full_next_season_net_pearson": 0.42409526341952153,
+    "full_next_season_net_rmse": 1.981333267642683,
+    "full_team_win_mean_r_squared": 0.5445575587637106
+  },
+  "run_id": "hand_selected_sparse_spm_v1_f04379a684",
+  "status": "research_null"
+}
