@@ -1,0 +1,130 @@
+{
+  "created_at": "2026-08-26T05:00:29.210734+00:00",
+  "diagnostic_metrics": [
+    {
+      "arm": "normal_realized_points",
+      "calibration_intercept": -0.0021762159996292496,
+      "calibration_slope": 0.7919332532946985,
+      "games": 1226,
+      "margin_correlation": 0.3307837604399853,
+      "margin_rmse": 15.054063059335624,
+      "predicted_margin_sd": 6.632353960562866,
+      "test_season": 2025
+    },
+    {
+      "arm": "opponent_luck_adjusted",
+      "calibration_intercept": 0.22030082465550005,
+      "calibration_slope": 0.6912356854712542,
+      "games": 1226,
+      "margin_correlation": 0.24001984287921957,
+      "margin_rmse": 15.513167248702164,
+      "predicted_margin_sd": 5.513572524541126,
+      "test_season": 2025
+    },
+    {
+      "arm": "teammate_and_opponent_luck_adjusted",
+      "calibration_intercept": 0.5684912408938532,
+      "calibration_slope": 0.6325309962934307,
+      "games": 1226,
+      "margin_correlation": 0.18524248396259332,
+      "margin_rmse": 15.697096784140152,
+      "predicted_margin_sd": 4.650191937046658,
+      "test_season": 2025
+    },
+    {
+      "arm": "full_expected_outcome",
+      "calibration_intercept": 0.5918532635382237,
+      "calibration_slope": 0.608266826693177,
+      "games": 1226,
+      "margin_correlation": 0.1327328358087229,
+      "margin_rmse": 15.79661867324908,
+      "predicted_margin_sd": 3.4649449298122583,
+      "test_season": 2025
+    },
+    {
+      "arm": "normal_realized_points",
+      "calibration_intercept": 0.01104268787735263,
+      "calibration_slope": 0.8165221407228758,
+      "games": 1228,
+      "margin_correlation": 0.3344409076075028,
+      "margin_rmse": 15.473200052164126,
+      "predicted_margin_sd": 6.701760497177753,
+      "test_season": 2026
+    },
+    {
+      "arm": "opponent_luck_adjusted",
+      "calibration_intercept": -0.14815489907275392,
+      "calibration_slope": 0.8978176795534821,
+      "games": 1228,
+      "margin_correlation": 0.31063349278194213,
+      "margin_rmse": 15.567490007869859,
+      "predicted_margin_sd": 5.6610579709832205,
+      "test_season": 2026
+    },
+    {
+      "arm": "teammate_and_opponent_luck_adjusted",
+      "calibration_intercept": -0.19945722345184147,
+      "calibration_slope": 1.0905124538171493,
+      "games": 1228,
+      "margin_correlation": 0.3085650627405771,
+      "margin_rmse": 15.569322729914587,
+      "predicted_margin_sd": 4.6297079658296045,
+      "test_season": 2026
+    },
+    {
+      "arm": "full_expected_outcome",
+      "calibration_intercept": -0.15700588569316642,
+      "calibration_slope": 1.0573350262418448,
+      "games": 1228,
+      "margin_correlation": 0.26160043239809544,
+      "margin_rmse": 15.794059382139666,
+      "predicted_margin_sd": 4.048212612724901,
+      "test_season": 2026
+    }
+  ],
+  "estimand_id": "luck_adjusted_player_impact_v1",
+  "evidence_status": "development_through_2024_reused_2025_2026_diagnostics",
+  "forbidden_interpretation": "Production RAPM, confirmed luck adjustment, causal shooting or defense, or a validated luck-adjusted SPM.",
+  "identity": {
+    "annual_source_hashes": {
+      "2014": "5f6b2f77ed2720049a319af35b31cf9a07452454bfe8599551b4439b70ca8966",
+      "2015": "21825d18cece5ac4e0b759d5a6c4013cdbc68915ab86972ba9f0ca89949d41c5",
+      "2016": "3f687993e1a5eae36e72058e43ded53c98db21af4345a1ea0bed749c13faad80",
+      "2017": "448f551c78d7d5fd642add4eb8eee43ab98aefbf0ff18ae10eedb210045004a3",
+      "2018": "f5d6848984398f63ebe2443bfbaa4f0004ce8b3f3e52e17aa57648ba316aeb78",
+      "2019": "592128b19eebc8de29fd90b66e2cd420ecf39a58f7f54dd8e623b029143bcd0b",
+      "2020": "fd7f62933e6fbad6610f58dff051181fd3eb3a481e305910c2d3ff9c98fb0fb7",
+      "2021": "40f426a6a3bfad664333a4721ec18ba56a413583a824198c7ecdd71e1f23c628",
+      "2022": "deb84af6ebecf428c2a159ac472248199ec125a1b78b62126ded71e135e92582",
+      "2023": "07d0ce9028bca9c0ffca46e81a8b66156ec31e8729bfd73c96c8fd2e53420816",
+      "2024": "46587d70f2fb517bc20629ddc30ba0b6952683d2570a373d259202df364e43a3",
+      "2025": "575987a927308bcf478c3b20d9022734d6ad5b75ec63098386b43e9898c2e5ec"
+    },
+    "builder_sha256": "3793f1822bb112233a4bb65470d51c5dabcff0de2dd7de32c92b064e1f95a794",
+    "contract_sha256": "b074dc1e89a134747d1c2cfa87668ae1656ce8c0c0121e308f9498e537755c7b",
+    "event_sha256": "46cb341b638b5bf1ba1eb97c6b9a6a2de066552ed0bd34351b17b5fb0d733b6e",
+    "possession_sha256": "5d97a6aec9e544d46adbd970e95f6d2226a15d2c5d9a3832ef1f915170182f75",
+    "segment_sha256": "68bc998a6ddb4bf02fcd962154a68c37db15f29c33d5bad2a2897926821b4063",
+    "shot_sha256": "7d65d77baccae99f79e80c006368d607f91b116a8c830aa0cdfdb4b752f67ff8"
+  },
+  "paths": {
+    "future_game_metrics": "future_game_metrics.parquet",
+    "future_game_predictions": "future_game_predictions.parquet",
+    "rating_movement": "rating_movement.parquet",
+    "ratings_2026": "ratings_2026.parquet",
+    "shooting_history_selected": "shooting_history_selected.parquet",
+    "shot_model_c_selection": "shot_model_c_selection.parquet"
+  },
+  "quality": {
+    "conversion_actual_points_share": 0.9900453443753527,
+    "conversion_events_mapped": 808297,
+    "field_goal_attempts": 654376,
+    "games": 3681,
+    "possessions": 743946
+  },
+  "run_id": "luck_adjusted_rapm_v1_8580bb30e9",
+  "runtime_seconds": 40.0687724170275,
+  "selected_shot_model_c": 0.05,
+  "spm_status": "not_fit: only 2024 and 2025 possess shot-level expected-outcome labels before the 2026 output; that is insufficient for chronological SPM selection",
+  "status": "research_target_experiment_complete"
+}
