@@ -5,7 +5,10 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from nba_impact.data.defensive_tracking_features import build_defensive_tracking_features
+from nba_impact.data.defensive_tracking_features import (
+    build_defensive_tracking_features,
+    compute_defensive_tracking_features,
+)
 
 
 def test_build_defensive_tracking_features_resolves_names_and_rates(tmp_path: Path) -> None:
@@ -57,3 +60,38 @@ def test_build_defensive_tracking_features_resolves_names_and_rates(tmp_path: Pa
     assert features.loc[1, "deflections_p100"] == pytest.approx(2.0)
     assert run["quality"]["source_join_quality"]["dfg"]["match_rate"] == 1.0
     assert run["quality"]["nonfinite_values"] == 0
+    assert run["quality"]["neutral_fill_policy"] == "same_season_median_then_zero"
+
+
+def test_defensive_tracking_never_uses_another_seasons_center() -> None:
+    box = pd.DataFrame(
+        [
+            {"PLAYER_ID": 1, "PLAYER_NAME": "One", "DefPoss": 1000, "Season": 2017, "_name_key": "one", "_name_ambiguous": False},
+            {"PLAYER_ID": 2, "PLAYER_NAME": "Two", "DefPoss": 1000, "Season": 2018, "_name_key": "two", "_name_ambiguous": False},
+        ]
+    )
+    dfg = pd.DataFrame(
+        [{"PLAYER": "Two", "year": 2018, "DFGA": 200, "DIFF%": -5.0}]
+    )
+    rim = pd.DataFrame(
+        [{"PLAYER": "Two", "year": 2018, "DFGA": 100, "DIFF%": -10.0}]
+    )
+    hustle = pd.DataFrame(
+        [{
+            "PLAYER_NAME": "Two",
+            "year": 2018,
+            "DEFLECTIONS": 20,
+            "CHARGES_DRAWN": 2,
+            "CONTESTED_SHOTS_2PT": 100,
+            "CONTESTED_SHOTS_3PT": 50,
+            "DEF_LOOSE_BALLS_RECOVERED": 10,
+        }]
+    )
+
+    features, quality = compute_defensive_tracking_features(box, dfg, rim, hustle)
+    missing_season = features.loc[features["Season"].eq(2017)].iloc[0]
+
+    assert missing_season["dfg_attempts_p100"] == 0.0
+    assert missing_season["rim_points_saved_p100"] == 0.0
+    assert missing_season["deflections_p100"] == 0.0
+    assert quality["neutral_fill_policy"] == "same_season_median_then_zero"

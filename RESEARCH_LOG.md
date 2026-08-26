@@ -3982,3 +3982,25 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   `1.7543` to `1.9832`, while correlation rises from `.4106` to `.4232`.
 - **Decision:** Replace the annual-target SPM as the research AIO prior. Do not
   change the public model until untouched 2027 confirmation.
+
+## 2026-08-26 - Same-season Basketball Index and RAPTOR feature families
+
+- **Leak boundary:** Annual empirical-Bayes features use only that season's
+  league center and that player-season's opportunities. The defensive tracking
+  builder no longer falls back to an all-season median. Missing source seasons
+  are neutral zero. Five-year pooling occurs after annual estimates are frozen.
+- **Candidates:** Tested eight grouped additions: shooting context, passing
+  context, screening, playtype/transition, defensive hustle, defended-shot
+  context, matchup 3PA volume, and opponent eFG outcome.
+- **Selection:** Development was 2022--24. A group needed lower mean future-
+  season RMSE, at least two fold wins, and less than `0.01` RMSE/correlation
+  degradation among primary-team changers. Opponent shooting outcome was a
+  falsification family and could not promote.
+- **Selected:** Three passing features on offense; defended-2P value, rim
+  matchup share, contested-3 share, and matchup 3PA share on defense.
+- **AIO result:** Selected-minus-baseline game RMSE was `-0.0097`, `-0.0061`,
+  `-0.0044`, `-0.0019`, and `+0.0126` in 2022--26. The final reused season
+  reverses the small earlier gains.
+- **Decision:** Keep run `five_year_spm_feature_research_v1_93c148510e` as a
+  localhost-only challenger. Do not replace the five-year SPM reference and do
+  not use 2027 before the untouched confirmation.

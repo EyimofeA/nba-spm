@@ -68,6 +68,7 @@ Refresh the local RAPM Lab payload after research runs:
 
 ```bash
 uv run python web/scripts/build-rapm-lab-data.py
+uv run python web/scripts/build-spm-lab-data.py
 ```
 
 Refresh the local Player Skills shards from the pinned audit decision:

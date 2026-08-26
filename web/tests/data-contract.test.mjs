@@ -84,7 +84,7 @@ test("every published season table is loadable and complete", () => {
 
 test("production data excludes local-only research payloads", () => {
   const names = readdirSync(new URL("../public/data/", import.meta.url));
-  assert.ok(!names.some((name) => /matchup-elo|shot-quality-lineup|rapm-lab|projection-/.test(name)));
+  assert.ok(!names.some((name) => /matchup-elo|shot-quality-lineup|rapm-lab|spm-lab|projection-/.test(name)));
 });
 
 test("the player index points at existing shards", () => {
