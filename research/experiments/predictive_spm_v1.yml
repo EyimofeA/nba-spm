@@ -33,9 +33,12 @@ arms:
     fold; no fallback rescaling is allowed.
 
 data_contract:
-  features: statistical_features_v2_b808fc1bf1 (unified 2014-2026 panel)
-  targets: canonical_annual_target_panel_v1_2d9ff74ca3 (legacy terminal cache
-    through 2023, canonical event terminal lineups from 2024)
+  features: statistical_features_v2_b808fc1bf1
+  features_note: unified 2014-2026 panel
+  targets: canonical_annual_target_panel_v1_2d9ff74ca3
+  targets_note: >-
+    Legacy terminal cache through 2023, canonical event terminal lineups from
+    2024.
   feature_reference_run: single_season_spm_v1_bff6060df6
   population: consecutive-season players; rookies are out of scope by design
   diagnostic_folds: [2019, 2020, 2021, 2022, 2023, 2024]

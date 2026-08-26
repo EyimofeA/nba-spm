@@ -98,6 +98,16 @@ def test_pinned_inputs_must_match_manifests(tmp_path) -> None:
         )
 
 
+def test_repository_contract_uses_exact_artifact_ids() -> None:
+    contract = _load_contract(
+        "research/experiments/predictive_spm_v1.yml",
+        tuple(range(2019, 2027)),
+    )
+
+    assert contract["data_contract"]["features"] == "statistical_features_v2_b808fc1bf1"
+    assert contract["data_contract"]["targets"] == "canonical_annual_target_panel_v1_2d9ff74ca3"
+
+
 def test_every_arm_scores_the_same_player_seasons() -> None:
     frame = pd.DataFrame(
         {
@@ -121,6 +131,12 @@ def test_every_arm_scores_the_same_player_seasons() -> None:
     )
 
     assert scored["scored_common"].tolist() == [True, False, True]
+    assert scored["evaluation_status"].tolist() == ["included", "excluded", "included"]
+    assert scored["exclusion_reason"].tolist() == [
+        "",
+        "missing_prior_season_persistence",
+        "",
+    ]
     assert {row["rows"] for row in metrics} == {2}
     assert {row["evaluation_rows_before_common_filter"] for row in metrics} == {3}
 

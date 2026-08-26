@@ -1,0 +1,248 @@
+{
+  "artifact_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/research/spm_target_horizon_pilot/features/statistical_impact/statistical_features_v1_4bec823e75",
+  "audit_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/research/spm_target_horizon_pilot/features/statistical_impact/statistical_features_v1_4bec823e75/audit.parquet",
+  "caveats": [],
+  "config": {
+    "builder_sha256": "378ca9296d246011927c2dff45447177089397f387bacfba9ef17fa2d5e239bf",
+    "source_hashes": {
+      "2010": "dc27c78cd19d6df85f40ff7b6b5edaa5ff7f2ce53a6fe1d628f6c85931683bfe",
+      "2011": "f2ea5cacda799449a760e4b5da8d0fe5eca60b72a74be8878cde2fa6906243ae",
+      "2012": "a9872e8d3f84c839ba142dadb613b847b1ff9fc61d7ec75679bfc0ca2d6ecfc7",
+      "2013": "96db75e13bf1ccc8a903d52132cdbb0abe2d118e12eb770aab3c22cdce4f35a9",
+      "2014": "5f6b2f77ed2720049a319af35b31cf9a07452454bfe8599551b4439b70ca8966",
+      "2015": "21825d18cece5ac4e0b759d5a6c4013cdbc68915ab86972ba9f0ca89949d41c5",
+      "2016": "3f687993e1a5eae36e72058e43ded53c98db21af4345a1ea0bed749c13faad80",
+      "2017": "448f551c78d7d5fd642add4eb8eee43ab98aefbf0ff18ae10eedb210045004a3",
+      "2018": "f5d6848984398f63ebe2443bfbaa4f0004ce8b3f3e52e17aa57648ba316aeb78",
+      "2019": "592128b19eebc8de29fd90b66e2cd420ecf39a58f7f54dd8e623b029143bcd0b",
+      "2020": "fd7f62933e6fbad6610f58dff051181fd3eb3a481e305910c2d3ff9c98fb0fb7",
+      "2021": "40f426a6a3bfad664333a4721ec18ba56a413583a824198c7ecdd71e1f23c628",
+      "2022": "deb84af6ebecf428c2a159ac472248199ec125a1b78b62126ded71e135e92582",
+      "2023": "07d0ce9028bca9c0ffca46e81a8b66156ec31e8729bfd73c96c8fd2e53420816",
+      "2024": "46587d70f2fb517bc20629ddc30ba0b6952683d2570a373d259202df364e43a3"
+    },
+    "window_ends": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "window_seasons": 5
+  },
+  "created_at": "2026-08-26T03:50:34.795323+00:00",
+  "dataset": "statistical_impact_features",
+  "excluded_primary_inputs": [
+    "AGE",
+    "MIN",
+    "GP",
+    "position",
+    "experience"
+  ],
+  "feature_groups": {
+    "core_rates": [
+      "PTS_p100",
+      "AST_p100",
+      "TOV_p100",
+      "STL_p100",
+      "BLK_p100",
+      "OREB_p100",
+      "DREB_p100",
+      "PF_p100",
+      "PFD_p100",
+      "FTA_p100",
+      "FTM_p100",
+      "FG2A_p100",
+      "FG2M_p100",
+      "FG3A_p100",
+      "FG3M_p100"
+    ],
+    "natural_weighted_averages": [
+      "avg_seconds_per_touch",
+      "avg_dribbles_per_touch",
+      "shot_quality_average",
+      "OnOffRtg",
+      "OnDefRtg"
+    ],
+    "pooled_ratios": [
+      "fg2_pct",
+      "fg3_pct",
+      "ft_pct",
+      "at_rim_accuracy",
+      "short_mid_accuracy",
+      "long_mid_accuracy",
+      "corner3_accuracy",
+      "arc3_accuracy",
+      "catch_shoot_accuracy",
+      "catch_shoot_3_accuracy",
+      "pull_up_accuracy",
+      "pull_up_3_accuracy",
+      "open_accuracy",
+      "open_3_accuracy",
+      "wide_open_accuracy",
+      "wide_open_3_accuracy",
+      "tight_accuracy",
+      "tight_3_accuracy",
+      "very_tight_accuracy",
+      "very_tight_3_accuracy",
+      "at_rim_frequency",
+      "short_mid_frequency",
+      "long_mid_frequency",
+      "corner3_frequency",
+      "arc3_frequency",
+      "drive_points_per_drive",
+      "drive_assists_per_drive",
+      "drive_turnovers_per_drive",
+      "drive_fta_per_drive",
+      "passes_per_touch",
+      "potential_assists_per_touch",
+      "paint_points_per_touch",
+      "post_points_per_touch",
+      "elbow_points_per_touch",
+      "live_ball_turnover_share",
+      "bad_pass_turnover_share",
+      "lost_ball_turnover_share"
+    ],
+    "tracking_rates": [
+      "drives_p100",
+      "drive_points_p100",
+      "drive_assists_p100",
+      "drive_turnovers_p100",
+      "drive_fta_p100",
+      "touches_p100",
+      "front_court_touches_p100",
+      "paint_touches_p100",
+      "post_touches_p100",
+      "elbow_touches_p100",
+      "time_of_possession_p100",
+      "passes_made_p100",
+      "passes_received_p100",
+      "potential_assists_p100",
+      "secondary_assists_p100",
+      "assist_points_created_p100",
+      "catch_shoot_fga_p100",
+      "pull_up_fga_p100",
+      "at_rim_fga_p100",
+      "short_mid_fga_p100",
+      "long_mid_fga_p100",
+      "corner3_fga_p100",
+      "arc3_fga_p100",
+      "open_fga_p100",
+      "wide_open_fga_p100",
+      "tight_fga_p100",
+      "very_tight_fga_p100",
+      "live_ball_turnovers_p100",
+      "bad_pass_turnovers_p100",
+      "lost_ball_turnovers_p100",
+      "travels_p100",
+      "offensive_fouls_p100",
+      "shooting_fouls_drawn_p100",
+      "rebound_contests_p100",
+      "rebound_chances_p100",
+      "dreb_contests_p100",
+      "dreb_chances_p100",
+      "recovered_blocks_p100"
+    ]
+  },
+  "features_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/research/spm_target_horizon_pilot/features/statistical_impact/statistical_features_v1_4bec823e75/features.parquet",
+  "grain": "player_5_season_window",
+  "quality": {
+    "bounded_ratio_violations": 0,
+    "duplicate_keys": 0,
+    "duplicate_source_rows_collapsed_on_feature_contract": 4,
+    "features": 97,
+    "latest_season_exposure_ratio_to_prior_two_median": null,
+    "latest_season_is_partial": false,
+    "players": 1762,
+    "rows": 9799
+  },
+  "reliability_only_columns": [
+    "OffPoss",
+    "DefPoss"
+  ],
+  "run_id": "statistical_features_v1_4bec823e75",
+  "sources": [
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2010.csv",
+      "season": 2010,
+      "sha256": "dc27c78cd19d6df85f40ff7b6b5edaa5ff7f2ce53a6fe1d628f6c85931683bfe"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2011.csv",
+      "season": 2011,
+      "sha256": "f2ea5cacda799449a760e4b5da8d0fe5eca60b72a74be8878cde2fa6906243ae"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2012.csv",
+      "season": 2012,
+      "sha256": "a9872e8d3f84c839ba142dadb613b847b1ff9fc61d7ec75679bfc0ca2d6ecfc7"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2013.csv",
+      "season": 2013,
+      "sha256": "96db75e13bf1ccc8a903d52132cdbb0abe2d118e12eb770aab3c22cdce4f35a9"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2014.csv",
+      "season": 2014,
+      "sha256": "5f6b2f77ed2720049a319af35b31cf9a07452454bfe8599551b4439b70ca8966"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2015.csv",
+      "season": 2015,
+      "sha256": "21825d18cece5ac4e0b759d5a6c4013cdbc68915ab86972ba9f0ca89949d41c5"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2016.csv",
+      "season": 2016,
+      "sha256": "3f687993e1a5eae36e72058e43ded53c98db21af4345a1ea0bed749c13faad80"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2017.csv",
+      "season": 2017,
+      "sha256": "448f551c78d7d5fd642add4eb8eee43ab98aefbf0ff18ae10eedb210045004a3"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2018.csv",
+      "season": 2018,
+      "sha256": "f5d6848984398f63ebe2443bfbaa4f0004ce8b3f3e52e17aa57648ba316aeb78"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2019.csv",
+      "season": 2019,
+      "sha256": "592128b19eebc8de29fd90b66e2cd420ecf39a58f7f54dd8e623b029143bcd0b"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2020.csv",
+      "season": 2020,
+      "sha256": "fd7f62933e6fbad6610f58dff051181fd3eb3a481e305910c2d3ff9c98fb0fb7"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2021.csv",
+      "season": 2021,
+      "sha256": "40f426a6a3bfad664333a4721ec18ba56a413583a824198c7ecdd71e1f23c628"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2022.csv",
+      "season": 2022,
+      "sha256": "deb84af6ebecf428c2a159ac472248199ec125a1b78b62126ded71e135e92582"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2023.csv",
+      "season": 2023,
+      "sha256": "07d0ce9028bca9c0ffca46e81a8b66156ec31e8729bfd73c96c8fd2e53420816"
+    },
+    {
+      "path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/raw/playersheets/year_totals/2024.csv",
+      "season": 2024,
+      "sha256": "46587d70f2fb517bc20629ddc30ba0b6952683d2570a373d259202df364e43a3"
+    }
+  ],
+  "status": "structurally_validated"
+}

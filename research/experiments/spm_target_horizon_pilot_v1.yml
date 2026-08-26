@@ -1,0 +1,35 @@
+schema_version: experiment_preregistration_v1
+experiment_id: spm_target_horizon_pilot_v1
+status: preregistered_pilot
+estimand_id: matched_window_spm_to_future_game_aio_v1
+
+horizons:
+  1y:
+    seasons: 1
+    features: statistical_features_v2_0e1350d95a
+  5y:
+    seasons: 5
+    features: statistical_features_v2_c6351c128f
+
+targets: rapm_target_horizon_bakeoff_v1_7c70e278cb
+reference_spm: single_season_spm_v1_bff6060df6
+test_seasons: [2023, 2024]
+minimum_training_window_ends: 3
+
+learners:
+  offense: frozen_histogram_gbm
+  defense: frozen_ridge
+
+rapm:
+  lambda_off: 3000
+  lambda_def: 3000
+  lambda_home: 300
+  center_scales: [0.0, 1.0]
+
+rules:
+  - Statistical features and RAPM labels cover the same trailing window.
+  - Each SPM fold trains only on window ends before the rated window end.
+  - Zero-prior and SPM-centered RAPM score identical future-season games.
+  - This pilot can justify a full five-horizon run but cannot promote a model.
+  - Seasons 2025 and 2026 are not used by this pilot.
+  - Season 2027 is forbidden.

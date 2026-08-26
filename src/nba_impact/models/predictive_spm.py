@@ -232,6 +232,19 @@ def _score_fold(
     finite = np.isfinite(forecasts[required].to_numpy(dtype=float)).all(axis=1)
     forecasts = forecasts.copy()
     forecasts["scored_common"] = finite
+    forecasts["evaluation_status"] = np.where(finite, "included", "excluded")
+    forecasts["exclusion_reason"] = ""
+    missing_persistence = forecasts["persistence_net"].isna()
+    forecasts.loc[~finite & missing_persistence, "exclusion_reason"] = (
+        "missing_prior_season_persistence"
+    )
+    missing_model = ~np.isfinite(
+        forecasts[[column for column in required if column != "persistence_net"]]
+        .to_numpy(dtype=float)
+    ).all(axis=1)
+    forecasts.loc[
+        ~finite & ~missing_persistence & missing_model, "exclusion_reason"
+    ] = "missing_model_or_target_value"
     scored = forecasts.loc[finite]
     if scored.empty:
         raise ValueError(f"Forecast season {season} has no common comparator rows.")
@@ -266,6 +279,13 @@ def _score_fold(
                 }
             )
     return forecasts, rows
+
+
+def _write_parquet_atomic(frame: pd.DataFrame, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+    frame.to_parquet(temporary, index=False)
+    temporary.replace(path)
 
 
 def _fit_predict(
@@ -346,6 +366,29 @@ def build_predictive_spm(
     _validate_pinned_inputs(
         contract, features_path, targets_path, reference_run_path
     )
+
+    identity = uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        json.dumps(
+            {
+                "features_sha256": sha256_file(features_path),
+                "targets_sha256": sha256_file(targets_path),
+                "reference_run": sha256_file(Path(reference_run_path) / "run.json"),
+                "contract_sha256": sha256_file(contract_path),
+                "source_sha256": sha256_file(Path(__file__)),
+                "output_seasons": list(output_seasons),
+            },
+            sort_keys=True,
+        ),
+    ).hex[:10]
+    run_id = f"predictive_spm_v1_{identity}"
+    output = Path(artifact_root) / "models" / "predictive_spm" / run_id
+    completed_manifest = output / "run.json"
+    if completed_manifest.exists():
+        return json.loads(completed_manifest.read_text())
+    checkpoint_dir = output / "checkpoints"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
     features = pd.read_parquet(features_path).rename(columns={"Window_End": "Season"})
     targets = pd.read_parquet(targets_path)
     if features.duplicated(["PLAYER_ID", "Season"]).any():
@@ -389,6 +432,22 @@ def build_predictive_spm(
     metric_rows: list[dict] = []
     calibration_log: dict[str, object] = {}
     for season in output_seasons:
+        checkpoint_predictions = checkpoint_dir / f"fold_{season}_predictions.parquet"
+        checkpoint_metrics = checkpoint_dir / f"fold_{season}_metrics.parquet"
+        checkpoint_calibration = checkpoint_dir / f"fold_{season}_calibration.json"
+        if (
+            checkpoint_predictions.exists()
+            and checkpoint_metrics.exists()
+            and checkpoint_calibration.exists()
+        ):
+            prediction_rows.append(pd.read_parquet(checkpoint_predictions))
+            metric_rows.extend(pd.read_parquet(checkpoint_metrics).to_dict("records"))
+            calibration_log[str(season)] = json.loads(
+                checkpoint_calibration.read_text()
+            )
+            print(f"predictive SPM fold {season}: resumed", flush=True)
+            continue
+
         train = panel.loc[panel["Target_Season"].lt(season)].copy()
         evaluate = panel.loc[panel["Target_Season"].eq(season)].copy()
         train_seasons = tuple(sorted(int(v) for v in train["Target_Season"].unique()))
@@ -433,29 +492,16 @@ def build_predictive_spm(
         )
         prediction_rows.append(forecasts)
         metric_rows.extend(rows)
+        _write_parquet_atomic(forecasts, checkpoint_predictions)
+        _write_parquet_atomic(pd.DataFrame(rows), checkpoint_metrics)
+        write_json_atomic(cal_params, checkpoint_calibration)
+        print(f"predictive SPM fold {season}: checkpointed", flush=True)
 
     predictions = pd.concat(prediction_rows, ignore_index=True)
     metrics = pd.DataFrame(metric_rows)
 
-    identity = uuid.uuid5(
-        uuid.NAMESPACE_URL,
-        json.dumps(
-            {
-                "features_sha256": sha256_file(features_path),
-                "targets_sha256": sha256_file(targets_path),
-                "reference_run": sha256_file(Path(reference_run_path) / "run.json"),
-                "contract_sha256": sha256_file(contract_path),
-                "source_sha256": sha256_file(Path(__file__)),
-                "output_seasons": list(output_seasons),
-            },
-            sort_keys=True,
-        ),
-    ).hex[:10]
-    run_id = f"predictive_spm_v1_{identity}"
-    output = Path(artifact_root) / "models" / "predictive_spm" / run_id
-    output.mkdir(parents=True, exist_ok=False)
-    predictions.to_parquet(output / "predictions.parquet", index=False)
-    metrics.to_parquet(output / "fold_metrics.parquet", index=False)
+    _write_parquet_atomic(predictions, output / "predictions.parquet")
+    _write_parquet_atomic(metrics, output / "fold_metrics.parquet")
 
     summary = {}
     net = metrics.loc[metrics["component"].eq("net")]
@@ -499,6 +545,7 @@ def build_predictive_spm(
         "metrics": {"summary": summary, "calibration_parameters": calibration_log},
         "predictions_path": str((output / "predictions.parquet").resolve()),
         "artifact_path": str(output.resolve()),
+        "checkpoint_path": str(checkpoint_dir.resolve()),
         "caveats": [
             "Rookies and returning-after-gap players are out of scope by design.",
             "Targets are noisy one-season normal RAPM labels, not ground truth.",

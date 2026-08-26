@@ -1,0 +1,30 @@
+{
+  "experiment_id": "predictive_spm_v1",
+  "run_id": "predictive_spm_v1_9392b98d58",
+  "status": "research_null_for_promotion",
+  "development_seasons": [2019, 2020, 2021, 2022, 2023, 2024],
+  "reused_diagnostic_seasons": [2025, 2026],
+  "selected_arm_for_gate_check": "calibrated",
+  "development_mean_weighted_net_rmse": {
+    "persistence": 1.965066,
+    "raw": 1.609416,
+    "calibrated": 1.608333
+  },
+  "reused_diagnostic_mean_weighted_net_rmse": {
+    "persistence": 2.082617,
+    "raw": 1.754558,
+    "calibrated": 1.756341
+  },
+  "confirmation_defense_dispersion_ratio": {
+    "2025": {"raw": 0.352667, "calibrated": 0.321746},
+    "2026": {"raw": 0.334486, "calibrated": 0.308709}
+  },
+  "gates": {
+    "development_rmse_improvement_over_0_03": true,
+    "beats_persistence_in_2025_and_2026": true,
+    "defense_dispersion_between_0_85_and_1_15_in_2025_and_2026": false,
+    "eligible_for_production": false
+  },
+  "decision": "Retain as a research forecast and comparator. Do not promote it as the predictive SPM or production AIO prior because defense forecasts collapse too strongly toward zero.",
+  "season_2027_loaded": false
+}

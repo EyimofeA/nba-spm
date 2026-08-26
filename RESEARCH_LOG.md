@@ -3772,3 +3772,44 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   improve provenance and 2026 coverage but do not improve historical defense
   prediction under the frozen model. Seasons 2025 and 2026 were not used in
   this comparison. Season 2027 was not loaded.
+
+## 2026-08-26 - Corrected predictive SPM rescore
+
+- **Method:** Rescored the frozen `predictive_spm_v1` after repairing contract
+  parsing, exact artifact pins, common comparator rows, weighted correlation,
+  held-out calibration reporting, row inclusion reasons, and fold-level
+  checkpoint/resume. The features, learners, folds, and targets did not change.
+  OpenMP and BLAS were limited to two threads after the first timed attempt
+  exceeded the overnight CPU cap and was stopped before producing a result.
+- **Result:** Across development folds 2019-24, equal-season weighted net RMSE
+  is 1.9651 for prior-season RAPM persistence, 1.6094 for raw predictive SPM,
+  and 1.6083 for calibrated SPM. Across the already-inspected 2025-26
+  diagnostics, the values are 2.0826, 1.7546, and 1.7563. Every arm in every
+  fold uses the same player-season rows.
+- **Failure:** Defense dispersion remains far below the preregistered 0.85-1.15
+  band. Raw defense ratios are 0.353 in 2025 and 0.334 in 2026; calibrated
+  ratios are 0.322 and 0.309. The RMSE gain is therefore not sufficient for
+  promotion.
+- **Decision:** Retain `predictive_spm_v1_9392b98d58` as a research forecast and
+  comparator. Do not promote it as the predictive SPM or production AIO prior.
+  Season 2027 was rejected before data access and was not loaded.
+
+## 2026-08-26 - Matched-window target-horizon pilot
+
+- **Question:** Does the earlier five-year RAPM portability win survive after
+  fitting an SPM on five-year statistical windows and using it as the fixed AIO
+  center?
+- **Method:** Froze a two-fold pilot on 2023 and 2024 future games. Compared
+  one- and five-year windows using the same 126 offense and 50 defense feature
+  names, matched-window RAPM labels, the frozen offense histogram-GBM and
+  defense ridge learners, strictly earlier SPM training windows, and identical
+  held-out game row sets. No 2025, 2026, or 2027 data was used.
+- **Result:** One-year SPM-centered AIO improves zero-prior RAPM by 0.050 RMSE
+  in 2023 and 0.158 in 2024. Five-year zero-prior RAPM is stronger than
+  one-year zero-prior, but the five-year SPM center worsens it by 0.126 and
+  0.020. Mean future-game RMSE is 13.6956 for one-year centered AIO, 13.6989
+  for five-year zero-prior, 13.7718 for five-year centered AIO, and 13.7997 for
+  one-year zero-prior.
+- **Decision:** The pilot is valid and justifies adding three-year, six-year,
+  and expanding-history arms. Do not promote five-year SPM. Easier label
+  reconstruction and smoother RAPM do not establish a better downstream prior.
