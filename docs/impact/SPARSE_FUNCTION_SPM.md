@@ -1,6 +1,13 @@
 # Sparse function-first SPM
 
-Status: research null. No public model or site data changed.
+Status: invalid feature lineage. No public model or site data changed.
+
+The stored run is reproducible, but its declared foul-pressure feature is
+wrong. Gabriel's `ShootingFouls` field records shooting fouls committed. The
+run labeled it shooting fouls drawn, divided it by offensive possessions and
+placed it in the offense model. Separate two-point and three-point shooting
+fouls drawn columns exist. Therefore the numerical comparison below is kept
+only as an audit record and cannot support model selection.
 
 ## Model
 
@@ -38,8 +45,12 @@ field, so the model does not pretend otherwise.
 | Next-season one-year RAPM net Spearman, five folds | .2727 | .3308 | Full |
 | Next-season one-year RAPM net RMSE, five folds | 1.9027 | 1.9813 | Sparse |
 
-The lower RMSE is not enough. The sparse model compresses estimates and loses
-player ordering, then loses both team-win folds. It is not retained for AIO.
+Even without the lineage defect, the lower RMSE would not be enough: the model
+compresses estimates, loses player ordering and loses both team-win folds. It
+is not retained for AIO.
 
 The run, predictions, coefficients and exact feature registry are under
 `artifacts/research/sparse_function_spm/sparse_function_spm_v1_4f1ecaa353`.
+
+The corrected, principal-selected follow-up is documented in
+`docs/impact/HAND_SELECTED_SPARSE_SPM.md`.

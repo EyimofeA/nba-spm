@@ -4209,3 +4209,33 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Null. Keep the full five-year SPM. Do not run the sparse AIO or
   tune these hand-picked inputs after reading the result. A user-authored
   function list will be a new frozen experiment, not a revision of this run.
+
+## 2026-08-26 - Shooting-foul lineage correction and principal-selected SPM
+
+- **Lineage correction:** Gabriel's `ShootingFouls` field is shooting fouls
+  committed, not drawn. It correlates `.951` with total personal fouls in the
+  pinned 2025 sheet. The source separately exposes
+  `TwoPtShootingFoulsDrawn` and `ThreePtShootingFoulsDrawn`. The feature builder
+  now emits their sum per 100 offensive possessions as
+  `shooting_fouls_drawn_p100` and emits `ShootingFouls / DefPoss * 100` as
+  `shooting_fouls_committed_p100`. A regression test fixes both denominators.
+- **Prior run:** `sparse_function_spm_v1_4f1ecaa353` used the mislabeled field
+  on offense and is now invalid for its declared contract, not a valid null.
+  The full five-year SPM baseline also contains that field in its offense list;
+  preserve its predictive numbers but refit before clean side interpretation.
+- **Frozen challenger:** Run `hand_selected_sparse_spm_v1_f04379a684` uses the
+  first twelve principal-named metrics: PTS/100, zTS, stabilized cTOV, Box
+  Creation, OREB/100, spacing, offensive load, rim attempts/100, event
+  stops/100, rim points saved/100, defensive-rebound contests/100 and shooting
+  fouls committed/100. Live-ball turnovers are thirteenth and excluded.
+- **Coverage:** zTS spans 2014--26. Defended-rim data span 2014--25 and match
+  99.49% of source rows to player IDs; the 2026 five-year row pools observed
+  2022--25 rim seasons. No 2027 data are loaded.
+- **Result:** Mean next-season team-win R-squared is `.4720` versus `.5446` for
+  the full model, with losses in both folds. Five-fold next-season one-year
+  RAPM net Pearson is `.3986` versus `.4241` and Spearman is `.3108` versus
+  `.3308`. Net RMSE improves to `1.8913` from `1.9813`, again indicating useful
+  shrinkage without enough downstream ordering signal.
+- **Decision:** Research null. Keep the full five-year SPM as baseline, correct
+  its foul-field lineage before promotion, and do not run the hand-selected
+  challenger's AIO update.

@@ -106,18 +106,22 @@ FEATURE_SPECS = {
 }
 
 
-def selected_features() -> dict[str, tuple[str, ...]]:
+def selected_features(
+    feature_specs: dict[str, tuple[tuple[str, str, str], ...]] = FEATURE_SPECS,
+) -> dict[str, tuple[str, ...]]:
     """Return the frozen one-feature-per-function model inputs."""
     return {
         side: tuple(feature for _, feature, _ in specs)
-        for side, specs in FEATURE_SPECS.items()
+        for side, specs in feature_specs.items()
     }
 
 
-def feature_registry() -> pd.DataFrame:
+def feature_registry(
+    feature_specs: dict[str, tuple[tuple[str, str, str], ...]] = FEATURE_SPECS,
+) -> pd.DataFrame:
     """Return the human-readable model contract."""
     rows = []
-    for side, specs in FEATURE_SPECS.items():
+    for side, specs in feature_specs.items():
         for function, feature, description in specs:
             rows.append(
                 {
@@ -164,10 +168,15 @@ def build_five_year_features(
     return features
 
 
-def standardize_within_window(features: pd.DataFrame) -> pd.DataFrame:
+def standardize_within_window(
+    features: pd.DataFrame,
+    *,
+    feature_names: dict[str, tuple[str, ...]] | None = None,
+) -> pd.DataFrame:
     """Convert each input to a same-window player z-score without target data."""
     output = features.copy()
-    for feature in (*selected_features()["offense"], *selected_features()["defense"]):
+    feature_names = feature_names or selected_features()
+    for feature in (*feature_names["offense"], *feature_names["defense"]):
         values = pd.to_numeric(output[feature], errors="coerce")
         center = values.groupby(output["Window_End"]).transform("mean")
         scale = values.groupby(output["Window_End"]).transform("std").replace(0.0, np.nan)
@@ -191,8 +200,9 @@ def _fit_side(
     *,
     side: str,
     alpha: float,
+    feature_names: dict[str, tuple[str, ...]],
 ) -> tuple[np.ndarray, Pipeline]:
-    columns = selected_features()[side]
+    columns = feature_names[side]
     model = _model(alpha)
     model.fit(
         train.loc[:, columns],
@@ -207,8 +217,9 @@ def _coefficient_rows(
     *,
     side: str,
     rating_season: int,
+    feature_names: dict[str, tuple[str, ...]],
 ) -> list[dict]:
-    inputs = np.asarray(selected_features()[side], dtype=object)
+    inputs = np.asarray(feature_names[side], dtype=object)
     transformed = model.named_steps["impute"].get_feature_names_out(inputs)
     coefficients = model.named_steps["model"].coef_
     rows = [
@@ -237,8 +248,10 @@ def fit_historical_predictions(
     *,
     alpha: float = RIDGE_ALPHA,
     rating_seasons: tuple[int, ...] = RATING_SEASONS,
+    feature_names: dict[str, tuple[str, ...]] | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, Pipeline]]:
     """Fit expanding chronological folds and return the final fitted models."""
+    feature_names = feature_names or selected_features()
     target = five_year_targets.copy()
     if "window_end" in target and "Window_End" not in target:
         target = target.rename(columns={"window_end": "Window_End"})
@@ -281,10 +294,19 @@ def fit_historical_predictions(
         fold = score[["PLAYER_ID", "Window_End"]].copy()
         for side in ("offense", "defense"):
             fold[f"prediction_{side}"] , model = _fit_side(
-                train, score, side=side, alpha=alpha
+                train,
+                score,
+                side=side,
+                alpha=alpha,
+                feature_names=feature_names,
             )
             coefficient_rows.extend(
-                _coefficient_rows(model, side=side, rating_season=rating_season)
+                _coefficient_rows(
+                    model,
+                    side=side,
+                    rating_season=rating_season,
+                    feature_names=feature_names,
+                )
             )
             if rating_season == max(rating_seasons):
                 final_models[side] = model
@@ -338,6 +360,8 @@ def evaluate_next_season_players(
     sparse_predictions: pd.DataFrame,
     full_predictions: pd.DataFrame,
     annual_ratings: pd.DataFrame,
+    *,
+    candidate_name: str = "sparse_function_spm",
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Compare sparse and full SPM on identical following-season RAPM rows."""
     full = full_predictions.loc[full_predictions["target_kind"].eq("five_year")].copy()
@@ -397,8 +421,8 @@ def evaluate_next_season_players(
         matched["sample_weight"] = np.sqrt(
             np.minimum(matched["Poss_Off"], matched["Poss_Def"]).clip(lower=1)
         )
-        for candidate in ("sparse_function_spm", "full_five_year_spm"):
-            suffix = "sparse" if candidate == "sparse_function_spm" else "full"
+        for candidate in (candidate_name, "full_five_year_spm"):
+            suffix = "sparse" if candidate == candidate_name else "full"
             for side in ("offense", "defense", "net"):
                 rows.append(
                     {
@@ -435,6 +459,8 @@ def evaluate_team_wins(
     html_root: str | Path,
     identity_root: str | Path,
     schedule_root: str | Path,
+    candidate_name: str = "sparse_function_spm",
+    candidate_label: str = "Sparse function SPM",
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Run the existing oracle-minutes team-win diagnostic on identical ratings."""
     full = full_predictions.loc[full_predictions["target_kind"].eq("five_year")].copy()
@@ -449,7 +475,7 @@ def evaluate_team_wins(
             validate="one_to_one",
         )
         for metric, suffix, label in (
-            ("sparse_function_spm", "sparse", "Sparse function SPM"),
+            (candidate_name, "sparse", candidate_label),
             ("full_five_year_spm", "full", "Full five-year SPM"),
         ):
             rating_rows.append(
