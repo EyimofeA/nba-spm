@@ -3813,3 +3813,25 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** The pilot is valid and justifies adding three-year, six-year,
   and expanding-history arms. Do not promote five-year SPM. Easier label
   reconstruction and smoother RAPM do not establish a better downstream prior.
+
+## 2026-08-26 - Full matched-window SPM target-horizon comparison
+
+- **Method:** Rebuilt complete one-, three-, five-, six-year, and
+  expanding-from-2014 RAPM targets for window ends 2014-23. Rolling windows use
+  pre-2014 source seasons when needed so each label and statistical feature
+  window has its named length. Fit the same 126 offense and 50 defense features
+  with the frozen learners, trained only on earlier window ends, then scored
+  zero-prior and full-SPM-centered RAPM on identical 2020-24 future games.
+- **Result:** Five-year zero-prior RAPM wins mean future-game RMSE at 13.7681,
+  ahead of six-year zero-prior at 13.8010 and three-year at 13.8189. In 10,000
+  paired whole-game resamples, challenger-minus-five-year intervals are
+  [0.0134, 0.0527] for six-year and [0.0058, 0.0951] for three-year. All other
+  intervals also favor five-year.
+- **SPM result:** Only the one-year SPM center improves its matching zero-prior
+  model, by 0.0962 RMSE on average. Three-, five-, six-year, and expanding SPM
+  centers all worsen downstream RMSE. The five-year center loses in every fold
+  despite its stronger label correlation.
+- **Decision:** Keep one-year RAPM as the retrospective SPM target. Freeze
+  five-year zero-prior RAPM as the predictive history backbone. Do not force a
+  full-strength SPM prior into that fit. Maximum loaded season was 2024;
+  Seasons 2025, 2026, and 2027 were not used.

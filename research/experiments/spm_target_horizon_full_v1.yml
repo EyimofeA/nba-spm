@@ -1,0 +1,38 @@
+schema_version: experiment_preregistration_v1
+experiment_id: spm_target_horizon_full_v1
+status: preregistered_development
+estimand_id: matched_window_spm_to_future_game_aio_v1
+
+window_ends: [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023]
+test_seasons: [2020, 2021, 2022, 2023, 2024]
+minimum_training_window_ends: 3
+
+horizons:
+  1y: {kind: rolling, seasons: 1}
+  3y: {kind: rolling, seasons: 3}
+  5y: {kind: rolling, seasons: 5}
+  6y: {kind: rolling, seasons: 6}
+  expanding: {kind: expanding, start_season: 2014}
+
+features:
+  source_dir: data/raw/playersheets/year_totals
+  reference_spm: single_season_spm_v1_bff6060df6
+  policy: matched-window core and engineered features only
+  offense_learner: frozen_histogram_gbm
+  defense_learner: frozen_ridge
+
+rapm:
+  lambda_off: 3000
+  lambda_def: 3000
+  lambda_home: 300
+  center_scales: [0.0, 1.0]
+  lineup_policy: terminal
+  season_environment: subtract_each_season_mean_before_target_fit
+
+rules:
+  - Rolling windows may use pre-2014 source seasons so every labeled window end is complete.
+  - Expanding history begins in 2014.
+  - SPM training uses only window ends before the rated window end.
+  - Every horizon scores the same future-season games.
+  - This run selects a research horizon only; it cannot promote a production model.
+  - Seasons 2025, 2026, and 2027 are forbidden.
