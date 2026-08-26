@@ -1,26 +1,43 @@
-# Old and new five-year SPM
+# Published annual SPM and five-year research SPM
 
 ## The short version
 
-The new SPM is not a different target, training window, or learner. It is the
-old five-year SPM plus seven feature inputs that passed the frozen feature-group
-screen. Both models predict five-year RAPM. Both train only on five-year windows
-ending before the window being scored.
+There are two different models. The website SPM predicts one-season RAPM from
+one player-season of statistics. The research challenger pools five seasons of
+statistics and predicts five-season RAPM. Calling the latter the “old AIO” was
+wrong: it was never the exact website baseline.
 
-| Contract | Old SPM | New SPM |
+| Contract | Website annual SPM | Five-year research SPM |
 |---|---|---|
-| Training row | Player and five-year window end | Same |
-| Feature window | Seasons `t-4` through `t` | Same |
-| Target | Zero-prior RAPM over seasons `t-4` through `t` | Same |
-| Historical training | Window ends strictly before `t` | Same |
-| Offense learner | Histogram GBM | Same |
-| Defense learner | Ridge | Same |
+| Training row | Player-season | Player and five-year window end |
+| Feature window | Season `t` only | Seasons `t-4` through `t` |
+| Target | Zero-prior RAPM in season `t` | Zero-prior RAPM over `t-4...t` |
+| Training split | Leave one season out | Window ends strictly before scored window |
+| Offense learner | Histogram GBM | Histogram GBM |
+| Defense learner | Ridge | Ridge |
 | Sample weight | Square root of smaller offensive/defensive possession count | Same |
-| Base inputs | 127 offense, 68 defense | Same |
-| Added inputs | None | 3 offense, 4 defense |
-| Final inputs | 127 offense, 68 defense | 130 offense, 72 defense |
+| Website inputs | 127 offense, 68 defense | Starts from the same contract |
+| Selected additions | None | 3 offense, 4 defense |
 
-## Matched five-year inputs and targets
+## Website annual inputs and targets
+
+For the published model, each row is one player-season. The statistical inputs
+and the RAPM label come from the same season. Training holds out the complete
+season being scored; it does not use a rolling five-year row.
+
+```text
+x[i,t] = player statistics from season t
+y_off[i,t] = one-season zero-prior ORAPM in season t
+y_def[i,t] = one-season zero-prior DRAPM in season t
+w[i,t] = sqrt(min(offensive possessions, defensive possessions))
+```
+
+The exact selected feature list is stored in the SPM Lab and in
+`artifacts/research/spm_weight_ablation/spm_weight_ablation_v1_9a4136a6d7/feature_catalog.parquet`.
+It contains 170 unique fields: 127 offense inputs and 68 defense inputs, with
+25 fields shared by both sides.
+
+## Five-year research inputs and targets
 
 For player `i` and window end `t`, the statistical row pools seasons `t-4`
 through `t`. The target is offense or defense from zero-prior RAPM fit over the
@@ -80,7 +97,7 @@ iterations, seven maximum leaves, minimum leaf size 30, and L2 regularization
 `1.0`. Defense uses median imputation, missing indicators, standardization, and
 ridge with alpha `3000`.
 
-## What changed in the new SPM
+## What changed in the five-year challenger
 
 Every candidate begins as an annual statistic stabilized only against that
 season's league distribution and that player-season's opportunities. The code
@@ -159,9 +176,9 @@ beta, intercept = fit_coefficient_center_path(
 
 ## Current decision
 
-The new features produced small AIO game-RMSE gains through 2025 and lost by
-`0.0126` in reused 2026. Across 2021 through 2024 player-seasons, New AIO and
-Old AIO net ratings correlate `0.9994`. In the oracle-minutes team test, mean
-R-squared is `0.6405` for New AIO and `0.6407` for Old AIO. The new model remains
-a localhost research challenger. It has not replaced the old five-year SPM
-reference.
+The selected five-year features produced small AIO game-RMSE gains through 2025
+and lost by `0.0126` in reused 2026. Across 2021 through 2024 player-seasons,
+the five-year research AIO and Website AIO net ratings correlate `0.960`. In
+the oracle-minutes team test, mean R-squared is `0.640` for the research AIO and
+`0.618` for Website AIO. The five-year model remains a localhost research
+challenger until the untouched confirmation.

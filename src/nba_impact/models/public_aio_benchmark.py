@@ -25,6 +25,45 @@ RATING_COLUMNS = (
 )
 
 
+def load_site_aio_ratings(
+    data_root: str | Path,
+    seasons: tuple[int, ...],
+) -> pd.DataFrame:
+    """Load the exact annual AIO rows shipped by the CourtSignal website."""
+    rows = []
+    root = Path(data_root)
+    for season in seasons:
+        path = root / f"leaderboard-{season}.json"
+        source = pd.read_json(path)
+        required = {
+            "PLAYER_ID",
+            "Season",
+            "aio_offense",
+            "aio_defense",
+            "aio_net",
+        }
+        if missing := sorted(required - set(source.columns)):
+            raise ValueError(f"Website leaderboard {path} is missing {missing}.")
+        if not source["Season"].eq(season).all():
+            raise ValueError(f"Website leaderboard {path} contains another season.")
+        rows.append(
+            source.rename(
+                columns={
+                    "aio_offense": "offense",
+                    "aio_defense": "defense",
+                    "aio_net": "net",
+                }
+            )[["PLAYER_ID", "Season", "offense", "defense", "net"]]
+        )
+    ratings = pd.concat(rows, ignore_index=True)
+    if ratings.duplicated(["PLAYER_ID", "Season"]).any():
+        raise ValueError("Website AIO has duplicate player-season IDs.")
+    ratings["metric"] = "site_aio"
+    ratings["metric_label"] = "Website AIO"
+    ratings["category"] = "CourtSignal annual hybrid"
+    return ratings
+
+
 def load_epm_ratings(path: str | Path) -> pd.DataFrame:
     """Load a season-level EPM export with exact NBA player IDs."""
     source = pd.read_csv(path)

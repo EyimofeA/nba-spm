@@ -16,6 +16,7 @@ from nba_impact.models.public_aio_benchmark import (
     load_epm_ratings,
     load_lebron_ratings,
     load_mamba_ratings,
+    load_site_aio_ratings,
     map_named_metric,
 )
 
@@ -33,12 +34,12 @@ METRIC_DEFINITIONS = [
         "interpretation": "Retrospective impact estimate; research challenger.",
     },
     {
-        "metric": "old_aio",
-        "metric_label": "Old AIO",
+        "metric": "site_aio",
+        "metric_label": "Website AIO",
         "included": True,
-        "kind": "CourtSignal hybrid",
-        "how_it_works": "Original five-year-target SPM prior, updated by one season of possession RAPM.",
-        "interpretation": "Retrospective impact estimate; frozen comparison baseline.",
+        "kind": "CourtSignal annual hybrid",
+        "how_it_works": "One-season statistical prior, updated by that season's possession RAPM.",
+        "interpretation": "The exact annual AIO rows currently shipped by the website.",
     },
     {
         "metric": "rapm",
@@ -155,27 +156,29 @@ def load_team_games(schedule_root: Path, seasons: tuple[int, ...]) -> pd.DataFra
 
 
 def internal_ratings(
-    old_aio_path: Path,
+    site_data_root: Path,
     new_aio_path: Path,
     annual_spm_path: Path,
     box_pipm_path: Path,
 ) -> list[pd.DataFrame]:
-    old = pd.read_parquet(old_aio_path)
-    frames = []
-    for candidate, metric, label, category in (
-        ("five_year_target_aio", "old_aio", "Old AIO", "CourtSignal hybrid"),
-        ("zero_prior_rapm", "rapm", "RAPM", "CourtSignal adjusted plus-minus"),
-    ):
-        frame = old.loc[
-            old["candidate"].eq(candidate)
-            & old["Poss_Off"].gt(0)
-            & old["Poss_Def"].gt(0),
-            ["PLAYER_ID", "rating_season", "offense", "defense", "net"],
-        ].rename(columns={"rating_season": "Season"})
-        frame["metric"] = metric
-        frame["metric_label"] = label
-        frame["category"] = category
-        frames.append(frame)
+    frames = [load_site_aio_ratings(site_data_root, (2021, 2022, 2023, 2024))]
+    rapm_rows = []
+    for season in (2021, 2022, 2023, 2024):
+        source = pd.read_json(site_data_root / f"leaderboard-{season}.json")
+        rapm_rows.append(
+            source.rename(
+                columns={
+                    "normal_rapm_offense": "offense",
+                    "normal_rapm_defense": "defense",
+                    "normal_rapm_net": "net",
+                }
+            )[["PLAYER_ID", "Season", "offense", "defense", "net"]]
+        )
+    rapm = pd.concat(rapm_rows, ignore_index=True)
+    rapm["metric"] = "rapm"
+    rapm["metric_label"] = "RAPM"
+    rapm["category"] = "CourtSignal adjusted plus-minus"
+    frames.append(rapm)
     new = pd.read_parquet(new_aio_path)
     new = new.loc[
         new["variant"].eq("selected_combined")
@@ -222,12 +225,7 @@ def main() -> None:
     parser.add_argument("--box-pipm", type=Path, required=True)
     parser.add_argument("--historical-player-games", type=Path, required=True)
     parser.add_argument("--recent-player-games", type=Path, required=True)
-    parser.add_argument(
-        "--old-aio",
-        type=Path,
-        default=ROOT
-        / "artifacts/models/five_year_target_spm/five_year_target_spm_v1_65550acb79/aio_ratings.parquet",
-    )
+    parser.add_argument("--site-data-root", type=Path, default=ROOT / "web/public/data")
     parser.add_argument(
         "--new-aio",
         type=Path,
@@ -273,7 +271,7 @@ def main() -> None:
     ratings = pd.concat(
         [
             *internal_ratings(
-                args.old_aio,
+                args.site_data_root,
                 args.new_aio,
                 args.annual_spm,
                 args.box_pipm,
@@ -299,8 +297,11 @@ def main() -> None:
         "box_pipm": args.box_pipm,
         "historical_player_games": args.historical_player_games,
         "recent_player_games": args.recent_player_games,
-        "old_aio": args.old_aio,
         "new_aio": args.new_aio,
+        **{
+            f"site_aio_{season}": args.site_data_root / f"leaderboard-{season}.json"
+            for season in (2021, 2022, 2023, 2024)
+        },
         **{
             f"team_games_{season}": args.schedule_root
             / f"leaguegamelog_{season}.json.gz"

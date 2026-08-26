@@ -1,0 +1,73 @@
+{
+  "caveats": [
+    "This changes only SPM training weights; features, labels, learners and folds are fixed.",
+    "Annual RAPM labels remain noisy and are not ground truth.",
+    "Leave-one-season-out evaluation is retrospective and can train earlier ratings on later seasons.",
+    "The current histogram-GBM runtime does not bitwise reproduce the saved website offense predictions; both ablation arms use the same current runtime."
+  ],
+  "config": {
+    "defense_features": 68,
+    "evaluation_weights": [
+      "sqrt_possessions",
+      "equal_players"
+    ],
+    "offense_features": 127,
+    "seasons": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "source_hashes": {
+      "features": "0f2976ed76797b490596a8cf8ee98d246eb9c4f315ab86219d633b6d91d942d8",
+      "reference_oof": "bdc98b53bf04663ffbd7d1cde10603f7470d9e7e8b55d78906258329cfd855cd",
+      "reference_run": "205062b7ae811a1d2aa0fb45dccc11410c6b6dac03c1875dd32e8b2b8cf75231"
+    },
+    "variants": [
+      "sqrt_possessions",
+      "unweighted"
+    ]
+  },
+  "created_at": "2026-08-26T14:31:00.094967+00:00",
+  "estimand": "single_season_normal_rapm_offense_defense_and_net",
+  "model_family": "annual_spm_sample_weight_ablation",
+  "paths": {
+    "feature_catalog": "feature_catalog.parquet",
+    "fold_metrics": "fold_metrics.parquet",
+    "oof_predictions": "oof_predictions.parquet",
+    "summary": "summary.parquet"
+  },
+  "quality": {
+    "duplicate_keys": 0,
+    "feature_catalog_rows": 170,
+    "rows": 6942,
+    "weighted_reference_reproduction": {
+      "defense": {
+        "correlation": 1.0,
+        "maximum_absolute_error": 0.0,
+        "mean_absolute_error": 0.0
+      },
+      "net": {
+        "correlation": 0.998070030459019,
+        "maximum_absolute_error": 0.47637824215939173,
+        "mean_absolute_error": 0.047627143180061664
+      },
+      "offense": {
+        "correlation": 0.9961151984699413,
+        "maximum_absolute_error": 0.47637824215939173,
+        "mean_absolute_error": 0.047627143180061664
+      }
+    }
+  },
+  "run_id": "spm_weight_ablation_v1_9a4136a6d7",
+  "status": "research_ablation_complete"
+}

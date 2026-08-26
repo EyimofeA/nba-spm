@@ -9,6 +9,7 @@ from nba_impact.models.public_aio_benchmark import (
     load_epm_ratings,
     load_lebron_ratings,
     load_mamba_ratings,
+    load_site_aio_ratings,
     validate_rating_panel,
 )
 
@@ -145,3 +146,21 @@ def test_epm_loader_uses_season_end_and_exact_ids(tmp_path) -> None:
         {"PLAYER_ID": 2, "Season": 2024},
     ]
     assert ratings["metric"].eq("epm").all()
+
+
+def test_site_aio_loader_uses_exact_website_rows(tmp_path) -> None:
+    pd.DataFrame(
+        {
+            "PLAYER_ID": [1, 2],
+            "Season": [2024, 2024],
+            "aio_offense": [2.0, -0.5],
+            "aio_defense": [1.0, 0.25],
+            "aio_net": [3.0, -0.25],
+        }
+    ).to_json(tmp_path / "leaderboard-2024.json", orient="records")
+    ratings = load_site_aio_ratings(tmp_path, (2024,))
+    assert ratings[["PLAYER_ID", "Season", "net"]].to_dict("records") == [
+        {"PLAYER_ID": 1, "Season": 2024, "net": 3.0},
+        {"PLAYER_ID": 2, "Season": 2024, "net": -0.25},
+    ]
+    assert ratings["metric"].eq("site_aio").all()

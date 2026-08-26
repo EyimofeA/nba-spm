@@ -9,6 +9,7 @@ type Metric = "spm" | "aio";
 type View = "comparison" | "ratings" | "features";
 type Correlation = "pearson" | "spearman";
 type SortKey = "selected_net" | "selected_offense" | "selected_defense" | "delta_net";
+type FeatureSide = "all" | "offense" | "defense";
 
 const pct = (value: number) => `${(100 * value).toFixed(1)}%`;
 
@@ -20,6 +21,8 @@ export function SpmLabView({ lab }: { lab: SpmLabPayload | null }) {
   const [ascending, setAscending] = useState(false);
   const [component, setComponent] = useState<Component>("net");
   const [correlation, setCorrelation] = useState<Correlation>("pearson");
+  const [featureSide, setFeatureSide] = useState<FeatureSide>("all");
+  const [featureSearch, setFeatureSearch] = useState("");
 
   const rows = useMemo(
     () =>
@@ -40,6 +43,14 @@ export function SpmLabView({ lab }: { lab: SpmLabPayload | null }) {
     () => new Map(correlationRows.map((row) => [`${row.left_metric}:${row.right_metric}`, row])),
     [correlationRows],
   );
+  const featureRows = useMemo(() => {
+    const query = featureSearch.trim().toLowerCase();
+    return lab?.weighting.feature_catalog.filter((row) => {
+      const matchesSide = featureSide === "all" || row.side === "both" || row.side === featureSide;
+      const matchesSearch = !query || row.feature.toLowerCase().includes(query) || row.description.toLowerCase().includes(query);
+      return matchesSide && matchesSearch;
+    }) ?? [];
+  }, [featureSearch, featureSide, lab]);
 
   const sortBy = (key: SortKey) => {
     if (sort === key) setAscending((value) => !value);
@@ -130,6 +141,28 @@ export function SpmLabView({ lab }: { lab: SpmLabPayload | null }) {
       </section>}
 
       {view === "features" && <>
+        <section className="card">
+          <div className="card-head"><div><p className="kicker">13 held-out seasons</p><h2>Does possession weighting help?</h2></div></div>
+          <div className="table-wrap"><table className="data"><thead><tr><th className="left">Evaluation</th><th>Component</th><th>Weighted fit</th><th>No weight</th><th>Change</th></tr></thead><tbody>
+            {(["sqrt_possessions", "equal_players"] as const).flatMap((evaluation) => (["offense", "defense", "net"] as const).map((side) => {
+              const weighted = lab.weighting.summary.find((row) => row.evaluation === evaluation && row.component === side && row.variant === "sqrt_possessions");
+              const unweighted = lab.weighting.summary.find((row) => row.evaluation === evaluation && row.component === side && row.variant === "unweighted");
+              if (!weighted || !unweighted) return null;
+              return <tr key={`${evaluation}-${side}`}><td className="left name">{evaluation === "sqrt_possessions" ? "Possession-weighted RMSE" : "Equal-player RMSE"}</td><td>{side}</td><td>{weighted.mean_rmse.toFixed(3)}</td><td>{unweighted.mean_rmse.toFixed(3)}</td><td>{fmtRating(unweighted.mean_rmse - weighted.mean_rmse)}</td></tr>;
+            }))}
+          </tbody></table></div>
+          <p className="note">Positive change means removing the weight made RMSE worse. Both fits use the same current runtime, features, RAPM labels and leave-one-season-out folds.</p>
+        </section>
+
+        <section className="card">
+          <div className="card-head"><div><p className="kicker">127 offense · 68 defense</p><h2>Website SPM inputs</h2></div></div>
+          <div className="filters">
+            <label className="field"><span>Find a feature</span><input value={featureSearch} onChange={(event) => setFeatureSearch(event.target.value)} placeholder="spacing, matchup, turnovers…" /></label>
+            <div className="field"><span>Side</span><div className="segmented">{(["all", "offense", "defense"] as FeatureSide[]).map((value) => <button key={value} type="button" aria-pressed={featureSide === value} onClick={() => setFeatureSide(value)}>{value}</button>)}</div></div>
+          </div>
+          <div className="table-wrap"><table className="data"><thead><tr><th className="left">Feature</th><th>Side</th><th className="left">Meaning</th></tr></thead><tbody>{featureRows.map((row) => <tr key={row.feature}><td className="left name"><code>{row.feature}</code></td><td>{row.side}</td><td className="left">{row.description}</td></tr>)}</tbody></table></div>
+        </section>
+
         <section className="card">
           <div className="card-head"><div><p className="kicker">Forward selection</p><h2>Feature families</h2></div></div>
           <div className="table-wrap"><table className="data"><thead><tr><th className="left"><button type="button" disabled>Family</button></th><th>Side</th><th>Features</th><th>RMSE change</th><th>Changer change</th><th>Decision</th></tr></thead><tbody>{lab.decisions.map((row) => <tr key={row.group}><td className="left name">{row.group.replaceAll("_", " ")}</td><td>{row.side}</td><td>{row.feature_count}</td><td>{fmtRating(row.development_mean_rmse_delta)}</td><td>{fmtRating(row.team_changer_mean_rmse_delta)}</td><td>{row.selected ? "Add" : "Reject"}</td></tr>)}</tbody></table></div>

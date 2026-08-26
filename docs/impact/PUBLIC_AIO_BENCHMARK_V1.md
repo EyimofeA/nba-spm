@@ -4,19 +4,18 @@
 
 This is a matched four-season comparison, not a model-promotion test. MAMBA has
 the highest mean next-season team-win R² (`0.674`). xRAPM follows (`0.644`). The
-old and new CourtSignal AIO models are effectively tied (`0.641` and `0.640`).
-Their player-season net ratings correlate at `0.999`, so the selected feature
-additions have not materially changed the final AIO posterior.
+five-year research AIO scores `0.640`; the exact annual AIO rows shipped by the
+website score `0.618`. Their player-season net ratings correlate at `0.960`.
 
-Run: `public_aio_benchmark_v1_0eab706850`.
+Run: `public_aio_benchmark_v1_e411f910ea`.
 
 | Metric | Mean R² | Mean Pearson | Mean rank correlation | Minimum minute coverage |
 |---|---:|---:|---:|---:|
 | MAMBA | 0.674 | 0.820 | 0.782 | 84.1% |
 | xRAPM | 0.644 | 0.802 | 0.762 | 84.5% |
-| Old AIO | 0.641 | 0.799 | 0.769 | 84.5% |
 | New AIO | 0.640 | 0.799 | 0.768 | 84.5% |
 | EPM | 0.627 | 0.790 | 0.768 | 84.5% |
+| Website AIO | 0.618 | 0.784 | 0.743 | 84.5% |
 | BoxPIPM-style | 0.607 | 0.777 | 0.716 | 84.5% |
 | BPM 2.0 | 0.604 | 0.774 | 0.738 | 84.5% |
 | LEBRON | 0.600 | 0.773 | 0.721 | 84.5% |
@@ -58,17 +57,16 @@ in that season. The common scope is 2021 through 2024. Pairwise sample sizes are
 stored with every correlation because public files do not have identical
 coverage.
 
-New AIO net correlations are `0.999` with Old AIO, `0.923` with RAPM, `0.884`
-with MAMBA, `0.873` with xRAPM, `0.795` with Annual SPM, `0.774` with LEBRON,
-`0.723` with BPM, and `0.702` with BoxPIPM-style. Correlation measures agreement,
-not accuracy or causal validity.
+Website AIO net correlations are `0.966` with RAPM, `0.960` with New AIO,
+`0.856` with MAMBA, `0.837` with xRAPM, `0.828` with EPM, and `0.808` with
+Annual SPM. Correlation measures agreement, not accuracy or causal validity.
 
 ## What the metrics mean
 
 - **New AIO:** the five-year-target statistical prior with the selected
   same-season stabilized features, updated by one season of possession RAPM.
-- **Old AIO:** the original five-year-target statistical prior, updated by one
-  season of possession RAPM.
+- **Website AIO:** the exact published annual model: a one-season SPM prior
+  updated by that season's possession RAPM.
 - **RAPM:** zero-prior ridge regression on possession points with separate
   offensive and defensive player coefficients.
 - **Annual SPM:** box, play-by-play, and tracking features predicting annual

@@ -103,6 +103,32 @@ export type SpmLabPayload = {
     selected_correlation: number;
   }[];
   ratings: SpmLabRating[];
+  weighting: {
+    run_id: string;
+    summary: {
+      variant: "sqrt_possessions" | "unweighted";
+      component: "offense" | "defense" | "net";
+      evaluation: "sqrt_possessions" | "equal_players";
+      folds: number;
+      mean_rmse: number;
+      mean_correlation: number;
+    }[];
+    fold_metrics: Record<string, string | number>[];
+    feature_catalog: {
+      feature: string;
+      side: "offense" | "defense" | "both";
+      description: string;
+      offense_input: boolean;
+      defense_input: boolean;
+    }[];
+    quality: {
+      rows: number;
+      duplicate_keys: number;
+      feature_catalog_rows: number;
+      weighted_reference_reproduction: Record<string, Record<string, number>>;
+    };
+    caveats: string[];
+  };
   comparison: {
     run_id: string;
     common_seasons: number[];
