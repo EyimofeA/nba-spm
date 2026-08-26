@@ -1,0 +1,44 @@
+schema_version: experiment_preregistration_v1
+experiment_id: aio_prior_canonical_followup_v1
+status: preregistered_reused_diagnostic
+created_at: 2026-08-26
+estimand_id: annual_retrospective_impact_v1
+
+hypothesis: >-
+  The BoxPIPM-style prior improvement observed in reused 2022 through 2024
+  development games persists on the canonical 2025 and 2026 diagnostic games.
+
+fixed_aio_contract:
+  likelihood_seasons: 1
+  lineup_policy: canonical_terminal
+  game_types: [regular]
+  lambda_off: 3000.0
+  lambda_def: 3000.0
+  lambda_home: 300.0
+  center_scale: 1.0
+
+matrix_recovery:
+  method: subtract mapped annual sufficient statistics from stored five-year sums
+  recovered_seasons: [2024, 2025]
+  exact_reconstruction_required: true
+
+evaluation:
+  rating_seasons: [2024, 2025]
+  test_seasons: [2025, 2026]
+  primary: equal-season mean next-season game-margin RMSE
+  secondary:
+    - next-season game-margin correlation
+    - paired whole-game MSE difference against selected_five_year_spm
+  identical_games: required
+  bootstrap_unit: whole_game_stratified_by_test_season
+  bootstrap_draws: 10000
+
+decision_rule: >-
+  A challenger must lower mean RMSE, win both seasons, and have a paired 95
+  percent MSE interval below zero to replace selected five-year SPM as the
+  frozen research prior. Production promotion still requires Season 2027.
+
+forbidden:
+  - loading Season 2027
+  - changing RAPM penalties or center scale
+  - treating the raw-on-off PIPM-like arm as an independent prior

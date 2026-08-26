@@ -1,0 +1,100 @@
+{
+  "caveats": [
+    "Seasons 2025 and 2026 are reused diagnostics, not untouched confirmation.",
+    "BoxPIPM-style is the reproducible box-only portion, not full historical PIPM.",
+    "The raw-on-off PIPM-like arm double counts lineup outcome evidence and is not eligible for selection."
+  ],
+  "config": {
+    "center_scale": 1.0,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "lambda_off": 3000.0,
+    "rating_seasons": [
+      2024,
+      2025
+    ],
+    "source_hashes": {
+      "contract": "ae0b67f7230f864f870187d34f12bdacff7a116616fca66fd7e6210e91c83971",
+      "reference_aio_metrics": "72cbea26b43121be8a983fd7e4b9677f58dadbaef94e6439c54023d7e6da4258",
+      "reference_features": "e1d358837a76975d321823b39119f427bb6771a546ea76211d9c025fe47746d7",
+      "rolling_matrices": {
+        "2024": {
+          "evaluation_actual_margin.npy": "2fe8e39308c882ddbce72b79275b82270d9c02798fe29bd11354134de9cd7ed0",
+          "evaluation_game_design.npz": "33e57dee0f562b5dd0c60d381f688d6ad495f689e44ca908550f3ae85652949f",
+          "evaluation_game_ids.npy": "8d4125fa416e261091430cb336277ecae942d5da41296a8f00b4b8a2944e98c3",
+          "evaluation_intercept_multiplier.npy": "1803d2de08fb6f581cbbb67994c1df94953782d9d98b4e187257e0a7969b5123",
+          "manifest.json": "fca774fbfa755851d5325eae7ab1c6626ae0108d193d029bfeae537f6edde83d",
+          "player_ids.npy": "124b6f8813cbed476b924aceda33c5005ffa3983eddceeb99779db1bce3523a1",
+          "train_def_possessions.npy": "b2f970c1bcf82e8f1bb4bb6be05dd82fd09afb8aa49b2e0f4d8e7cf4321afca4",
+          "train_off_possessions.npy": "005ffe1808df961224c7789ee5c00b5fc4b8f71fb36cc390baff1bb49ac62a8b",
+          "train_xtx.npz": "4afe44fe7104a1ece393678c8c410e2e19de854bae6be14315fc25ccd2319917",
+          "train_xty_centered.npy": "4b3361cf3a1f4bc03f0b07f4ba4443e7b297b7bbaabe8d9f798da42ed2e3d3aa"
+        },
+        "2025": {
+          "evaluation_actual_margin.npy": "2063ff5f1202344c01ead028c3fec2b05ed7c632e6600ce2c7f942a29c0d9bb4",
+          "evaluation_game_design.npz": "6329c36889cbfca6742f461f9858c554f6ba5f82dece76515e139b3782ab0598",
+          "evaluation_game_ids.npy": "19bbb716f40f5c8bac17a3d1458d599102d020523d431e115dbb0432d57959a4",
+          "evaluation_intercept_multiplier.npy": "c57d086b66d3162115ae42bedc3df0317a7dfb664c975e661846e8f45afc9e9c",
+          "manifest.json": "0fc7d3316833f2984ae365fe492519128e120808061068190484fc614c94de10",
+          "player_ids.npy": "b5de4c5e0a8acdd9c15b19b2643f6b9d280f7fb4f534f30796aaa5a37e31432c",
+          "train_def_possessions.npy": "737c993c2bea42fe2d600d6f4ef522cd3868e8a51f0d52a7c8851f2b29928143",
+          "train_off_possessions.npy": "5e8a7f635979fd78c3bb836f8d82caea57bbce2c1b12747569ccf292890f449f",
+          "train_xtx.npz": "a2d3ce36030934468e2f9779ad9af69184e59e5c51f89d96843b7a6fd21def01",
+          "train_xty_centered.npy": "2b79466dea79b16c7fc3867e5687a780d06c9157ebce6aa3a0ea0399ce8b1571"
+        }
+      },
+      "runner": "12e9cf5fa4bea6c8ff0977f71da97831ed5891bbf00c9aef6db13f5a3843a2b4",
+      "spm_priors": "6faed8e27d6da0bc6052c6d0a5e0c135d1c75b3851f77325fe7c847c2d0df101",
+      "targets": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+    },
+    "test_seasons": [
+      2025,
+      2026
+    ]
+  },
+  "created_at": "2026-08-26T22:40:10.338509+00:00",
+  "experiment_id": "aio_prior_canonical_followup_v1",
+  "paths": {
+    "game_metrics": "game_metrics.parquet",
+    "game_predictions": "game_predictions.parquet",
+    "matrix_reconstruction": "matrix_reconstruction.parquet",
+    "paired_bootstrap": "paired_bootstrap.parquet",
+    "posterior_ratings": "posterior_ratings.parquet",
+    "prior_coverage": "prior_coverage.parquet",
+    "priors": "priors.parquet",
+    "summary": "summary.parquet"
+  },
+  "quality": {
+    "component_identity_max_error": 0.0,
+    "frozen_aio_correlation_reproduction_max_error": 2.8309576904916867e-12,
+    "frozen_aio_rmse_reproduction_max_error": 9.137579581874888e-11,
+    "identical_game_rows": true,
+    "matrix_reconstruction": [
+      {
+        "def_possession_max_error": 0.0,
+        "minimum_def_possessions": 0.0,
+        "minimum_off_possessions": 0.0,
+        "off_possession_max_error": 0.0,
+        "players": 1068,
+        "rows": 246769,
+        "season": 2024,
+        "xtx_max_error": 0.0,
+        "xty_max_error": 5.684341886080802e-14
+      },
+      {
+        "def_possession_max_error": 0.0,
+        "minimum_def_possessions": 0.0,
+        "minimum_off_possessions": 0.0,
+        "off_possession_max_error": 0.0,
+        "players": 1095,
+        "rows": 247630,
+        "season": 2025,
+        "xtx_max_error": 0.0,
+        "xty_max_error": 1.1368683772161603e-13
+      }
+    ],
+    "season_2027_rows": 0
+  },
+  "run_id": "aio_prior_canonical_followup_v1_8c61405875",
+  "status": "reused_diagnostic_complete"
+}

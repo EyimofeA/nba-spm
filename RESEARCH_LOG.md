@@ -4371,3 +4371,28 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   arm is not preferred because raw same-season on/off double counts lineup
   outcomes already present in the RAPM likelihood. Full details are in
   `docs/impact/AIO_PRIOR_BAKEOFF_V1.md`.
+
+## 2026-08-26 - Canonical 2025--26 AIO prior follow-up
+
+- **Question:** Does the BoxPIPM-style prior's 2022--24 development gain survive
+  the frozen canonical 2025 and 2026 follow-up after the same one-season RAPM
+  update?
+- **Design:** Run `aio_prior_canonical_followup_v1_8c61405875` reconstructs the
+  2024 and 2025 annual sufficient statistics from stored canonical five-year
+  matrices, then fits the fixed terminal-lineup `3000 / 3000 / 300` update with
+  center scale one. Every arm scores the same 1,226 games in 2025 and 1,228 in
+  2026. Season 2027 is absent.
+- **QA:** The first attempted run exposed a scope bug: a development helper
+  filtered frozen SPM priors to 2021--23, turning the later SPM arms into zero
+  priors. The final runner owns its 2024--25 scope explicitly. It reproduces
+  the frozen AIO RMSE within `9.2e-11`; annual matrix recombination error is at
+  floating-point precision and offense plus defense equals net exactly.
+- **Result:** BoxPIPM-style beats selected five-year SPM in both seasons. Mean
+  next-season game-margin RMSE falls from `15.1588` to `15.1012`; mean
+  correlation rises from `.3636` to `.3652`. Paired mean MSE difference is
+  `-1.7293`, with a 10,000-draw whole-game interval of
+  `[-3.0402, -0.4367]`.
+- **Decision:** Freeze BoxPIPM-style as the research AIO prior. Do not change
+  the public zero-prior RAPM or production site. The raw-on/off PIPM-like arm
+  remains ineligible because it double counts lineup outcomes. Season 2027 is
+  the untouched confirmation gate.

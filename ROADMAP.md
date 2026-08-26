@@ -86,6 +86,12 @@ dead ends. Updated 2026-08-25. See `docs/README.md` for the document index,
   SPM and wins two folds. Its paired MSE interval excludes zero. This earns a
   canonical 2025--26 follow-up, not promotion. The raw-on/off PIPM-like arm is
   rejected as a clean prior because it double counts lineup outcomes.
+- Canonical follow-up `aio_prior_canonical_followup_v1_8c61405875` reproduces
+  the frozen 2025--26 AIO evaluation and changes only the prior center.
+  BoxPIPM-style lowers mean future-game RMSE from `15.1588` to `15.1012`, wins
+  both seasons, and has paired MSE interval `[-3.0402, -0.4367]`. Freeze it as
+  the research AIO prior. Keep zero-prior RAPM public and reserve 2027 for the
+  untouched production decision.
 - External benchmark `external_impact_benchmark_v1_bab43a4087` matches at least
   98.47% of SPM rows per window to minutes-weighted BPM and xRAPM. Among 2,295
   high-exposure player-windows, net SPM correlates 0.876 with BPM and 0.756 with
@@ -169,9 +175,11 @@ Slow-network policy: each immutable file resumes from `.partial`, retries up to
 
 ## Ordered queue
 
-1. **All-in-one challenger:** freeze factor groups with the selected eight
-   matchup-defense fields. Use direct offense and defense RAPM targets. Do not
-   include role interactions in the first challenger.
+1. **All-in-one confirmation:** keep BoxPIPM-style frozen as the research prior
+   and run it once on untouched Season 2027. Do not tune from 2027. Separately,
+   freeze factor groups with the selected eight matchup-defense fields for the
+   next challenger; use direct offense and defense RAPM targets and no role
+   interactions.
 2. **Role research:** evaluate role-relative skill before any role-fit
    counterfactual. Require support/overlap checks for counterfactual roles.
 3. **Dynamic impact:** retain the 2014--26 state-space filter as the leading
@@ -268,3 +276,4 @@ now would break reproducibility links.
 - Actual-clock rubber-band estimate: `rubberband_adjustment_v1_34be1ee621`
 - Joint score-signal comparison: `rubberband_score_signal_v1_deac872ede`
 - Joint age-score comparison: `age_score_context_v1_7e8689fee8`
+- Canonical AIO prior follow-up: `aio_prior_canonical_followup_v1_8c61405875`
