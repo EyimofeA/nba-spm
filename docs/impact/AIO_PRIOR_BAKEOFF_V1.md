@@ -63,13 +63,11 @@ lost badly to SPM in the prior experiment.
 
 ## Decision
 
-Do not replace the current research SPM yet. These seasons have already been
-used for development, and the selected SPM arm itself reflects feature choices
-made with 2022 through 2024 evidence. The result earns a clean follow-up:
-
-1. build the BoxPIPM prior through 2026 with the canonical possession source;
-2. compare it with the five-year SPM prior on the reused 2025 and 2026 games;
-3. freeze the winner and leave 2027 untouched for confirmation.
+This development result did not replace the research SPM by itself. The frozen
+canonical follow-up is now complete: BoxPIPM also won both reused 2025--26
+folds and passed its paired-game gate. It is therefore the frozen research AIO
+prior. See `docs/impact/AIO_PRIOR_CANONICAL_FOLLOWUP_V1.md`. Season 2027 remains
+untouched and is still required before production promotion.
 
 Reproduction:
 
