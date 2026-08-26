@@ -58,6 +58,9 @@ def register_snapshot(path: str | Path, snapshot: dict) -> None:
         )
 
 def register_model_run(path: str | Path, run: dict) -> None:
+    estimand = run.get("estimand", run.get("estimand_id"))
+    if not isinstance(estimand, str) or not estimand:
+        raise ValueError("Model run requires estimand or estimand_id.")
     registry = initialize_registry(path)
     with duckdb.connect(str(registry)) as connection:
         connection.execute(
@@ -68,7 +71,7 @@ def register_model_run(path: str | Path, run: dict) -> None:
             [
                 run["run_id"],
                 run["model_family"],
-                run["estimand"],
+                estimand,
                 run["status"],
                 run["created_at"],
                 run.get("dataset_snapshot_id"),

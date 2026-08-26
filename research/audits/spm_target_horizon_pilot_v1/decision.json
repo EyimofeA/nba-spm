@@ -1,0 +1,22 @@
+{
+  "experiment_id": "spm_target_horizon_pilot_v1",
+  "run_id": "spm_target_horizon_pilot_v1_88ca2aae14",
+  "status": "pilot_complete_expand_comparison",
+  "test_seasons": [2023, 2024],
+  "future_game_mean_rmse": {
+    "1y_zero_prior": 13.799686,
+    "1y_spm_centered_aio": 13.695586,
+    "5y_zero_prior": 13.698879,
+    "5y_spm_centered_aio": 13.771802
+  },
+  "spm_centered_minus_zero_prior_rmse_by_fold": {
+    "1y_2023": -0.050252,
+    "1y_2024": -0.157949,
+    "5y_2023": 0.125535,
+    "5y_2024": 0.020311
+  },
+  "decision": "Run the full 1y, 3y, 5y, 6y, and expanding comparison. Do not promote five-year SPM. The five-year zero-prior RAPM is more portable, but its fixed SPM center hurts future-game RMSE in both pilot folds.",
+  "season_2025_used": false,
+  "season_2026_used": false,
+  "season_2027_loaded": false
+}
