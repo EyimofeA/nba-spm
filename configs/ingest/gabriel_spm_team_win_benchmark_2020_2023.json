@@ -1,0 +1,54 @@
+{
+  "provider": "gabriel1200/player_sheets",
+  "purpose": "Research-only player-team minutes for the 2020-22 SPM variants evaluated against 2021-23 team wins. Raw inputs are not public release assets.",
+  "task_defaults": {
+    "license": "not-declared-by-upstream",
+    "max_attempts": 20,
+    "connect_timeout_seconds": 30,
+    "read_timeout_seconds": 300,
+    "retry_initial_seconds": 2,
+    "retry_max_seconds": 300
+  },
+  "tasks": [
+    {
+      "name": "gabriel_player_sheet_2020_spm_team_win_benchmark",
+      "provider": "gabriel1200/player_sheets",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2020.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2020.parquet",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2020,
+      "expected_min_rows": 500,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME"]
+    },
+    {
+      "name": "gabriel_player_sheet_2021_spm_team_win_benchmark",
+      "provider": "gabriel1200/player_sheets",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2021.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2021.parquet",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2021,
+      "expected_min_rows": 500,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME", "TEAM_ID", "Minutes"]
+    },
+    {
+      "name": "gabriel_player_sheet_2022_spm_team_win_benchmark",
+      "provider": "gabriel1200/player_sheets",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2022.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2022.parquet",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2022,
+      "expected_min_rows": 500,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME", "TEAM_ID", "Minutes"]
+    },
+    {
+      "name": "gabriel_player_sheet_2023_spm_team_win_benchmark",
+      "provider": "gabriel1200/player_sheets",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2023.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2023.parquet",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2023,
+      "expected_min_rows": 500,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME", "TEAM_ID", "Minutes"]
+    }
+  ]
+}

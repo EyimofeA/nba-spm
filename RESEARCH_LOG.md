@@ -4106,3 +4106,55 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Keep soft role context as a research challenger. Do not replace
   the SPM from one clean post-map defense fold. Reject hard role experts. Keep
   zone shotmaking as a player-skill metric, not a current SPM feature.
+
+## 2026-08-26 - Downstream team-win gate and tracking clarification
+
+- **Correction:** The prior role decision used next-season one-year RAPM as its
+  primary target. The requested deployment-adjacent target is next-season team
+  wins after applying season-Y ratings to observed player-team minutes in Y+1.
+- **Design:** Run `spm_role_team_win_benchmark_v1_21bdb974c8` evaluates the
+  same role-known player cohort for 2020--22 ratings and 2021--23 outcomes.
+  Team strength is five times the next-season-minute-weighted player rating;
+  missing/sub-250-minute ratings receive -2.0. Player-team minute identity
+  coverage is at least 99.9875%.
+- **Result:** Baseline mean R-squared is `.5573`. Soft role context reaches
+  `.5660` (`+.0088`); hard role experts reach `.5839` (`+.0266`); zone
+  shotmaking falls to `.5489` (`-.0083`). Hard experts lose in the first fold
+  and win the next two. In the only strictly post-role-development fold,
+  2022-to-2023, hard experts improve R-squared from `.4509` to `.5197`.
+- **Limits:** This is oracle-minutes retrodiction, not a forecast, and contains
+  only 90 team-seasons. Qualifying rating coverage is 83.1--85.9% of outcome
+  minutes. Retain hard and soft roles as challengers; neither is promoted.
+- **Feature clarification:** The offense/defense permutation tables were not
+  swapped, but they are model-dependence diagnostics rather than causal
+  feature rankings. `rim_points_saved_p100` already exists in the extended
+  defense contract. Added `event_stops_p100` to the feature builder using
+  steals, recovered blocks, charges drawn, and offensive fouls drawn; it is not
+  Dean Oliver Stop% and is not selected until it clears the downstream gate.
+- **Shot-data boundary:** Exact modern PBP has location and lineups but no
+  shot-level nearest defender. Aggregate tracking has defender distance,
+  dribble/touch, catch/pull-up, and playtype context in separate marginals.
+  Do not fabricate a joint row. Use the public 2014-15 shot log only for a
+  historical expected-shot prototype until a permitted current row source is
+  available.
+
+## 2026-08-26 - Historical shot location and nearest-defender prototype
+
+- **Question:** Does exact shot location plus nearest-defender and pre-shot
+  context improve expected-make prediction on the one public row-level season?
+- **Design:** Run `historical_shot_quality_2015_v1_70e64472e0` uses the 128,069
+  public 2014-15 shot-log rows and fuzzy-matches 99.40% to local PBP coordinates
+  and fast-break flags within five seconds. The first 675 games train a fixed
+  histogram GBM; the later 229 games are untouched test rows.
+- **Result:** Location-only log loss/AUC are `.6450/.6337`. Adding nearest
+  defender distance improves them to `.6381/.6504`. Adding shot clock,
+  dribbles, touch time, period, home, and fast-break context improves them to
+  `.6340/.6576`.
+- **Leak caught:** The first run included PBP `assisted` and reached AUC `.9118`.
+  Assists are recorded only after made shots, so that feature reveals the
+  outcome. Run `historical_shot_quality_2015_v1_25b7a61b78` is explicitly
+  marked invalid. The valid run neither uses assists nor matches on make/miss;
+  zero dribbles and short touch time proxy receiving a pass.
+- **Decision:** The richer expected-shot design is valid as a historical
+  prototype. It cannot enter current SPM because no permitted modern source
+  supplies exact location and nearest-defender distance on the same shot row.

@@ -1,0 +1,56 @@
+{
+  "caveats": [
+    "Observed next-season minutes make this an oracle-minutes retrodiction, not a preseason forecast.",
+    "All variants use the same role-known player cohort; missing and sub-250-minute ratings receive replacement value.",
+    "Three outcome seasons provide only 90 team-seasons, so this is a selection diagnostic rather than confirmation."
+  ],
+  "config": {
+    "builder_sha256": "dfc5c34185363953153dbd80bf699acd0fd7518deaf4b91e84410705a3a82949",
+    "minimum_metric_minutes": 250.0,
+    "outcome_seasons": [
+      2021,
+      2022,
+      2023
+    ],
+    "rating_seasons": [
+      2020,
+      2021,
+      2022
+    ],
+    "replacement_value": -2.0,
+    "source_hashes": {
+      "bbref_totals_2020": "d14314ea7e082813b575c9c32f83d1f7763f5621e20d40934eb2194255403ff3",
+      "bbref_totals_2021": "37f7ea7946e682b74ef2fccbe7c546f0b33bb96e6c20b8c4fc31f1147e860ed8",
+      "bbref_totals_2022": "751c352575c3dfad3d51ce535a9fbeed342556de95d6ece9709105b0a928c7d6",
+      "bbref_totals_2023": "f61fba1cc216d18b22920e19612a20cf8dc4fabfd080da5b8c79d797bb2a18ac",
+      "identity_2020": "a8f0e782be214a72bee072781152d5ae637e5b80d508f46ee7efdb919d658065",
+      "identity_2021": "7f542206d8a6206b25ff6397ef34d75fc9cb1c6315aab84b9c401c59ba6ca51f",
+      "identity_2022": "4e46a94b3c9f85aeb0dfe49abc08340a4c86720e192783b0319ff0e375f0f95b",
+      "identity_2023": "6d85fb54ac49f6c73e4d6dedacb216f2b28d5db475153d1bebffa9585ec1268d",
+      "predictions": "f75934cc32706c0168d00bad9831fc5c7423cefea407fa43ac7eebeecec0b5dc",
+      "team_games_2020": "dedb97123149cd86f3ea2a9c6c2367e79c4f0fa1c47883d8cb2beedbd968cd31",
+      "team_games_2021": "f326e8142726937ba106f32987a3c8c2c337cc470d95362e3004b6c8235c5cb2",
+      "team_games_2022": "916ceb8bee5dab16889e7c911290c185502a6d1a7d6c7e9f4a524b90d65f9a13",
+      "team_games_2023": "0327cbc2fab18c3459ae2d8f2e790bd77c7cda95ecd3979a011b13aee4b9f185"
+    },
+    "team_rating_formula": "5 * next-season-minute-weighted player rating"
+  },
+  "created_at": "2026-08-26T16:43:23.110046+00:00",
+  "estimand": "association between season-t player ratings, season-t+1 observed minutes, and season-t+1 team win percentage",
+  "paths": {
+    "folds": "folds.parquet",
+    "metric_coverage": "metric_coverage.parquet",
+    "source_coverage": "source_coverage.parquet",
+    "summary": "summary.parquet",
+    "unmatched_identities": "unmatched_identities.parquet"
+  },
+  "quality": {
+    "folds": 3,
+    "minimum_rating_minute_coverage": 0.83121363561399,
+    "minimum_source_minute_match_rate": 0.9998753705200755,
+    "team_seasons_per_variant": 90,
+    "unmatched_identity_rows": 4
+  },
+  "run_id": "spm_role_team_win_benchmark_v1_21bdb974c8",
+  "status": "research_diagnostic"
+}

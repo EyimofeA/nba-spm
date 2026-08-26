@@ -1,0 +1,29 @@
+{
+  "provider": "Femton02/NBA-shot-logs-analysis",
+  "purpose": "Research-only 2014-15 expected-shot prototype with nearest-defender, shot-distance, dribble, touch-time, and clock context. Not a current production source.",
+  "task_defaults": {
+    "license": "not-declared-for-source-data",
+    "max_attempts": 20,
+    "connect_timeout_seconds": 30,
+    "read_timeout_seconds": 300,
+    "retry_initial_seconds": 2,
+    "retry_max_seconds": 300
+  },
+  "tasks": [
+    {
+      "name": "historical_nba_shot_log_2015",
+      "provider": "Femton02/NBA-shot-logs-analysis",
+      "url": "https://raw.githubusercontent.com/Femton02/NBA-shot-logs-analysis/main/shot_logs.csv",
+      "destination": "historical_shot_context/2015/shot_logs.csv",
+      "source_revision": "main snapshot retrieved 2026-08-26",
+      "season": 2015,
+      "season_type": "regular",
+      "expected_min_rows": 120000,
+      "required_columns": [
+        "GAME_ID", "PERIOD", "GAME_CLOCK", "SHOT_CLOCK", "DRIBBLES",
+        "TOUCH_TIME", "SHOT_DIST", "PTS_TYPE", "SHOT_RESULT",
+        "CLOSEST_DEFENDER_PLAYER_ID", "CLOSE_DEF_DIST", "player_id"
+      ]
+    }
+  ]
+}

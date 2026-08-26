@@ -38,7 +38,8 @@ EXTRA_COUNTS = (
     "LiveBallTurnovers", "PASSES_MADE", "PFD", "FGA", "FG2A", "FG2M",
     "FG3A", "FG3M",
     "REB_CONTEST", "REB_CHANCES", "DREB_CONTEST", "DREB_UNCONTEST",
-    "RecoveredBlocks", "BLK", "STL", "PF", "DefPoss", "OffPoss",
+    "RecoveredBlocks", "Charge_Fouls_Drawn", "Offensive_Fouls_Drawn",
+    "BLK", "STL", "PF", "DefPoss", "OffPoss",
     "PAINT_TOUCHES", "POST_TOUCHES", "ELBOW_TOUCHES",
 )
 
@@ -200,6 +201,15 @@ def _engineer_window(
     engineered["defensive_activity_p100"] = 100 * _ratio(
         mapped["STL"] + mapped["BLK"] + mapped["REB_CONTEST"], mapped["DefPoss"]
     )
+    # Gabriel's public ``Stops`` field is this event count. It is not Dean
+    # Oliver's team-allocated Stop%; retain the narrower name and components.
+    observed_stops = (
+        mapped["STL"].fillna(0.0)
+        + mapped["RecoveredBlocks"].fillna(0.0)
+        + mapped["Charge_Fouls_Drawn"].fillna(0.0)
+        + mapped["Offensive_Fouls_Drawn"].fillna(0.0)
+    )
+    engineered["event_stops_p100"] = 100 * _ratio(observed_stops, mapped["DefPoss"])
     engineered["rebound_contest_share"] = _ratio(mapped["REB_CONTEST"], mapped["REB_CHANCES"])
     engineered["dreb_contested_share"] = _ratio(
         mapped["DREB_CONTEST"], mapped["DREB_CONTEST"] + mapped["DREB_UNCONTEST"]
