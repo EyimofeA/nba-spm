@@ -14,6 +14,8 @@ It is not a public or confirmed model.
 
 The selected AIO beat five-year zero-prior RAPM in 4 of 5 folds.
 The paired whole-game MSE interval favored it against every frozen comparator.
+This interval is conditional on the selected frozen candidate; it does not
+repeat model selection inside each draw.
 
 ## Reused diagnostics
 

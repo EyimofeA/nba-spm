@@ -15,7 +15,7 @@ const { d1, r2 } = hostingConfig;
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const localResearchFile =
-  /^(matchup-elo-\d{4}|shot-quality-lineup-2026|rapm-lab)\.json$/;
+  /^(matchup-elo-\d{4}|shot-quality-lineup-2026|rapm-lab|skills\/(?:index|player-\d+))\.json$/;
 
 /** Serve local research data in development without shipping it. */
 const localResearchData = (): Plugin => ({

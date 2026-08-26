@@ -18,7 +18,7 @@
   --surface-2: #f3f2ee;
   --text-primary: #0b0b0b;
   --text-secondary: #52514e;
-  --text-muted: #898781;
+  --text-muted: #6b6a66;
   --grid: #e1e0d9;
   --baseline: #c3c2b7;
   --border: rgba(11, 11, 11, 0.1);
@@ -387,6 +387,11 @@ button {
 .compare-results { position: absolute; z-index: 12; top: 42px; left: 0; right: 0; padding: 4px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface-1); box-shadow: 0 12px 30px -12px #000; }
 .compare-results button { display: block; width: 100%; padding: 7px 9px; border: 0; border-radius: 5px; background: transparent; color: var(--text-primary); text-align: left; font-size: 12px; }
 .compare-results button:hover { background: var(--wash); }
+.radar-legend { display: flex; justify-content: center; gap: 18px; color: var(--text-muted); font-size: 11px; }
+.radar-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.radar-key { width: 18px; height: 3px; border-radius: 2px; }
+.radar-key-left { background: var(--series-1); }
+.radar-key-right { background: var(--series-2); }
 .comparison-grid { display: grid; grid-template-columns: 120px minmax(0, 1fr) 120px; align-items: center; gap: 16px; margin-top: 16px; }
 .comparison-player { display: grid; justify-items: center; gap: 5px; text-align: center; font-size: 12px; }
 .comparison-player span { color: var(--text-muted); font: 10px var(--mono); }
@@ -1018,6 +1023,26 @@ table.mini td .sub {
   stroke-linejoin: round;
   stroke-linecap: round;
 }
+.chart .skill-reference {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+  opacity: 0.8;
+}
+.chart .skill-observed-line {
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+.chart .skill-observation {
+  fill: var(--surface-1);
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+}
 .chart .series-area {
   stroke: none;
   opacity: 0.1;
@@ -1054,6 +1079,13 @@ table.mini td .sub {
 }
 .chart .lift {
   filter: brightness(1.12);
+}
+
+.local-skills {
+  min-width: 0;
+}
+.skill-filters {
+  margin-bottom: 14px;
 }
 
 /* legend — always present for two or more series */

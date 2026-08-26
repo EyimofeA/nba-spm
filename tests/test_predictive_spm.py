@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -106,6 +107,17 @@ def test_repository_contract_uses_exact_artifact_ids() -> None:
 
     assert contract["data_contract"]["features"] == "statistical_features_v2_b808fc1bf1"
     assert contract["data_contract"]["targets"] == "canonical_annual_target_panel_v1_2d9ff74ca3"
+
+
+def test_saved_predictive_spm_manifests_use_portable_paths() -> None:
+    root = Path(__file__).resolve().parents[1]
+    for path in sorted((root / "artifacts/models/predictive_spm").glob("*/run.json")):
+        run = json.loads(path.read_text())
+        assert str(root) not in json.dumps(run)
+        for field in ("artifact_path", "predictions_path"):
+            assert not Path(run[field]).is_absolute()
+        if "checkpoint_path" in run:
+            assert not Path(run["checkpoint_path"]).is_absolute()
 
 
 def test_every_arm_scores_the_same_player_seasons() -> None:

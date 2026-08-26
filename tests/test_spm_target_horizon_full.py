@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pandas as pd
 import pytest
 import yaml
 
@@ -17,6 +18,7 @@ SPEC.loader.exec_module(MODULE)
 DEFAULT_CONTRACT = MODULE.DEFAULT_CONTRACT
 _load_contract = MODULE._load_contract
 _window_seasons = MODULE._window_seasons
+_identity_inputs = MODULE._identity_inputs
 
 
 def test_full_contract_stops_before_reused_diagnostics() -> None:
@@ -49,3 +51,15 @@ def test_full_contract_rejects_post_2024_development(tmp_path) -> None:
 
     with pytest.raises(ValueError, match="stop before Season 2025"):
         _load_contract(path)
+
+
+def test_resume_identity_includes_statistical_player_sheets(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(MODULE, "_source_hashes", lambda *_args: {"base": "hash"})
+    monkeypatch.setattr(
+        MODULE,
+        "_load_feature_sources",
+        lambda _contract: ({2014: pd.DataFrame()}, {"2014": "sheet-hash"}),
+    )
+    loaded, hashes = _identity_inputs(tmp_path / "contract.yml", {})
+    assert 2014 in loaded
+    assert hashes["statistical_sources"] == {"2014": "sheet-hash"}

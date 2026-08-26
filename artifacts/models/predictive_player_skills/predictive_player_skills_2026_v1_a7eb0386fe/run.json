@@ -1,0 +1,108 @@
+{
+  "artifacts": {
+    "definitions": "artifacts/models/predictive_player_skills/predictive_player_skills_2026_v1_a7eb0386fe/skill_definitions.parquet",
+    "estimates": "artifacts/models/predictive_player_skills/predictive_player_skills_2026_v1_a7eb0386fe/skill_estimates.parquet",
+    "fold_metrics": "artifacts/models/predictive_player_skills/predictive_player_skills_2026_v1_a7eb0386fe/fold_metrics.parquet",
+    "model_selection": "artifacts/models/predictive_player_skills/predictive_player_skills_2026_v1_a7eb0386fe/model_selection.parquet"
+  },
+  "code_sha256": "f3a803e9a6f2771745dd1b0fb8ab152d9ade054b39627e3dd5aaa45f4f9f98b7",
+  "contract_sha256": "32e4a69f834c1bd099f8723ed666b793628e007c9c9be3246886fbada7156a91",
+  "created_at": "2026-08-26T06:16:00.749109+00:00",
+  "estimand_id": "current_player_skill_v1",
+  "experiment_id": "predictive_player_skills_2026_v1",
+  "interpretation": {
+    "forbidden": "RAPM, SPM, AIO impact, causal player credit, or a forecast of playing time.",
+    "intended": "Current underlying player skill estimates under frozen chronological stabilization."
+  },
+  "quality": {
+    "current_complete_players": 303,
+    "current_estimate_coverage": 0.9723803499894581,
+    "current_observed_coverage": 0.8976913345983555,
+    "current_players": 558,
+    "default_player_id": 2544,
+    "duplicate_keys": 0,
+    "estimate_rows": 235212,
+    "maximum_current_posterior_identity_error": 0.0,
+    "role_conditional_status": "skipped_no_consistent_preseason_role_support",
+    "selected_age_skills": 13,
+    "selected_arm_counts": {
+      "career_eb": 1,
+      "time_decayed_eb": 20,
+      "time_decayed_eb_plus_age": 13
+    },
+    "skills": 34
+  },
+  "run_id": "predictive_player_skills_2026_v1_a7eb0386fe",
+  "schema_version": "predictive_player_skills_run_v1",
+  "season_2027_loaded": false,
+  "season_policy": {
+    "development_seasons": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "final_parameter_cutoff": 2025,
+    "forbidden_season": 2027,
+    "output_season": 2026,
+    "output_seasons": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "source_start": 2014
+  },
+  "source_hashes": {
+    "defensive_tracking": "bba9e2c1713fa9ef638d1eafb372fe1a2b9cc732d883042f0f26edc4b2d4c39c",
+    "defensive_tracking_dfg_observations": "3abffbff190f727e35822ceea6a71ddf4163d4a3a38303c4db6417bb7510fdbb",
+    "defensive_tracking_hustle_observations": "41dcf3b33527d18280a425a8f18bb0beb1b5a97cb7860cf0bb7360a480ef0860",
+    "defensive_tracking_rim_observations": "35b67444cee19f82c347814b309e43ca7947417f0eff5cabbc6bbd94bf6e9a3e",
+    "matchup_defense": "1f4c778e15db97261ad57b5580ead9017d55ab5c2ae86aefdcddc719ff117f47",
+    "player_games_1": "b7eff30392d62b076bb25da0006f5b4412da6d8c3d8deb422314684bced71428",
+    "player_games_2": "88ba7fd958c757641b04ceec137817d37cc5bda133c0c74ace5d3acf4b6df21d",
+    "player_sheet_2014": "5f6b2f77ed2720049a319af35b31cf9a07452454bfe8599551b4439b70ca8966",
+    "player_sheet_2015": "21825d18cece5ac4e0b759d5a6c4013cdbc68915ab86972ba9f0ca89949d41c5",
+    "player_sheet_2016": "3f687993e1a5eae36e72058e43ded53c98db21af4345a1ea0bed749c13faad80",
+    "player_sheet_2017": "448f551c78d7d5fd642add4eb8eee43ab98aefbf0ff18ae10eedb210045004a3",
+    "player_sheet_2018": "f5d6848984398f63ebe2443bfbaa4f0004ce8b3f3e52e17aa57648ba316aeb78",
+    "player_sheet_2019": "592128b19eebc8de29fd90b66e2cd420ecf39a58f7f54dd8e623b029143bcd0b",
+    "player_sheet_2020": "fd7f62933e6fbad6610f58dff051181fd3eb3a481e305910c2d3ff9c98fb0fb7",
+    "player_sheet_2021": "40f426a6a3bfad664333a4721ec18ba56a413583a824198c7ecdd71e1f23c628",
+    "player_sheet_2022": "deb84af6ebecf428c2a159ac472248199ec125a1b78b62126ded71e135e92582",
+    "player_sheet_2023": "07d0ce9028bca9c0ffca46e81a8b66156ec31e8729bfd73c96c8fd2e53420816",
+    "player_sheet_2024": "46587d70f2fb517bc20629ddc30ba0b6952683d2570a373d259202df364e43a3",
+    "player_sheet_2025": "575987a927308bcf478c3b20d9022734d6ad5b75ec63098386b43e9898c2e5ec",
+    "player_sheet_2026": "3a8f611f5767397f0d39b19d70af9706181eab46ecf065837aa2a2936dc908fa",
+    "player_skill": "3df8c7950a8df1348ecc9b041892f80e28e7a1c474fc8408229956be1059d42f",
+    "playtype": "7b77d398f2704efe528166c5a15deb117fdeff01c6badb15446b317b260bf1e5",
+    "statistical": "0f2976ed76797b490596a8cf8ee98d246eb9c4f315ab86219d633b6d91d942d8"
+  },
+  "source_paths": {
+    "defensive_tracking": "artifacts/research/current_feature_refresh/features/defensive_tracking/defensive_tracking_features_v1_c2ea07001a/features.parquet",
+    "defensive_tracking_dfg_observations": "data/lake/bronze/official_nba_stats_v3/close_defenders/dfg.csv",
+    "defensive_tracking_hustle_observations": "data/lake/bronze/gabriel_site_data/revision=782ec8b/hustle.csv",
+    "defensive_tracking_rim_observations": "data/lake/bronze/official_nba_stats_v3/close_defenders/rim_dfg.csv",
+    "matchup_defense": "artifacts/research/current_feature_refresh/features/matchup_defense/matchup_defense_features_v1_1684cb4eba/features.parquet",
+    "player_games": [
+      "data/lake/silver/historical_espn_player_games.parquet",
+      "data/lake/silver/player_games.parquet"
+    ],
+    "player_sheet_dir": "data/raw/playersheets/year_totals",
+    "player_skill": "artifacts/features/player_skill/player_skill_features_v1_7395e17902/features.parquet",
+    "playtype": "artifacts/features/playtype_impact/playtype_features_v1_ba00f6fe96/features.parquet",
+    "statistical": "artifacts/research/current_feature_refresh/features/statistical_impact/statistical_features_v2_6bdb60a186/features.parquet"
+  },
+  "status": "research_current_skill"
+}

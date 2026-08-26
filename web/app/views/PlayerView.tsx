@@ -9,6 +9,8 @@ import {
   COMPONENT_LABEL,
   Component,
   ModelId,
+  LocalPlayerSkills,
+  LocalSkillIndex,
   Player,
   PlayerIndex,
   Role,
@@ -24,6 +26,7 @@ import {
   ordinalSuffix,
 } from "../lib/viz";
 import { ComponentToggle, ModelField } from "./controls";
+import { PlayerSkills } from "./PlayerSkills";
 
 type PlayerViewProps = {
   catalog: Catalog;
@@ -35,6 +38,9 @@ type PlayerViewProps = {
   onComponent: (component: Component) => void;
   index: PlayerIndex[];
   comparePlayer: Player | null;
+  localSkillIndex: LocalSkillIndex | null;
+  localSkills: LocalPlayerSkills | null;
+  compareLocalSkills: LocalPlayerSkills | null;
   onCompare: (id: number) => void;
 };
 
@@ -68,6 +74,9 @@ function PlayerBody({
   onComponent,
   index,
   comparePlayer,
+  localSkillIndex,
+  localSkills,
+  compareLocalSkills,
   onCompare,
 }: PlayerViewProps & { player: Player }) {
   const [compareQuery, setCompareQuery] = useState("");
@@ -112,6 +121,9 @@ function PlayerBody({
     [profile],
   );
   const comparisonProfile = comparePlayer?.profiles.find((row) => row.Season === season);
+  const hasLocalSkills = Boolean(
+    localSkillIndex && localSkills?.id === player.PLAYER_ID,
+  );
   const comparisonSlices = useMemo<Slice[]>(
     () =>
       comparisonProfile
@@ -270,8 +282,17 @@ function PlayerBody({
           />
         </Figure>
 
-        <div className="grid two">
-          <Figure
+        {hasLocalSkills && localSkillIndex && localSkills && (
+          <PlayerSkills
+            index={localSkillIndex}
+            player={localSkills}
+            comparison={compareLocalSkills}
+            season={season}
+          />
+        )}
+
+        <div className={hasLocalSkills ? "grid" : "grid two"}>
+          {!hasLocalSkills && <Figure
             kicker={`Skill profile · ${season}`}
             title="Season-relative percentile"
             legend={<Legend items={pizzaLegend} />}
@@ -304,7 +325,7 @@ function PlayerBody({
             }
           >
             <Pizza slices={slices} />
-          </Figure>
+          </Figure>}
 
           <section className="card">
             <div className="card-head">
@@ -335,7 +356,7 @@ function PlayerBody({
           </section>
         </div>
 
-        {comparePlayer && slices.length >= 3 && comparisonSlices.length >= 3 && (
+        {!hasLocalSkills && comparePlayer && slices.length >= 3 && comparisonSlices.length >= 3 && (
           <Figure
             kicker={`Skill comparison · ${season}`}
             title={`${player.PLAYER_NAME} vs ${comparePlayer.PLAYER_NAME}`}

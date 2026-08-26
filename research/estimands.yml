@@ -36,6 +36,17 @@ estimands:
     intended_use: research comparison of current player strength and future-game margin prediction
     forbidden_interpretation: retrospective season impact, public production rating, roster-only forecast, causal player value, or confirmed current ability
 
+  - estimand_id: current_player_skill_v1
+    name: Current underlying player skill
+    status: research_current_skill
+    unit: skill_specific
+    population: active NBA players with at least one registered skill source through the named date
+    window_definition: career or exponentially decayed annual observations with skill-specific empirical-Bayes shrinkage
+    information_cutoff_rule: parameters selected on future-season folds through 2024, centers and age residuals refit through 2025, and 2026 observations used only for the current update and reused diagnostic
+    target_definition: frozen preseason skill estimate, including a selected age residual where applicable, updated by named-season source observations and kept separate from player impact
+    intended_use: current player skill display, season trajectories, and skill-model research
+    forbidden_interpretation: RAPM, SPM, AIO impact, causal player credit, playing-time forecast, or untouched 2026 confirmation
+
   - estimand_id: filtered_time_decayed_normal_rapm_proxy_v1
     name: Filtered time-decayed normal-RAPM trajectory
     status: research_baseline

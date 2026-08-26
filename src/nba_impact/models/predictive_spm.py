@@ -543,9 +543,9 @@ def build_predictive_spm(
             "untouched_seasons_loaded": [],
         },
         "metrics": {"summary": summary, "calibration_parameters": calibration_log},
-        "predictions_path": str((output / "predictions.parquet").resolve()),
-        "artifact_path": str(output.resolve()),
-        "checkpoint_path": str(checkpoint_dir.resolve()),
+        "predictions_path": "predictions.parquet",
+        "artifact_path": ".",
+        "checkpoint_path": "checkpoints",
         "caveats": [
             "Rookies and returning-after-gap players are out of scope by design.",
             "Targets are noisy one-season normal RAPM labels, not ground truth.",

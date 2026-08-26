@@ -347,6 +347,60 @@ export type Player = {
 
 export type PlayerIndex = { id: number; name: string; shard: number };
 
+export type LocalSkillDefinition = {
+  key: string;
+  label: string;
+  group: "shooting" | "creation" | "rebounding" | "defense";
+  unit: string;
+  higherIsBetter: boolean;
+  definition: string;
+};
+export type LocalSkillIndex = {
+  schema: "courtsignal_local_player_skills_v1";
+  scope: "localhost_only";
+  runId: string;
+  defaultPlayerId: number;
+  seasons: number[];
+  players: { id: number; name: string; team: string | null; complete2026: boolean }[];
+  definitions: LocalSkillDefinition[];
+  profileAxes: Record<string, string[]>;
+  gameSkills: string[];
+  league: Record<string, [season: number, estimate: number | null][]>;
+};
+export type LocalSkillRow = [
+  season: number,
+  estimate: number | null,
+  raw: number | null,
+  opportunities: number | null,
+  percentile: number | null,
+  yearOverYear: number | null,
+  standardError: number | null,
+  lastUpdate: string,
+];
+export type LocalPlayerSkill = {
+  arm: string;
+  halfLife: number | null;
+  prior: number | null;
+  rows: LocalSkillRow[];
+};
+export type LocalGameSkillRow = {
+  date: string;
+  game: number | null;
+  played: boolean;
+  raw: number | null;
+  estimate: number | null;
+  opportunities: number | null;
+};
+export type LocalPlayerSkills = {
+  id: number;
+  name: string;
+  team: string | null;
+  complete2026: boolean;
+  skills: Record<string, LocalPlayerSkill>;
+  profiles: ({ season: number } & Record<string, number | null>)[];
+  games: Record<string, LocalGameSkillRow[]>;
+};
+
 export type LeaderboardRow = RatingRow & {
   PLAYER_ID: number;
   PLAYER_NAME: string;
@@ -496,6 +550,10 @@ export const loadMatchups = (season: number) =>
 export const loadShotQualityMatchups = () =>
   load<ShotQualityRow[]>("/data/shot-quality-lineup-2026.json");
 export const loadRapmLab = () => load<RapmLabPayload>("/data/rapm-lab.json");
+export const loadLocalSkillIndex = () =>
+  load<LocalSkillIndex>("/data/skills/index.json");
+export const loadLocalPlayerSkills = (id: number) =>
+  load<LocalPlayerSkills>(`/data/skills/player-${id}.json`);
 
 export async function loadPlayer(
   id: number,

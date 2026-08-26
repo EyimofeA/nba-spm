@@ -83,8 +83,10 @@ won at `13.7429` for zero-prior RAPM.
 
 The chosen AIO wins four of five development folds. In 10,000 paired whole-game
 bootstrap draws, its mean squared-error difference favors it over all three
-frozen comparators. Reused diagnostics also favor it in 2025 and 2026, but
-those seasons were already inspected and do not confirm the model.
+frozen comparators. Those intervals are conditional on the already-selected
+candidate grid; they are not selection-aware confirmation intervals. Reused
+diagnostics also favor it in 2025 and 2026, but those seasons were already
+inspected and do not confirm the model.
 
 | Reused season | Chosen AIO RMSE | Five-year zero-prior RMSE |
 | ---: | ---: | ---: |

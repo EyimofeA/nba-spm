@@ -1,0 +1,368 @@
+{
+  "default_player_id": 2544,
+  "experiment_id": "predictive_player_skills_2026_v1",
+  "gates": {
+    "age_selected_outputs_apply_preseason_adjustment": true,
+    "all_current_rows_have_update_date": true,
+    "all_skills_selected": true,
+    "current_posterior_identity": true,
+    "output_is_2026": true,
+    "parameters_refit_through_2025": true,
+    "percentiles_bounded": true,
+    "rebound_sources_scored_as_rates": true,
+    "season_2027_untouched": true,
+    "selection_ends_2024": true,
+    "unique_keys": true
+  },
+  "limitations": [
+    "The 2026 output is a reused diagnostic, not untouched confirmation.",
+    "Role conditioning was not fit because no frozen pre-season role label covers every development fold.",
+    "Defense tracking and matchup fields are observational and do not isolate causal responsibility.",
+    "Shotmaking and matchup source fields already contain source-level shrinkage before temporal stabilization.",
+    "Historical trajectories are post-hoc stabilized histories under parameters selected through 2024, not contemporaneous forecasts issued in each season."
+  ],
+  "run_id": "predictive_player_skills_2026_v1_a7eb0386fe",
+  "selected_models": [
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 0.5173989278,
+      "prior_strength": 25.0,
+      "secondary": 0.1687170866,
+      "skill": "free_throw_pct"
+    },
+    {
+      "age_alpha": 1000.0,
+      "arm": "time_decayed_eb_plus_age",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 0.6430670149,
+      "prior_strength": 100.0,
+      "secondary": 0.2255429175,
+      "skill": "rim_pct"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 0.6779824961,
+      "prior_strength": 100.0,
+      "secondary": 0.242474853,
+      "skill": "short_mid_pct"
+    },
+    {
+      "age_alpha": 1000.0,
+      "arm": "time_decayed_eb_plus_age",
+      "half_life_years": "2",
+      "minimum_exposure": 0.0,
+      "primary": 0.6768001343,
+      "prior_strength": 100.0,
+      "secondary": 0.2418832179,
+      "skill": "long_mid_pct"
+    },
+    {
+      "age_alpha": 10.0,
+      "arm": "time_decayed_eb_plus_age",
+      "half_life_years": "5",
+      "minimum_exposure": 0.0,
+      "primary": 0.6675697104,
+      "prior_strength": 250.0,
+      "secondary": 0.2373322176,
+      "skill": "corner_three_pct"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "5",
+      "minimum_exposure": 0.0,
+      "primary": 0.6480638125,
+      "prior_strength": 500.0,
+      "secondary": 0.2278159891,
+      "skill": "above_break_three_pct"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "5",
+      "minimum_exposure": 0.0,
+      "primary": 0.6526385483,
+      "prior_strength": 250.0,
+      "secondary": 0.2300379674,
+      "skill": "three_point_pct"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "5",
+      "minimum_exposure": 0.0,
+      "primary": 0.6587304667,
+      "prior_strength": 250.0,
+      "secondary": 0.2330057416,
+      "skill": "catch_shoot_three_pct"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "5",
+      "minimum_exposure": 0.0,
+      "primary": 0.6354441018,
+      "prior_strength": 250.0,
+      "secondary": 0.2217377386,
+      "skill": "pull_up_three_pct"
+    },
+    {
+      "age_alpha": null,
+      "arm": "career_eb",
+      "half_life_years": "none",
+      "minimum_exposure": 0.0,
+      "primary": 0.0217863464,
+      "prior_strength": 500.0,
+      "secondary": 0.0187117261,
+      "skill": "shot_quality"
+    },
+    {
+      "age_alpha": 10.0,
+      "arm": "time_decayed_eb_plus_age",
+      "half_life_years": "2",
+      "minimum_exposure": 25.0,
+      "primary": 0.964287054,
+      "prior_strength": 500.0,
+      "secondary": 0.7511197863,
+      "skill": "shotmaking_above_expected"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "1",
+      "minimum_exposure": 25.0,
+      "primary": 3.4467302836,
+      "prior_strength": 500.0,
+      "secondary": 2.6391639498,
+      "skill": "zts"
+    },
+    {
+      "age_alpha": 1000.0,
+      "arm": "time_decayed_eb_plus_age",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 3.5486766662,
+      "prior_strength": 100.0,
+      "secondary": 2.6046384741,
+      "skill": "assist_creation"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 2.4917886962,
+      "prior_strength": 100.0,
+      "secondary": 1.8045548081,
+      "skill": "potential_assists"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 0.6949078047,
+      "prior_strength": 250.0,
+      "secondary": 0.5039227134,
+      "skill": "rim_assists"
+    },
+    {
+      "age_alpha": 1000.0,
+      "arm": "time_decayed_eb_plus_age",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 0.6541542331,
+      "prior_strength": 250.0,
+      "secondary": 0.4916627573,
+      "skill": "three_point_assists"
+    },
+    {
+      "age_alpha": 10.0,
+      "arm": "time_decayed_eb_plus_age",
+      "half_life_years": "1",
+      "minimum_exposure": 100.0,
+      "primary": 0.1321747268,
+      "prior_strength": 500.0,
+      "secondary": 0.0926163704,
+      "skill": "passing_efficiency"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 2.4252174793,
+      "prior_strength": 100.0,
+      "secondary": 1.725872467,
+      "skill": "turnover_rate"
+    },
+    {
+      "age_alpha": 1000.0,
+      "arm": "time_decayed_eb_plus_age",
+      "half_life_years": "2",
+      "minimum_exposure": 25.0,
+      "primary": 1.653998908,
+      "prior_strength": 250.0,
+      "secondary": 1.2270342748,
+      "skill": "live_ball_turnover_rate"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "2",
+      "minimum_exposure": 0.0,
+      "primary": 2.6702256399,
+      "prior_strength": 100.0,
+      "secondary": 1.9495615708,
+      "skill": "drive_creation"
+    },
+    {
+      "age_alpha": 10.0,
+      "arm": "time_decayed_eb_plus_age",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 1.4178025533,
+      "prior_strength": 250.0,
+      "secondary": 1.0622637844,
+      "skill": "rim_pressure"
+    },
+    {
+      "age_alpha": 10.0,
+      "arm": "time_decayed_eb_plus_age",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 1.4091093909,
+      "prior_strength": 250.0,
+      "secondary": 1.062119612,
+      "skill": "free_throw_pressure"
+    },
+    {
+      "age_alpha": 10.0,
+      "arm": "time_decayed_eb_plus_age",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 4.9338228362,
+      "prior_strength": 100.0,
+      "secondary": 3.7581968772,
+      "skill": "offensive_load"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 6.3446808723,
+      "prior_strength": 100.0,
+      "secondary": 4.7360207119,
+      "skill": "offensive_rebound_rate"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 4.7480582942,
+      "prior_strength": 250.0,
+      "secondary": 3.6131070469,
+      "skill": "defensive_rebound_rate"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 3.2843200666,
+      "prior_strength": 25.0,
+      "secondary": 2.4145152914,
+      "skill": "contested_rebound_conversion"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 1.2328815202,
+      "prior_strength": 500.0,
+      "secondary": 0.8924679633,
+      "skill": "rim_deterrence"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "2",
+      "minimum_exposure": 100.0,
+      "primary": 0.4752489417,
+      "prior_strength": 500.0,
+      "secondary": 0.3571323913,
+      "skill": "rim_points_saved"
+    },
+    {
+      "age_alpha": 10.0,
+      "arm": "time_decayed_eb_plus_age",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 1.5385148274,
+      "prior_strength": 500.0,
+      "secondary": 1.150823645,
+      "skill": "non_rim_shot_suppression"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "1",
+      "minimum_exposure": 0.0,
+      "primary": 2.2559760849,
+      "prior_strength": 250.0,
+      "secondary": 1.7172024888,
+      "skill": "matchup_adjusted_points_saved"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "2",
+      "minimum_exposure": 0.0,
+      "primary": 0.4171360781,
+      "prior_strength": 500.0,
+      "secondary": 0.3275285594,
+      "skill": "turnovers_forced"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "1",
+      "minimum_exposure": 25.0,
+      "primary": 0.3383112535,
+      "prior_strength": 500.0,
+      "secondary": 0.255693001,
+      "skill": "foul_discipline"
+    },
+    {
+      "age_alpha": null,
+      "arm": "time_decayed_eb",
+      "half_life_years": "1",
+      "minimum_exposure": 100.0,
+      "primary": 0.6837377894,
+      "prior_strength": 500.0,
+      "secondary": 0.509394657,
+      "skill": "deflections"
+    },
+    {
+      "age_alpha": 1000.0,
+      "arm": "time_decayed_eb_plus_age",
+      "half_life_years": "2",
+      "minimum_exposure": 0.0,
+      "primary": 0.3020299355,
+      "prior_strength": 500.0,
+      "secondary": 0.1933032627,
+      "skill": "recovered_blocks"
+    }
+  ],
+  "verdict": "pass_research_current_skill"
+}
