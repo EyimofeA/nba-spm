@@ -1,6 +1,7 @@
 {
   "contract_version": "annual_spm_v1",
-  "status": "frozen_research_contract",
+  "status": "frozen_public_reference_superseded_for_research",
+  "research_successor": "configs/models/five_year_spm_v1.json",
   "estimand": "single_regular_season_normal_rapm_offense_defense_and_net_points_per_100",
   "grain": "player-season",
   "population": "NBA regular season",

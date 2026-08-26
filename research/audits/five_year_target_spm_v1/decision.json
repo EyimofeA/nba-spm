@@ -1,0 +1,13 @@
+{
+  "experiment_id": "five_year_target_spm_v1",
+  "selected_run_id": "five_year_target_spm_v1_65550acb79",
+  "decision": "research_replacement",
+  "public_promotion": false,
+  "development_mean_game_rmse_win": true,
+  "reused_diagnostic_wins": {
+    "2025": true,
+    "2026": true
+  },
+  "untouched_confirmation_season": 2027,
+  "reason": "The five-year SPM prior improved the one-season AIO on the frozen downstream game-margin gate in every scored season."
+}

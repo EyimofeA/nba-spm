@@ -3960,3 +3960,25 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Pass the corrected artifact for research use and the local UI.
   Keep 2025-26 labeled reused diagnostics, keep the AIO bootstrap conditional
   on its selected candidate set, and leave Season 2027 untouched.
+
+## 2026-08-26 - Five-year SPM and one-season AIO
+
+- **Question:** Does an SPM trained on matched five-year statistical and RAPM
+  windows provide a better center for one-season RAPM than the annual-target
+  SPM?
+- **Design:** Forward-chained five-year window ends from 2018 through 2026;
+  frozen histogram GBM offense, ridge defense, 127/68 feature contract, and
+  square-root target-possession weights. The AIO likelihood remains only the
+  rated season's terminal-lineup possessions with `3000 / 3000 / 300`
+  penalties and center scale one.
+- **Result:** Selected run `five_year_target_spm_v1_65550acb79` improves mean
+  next-season game-margin RMSE from `14.4705` for annual-prior AIO and `14.5697`
+  for zero-prior RAPM to `14.4005`. It wins every 2022--26 season. Mean
+  correlation improves to `.3652` from `.3462` and `.3219`.
+- **Uncertainty:** Development paired-game MSE difference is `-1.6763`, 95%
+  interval `[-3.0445, -0.1203]`; reused 2025--26 difference is `-2.6385`,
+  interval `[-4.6215, -0.7399]`.
+- **Tradeoff:** Standalone next-year one-season-RAPM net RMSE worsens from
+  `1.7543` to `1.9832`, while correlation rises from `.4106` to `.4232`.
+- **Decision:** Replace the annual-target SPM as the research AIO prior. Do not
+  change the public model until untouched 2027 confirmation.

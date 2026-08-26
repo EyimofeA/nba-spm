@@ -1,0 +1,31 @@
+{
+  "contract_version": "five_year_spm_v1",
+  "status": "research_default_not_public",
+  "estimand": "rolling_five_season_normal_rapm_offense_defense_and_net_points_per_100",
+  "grain": "player-five-season-window",
+  "selected_run_id": "five_year_target_spm_v1_65550acb79",
+  "feature_window_seasons": 5,
+  "target_window_seasons": 5,
+  "training_rule": "strictly earlier window ends",
+  "first_complete_window_end": 2018,
+  "last_window_end": 2026,
+  "offense_learner": "histogram_gbm",
+  "defense_learner": "ridge",
+  "offense_feature_count": 127,
+  "defense_feature_count": 68,
+  "net_definition": "offense plus defense",
+  "sample_weight": "square root of the smaller five-year offensive or defensive possession count",
+  "aio": {
+    "prior": "five-year SPM for the rated season",
+    "likelihood": "that season's terminal-lineup regular-season possessions",
+    "lambda_off": 3000.0,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "center_scale": 1.0
+  },
+  "decision": {
+    "research_replacement": true,
+    "public_replacement": false,
+    "reason": "The AIO won the frozen 2022-24 development comparison and reused 2025 and 2026 diagnostics. Season 2027 remains untouched confirmation."
+  }
+}

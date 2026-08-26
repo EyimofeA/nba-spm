@@ -245,6 +245,7 @@ now would break reproducibility links.
 - Canonical annual target bridge: `canonical_annual_target_panel_v1_4586bd2f72`
 - Canonical-label annual SPM refresh: `single_season_spm_v1_c4be58c72e`
 - Full 2014--26 SPM null refresh: `single_season_spm_v1_47b3bd9b17`
+- Selected five-year SPM plus one-season AIO: `five_year_target_spm_v1_65550acb79`
 - Full 2014--26 base features: `statistical_features_v1_65446dd3e2`
 - Full 2014--26 expanded features: `statistical_features_v2_b808fc1bf1`
 - Repaired 2024--26 Normal RAPM: `current_single_season_rapm_targets_v1_b4cdb51de8`
