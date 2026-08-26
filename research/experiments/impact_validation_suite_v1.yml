@@ -1,0 +1,92 @@
+schema_version: experiment_preregistration_v1
+experiment_id: impact_validation_suite_v1
+status: frozen_reused_diagnostic
+question: >-
+  Which frozen statistical prior best supports current-season updating and
+  future player-impact prediction without selecting on same-season RAPM fit?
+
+estimand_id: prior_validation_suite_v1
+candidate_scope:
+  - five_year_spm
+  - selected_five_year_spm
+  - box_pipm_style_prior
+  - zero_prior_rapm
+
+tests:
+  - test_id: next_season_game_margin
+    priority: 1
+    composite_weight: 0.50
+    direction: lower_is_better
+    measure: mean_squared_error
+    definition: >-
+      Freeze the season-t AIO posterior, apply it to the observed lineups in
+      season t+1, and score identical whole-game margins.
+  - test_id: midseason_adaptation
+    priority: 2
+    composite_weight: 0.25
+    direction: lower_is_better
+    measure: mean_squared_error
+    definition: >-
+      Use the season t-1 statistical rating as the prior, update it with only
+      the first half of season-t games, and predict the second half.
+  - test_id: forward_annual_impact
+    priority: 3
+    composite_weight: 0.15
+    direction: higher_is_better
+    measure: weighted_correlation
+    definition: >-
+      Compare the season-t statistical rating with season t+1 one-season
+      zero-prior RAPM on identical returning-player rows. Score raw and
+      earlier-only aging-adjusted targets; use aging-adjusted correlation in
+      the composite.
+  - test_id: reverse_annual_impact
+    priority: 4
+    composite_weight: 0.05
+    direction: higher_is_better
+    measure: weighted_correlation
+    definition: >-
+      Compare the season-t statistical rating with season t-1 one-season
+      zero-prior RAPM. Score raw and earlier-only aging-adjusted targets; use
+      aging-adjusted correlation in the composite. This is a time-symmetry and
+      lag diagnostic only.
+  - test_id: same_season_rapm_fit
+    priority: 5
+    composite_weight: 0.05
+    direction: higher_is_better
+    measure: weighted_correlation
+    definition: >-
+      Compare the statistical rating with the same-season one-season
+      zero-prior RAPM label. This checks descriptive fit but receives little
+      decision weight because it rewards fitting a noisy training target.
+
+composite:
+  method: weighted_mean_within_fold_percentile_rank
+  tie_method: average
+  missing_policy: complete_case_candidates_per_test_then_renormalize_weights
+  sensitivity:
+    - equal_weight_mean_rank
+  promotion_rule: >-
+    The composite is a summary, not a promotion gate. Report every component
+    test first. Do not promote when the primary game-margin result loses, the
+    fold directions disagree materially, or the weighted and equal-weight
+    orderings conflict.
+
+splits:
+  unit: whole_game_or_player_season_as_named
+  chronological: true
+  midseason_split: first_half_of_regular_season_games_by_date_then_game_id
+  season_2027: forbidden
+
+fixed_model:
+  possession_outcome: points
+  lineup_policy: terminal
+  lambda_off: 3000.0
+  lambda_def: 3000.0
+  lambda_home: 300.0
+  center_scale: 1.0
+
+caveats:
+  - All historical seasons in this suite are reused evidence.
+  - Observed future lineups isolate rating quality; they do not form a deployable roster forecast.
+  - Reverse prediction is deliberately low weight and has no production interpretation.
+  - Raw metrics with different units are never averaged.

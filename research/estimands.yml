@@ -3,6 +3,17 @@ updated_at: 2026-08-25
 flagship_estimand_id: annual_retrospective_impact_v1
 
 estimands:
+  - estimand_id: prior_validation_suite_v1
+    name: Frozen statistical-prior validation suite
+    status: reused_historical_diagnostic
+    unit: test_specific_then_within_fold_percentile_rank
+    population: NBA regular-season players and games in the declared historical folds
+    window_definition: same-season, adjacent-season, midseason, and next-season tests defined in the frozen experiment contract
+    information_cutoff_rule: each rating or prior is frozen before the scored period; Season 2027 is excluded
+    target_definition: separate annual normal-RAPM correlations and whole-game margin errors, summarized only through within-fold ranks
+    intended_use: compare frozen statistical priors across current-impact and future-game diagnostics
+    forbidden_interpretation: ground-truth player value, deployable roster forecast, independent confirmation, or promotion from the composite alone
+
   - estimand_id: annual_retrospective_impact_v1
     name: Retrospective single-season player impact
     status: provisional_public_flagship

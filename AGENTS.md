@@ -176,6 +176,7 @@ Canonical code: `src/nba_impact/models/five_year_spm_feature_research.py`.
 Canonical code: `src/nba_impact/models/annual_aio_ratings.py` and
 `src/nba_impact/models/rapm.py`.
 
+- Validation run `impact_validation_suite_v1_4f2ad7cdd8` keeps BoxPIPM-style as the research AIO prior, selected five-year SPM as the best midseason prior, and forbids a universal-winner claim because equal weights change the ordering; see `src/nba_impact/models/impact_validation_suite.py` and wait for 2027.
 ## Evidence rules
 
 - Season 2027 is reserved as untouched annual confirmation. Do not use it for
