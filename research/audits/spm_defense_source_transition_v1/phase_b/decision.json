@@ -1,0 +1,48 @@
+{
+  "bootstrap": {
+    "draws": 5000,
+    "interval_95": [
+      -0.0010041278444071898,
+      0.0015161866218778128
+    ],
+    "probability_challenger_better": 0.48
+  },
+  "calibration_distance_worsening": -0.000724116706694078,
+  "experiment_id": "spm_defense_source_transition_v1",
+  "exposure_rmse_changes": {
+    "high": 0.00010928350917804863,
+    "low": 0.000550345942803232
+  },
+  "fold_wins": 2,
+  "gates": {
+    "bootstrap_probability_at_least_0_95": false,
+    "bootstrap_upper_bound_below_zero": false,
+    "calibration_noninferiority": true,
+    "high_exposure_safety": true,
+    "low_exposure_safety": true,
+    "mean_rmse_improvement_at_least_0_010": false,
+    "phase_a_passed": true,
+    "season_2027_untouched": true,
+    "weighted_correlation_noninferiority": true,
+    "wins_four_of_five_folds": false
+  },
+  "inputs": {
+    "contract_sha256": "2600b1255c6909ec85f49e29a9137c8ca812e9cee1d28e0f66324a82aacad5ca",
+    "latest_matchup_sha256": "1f4c778e15db97261ad57b5580ead9017d55ab5c2ae86aefdcddc719ff117f47",
+    "latest_tracking_sha256": "bba9e2c1713fa9ef638d1eafb372fe1a2b9cc732d883042f0f26edc4b2d4c39c",
+    "phase_a_decision_sha256": "8353419b368e3eee60400a60ec703fe9ea0918cc8272078abd1dea5b08976379",
+    "public_features_sha256": "d18123e903c27ca8e8b120876956c771bacc8cc651e31df3633b308c51744ce2",
+    "source_code_sha256": "030e486e3a097447ceff44084dbed8277bfd96216b7bb93a3f6f3e178b39e354",
+    "targets_sha256": "8dcd6b03fc01125e6720747e3d2d8a07f726613a6f2a78c5737a970824a4310a"
+  },
+  "mean_weighted_defense_rmse": {
+    "challenger": 0.9191615621023163,
+    "challenger_minus_control": 9.865075293213899e-05,
+    "control": 0.9190629113493841
+  },
+  "phase": "B_fixed_source_comparison",
+  "promoted": false,
+  "season_2027_loaded": false,
+  "status": "null_stop_before_aio",
+  "weighted_correlation_change": 0.00011564283733729308
+}

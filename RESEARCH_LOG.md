@@ -3737,3 +3737,38 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** The public data paths, aggregation, signs, and high-exposure
   behavior pass. Keep these checks local and diagnostic. They do not turn WOWY
   or RAPTOR on/off into predictive targets for CourtSignal RAPM.
+
+# 2026-08-26 - Predictive SPM harness repaired; official defense source is a null
+
+- **Harness defects:** The checked-in predictive SPM runner parsed its YAML
+  contract as JSON, scored persistence on fewer player-seasons than raw SPM,
+  reported unweighted correlation where the contract asked for weighted
+  correlation, omitted held-out calibration slope, and did not enforce pinned
+  sources, folds, or the Season 2027 exclusion. The runner now validates YAML,
+  exact run IDs and folds before data access, scores every valid comparator on
+  one row intersection, and reports weighted correlation, dispersion, and
+  calibration. Five focused tests cover these contracts, including rejection
+  of Season 2027 before any parquet read.
+- **Phase A:** `spm_defense_source_transition_v1` compares the public feature
+  artifact, the 2014--26 refresh input, and the latest official-defense input.
+  All 50 selected non-official defense features are identical between the
+  refresh and latest panels. Ten tracking features change on 2014--24 rows.
+  The eight selected matchup fields change only in 2025--26. Old and new
+  observed-source masks are reconstructed from the pinned raw sources rather
+  than inferred from filled values. The no-fit lineage gate passes.
+- **Phase B:** Keep the 68 selected defense fields, ridge alpha 3000, square-root
+  possession weights, rows, targets, and frozen offense learner fixed. Compare
+  the old source against the repaired official DFG/rim source in expanding
+  2014-to-prior-season folds testing 2020--24. Missing source values remain
+  missing until train-only median imputation with indicators.
+- **Result:** Equal-season weighted defense RMSE is `0.919063` for the control
+  and `0.919162` for the repaired-source challenger, a `+0.000099` change. The
+  challenger wins two of five folds. Across 5,000 paired player-cluster draws,
+  the probability of lower RMSE is `0.480`; the 95% interval for
+  challenger-minus-control RMSE is `[-0.001004, +0.001516]`. Weighted
+  correlation changes by `+0.000116`. Low- and high-exposure safety gates pass,
+  but the primary, fold-consistency, and paired-evidence gates fail.
+- **Decision:** Record a clean null and stop before AIO. The official sources
+  improve provenance and 2026 coverage but do not improve historical defense
+  prediction under the frozen model. Seasons 2025 and 2026 were not used in
+  this comparison. Season 2027 was not loaded.
