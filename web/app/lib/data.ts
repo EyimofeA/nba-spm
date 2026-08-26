@@ -47,6 +47,37 @@ export type SpmLabRating = {
   delta_defense: number;
   delta_net: number;
 };
+export type SpmMetricDefinition = {
+  metric: string;
+  metric_label: string;
+  included: boolean;
+  kind: string;
+  how_it_works: string;
+  interpretation: string;
+};
+export type SpmTeamWinSummary = {
+  metric: string;
+  metric_label: string;
+  replacement_value: number;
+  folds: number;
+  team_seasons: number;
+  mean_pearson: number;
+  mean_spearman: number;
+  mean_r_squared: number;
+  pooled_pearson: number;
+  pooled_spearman: number;
+  pooled_r_squared: number;
+  minimum_minute_coverage: number;
+};
+export type SpmPairwiseCorrelation = {
+  component: "offense" | "defense" | "net";
+  left_metric: string;
+  right_metric: string;
+  rows: number;
+  seasons: number;
+  pearson: number;
+  spearman: number;
+};
 export type SpmLabPayload = {
   run_id: string;
   scope: "localhost_only";
@@ -72,6 +103,32 @@ export type SpmLabPayload = {
     selected_correlation: number;
   }[];
   ratings: SpmLabRating[];
+  comparison: {
+    run_id: string;
+    common_seasons: number[];
+    minimum_metric_year_minutes: number;
+    replacement_value: number;
+    team_rating_formula: string;
+    minutes_mode: "observed_next_season";
+    projected_minutes_status: string;
+    team_win_summary: SpmTeamWinSummary[];
+    team_win_folds: {
+      rating_season: number;
+      outcome_season: number;
+      metric: string;
+      metric_label: string;
+      replacement_value: number;
+      teams: number;
+      pearson: number;
+      spearman: number;
+      r_squared: number;
+      mean_minute_coverage: number;
+    }[];
+    pairwise_correlations: SpmPairwiseCorrelation[];
+    coverage: Record<string, string | number>[];
+    definitions: SpmMetricDefinition[];
+    caveats: string[];
+  };
 };
 export type RapmLabExperiment = {
   id: string;

@@ -4004,3 +4004,24 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Keep run `five_year_spm_feature_research_v1_93c148510e` as a
   localhost-only challenger. Do not replace the five-year SPM reference and do
   not use 2027 before the untouched confirmation.
+
+## 2026-08-26 - Matched public all-in-one comparison
+
+- **Question:** How do the old and new CourtSignal AIO ratings agree with public
+  all-in-one metrics, and how well does each aggregate to next-season team wins?
+- **Contract:** Pairwise-complete offense, defense, and net correlations use
+  2021--24 player-seasons with at least 250 minutes. The team test weights each
+  year-Y rating by observed year-Y+1 minutes, replaces missing or sub-250-minute
+  ratings at `-2.0`, multiplies the weighted mean by five, and correlates it with
+  year-Y+1 win percentage. Replacement sensitivity covers `-3.0` through
+  `-1.5`.
+- **Result:** Run `public_aio_benchmark_v1_67a99b5e1e` ranks MAMBA first at mean
+  R-squared `0.6736`, then xRAPM `0.6439`, Old AIO `0.6407`, and New AIO
+  `0.6405`. New and old AIO net ratings correlate `0.9994`; the new feature
+  groups have not materially moved the posterior.
+- **Limits:** This is oracle-minutes retrodiction, not a preseason forecast.
+  Only four folds are common. EPM was not scored without a complete historical
+  export. BoxPIPM-style is a transparent box-only baseline, not full PIPM.
+- **Decision:** Add the benchmark, full correlation matrix, fold table, and
+  metric definitions to the localhost SPM Lab. Do not promote the new AIO from
+  these results. Add archived projected minutes before claiming forecast value.

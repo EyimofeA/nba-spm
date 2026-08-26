@@ -26,6 +26,30 @@ def latest_complete_run() -> Path:
     return complete[-1]
 
 
+def latest_comparison_run() -> Path:
+    runs = sorted(
+        (ROOT / "artifacts/research/public_aio_benchmark").glob(
+            "public_aio_benchmark_v1_*/run.json"
+        ),
+        key=lambda path: path.stat().st_mtime,
+    )
+    required = (
+        "pairwise_correlations.parquet",
+        "team_win_folds.parquet",
+        "team_win_summary.parquet",
+        "coverage.parquet",
+        "metric_definitions.parquet",
+    )
+    complete = [
+        path.parent
+        for path in runs
+        if all((path.parent / name).exists() for name in required)
+    ]
+    if not complete:
+        raise FileNotFoundError("No complete public AIO benchmark exists.")
+    return complete[-1]
+
+
 def clean(frame: pd.DataFrame) -> list[dict]:
     return frame.astype(object).where(pd.notna(frame), None).to_dict("records")
 
@@ -76,7 +100,36 @@ def rating_rows(run_path: Path) -> list[dict]:
     return clean(pd.concat(outputs, ignore_index=True))
 
 
-def build(run_path: Path) -> dict:
+def comparison_payload(run_path: Path) -> dict:
+    manifest = json.loads((run_path / "run.json").read_text())
+    summary = pd.read_parquet(run_path / "team_win_summary.parquet")
+    folds = pd.read_parquet(run_path / "team_win_folds.parquet")
+    default_replacement = float(manifest["config"]["default_replacement_value"])
+    summary = summary.loc[summary["replacement_value"].eq(default_replacement)].copy()
+    summary = summary.sort_values("mean_r_squared", ascending=False)
+    folds = folds.loc[folds["replacement_value"].eq(default_replacement)].copy()
+    return {
+        "run_id": manifest["run_id"],
+        "common_seasons": manifest["config"]["common_seasons"],
+        "minimum_metric_year_minutes": manifest["config"][
+            "minimum_metric_year_minutes"
+        ],
+        "replacement_value": default_replacement,
+        "team_rating_formula": manifest["config"]["team_rating_formula"],
+        "minutes_mode": "observed_next_season",
+        "projected_minutes_status": manifest["projected_minutes_status"],
+        "team_win_summary": clean(summary),
+        "team_win_folds": clean(folds.sort_values(["rating_season", "metric_label"])),
+        "pairwise_correlations": clean(
+            pd.read_parquet(run_path / "pairwise_correlations.parquet")
+        ),
+        "coverage": clean(pd.read_parquet(run_path / "coverage.parquet")),
+        "definitions": clean(pd.read_parquet(run_path / "metric_definitions.parquet")),
+        "caveats": manifest["caveats"],
+    }
+
+
+def build(run_path: Path, comparison_run_path: Path | None = None) -> dict:
     manifest = json.loads((run_path / "run.json").read_text())
     decisions = pd.read_parquet(run_path / "feature_group_decisions.parquet")
     aio = pd.read_parquet(run_path / "aio_metrics.parquet")
@@ -103,6 +156,9 @@ def build(run_path: Path) -> dict:
         "decisions": clean(decisions),
         "validation": clean(validation),
         "ratings": rating_rows(run_path),
+        "comparison": comparison_payload(
+            comparison_run_path or latest_comparison_run()
+        ),
     }
     DESTINATION.parent.mkdir(parents=True, exist_ok=True)
     DESTINATION.write_text(json.dumps(payload, separators=(",", ":")))
@@ -112,8 +168,12 @@ def build(run_path: Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run", type=Path)
+    parser.add_argument("--comparison-run", type=Path)
     args = parser.parse_args()
-    payload = build(args.run or latest_complete_run())
+    payload = build(
+        args.run or latest_complete_run(),
+        args.comparison_run,
+    )
     print(json.dumps({"run_id": payload["run_id"], "rows": len(payload["ratings"])}, indent=2))
 
 
