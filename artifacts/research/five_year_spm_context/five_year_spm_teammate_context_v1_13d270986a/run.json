@@ -1,0 +1,361 @@
+{
+  "caveats": [
+    "The context model is a chronological ridge correction to the exact frozen five-year SPM, not a full joint refit.",
+    "Season 2025 is an inspected failure and Season 2026 is heavily reused; neither is untouched confirmation.",
+    "Same-team context may capture team and scheme strength. It is not player skill or a causal teammate effect.",
+    "Annual TEAM_ID makes context approximate for traded players.",
+    "DFG and rim-DFG observations end in 2025, so the 2026 defense context is source-constrained."
+  ],
+  "config": {
+    "context_banks": {
+      "defense": [
+        "teammate_dreb",
+        "teammate_dreb_contests",
+        "teammate_event_stops",
+        "teammate_deflections",
+        "teammate_rim_points_saved",
+        "teammate_contested_shots"
+      ],
+      "offense": [
+        "teammate_spacing",
+        "teammate_creation",
+        "teammate_rim_pressure",
+        "teammate_turnover_to_load",
+        "teammate_offensive_load",
+        "teammate_oreb"
+      ]
+    },
+    "contract": {
+      "created_at": "2026-08-26",
+      "diagnostic_rating_seasons": [
+        2025,
+        2026
+      ],
+      "estimand_id": "five_year_spm_teammate_context_v1",
+      "experiment_id": "five_year_spm_teammate_context_v1",
+      "model_contract": {
+        "baseline": "Exact stored predictions from five_year_target_spm_v1_65550acb79.",
+        "candidate": "Add a side-specific ridge prediction of the baseline's five-year RAPM residual using only pooled leave-one-player-out teammate context.",
+        "chronology": "For rating season t, fit the residual correction only on stored predictions with window ends earlier than t.",
+        "context_window": "Possession-weight annual context over the identical five seasons as the baseline rating.",
+        "sample_weight": "Square root of the smaller five-year target possession exposure."
+      },
+      "next_season_rating_seasons": [
+        2024,
+        2025
+      ],
+      "primary_comparison": "Matched-player next-season one-year RAPM RMSE and correlation for 2024-to-2025 and 2025-to-2026.",
+      "rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "ridge_alphas": [
+        1.0,
+        10.0,
+        100.0,
+        1000.0,
+        3000.0,
+        10000.0
+      ],
+      "schema_version": "experiment_preregistration_v1",
+      "secondary_comparison": "Same-window five-year RAPM residual fit in 2024, 2025 and 2026.",
+      "selection_rating_season": 2024,
+      "selection_rule": "Choose offense and defense correction penalties on the 2024 rating, then freeze them for 2025 and 2026.",
+      "status": "frozen_research_contract",
+      "stopping_rules": [
+        "Do not change context fields or penalties after inspecting 2024.",
+        "Do not load Season 2027.",
+        "Do not treat same-team context as player skill or a causal teammate effect.",
+        "Do not promote from inspected 2025 or reused 2026 evidence."
+      ],
+      "untouched_confirmation_season": 2027
+    },
+    "selected_alphas": {
+      "defense": 1.0,
+      "offense": 10000.0
+    },
+    "source_hashes": {
+      "annual_context_builder": "36ce37f1e35af0452fd4739913da0260a8f10a7e645746521114c71770e873a6",
+      "annual_targets": "9f29234965e6f726f6970a8a961ce242b6b1490991b4c5dbf3b392275c8d3260",
+      "baseline_predictions": "9dc07dd614e17ff5b1ebccdb0cf8bdaad545c91e61a56dd257826e0cea67660d",
+      "contract": "3bfb75d3df01d7b0d6d5e3079dcd2ba7468254202a55f5e0c7f39a4db7b67112",
+      "dfg": "a4436466feaba8fa99a6d71b0ba2a4b79662a74d23e1df44aecd9fa75f0a46e3",
+      "five_year_targets": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707",
+      "hustle": "41dcf3b33527d18280a425a8f18bb0beb1b5a97cb7860cf0bb7360a480ef0860",
+      "player_sheet_2014": "30ffc3f5090e76d9ddda98cb41ca72785e296430dae2aa3cad165318025f62dc",
+      "player_sheet_2015": "90ddc43dfffcc827e154677ef46f2a0c0b6c31b51784e27832869ea63c49dc20",
+      "player_sheet_2016": "62690961d72c732b7b0bcf6e8fb8d7921ce3c3715bb45a52d285171b831697b9",
+      "player_sheet_2017": "590d42a93951e43f55413582e65f4539a44b7257a24e531cf721f58ed135098e",
+      "player_sheet_2018": "e26f1af99c6ae9a8ba9632d5522079b4b2d38265ac2008ae9f9d8738bab83770",
+      "player_sheet_2019": "ebebe7174b1ab529eaa6299d6da73783420424e59bbb125d65925f1155675340",
+      "player_sheet_2020": "a8f0e782be214a72bee072781152d5ae637e5b80d508f46ee7efdb919d658065",
+      "player_sheet_2021": "7f542206d8a6206b25ff6397ef34d75fc9cb1c6315aab84b9c401c59ba6ca51f",
+      "player_sheet_2022": "4e46a94b3c9f85aeb0dfe49abc08340a4c86720e192783b0319ff0e375f0f95b",
+      "player_sheet_2023": "6d85fb54ac49f6c73e4d6dedacb216f2b28d5db475153d1bebffa9585ec1268d",
+      "player_sheet_2024": "beb5a5aceb7d1d3504529102a4c93eb4898ff525474ea75bd3babeeeb0e38ad3",
+      "player_sheet_2025": "8cbeab5559385f7be8226e168e4b2eceac3ce40029360fb770ff40770a7fc4ed",
+      "player_sheet_2026": "09a6a34855a3685e89ced2dcb2f79b60ed2ef97b9709b29d30848a3165fe7e2c",
+      "playtype": "3503146f6a38eff8ca2ae39c7c838dacd2c90ec739b8e5f10b1b41b8a12d6d22",
+      "rim_dfg": "3683d1c667403b0942bb135c03e2469409c8eb0d49785ea45fe2d1bcaf2157b6",
+      "source_code": "27e10c4bf7e13359e39cf37789ff43dd9fc475deaf50acde92cc79dd954f578a"
+    }
+  },
+  "created_at": "2026-08-26T20:53:48.139023+00:00",
+  "decision_rule": "Retain only as a research candidate if the correction improves both later same-window folds and does not worsen either next-season fold.",
+  "experiment_id": "five_year_spm_teammate_context_v1",
+  "forbidden_interpretation": "Production model, causal teammate value, independent confirmation, or complete defense ceiling.",
+  "next_season_net_metrics": [
+    {
+      "candidate": "five_year_spm",
+      "players": 341,
+      "season": 2025,
+      "side": "net",
+      "stage": "next_season_diagnostic",
+      "weighted_correlation": 0.7768152084548386,
+      "weighted_r2": 0.6027787478334636,
+      "weighted_rmse": 1.4705499516759015
+    },
+    {
+      "candidate": "five_year_spm_context",
+      "players": 341,
+      "season": 2025,
+      "side": "net",
+      "stage": "next_season_diagnostic",
+      "weighted_correlation": 0.7775982382868598,
+      "weighted_r2": 0.603702917214517,
+      "weighted_rmse": 1.4688382750833688
+    },
+    {
+      "candidate": "five_year_spm",
+      "players": 343,
+      "season": 2026,
+      "side": "net",
+      "stage": "next_season_diagnostic",
+      "weighted_correlation": 0.7615302608235114,
+      "weighted_r2": 0.5786016024191822,
+      "weighted_rmse": 1.5200788139862016
+    },
+    {
+      "candidate": "five_year_spm_context",
+      "players": 343,
+      "season": 2026,
+      "side": "net",
+      "stage": "next_season_diagnostic",
+      "weighted_correlation": 0.7663734402622587,
+      "weighted_r2": 0.5852763177209743,
+      "weighted_rmse": 1.5079921617017111
+    }
+  ],
+  "paths": {
+    "alpha_selection": "alpha_selection.parquet",
+    "next_season_metrics": "next_season_metrics.parquet",
+    "next_season_predictions": "next_season_predictions.parquet",
+    "predictions": "predictions.parquet",
+    "same_window_metrics": "same_window_metrics.parquet"
+  },
+  "quality": {
+    "annual_feature_quality": {
+      "auxiliary": {
+        "defensive_source_join_quality": {
+          "dfg": {
+            "match_rate": 0.9944620253164557,
+            "matched_rows": 6285,
+            "source_rows": 6320,
+            "unmatched_names": [
+              "Brandon Boston Jr.",
+              "Jakob P\u00f6ltl",
+              "Jeenathan Williams",
+              "Jimmy Butler",
+              "Kenyon Martin Jr.",
+              "MJ Walker",
+              "Nigel Hayes",
+              "RJ Nembhard Jr.",
+              "Reggie Bullock",
+              "Tony Mitchell",
+              "Trey Jemison"
+            ]
+          },
+          "hustle": {
+            "match_rate": 1.0,
+            "matched_rows": 5003,
+            "source_rows": 5003,
+            "unmatched_names": []
+          },
+          "rim_dfg": {
+            "match_rate": 0.9948759007205764,
+            "matched_rows": 6213,
+            "source_rows": 6245,
+            "unmatched_names": [
+              "Brandon Boston Jr.",
+              "Jakob P\u00f6ltl",
+              "Jeenathan Williams",
+              "Jimmy Butler",
+              "Kenyon Martin Jr.",
+              "Nigel Hayes",
+              "Reggie Bullock",
+              "Tony Mitchell",
+              "Trey Jemison"
+            ]
+          }
+        },
+        "playtype_rows": 5140,
+        "playtype_seasons": [
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025,
+          2026
+        ],
+        "rim_2026_observed": false,
+        "rim_source_seasons": [
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ]
+      },
+      "duplicate_player_seasons": 0,
+      "feature_missing_fraction": {
+        "DREB_p100_relative": 0.07288965715932008,
+        "OREB_p100": 0.07288965715932008,
+        "STL_p100_relative": 0.07288965715932008,
+        "at_rim_fga_p100": 0.08225295303946989,
+        "bad_pass_turnovers_p100": 0.07288965715932008,
+        "charges_drawn_p100": 0.0,
+        "contested_2pt_p100": 0.0,
+        "contested_3pt_p100": 0.0,
+        "crafted_spacing_stable_v1": 0.07288965715932008,
+        "defensive_boxouts_p100": 0.26073177758571014,
+        "deflections_p100": 0.0,
+        "dfg_two_point_equivalent_saved_p100": 0.0,
+        "dreb_chances_p100": 0.07519446845289542,
+        "dreb_contested_share": 0.018150388936905792,
+        "dreb_contests_p100": 0.07519446845289542,
+        "event_stops_p100": 0.07288965715932008,
+        "live_ball_turnovers_p100": 0.09507346585998272,
+        "lost_ball_turnovers_p100": 0.14030538749639873,
+        "offensive_boxouts_p100": 0.26073177758571014,
+        "offensive_fouls_p100": 0.22846441947565543,
+        "oreb_chances_p100": 0.07519446845289542,
+        "oreb_contests_p100": 0.07519446845289542,
+        "playtype_difficulty_pct_points": 0.2595793719389225,
+        "rim_points_saved_p100": 0.0,
+        "self_oreb_p100": 0.07288965715932008,
+        "shooting_proficiency_2017_eb": 0.07288965715932008,
+        "teammate_contested_shots": 0.0,
+        "teammate_creation": 0.0,
+        "teammate_deflections": 0.0,
+        "teammate_dreb": 0.0,
+        "teammate_dreb_contests": 0.0,
+        "teammate_event_stops": 0.0,
+        "teammate_offensive_load": 0.0,
+        "teammate_oreb": 0.0,
+        "teammate_rim_points_saved": 0.0,
+        "teammate_rim_pressure": 0.0,
+        "teammate_spacing": 0.0,
+        "teammate_turnover_to_load": 0.0,
+        "turnover_to_load_2017_eb": 0.07288965715932008,
+        "zts_pct_points": 0.2595793719389225
+      },
+      "rows": 6942,
+      "team_id_coverage": 1.0,
+      "teammate_context_definition": "Possession-weighted mean of recorded same-team players excluding the focal player."
+    },
+    "context_key_coverage": 0.874724529581285,
+    "net_identity_max_error": 0.0,
+    "panel_rows": 5899,
+    "rows_by_rating_season": {
+      "2021": 958,
+      "2022": 1001,
+      "2023": 969,
+      "2024": 963,
+      "2025": 991,
+      "2026": 1017
+    },
+    "season_2027_loaded": false
+  },
+  "run_id": "five_year_spm_teammate_context_v1_13d270986a",
+  "same_window_net_metrics": [
+    {
+      "candidate": "five_year_spm",
+      "players": 963,
+      "season": 2024,
+      "side": "net",
+      "stage": "selection",
+      "weighted_correlation": 0.7766298972593353,
+      "weighted_r2": 0.6013733739837976,
+      "weighted_rmse": 1.445915192945911
+    },
+    {
+      "candidate": "five_year_spm_context",
+      "players": 963,
+      "season": 2024,
+      "side": "net",
+      "stage": "selection",
+      "weighted_correlation": 0.7810715462315566,
+      "weighted_r2": 0.6064815380264221,
+      "weighted_rmse": 1.43662104892976
+    },
+    {
+      "candidate": "five_year_spm",
+      "players": 991,
+      "season": 2025,
+      "side": "net",
+      "stage": "diagnostic",
+      "weighted_correlation": 0.7699374887436717,
+      "weighted_r2": 0.5874277961376909,
+      "weighted_rmse": 1.5170817540010326
+    },
+    {
+      "candidate": "five_year_spm_context",
+      "players": 991,
+      "season": 2025,
+      "side": "net",
+      "stage": "diagnostic",
+      "weighted_correlation": 0.7764625040361739,
+      "weighted_r2": 0.5940850196531928,
+      "weighted_rmse": 1.5047922376153657
+    },
+    {
+      "candidate": "five_year_spm",
+      "players": 1017,
+      "season": 2026,
+      "side": "net",
+      "stage": "diagnostic",
+      "weighted_correlation": 0.7350936526687585,
+      "weighted_r2": 0.5356959993801005,
+      "weighted_rmse": 1.6607520901484663
+    },
+    {
+      "candidate": "five_year_spm_context",
+      "players": 1017,
+      "season": 2026,
+      "side": "net",
+      "stage": "diagnostic",
+      "weighted_correlation": 0.7405671677317229,
+      "weighted_r2": 0.5435540224209835,
+      "weighted_rmse": 1.6466385816081213
+    }
+  ],
+  "status": "research_diagnostic"
+}

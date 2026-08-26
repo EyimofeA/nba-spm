@@ -244,3 +244,25 @@ estimands:
     target_definition: separate offense and defense shooting-TS, turnover, and offensive-rebound RAPMs, followed by a learned side-specific map into ordinary points RAPM
     intended_use: test whether small related feature sets estimate factor RAPM and whether teammate context improves that estimate
     forbidden_interpretation: causal factor credit, teammate skill, independent validation, future forecast, production rating, or untouched confirmation
+
+  - estimand_id: factor_target_full_feature_spm_v1
+    name: Full-feature statistical ceiling for annual factor RAPM
+    status: research_only
+    unit: factor_rating_then_points_per_100_possessions
+    population: qualified NBA player-seasons from 2024 through 2026
+    window_definition: same-season full SPM feature banks and annual factor targets, with 2024 development, 2025 selection, and reused 2026 diagnostics
+    information_cutoff_rule: only named-season player statistics and leave-one-player-out recorded-team context; Season 2027 untouched
+    target_definition: separate offense and defense shooting-TS, turnover, and offensive-rebound RAPMs, followed by a learned side-specific map into ordinary points RAPM
+    intended_use: measure how much the full available statistical feature bank can recover each factor target and ordinary points RAPM
+    forbidden_interpretation: production rating, complete defense ceiling, causal factor credit, causal teammate effect, future forecast, or untouched confirmation
+
+  - estimand_id: five_year_spm_teammate_context_v1
+    name: Teammate-context correction to five-year SPM
+    status: research_challenger
+    unit: points_per_100_possessions
+    population: players with frozen five-year SPM predictions ending from 2021 through 2026
+    window_definition: five annual leave-one-player-out teammate contexts pooled over the identical trailing five seasons as the SPM rating
+    information_cutoff_rule: for rating season t, residual correction trains only on stored SPM predictions and targets ending before t; Season 2027 untouched
+    target_definition: frozen five-year SPM plus a side-specific ridge estimate of remaining five-year RAPM error from teammate context
+    intended_use: test whether team-context statistics add incremental same-window and next-season signal to the research SPM
+    forbidden_interpretation: player skill, causal teammate value, production rating, independent confirmation, or complete defense ceiling

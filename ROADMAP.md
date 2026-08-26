@@ -70,6 +70,16 @@ dead ends. Updated 2026-08-25. See `docs/README.md` for the document index,
   Full prior scale won 2020–22 selection, but beat zero-prior by only 0.0033
   margin RMSE on 2023–24, won 1/2 folds, and had a paired-game MSE interval of
   -1.12 to +0.73. Prior-only was clearly worse. Zero-prior remains production.
+- Full factor-target run `factor_target_full_feature_spm_v1_69496cee37` gives
+  every factor head 127 offense or 60 available defense inputs. Five of six
+  heads improve over their sparse versions, but shooting-defense R-squared is
+  still only `.126` with context. The factor route reaches `.312` reused 2026
+  normal-RAPM R-squared, close to `.320` for direct full SPM with context.
+- Five-year context run `five_year_spm_teammate_context_v1_13d270986a` adds a
+  chronological residual correction to the exact frozen five-year SPM. It
+  improves next-season net RAPM RMSE by `.002` and `.012` on the two reused
+  folds. Retain the family for a later joint refit; do not change production or
+  the frozen five-year research model from this small inspected gain.
 - External benchmark `external_impact_benchmark_v1_bab43a4087` matches at least
   98.47% of SPM rows per window to minutes-weighted BPM and xRAPM. Among 2,295
   high-exposure player-windows, net SPM correlates 0.876 with BPM and 0.756 with

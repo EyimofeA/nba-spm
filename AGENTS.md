@@ -115,6 +115,9 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   the likelihood. It is not a five-year RAPM likelihood.
 - Run `five_year_target_spm_v1_65550acb79` beat the annual-prior AIO and
   zero-prior RAPM in next-season game-margin RMSE for every 2022--26 test.
+- Teammate-context correction `five_year_spm_teammate_context_v1_13d270986a`
+  improves two reused next-season RAPM folds by only `.002` and `.012` RMSE.
+  Keep the family for a joint refit; do not change the frozen research SPM.
 - Treat it as the research replacement, not a public promotion, until the
   untouched 2027 confirmation.
 
@@ -132,13 +135,11 @@ Canonical code: `src/nba_impact/models/five_year_target_spm.py`.
   offense feature set. That does not erase its predictive benchmark, but its
   side interpretation is not publication-clean. Correct and refit it before
   any promotion decision.
-- Factor-target run `factor_target_sparse_spm_v1_5b120e918f` predicts annual
-  shooting-TS, turnover, and offensive-rebound RAPMs from 2--5 directly related
-  fields per factor-side. The predicted factors reconstruct reused 2026 normal
-  RAPM at `.247` R² with teammate context versus `.200` without it. A direct
-  related-feature model reaches `.305`; oracle factor ratings reach `.948`.
-  Context improves four of six factor targets on 2026 after improving all six
-  on 2025. Keep it as a context ablation, not player skill or a public model.
+- Full factor-target run `factor_target_full_feature_spm_v1_69496cee37` uses
+  127 offense and 60 available defense inputs. Context raises reused 2026
+  shooting-defense R² only to `.126`; five of six full factor heads beat their
+  sparse versions. Predicted factors plus context reach `.312` normal-RAPM R²,
+  within `.010` RMSE of a direct annual model plus context. Keep it diagnostic.
 
 ### Same-season feature research
 
