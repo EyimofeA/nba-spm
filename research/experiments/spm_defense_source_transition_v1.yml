@@ -1,0 +1,55 @@
+schema_version: spm_defense_source_transition_contract_v1
+experiment_id: spm_defense_source_transition_v1
+status: frozen_phase_a
+created_at: 2026-08-26
+estimand_id: annual_retrospective_defense_rapm_v1
+
+decision_question: >-
+  Holding rows, labels, the selected 68 defensive feature names, learner,
+  regularization, weights, folds, and offense predictions fixed, does replacing
+  the old official-defense source block with the repaired source block improve
+  chronological defensive RAPM prediction?
+
+artifacts:
+  public_spm_run: single_season_spm_v1_18496a1348
+  public_features: statistical_features_v2_907e4ee4b9
+  refresh_features: statistical_features_v2_b808fc1bf1
+  latest_features: statistical_features_v2_6bdb60a186
+  public_tracking: defensive_tracking_features_v1_9f66c664eb
+  refresh_tracking: defensive_tracking_features_v1_b0bf4ef279
+  latest_tracking: defensive_tracking_features_v1_c2ea07001a
+  public_matchup: matchup_defense_features_v1_b327da17a7
+  latest_matchup: matchup_defense_features_v1_1684cb4eba
+  official_defense_snapshot: official_defense_dashboards_d2725e4cbaa8846f
+
+development_seasons: [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
+reused_diagnostic_seasons: [2025, 2026]
+untouched_confirmation_seasons: [2027]
+
+phase_a_stop_rules:
+  - selected feature missing from any required artifact
+  - duplicate player-season key
+  - non-official selected feature changes between refresh and latest artifacts
+  - no repaired official-defense value changes through 2024
+  - observed versus fallback status cannot be reconstructed
+  - source hash or unit missing
+
+phase_b:
+  allowed_only_after_phase_a_passes: true
+  test_seasons: [2020, 2021, 2022, 2023, 2024]
+  training_rule: expanding window beginning in 2014 and ending before test season
+  arms: [pinned_source_control, repaired_official_defense]
+  model: standardized ridge
+  ridge_alpha: 3000
+  weighting: square root of minimum offensive and defensive target possessions
+  prohibited_changes:
+    - offense model
+    - target
+    - rows
+    - feature names
+    - model family
+    - ridge alpha
+    - roles
+    - demographics
+    - 2025 or 2026 based selection
+

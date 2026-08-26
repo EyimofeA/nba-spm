@@ -1,0 +1,46 @@
+{
+  "artifact_run_ids": {
+    "latest_features": "statistical_features_v2_6bdb60a186",
+    "latest_matchup": "matchup_defense_features_v1_1684cb4eba",
+    "latest_tracking": "defensive_tracking_features_v1_c2ea07001a",
+    "public_features": "statistical_features_v2_907e4ee4b9",
+    "public_matchup": "matchup_defense_features_v1_b327da17a7",
+    "public_spm_run": "single_season_spm_v1_18496a1348",
+    "public_tracking": "defensive_tracking_features_v1_9f66c664eb",
+    "refresh_features": "statistical_features_v2_b808fc1bf1",
+    "refresh_tracking": "defensive_tracking_features_v1_b0bf4ef279"
+  },
+  "contract_sha256": "2600b1255c6909ec85f49e29a9137c8ca812e9cee1d28e0f66324a82aacad5ca",
+  "experiment_id": "spm_defense_source_transition_v1",
+  "gates": {
+    "all_selected_features_defined": true,
+    "all_selected_features_have_units": true,
+    "nonofficial_features_unchanged": true,
+    "official_values_change_in_development": true,
+    "old_and_new_observation_masks_reconstructed": true,
+    "season_2027_untouched": true,
+    "source_hashes_present": true,
+    "unique_keys": true
+  },
+  "missing_observation_masks": [],
+  "nonofficial_features_changed": [],
+  "official_features_changed_through_2024": [
+    "dfg_attempts_p100",
+    "dfg_diff_pct_eb",
+    "rim_dfga_p100",
+    "rim_diff_pct_eb",
+    "rim_points_saved_p100",
+    "deflections_p100",
+    "charges_drawn_p100",
+    "contested_2pt_p100",
+    "contested_3pt_p100",
+    "def_loose_balls_recovered_p100"
+  ],
+  "official_source_features": 18,
+  "phase": "A_no_fit_lineage",
+  "phase_a_passed": true,
+  "season_2027_loaded": false,
+  "selected_defense_features": 68,
+  "source_code_sha256": "ee6de0d4d691df86364ad6255f17f8448d98661b8734de9e3dff94dc0dee30b2",
+  "status": "pass_fit_allowed"
+}
