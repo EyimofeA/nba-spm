@@ -20,6 +20,9 @@ def _row(player_id: int, *, points: float, fg3m: float, fg3a: float) -> dict:
         "TOV": 2.0,
         "STL": 1.0,
         "BLK": 1.0,
+        "RecoveredBlocks": 0.5,
+        "Charge_Fouls_Drawn": 0.25,
+        "Offensive_Fouls_Drawn": 0.25,
         "OREB": 2.0,
         "DREB": 5.0,
         "PF": 2.0,
@@ -79,6 +82,7 @@ def test_v2_stabilizes_small_samples_and_builds_temporal_features(tmp_path: Path
     assert features.loc[1, "effective_fg_pct"] == pytest.approx(6.5 / 11.0)
     assert features.loc[1, "three_point_attempt_rate"] == pytest.approx(1.0 / 11.0)
     assert features.loc[1, "free_throw_rate"] == pytest.approx(5.0 / 11.0)
+    assert features.loc[1, "event_stops_p100"] == pytest.approx(2.0)
     assert features["behavioral_passer_score_v1"].notna().all()
     assert features["behavioral_passer_score_v1"].abs().max() <= 26.0
     assert v2["primary_public_inspired_features"] == [

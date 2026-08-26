@@ -15,7 +15,13 @@ venv/
 /data/downloads/
 /data/lake/bronze/external_coaches/
 /data/lake/bronze/external_rapm/
+/data/lake/bronze/gabriel_player_sheets/
+/data/lake/bronze/gabriel_site_data/
+/data/lake/bronze/basketball_reference/
+/data/lake/bronze/historical_shot_context/
+/data/lake/bronze/_ingest_runs/
 /data/lake/bronze/official_game_schedule_1997_2026/
+/data/lake/silver/
 /research/rapm_lab/data/
 /research/rapm_lab/outputs/
 /research/rapm_lab/external/external/

@@ -2,9 +2,9 @@
 
 ## Decision
 
-Keep soft role context as a research challenger. Do not replace the five-year
-SPM yet. Reject hard role-specific models and do not add zone-adjusted
-shotmaking to SPM from this result.
+Keep both soft role context and hard role experts as research challengers. Do
+not replace the five-year SPM yet. Do not add zone-adjusted shotmaking to SPM
+from this result.
 
 The frozen run is
 `five_year_spm_role_research_v1_3edacae610`. It trains the persisted
@@ -12,10 +12,35 @@ The frozen run is
 then predicts the following season's one-year zero-prior RAPM. The three test
 seasons are 2021, 2022, and 2023. Every candidate scores the same players.
 
-The primary score is the equal-fold mean of next-season possession-weighted
-Pearson correlation. Spearman and MAE are guardrails. RMSE remains a diagnostic.
+The original player-level score against next-season RAPM is now secondary. The
+primary selection score is downstream next-season team-win association: apply
+each season-Y rating to the player's observed team minutes in Y+1, form a
+five-player team rating, then correlate it with Y+1 win percentage. This is an
+oracle-minutes retrodiction, not a preseason forecast.
 
-## Results
+## Primary downstream result
+
+Artifact: `spm_role_team_win_benchmark_v1_21bdb974c8`. It covers rating seasons
+2020--22 and outcome seasons 2021--23, with 30 teams in each fold. Players
+without a qualifying season-Y rating receive -2.0. Basketball-Reference
+player-team minutes resolve to NBA IDs at at least 99.9875% minute coverage.
+
+| Candidate | Mean Y+1 win R² | Change vs baseline | Pooled R² | Decision |
+|---|---:|---:|---:|---|
+| Hard role experts | **0.5839** | **+0.0266** | **0.5841** | retain challenger |
+| Soft role context | 0.5660 | +0.0088 | 0.5580 | retain challenger |
+| Roles + zone shotmaking | 0.5612 | +0.0039 | 0.5538 | no shotmaking promotion |
+| Baseline | 0.5573 | 0.0000 | 0.5510 | reference |
+| Zone shotmaking | 0.5489 | -0.0083 | 0.5435 | reject as SPM input |
+
+Hard experts lose in the 2020-to-2021 fold, then win in the next two folds. In
+the only fold strictly after defense-role map development, 2022-to-2023, hard
+experts improve R² from 0.4509 to 0.5197 and soft roles improve it to 0.4585.
+That is enough to continue the role lane, not enough to promote it: there are
+only three folds, the benchmark uses known future minutes, and only 83.1--85.9%
+of outcome minutes have a qualifying role-cohort rating.
+
+## Secondary next-season RAPM result
 
 Change versus the same-row baseline:
 
@@ -24,7 +49,7 @@ Change versus the same-row baseline:
 | Soft role context | Net | +0.0045 | +0.0024 | -0.0100 | -0.0172 | retain as challenger |
 | Soft role context | Offense | -0.0004 | +0.0003 | -0.0027 | -0.0003 | essentially tied |
 | Soft role context | Defense | +0.0015 | -0.0047 | +0.0181 | +0.0164 | mixed |
-| Hard role experts | Net | -0.0032 | +0.0114 | +0.0418 | +0.0445 | reject |
+| Hard role experts | Net | -0.0032 | +0.0114 | +0.0418 | +0.0445 | loses this secondary gate |
 | Zone shotmaking | Offense | -0.0030 | -0.0032 | +0.0070 | +0.0046 | reject as SPM input |
 | Roles + zone shotmaking | Net | +0.0005 | -0.0012 | +0.0001 | -0.0077 | reject |
 
@@ -38,7 +63,8 @@ The defense role map was developed on 2018-21 data. Only the 2022 rating to
 2023 target fold is strictly after the map-development period. On that fold,
 soft role context changes net Pearson by +0.0069, net Spearman by +0.0080, net
 MAE by -0.0056, and net RMSE by -0.0193. One clean fold is not enough to
-promote a model.
+promote a model. The disagreement between player-RAPM reconstruction and team
+wins is exactly why the estimand must be named before selecting features.
 
 ## Zone-adjusted shotmaking
 
@@ -109,3 +135,5 @@ longer the preferred gate.
 - `predictions.parquet`: player-level predictions and targets
 - `expert_coverage.parquet`: hard-role sample sizes and fallbacks
 - `zone_shotmaking.parquet`: raw and shrunk shotmaking estimates
+- `artifacts/research/spm_role_team_win_benchmark/spm_role_team_win_benchmark_v1_21bdb974c8/summary.parquet`:
+  primary downstream team-win comparison

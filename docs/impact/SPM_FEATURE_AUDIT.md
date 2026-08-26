@@ -1,6 +1,12 @@
-# Five-year SPM feature audit
+# Five-year SPM model-dependence audit
 
 Status: diagnostic research. No public model or site data changed.
+
+> **Label correction.** The offense and defense tables are not swapped. Each
+> table permutes inputs against that side's fitted target. The numbers are
+> out-of-sample model dependencies, not causal importance and not a list of the
+> "best" offensive or defensive basketball skills. In particular, the defense
+> ridge uses several offensive-role variables as controls/proxies.
 
 ## Scope and decision
 
@@ -161,7 +167,7 @@ next-season folds are the correct outer split because deployment moves forward
 in time. MAE, RMSE, Pearson, Spearman, calibration, and downstream game/team
 prediction answer different questions inside those folds.
 
-## Current five-year SPM importance
+## Historical base-model dependence
 
 The audit refit the frozen offense GBM and defense ridge on every five-year
 window ending before the rating season. It predicted the next season's
@@ -192,12 +198,39 @@ importance despite near-zero rank effects. That is a pruning candidate, not
 proof that passing or ball security has no basketball value. The individual
 GBM importances are heavily split among substitute shot variables.
 
-The strongest individual defense dependencies were fouls drawn, touches,
+The largest individual defense permutation dependencies were fouls drawn, touches,
 free-throw attempts, assist points created, recovered blocks, steals, and
 defensive rebound chances. These are predictive role proxies inside the model;
 they are not causal defensive credit. The strange prominence of offensive
 variables in the defense ridge is a reason to test a constrained defense feature
 set rather than narrate those coefficients as defense skill.
+
+### Current defense fields missing from this older table
+
+The deployed research feature contract is wider than the 50-feature defense
+matrix audited above. It already contains `rim_points_saved_p100`:
+
+```text
+rim_diff_pct_eb = rim_attempts / (rim_attempts + 100) * raw_rim_diff_pct
+rim_points_saved_p100 = -2 * rim_attempts_p100 * rim_diff_pct_eb / 100
+```
+
+Positive is good. It estimates points prevented relative to the NBA's expected
+rim accuracy on shots for which the player was recorded as the nearest
+defender. It is still an observational comparator: shooter quality, help
+responsibility, fouls, exact rim location, and scheme are not jointly modeled.
+
+The feature builder now also emits `event_stops_p100`, matching Gabriel's public
+event-count definition:
+
+```text
+100 * (steals + recovered blocks + charges drawn
+       + offensive fouls drawn) / defensive possessions
+```
+
+This is deliberately not called Stop%. It omits forced misses and defensive
+rebounds and overlaps its component fields. It is a candidate composite, not a
+promoted current-model input.
 
 ## Next experiment
 
