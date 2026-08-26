@@ -4047,3 +4047,34 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Keep weighting for the combined annual SPM because defense and
   net improve materially. Test unweighted offense plus weighted defense as the
   next frozen challenger; do not silently change the website fit.
+
+## 2026-08-26 - Five-year SPM redundancy and next-season importance
+
+- **Question:** Which saved five-year SPM feature families matter for
+  next-season player RAPM, and do redundant raw/era-relative encodings improve
+  chronological generalization?
+- **Scope:** Run `five_year_spm_feature_audit_v1_4172cf5408` uses the exact
+  persisted 126-offense/50-defense base matrix. The later 130/72 challenger did
+  not persist its extended training matrix, so its added fields are not in the
+  individual permutation table. Future feature-research runs now save that
+  matrix.
+- **Design:** Train on five-year windows ending before each rating season,
+  predict the following season's one-year zero-prior RAPM in 2019--23, and
+  score identical players with weighted MAE/RMSE, Pearson, and Spearman.
+  Grouped permutation is primary; individual permutation is diagnostic.
+- **Redundancy:** Sixteen selected pairs have absolute correlation at least
+  `.95`; eight exceed `.98`; five exceed `.995`. Raw and era-relative at-rim
+  frequency, assists, FTA, turnovers, and points are effectively duplicate
+  five-year signals.
+- **Importance:** Offense shooting/scoring/spacing is positive in all five
+  folds (`+0.110` MAE when shuffled). Defense disruption, creation/role,
+  foul-pressure, and rebounding families are positive in all five folds.
+  Offense creation/passing and ball-security have negative mean MAE importance.
+- **Pruning result:** Dropping redundant raw fields improves RMSE in all five
+  folds but worsens Pearson and Spearman in all five. Dropping the redundant
+  relative fields improves Pearson in four folds but worsens MAE and RMSE in
+  three. No variant wins the multi-metric gate.
+- **Decision:** Keep the frozen five-year model. Next test must refit compact
+  mechanism-level offense and defense specifications under the same
+  chronological player, team-changer, and downstream game gates. Do not select
+  a model because lower dispersion improves RMSE.

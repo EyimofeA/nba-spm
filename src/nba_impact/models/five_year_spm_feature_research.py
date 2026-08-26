@@ -488,6 +488,9 @@ def build_five_year_spm_feature_research(
     ).to_parquet(
         output / "spm_predictions.parquet", index=False
     )
+    # Persist the fitted matrix so later redundancy and importance audits do
+    # not depend on an external worktree that may disappear.
+    five.to_parquet(output / "five_year_feature_matrix.parquet", index=False)
     metric_frame.to_parquet(output / "feature_group_metrics.parquet", index=False)
     decisions.to_parquet(output / "feature_group_decisions.parquet", index=False)
     pd.concat(aio_ratings, ignore_index=True).to_parquet(output / "aio_ratings.parquet", index=False)
@@ -527,6 +530,7 @@ def build_five_year_spm_feature_research(
         "source_hashes": hashes,
         "paths": {
             "spm_predictions": "spm_predictions.parquet",
+            "five_year_feature_matrix": "five_year_feature_matrix.parquet",
             "feature_group_metrics": "feature_group_metrics.parquet",
             "feature_group_decisions": "feature_group_decisions.parquet",
             "aio_ratings": "aio_ratings.parquet",
