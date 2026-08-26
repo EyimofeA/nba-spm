@@ -2,11 +2,11 @@
   "caveats": [
     "The next-season team-win benchmark uses observed next-season minutes and is therefore an oracle-minutes retrodiction, not a preseason forecast.",
     "Metric agreement is not evidence that either metric is correct.",
-    "EPM was not scored because a complete historical export was not available.",
+    "EPM values come from the supplied all-season snapshot rather than archived model vintages captured at each historical season end.",
     "BoxPIPM-style is a transparent box-score-only baseline, not a full PIPM reproduction."
   ],
   "config": {
-    "builder_sha256": "12cd43911a06f673ca15b348a97f21836c45cc0a5f7febe4e5a398740eee8172",
+    "builder_sha256": "22502deac007c981bc75d98bb47b517d9e691ad9a17e6e88f599e741b78a6386",
     "common_seasons": [
       2021,
       2022,
@@ -28,6 +28,7 @@
     "source_hashes": {
       "annual_spm": "70cd991a8bc931a751bd09c0d138ee12dbe158faa7bdc25d4d8fe232c6b6c594",
       "box_pipm": "ffcb55b469ca13a2349b18b52c4564b5587bbf1628ce5e72ca59e013c7c39a2f",
+      "epm": "c08723f5db12470f4140794a13c0bb2f1e9ebf19e9362188959ae45dcab32171",
       "external_annual": "46cdef37e6135bf8459023b47a6ae77fc7bb69cbb4382c29c195c72796389770",
       "historical_player_games": "b7eff30392d62b076bb25da0006f5b4412da6d8c3d8deb422314684bced71428",
       "lebron": "3749a608559a229bc01e98f2d7a1bf570f85af5acecb9551ba696f953cbe1f90",
@@ -42,7 +43,7 @@
     },
     "team_rating_formula": "5 * weighted_average(metric_Y, player_minutes_Y_plus_1)"
   },
-  "created_at": "2026-08-26T13:36:29.003591+00:00",
+  "created_at": "2026-08-26T13:46:42.296921+00:00",
   "model_family": "public_all_in_one_benchmark",
   "paths": {
     "coverage": "coverage.parquet",
@@ -65,6 +66,7 @@
       "annual_spm",
       "box_pipm_style",
       "bpm",
+      "epm",
       "lebron",
       "mamba",
       "new_aio",
@@ -72,9 +74,9 @@
       "rapm",
       "xrapm"
     ],
-    "pairwise_rows": 243,
-    "rating_rows": 41521,
-    "team_prediction_rows": 1080,
+    "pairwise_rows": 300,
+    "rating_rows": 52973,
+    "team_prediction_rows": 1200,
     "unmatched_identity_rows": 54,
     "unmatched_identity_rows_by_metric": {
       "bpm": 22,
@@ -82,6 +84,6 @@
       "xrapm": 16
     }
   },
-  "run_id": "public_aio_benchmark_v1_67a99b5e1e",
+  "run_id": "public_aio_benchmark_v1_0eab706850",
   "status": "research_evaluation"
 }

@@ -46,6 +46,11 @@ Start at the repository root:
 - [`impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`](impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md) —
   current AIO audit, public-model feature map, interpretation, aging-safe
   validation, and execution order;
+- [`impact/SPM_OLD_VS_NEW.md`](impact/SPM_OLD_VS_NEW.md) — matched five-year
+  targets, chronological training, selected feature additions, and the AIO
+  prior update;
+- [`impact/PUBLIC_AIO_BENCHMARK_V1.md`](impact/PUBLIC_AIO_BENCHMARK_V1.md) —
+  pairwise public-metric agreement and the oracle-minutes team-win test;
 - [`impact/MODEL_REPLICATION_SPEC.md`](impact/MODEL_REPLICATION_SPEC.md) — exact
   RAPM, annual SPM, centered AIO, role, zTS, feature, window, and promotion
   contracts from the checked-in code and pinned artifacts;

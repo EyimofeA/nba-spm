@@ -6,6 +6,7 @@ import pandas as pd
 from nba_impact.models.public_aio_benchmark import (
     build_pairwise_correlations,
     build_team_win_benchmark,
+    load_epm_ratings,
     load_lebron_ratings,
     load_mamba_ratings,
     validate_rating_panel,
@@ -125,3 +126,22 @@ def test_lebron_and_mamba_identity_mapping(tmp_path) -> None:
     assert len(lebron) == 2
     assert mamba.iloc[0]["PLAYER_ID"] == 1
     assert unmatched.iloc[0]["Player"] == "Missing Player"
+
+
+def test_epm_loader_uses_season_end_and_exact_ids(tmp_path) -> None:
+    path = tmp_path / "epm.csv"
+    pd.DataFrame(
+        {
+            "EPM_season": ["2022-23", "2023-24"],
+            "EPM_player_id": [1, 2],
+            "EPM_off": [2.0, -0.5],
+            "EPM_def": [1.0, 0.25],
+            "EPM_tot": [3.0, -0.25],
+        }
+    ).to_csv(path, index=False)
+    ratings = load_epm_ratings(path)
+    assert ratings[["PLAYER_ID", "Season"]].to_dict("records") == [
+        {"PLAYER_ID": 1, "Season": 2023},
+        {"PLAYER_ID": 2, "Season": 2024},
+    ]
+    assert ratings["metric"].eq("epm").all()

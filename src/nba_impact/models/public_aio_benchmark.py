@@ -25,6 +25,42 @@ RATING_COLUMNS = (
 )
 
 
+def load_epm_ratings(path: str | Path) -> pd.DataFrame:
+    """Load a season-level EPM export with exact NBA player IDs."""
+    source = pd.read_csv(path)
+    required = {
+        "EPM_season",
+        "EPM_player_id",
+        "EPM_off",
+        "EPM_def",
+        "EPM_tot",
+    }
+    if missing := sorted(required - set(source.columns)):
+        raise ValueError(f"EPM source is missing {missing}.")
+    parsed = source["EPM_season"].astype(str).str.extract(r"^(\d{4})-(\d{2})$")
+    if parsed.isna().any().any():
+        raise ValueError("EPM seasons must use YYYY-YY labels.")
+    start_year = parsed[0].astype(int)
+    expected_suffix = ((start_year + 1) % 100).astype(str).str.zfill(2)
+    if not expected_suffix.eq(parsed[1]).all():
+        raise ValueError("EPM season labels are not consecutive seasons.")
+    ratings = pd.DataFrame(
+        {
+            "PLAYER_ID": pd.to_numeric(source["EPM_player_id"], errors="raise").astype(int),
+            "Season": start_year + 1,
+            "offense": pd.to_numeric(source["EPM_off"], errors="raise"),
+            "defense": pd.to_numeric(source["EPM_def"], errors="raise"),
+            "net": pd.to_numeric(source["EPM_tot"], errors="raise"),
+        }
+    )
+    if ratings.duplicated(["PLAYER_ID", "Season"]).any():
+        raise ValueError("EPM has duplicate player-season IDs.")
+    ratings["metric"] = "epm"
+    ratings["metric_label"] = "EPM"
+    ratings["category"] = "public predictive hybrid"
+    return ratings
+
+
 def load_lebron_ratings(path: str | Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Load BBall Index LEBRON and return ratings plus an identity crosswalk."""
     source = pd.read_csv(path)
@@ -490,7 +526,7 @@ def build_public_aio_benchmark(
         "caveats": [
             "The next-season team-win benchmark uses observed next-season minutes and is therefore an oracle-minutes retrodiction, not a preseason forecast.",
             "Metric agreement is not evidence that either metric is correct.",
-            "EPM was not scored because a complete historical export was not available.",
+            "EPM values come from the supplied all-season snapshot rather than archived model vintages captured at each historical season end.",
             "BoxPIPM-style is a transparent box-score-only baseline, not a full PIPM reproduction.",
         ],
         "paths": {
