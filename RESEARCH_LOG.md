@@ -4078,3 +4078,31 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   mechanism-level offense and defense specifications under the same
   chronological player, team-changer, and downstream game gates. Do not select
   a model because lower dispersion improves RMSE.
+
+## 2026-08-26 - Role-conditioned five-year SPM and zone shotmaking
+
+- **Question:** Do annual offense/defense roles or a zone-adjusted shotmaking
+  feature improve prediction of the following season's one-year RAPM?
+- **Design:** Run `five_year_spm_role_research_v1_3edacae610` trains the exact
+  persisted 126-offense/50-defense five-year SPM on prior window ends and tests
+  2021--23. Every variant scores the same players. The primary score is the
+  equal-fold mean next-season possession-weighted Pearson correlation;
+  Spearman and MAE are guardrails, with RMSE diagnostic. Soft roles add annual
+  role coordinates and indicators. Hard experts split the frozen model by
+  role, with a global fallback below 100 training rows.
+- **Role result:** Soft role context improves net Pearson by `.00446`, net
+  Spearman by `.00237`, net MAE by `.01002`, and net RMSE by `.01720`. Offense
+  is essentially tied; defense correlation rises `.00145` while defense MAE
+  worsens `.01805`. Hard experts reduce net Pearson `.00323` and worsen net MAE
+  `.04184`. The defense role map was developed through 2021, so only the
+  2022-to-2023 fold is strictly post-map; soft-role net Pearson improves
+  `.00690` on that fold.
+- **Shotmaking:** Added a descriptive five-zone points-above-expectation metric
+  using leave-one-player-out window baselines for rim, short-mid, long-mid,
+  corner-three, and arc-three attempts, then `attempts / (attempts + 200)`
+  shrinkage. Unlike the existing defender-distance metric, it does not reward
+  an easy rim-heavy zone mix by itself. As an SPM input it lowers offense
+  Pearson in all three folds (mean `-.00300`) and worsens offense MAE `.00700`.
+- **Decision:** Keep soft role context as a research challenger. Do not replace
+  the SPM from one clean post-map defense fold. Reject hard role experts. Keep
+  zone shotmaking as a player-skill metric, not a current SPM feature.
