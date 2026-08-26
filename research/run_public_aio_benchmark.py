@@ -13,6 +13,7 @@ import pandas as pd
 from nba_impact.data.manifest import write_json_atomic
 from nba_impact.models.public_aio_benchmark import (
     build_public_aio_benchmark,
+    load_epm_ratings,
     load_lebron_ratings,
     load_mamba_ratings,
     map_named_metric,
@@ -98,10 +99,10 @@ METRIC_DEFINITIONS = [
     {
         "metric": "epm",
         "metric_label": "EPM",
-        "included": False,
+        "included": True,
         "kind": "Public predictive hybrid",
         "how_it_works": "Stat-specific estimated skills feed an SPM prior, which is combined with RAPM.",
-        "interpretation": "Excluded from this run: the public historical page exposes only five player rows; full CSV export was not supplied.",
+        "interpretation": "Supplied all-season snapshot; historical values may reflect the current model rather than archived season-end vintages.",
     },
 ]
 
@@ -213,6 +214,7 @@ def internal_ratings(
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--epm", type=Path, required=True)
     parser.add_argument("--lebron", type=Path, required=True)
     parser.add_argument("--mamba", type=Path, required=True)
     parser.add_argument("--external-annual", type=Path, required=True)
@@ -240,6 +242,7 @@ def main() -> None:
     parser.add_argument("--artifact-root", type=Path, default=ROOT / "artifacts")
     args = parser.parse_args()
 
+    epm = load_epm_ratings(args.epm)
     lebron, identity = load_lebron_ratings(args.lebron)
     mamba, mamba_unmatched = load_mamba_ratings(args.mamba, identity)
     external = pd.read_parquet(args.external_annual)
@@ -275,6 +278,7 @@ def main() -> None:
                 args.annual_spm,
                 args.box_pipm,
             ),
+            epm,
             lebron,
             mamba,
             bpm,
@@ -287,6 +291,7 @@ def main() -> None:
     )
     team_games = load_team_games(args.schedule_root, (2022, 2023, 2024, 2025))
     source_files = {
+        "epm": args.epm,
         "lebron": args.lebron,
         "mamba": args.mamba,
         "external_annual": args.external_annual,

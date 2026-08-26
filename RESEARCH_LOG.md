@@ -4015,13 +4015,14 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   ratings at `-2.0`, multiplies the weighted mean by five, and correlates it with
   year-Y+1 win percentage. Replacement sensitivity covers `-3.0` through
   `-1.5`.
-- **Result:** Run `public_aio_benchmark_v1_67a99b5e1e` ranks MAMBA first at mean
-  R-squared `0.6736`, then xRAPM `0.6439`, Old AIO `0.6407`, and New AIO
-  `0.6405`. New and old AIO net ratings correlate `0.9994`; the new feature
-  groups have not materially moved the posterior.
+- **Result:** Updated run `public_aio_benchmark_v1_0eab706850` ranks MAMBA first
+  at mean R-squared `0.6736`, then xRAPM `0.6439`, Old AIO `0.6407`, New AIO
+  `0.6405`, and EPM `0.6270`. New and old AIO net ratings correlate `0.9994`;
+  the new feature groups have not materially moved the posterior.
 - **Limits:** This is oracle-minutes retrodiction, not a preseason forecast.
-  Only four folds are common. EPM was not scored without a complete historical
-  export. BoxPIPM-style is a transparent box-only baseline, not full PIPM.
+  Only four folds are common. Supplied historical EPM may use today's model
+  rather than archived season-end vintages. BoxPIPM-style is a transparent
+  box-only baseline, not full PIPM.
 - **Decision:** Add the benchmark, full correlation matrix, fold table, and
   metric definitions to the localhost SPM Lab. Do not promote the new AIO from
   these results. Add archived projected minutes before claiming forecast value.

@@ -8,7 +8,7 @@ old and new CourtSignal AIO models are effectively tied (`0.641` and `0.640`).
 Their player-season net ratings correlate at `0.999`, so the selected feature
 additions have not materially changed the final AIO posterior.
 
-Run: `public_aio_benchmark_v1_67a99b5e1e`.
+Run: `public_aio_benchmark_v1_0eab706850`.
 
 | Metric | Mean R² | Mean Pearson | Mean rank correlation | Minimum minute coverage |
 |---|---:|---:|---:|---:|
@@ -16,6 +16,7 @@ Run: `public_aio_benchmark_v1_67a99b5e1e`.
 | xRAPM | 0.644 | 0.802 | 0.762 | 84.5% |
 | Old AIO | 0.641 | 0.799 | 0.769 | 84.5% |
 | New AIO | 0.640 | 0.799 | 0.768 | 84.5% |
+| EPM | 0.627 | 0.790 | 0.768 | 84.5% |
 | BoxPIPM-style | 0.607 | 0.777 | 0.716 | 84.5% |
 | BPM 2.0 | 0.604 | 0.774 | 0.738 | 84.5% |
 | LEBRON | 0.600 | 0.773 | 0.721 | 84.5% |
@@ -73,7 +74,9 @@ not accuracy or causal validity.
 - **Annual SPM:** box, play-by-play, and tracking features predicting annual
   zero-prior RAPM without lineup outcomes as model inputs.
 - **BoxPIPM-style:** a transparent leave-one-season-out ridge using 15
-  traditional per-100 box rates to predict annual RAPM. It is not full PIPM.
+  traditional per-100 box rates to predict annual RAPM. It approximates the
+  box-score component of PIPM. Full PIPM also used luck-adjusted on/off and
+  luck-adjusted on-court team efficiency, so the terms are not interchangeable.
 - **BPM 2.0:** official Basketball-Reference values. BPM uses box-score rates,
   estimated position and offensive role, then a team-efficiency adjustment.
   This run ingests and verifies the published values; it does not claim an
@@ -85,9 +88,9 @@ not accuracy or causal validity.
 - **MAMBA:** a current-season statistical prior combined with time-decayed
   multi-year RAPM and small shooting-luck adjustments. The author labels it a
   proof of concept.
-- **EPM:** estimated skills feed an SPM prior and RAPM update. It is described
-  in the UI but not scored because a complete historical export was not
-  available. The public page exposed only a five-player preview.
+- **EPM:** estimated skills feed an SPM prior and RAPM update. This run uses the
+  supplied all-season export with exact NBA IDs. Its historical rows may reflect
+  the current EPM model rather than archived season-end model vintages.
 
 ## Interpretation limits
 
@@ -97,8 +100,8 @@ not accuracy or causal validity.
 - Metrics estimate different objects and use overlapping source data.
 - Team aggregation cannot identify which player rating is individually right.
 - Correlation and R² do not measure calibration in points per 100 possessions.
-- Full PIPM was not recreated because its complete historical inputs and
-  luck-adjusted on/off contract are not public. The box-only baseline is labeled
+- Full PIPM was not recreated because its complete historical luck-adjusted
+  on/off inputs are not available here. The box-only baseline is labeled
   accordingly.
 
 ## Reproduction
@@ -110,7 +113,8 @@ file and the builder. Unmatched public-name identities are retained separately.
 Third-party player-level rating tables are not copied into the committed
 artifact.
 
-Method references: [LEBRON](https://www.bball-index.com/lebron-introduction/),
+Method references: [PIPM](https://fansided.com/2018/01/11/nylon-calculus-introducing-player-impact-plus-minus/),
+[LEBRON](https://www.bball-index.com/lebron-introduction/),
 [EPM](https://dunksandthrees.com/about/epm),
 [MAMBA](https://www.teemohoop.com/mamba/Blog%20Post%20Title%20One-mm8gk-cy9wh),
 and [BPM 2.0](https://www.basketball-reference.com/about/bpm2.html).
