@@ -1,0 +1,31 @@
+{
+  "age_opportunity_decision": "Raw predictive SPM won the separate 2020-24 residual-correction ablation, so age and lagged opportunity are excluded.",
+  "decision": "research_champion_not_public",
+  "development_fold_wins_vs_five_year_zero": 4,
+  "development_folds": 5,
+  "development_mean_rmse": {
+    "five_year_spm_prior_aio": 13.754958070804534,
+    "five_year_zero_prior": 13.768144497646016,
+    "selected_decay_spm_prior_aio": 13.71215612230318,
+    "selected_decay_zero_prior": 13.74293460785401
+  },
+  "diagnostic_rmse": {
+    "2025": {
+      "five_year_spm_prior_aio": 14.80516725151591,
+      "five_year_zero_prior": 14.855088279774487,
+      "selected_decay_spm_prior_aio": 14.771913091768814,
+      "selected_decay_zero_prior": 14.832637884549483
+    },
+    "2026": {
+      "five_year_spm_prior_aio": 15.2043504504119,
+      "five_year_zero_prior": 15.296218595223808,
+      "selected_decay_spm_prior_aio": 15.18172275225874,
+      "selected_decay_zero_prior": 15.302665591241734
+    }
+  },
+  "experiment_id": "predictive_current_aio_2026_v1",
+  "promotion_blocker": "Seasons 2025 and 2026 are reused diagnostics. Season 2027 remains the untouched confirmation.",
+  "run_id": "predictive_current_aio_2026_v1_c18e2472ec",
+  "selected_arm": "selected_decay_spm_prior_aio",
+  "selected_half_life_years": "2"
+}

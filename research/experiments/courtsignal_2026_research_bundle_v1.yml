@@ -1,0 +1,24 @@
+schema_version: research_bundle_v1
+bundle_id: courtsignal_2026_research_bundle_v1
+status: research_only
+created_at: 2026-08-26
+
+components:
+  retrospective_spm:
+    run_id: single_season_spm_v1_47b3bd9b17
+    source: oof_predictions.parquet
+    season: 2026
+    training_seasons: [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+    target: 2026 one-season zero-prior RAPM
+  predictive_aio:
+    run_id: predictive_current_aio_2026_v1_c18e2472ec
+    source: selected_2026_ratings.parquet
+    evidence_seasons: [2021, 2022, 2023, 2024, 2025]
+    forecast_season: 2026
+    half_life_years: 2.0
+    prior: raw predictive SPM trained through 2025
+
+population: players observed in the 2026 annual SPM target panel
+season_2027_policy: forbidden_and_not_loaded
+public_release: forbidden_pending_untouched_confirmation
+

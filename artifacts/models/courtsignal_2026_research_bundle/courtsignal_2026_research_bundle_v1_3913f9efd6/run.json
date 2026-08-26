@@ -1,0 +1,24 @@
+{
+  "bundle_id": "courtsignal_2026_research_bundle_v1",
+  "component_identity": {
+    "predictive_aio_max_error": 4.440892098500626e-16,
+    "retrospective_spm_max_error": 2.220446049250313e-16
+  },
+  "created_at": "2026-08-26T04:37:08.672427+00:00",
+  "forbidden_interpretation": "The SPM is retrospective. The AIO is a lineup-conditioned 2026 forecast with reused diagnostics. Neither has untouched 2027 confirmation.",
+  "paths": {
+    "ratings": "ratings_2026.parquet"
+  },
+  "predictive_spm_prior_coverage": 0.7972508591065293,
+  "rows": 582,
+  "run_id": "courtsignal_2026_research_bundle_v1_3913f9efd6",
+  "season": 2026,
+  "source_hashes": {
+    "aio": "1958bd1a660006b79cd4bebc8089073bb44910b5150015671b36bd906cdb5b29",
+    "contract": "73ebfb5f5788c3e622d2fe330a8c740a96a0be531930f53d5b2b85a62cab3648",
+    "predictive_spm": "ec6f55dd722134e6fa9420314a4a48db39af28f76278a1bc8da78c79d2bdc0a7",
+    "source_code": "a651ca7762819c9a05d646f970e56a894c51947f8ef97539edacd8ab595e54ca",
+    "spm": "9723132148c78d981d592af36053fd3238d2271adeaedadf132a7e8fede06bea"
+  },
+  "status": "research_only"
+}

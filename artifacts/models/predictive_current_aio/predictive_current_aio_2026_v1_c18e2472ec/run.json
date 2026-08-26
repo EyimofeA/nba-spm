@@ -1,0 +1,87 @@
+{
+  "bootstrap": {
+    "ci_95_lower": -2.3440361852934397,
+    "ci_95_upper": -0.782278335712462,
+    "draws": 2000,
+    "matched_games": 5825,
+    "probability_selected_better": 1.0,
+    "seasons": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "seed": 20260826,
+    "selected_minus_baseline_game_mse": -1.5631264418560105
+  },
+  "created_at": "2026-08-26T04:33:41.548161+00:00",
+  "development_seasons": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "elapsed_seconds": 132.11272412491962,
+  "estimand_id": "current_latent_strength_v1",
+  "experiment_id": "predictive_current_aio_2026_v1",
+  "forbidden_interpretation": "This uses observed held-out lineups and reused 2025-26 diagnostics. It is not an untouched forecast confirmation, roster forecast, or public model.",
+  "paths": {
+    "development_summary": "development_summary.parquet",
+    "fold_metrics": "fold_metrics.parquet",
+    "game_predictions": "game_predictions.parquet",
+    "predictive_aio_2026_ratings": "predictive_aio_2026_ratings.parquet",
+    "prior_coverage": "prior_coverage.parquet",
+    "ratings": "ratings.parquet",
+    "selected_2026_ratings": "selected_2026_ratings.parquet",
+    "time_decay_fold_metrics": "time_decay_fold_metrics.parquet",
+    "time_decay_summary": "time_decay_summary.parquet"
+  },
+  "predictive_aio_arm": "selected_decay_spm_prior_aio",
+  "quality": {
+    "game_rowset_hashes": {
+      "2020": "7f8c5c02e1e0a984d2359bbce87c4ae7f8d2db4f4698f866052e54c1ed1d3524",
+      "2021": "4cfef2c39301099e95a4eb5dae1482088bf0ec32cbc6ecb92144c0ee75f3f259",
+      "2022": "d9d2c1a451427b862961580a58561b79a57fc0c2524963ef6f6460851dc8dc5e",
+      "2023": "9f4e5abf74f206c30785f105ff063762e67d363e8ef483bba24e085ba2e16f63",
+      "2024": "b411be5cf212f572fa2ad90b20a83cfd8272e9206c2a1b5984fa3d93b9d305e2",
+      "2025": "2c351b3d0847b13c1978c2d9848de993d5679b82fa5a7510ae1ba4b5ff3190d0",
+      "2026": "21f13466237deb287baf1be52408ec6b07c0300a01b75eaa12a850711354c52e"
+    },
+    "games": 14429,
+    "maximum_component_identity_error": 8.881784197001252e-16,
+    "maximum_loaded_season": 2026,
+    "players": 1632,
+    "possession_rows": 2848029,
+    "predictive_aio_2026_rows": 1632,
+    "selected_2026_rows": 1632
+  },
+  "reused_diagnostic_seasons": [
+    2025,
+    2026
+  ],
+  "run_id": "predictive_current_aio_2026_v1_c18e2472ec",
+  "selected_arm": "selected_decay_spm_prior_aio",
+  "selected_arm_is_predictive_aio": true,
+  "selected_half_life_years": "2",
+  "source_hashes": {
+    "contract": "3aebeb885b226822d480a6dbb1317f0f7307c54716fbc50a1115fb4ae8d8d35a",
+    "current_possessions": "5d97a6aec9e544d46adbd970e95f6d2226a15d2c5d9a3832ef1f915170182f75",
+    "current_segments": "68bc998a6ddb4bf02fcd962154a68c37db15f29c33d5bad2a2897926821b4063",
+    "legacy_possessions": {
+      "2015": "7da4d7782cb6f0ee7ea62a2a8cf0c4aad20c278894f383687d453f28dbfb5790",
+      "2016": "76a2d71a3a99aa59f5b350202074a4aa6593d69b1eadcb970e25580165951c43",
+      "2017": "a3845ef9eb7c9e777f9785fdf83a5baec992f151822c96c71e340f234af340e5",
+      "2018": "9795706ae88602450e2e8e51cf18334ca90e838ab60ecabf48c6a2628b007f92",
+      "2019": "13c96c21ec744bb50eadba1f385b75800895f78af00cc9535502803998c4103f",
+      "2020": "b177865501897984437fcc8c08ee229ff462e0319e032f7642b5077670d375c6",
+      "2021": "0bfd107dad6959b1a45e4c7762fcde2d901e364d64b632299deeb22092749a6a",
+      "2022": "b04388818590ad1bff4fb6b9ca9d27dd4ac9dc6dd744c34160153206bcb32248",
+      "2023": "15f710ba2964bcbc80ca4753038b8c22fb18188bafd0cb62c886ac39840faa15"
+    },
+    "source_code": "89a81c79499826ded4b689798e86b3f72b72d270080c4a65980cf6585946a0f2",
+    "spm_predictions": "ec6f55dd722134e6fa9420314a4a48db39af28f76278a1bc8da78c79d2bdc0a7"
+  },
+  "status": "research_model_complete"
+}
