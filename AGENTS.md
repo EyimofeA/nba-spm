@@ -133,6 +133,12 @@ Canonical code: `src/nba_impact/models/five_year_target_spm.py`.
   `0.0126` in reused 2026, so it remains a localhost-only challenger.
 - Do not add opponent shooting outcome, generic hustle, shooting, screening,
   transition, or playtype families from this run. They failed the frozen gate.
+- The feature builder now distinguishes raw `rim_points_saved_p100_raw` from
+  the frozen EB-stabilized `rim_points_saved_p100`, and calculates exact
+  SelfORB-adjusted TS from Gabriel's observed `SelfOReb` count. Both new fields
+  are candidates, not selected SPM inputs. KOBE-style row-level shot context
+  remains a 2014-15 historical prototype because modern nearest-defender rows
+  are unavailable under the current source contract.
 
 Canonical code: `src/nba_impact/models/five_year_spm_feature_research.py`.
 

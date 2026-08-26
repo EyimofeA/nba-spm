@@ -97,6 +97,11 @@ The game series stops when cumulative makes and attempts exactly equal the
 frozen annual source row. Playoffs are excluded. If the totals do not reconcile,
 the game series is not rendered. Missed games are gaps, not zero-attempt failures.
 
+SelfORB-adjusted TS is calculated directly from points, FGA, FTA, and the
+source's `SelfOReb` count. It is not currently part of the 34-skill stabilized
+run above; it enters the next skill run only after its source coverage and
+future-season stability pass the same gate.
+
 ## Frozen result
 
 Run `predictive_player_skills_2026_v1_a7eb0386fe` contains 235,212 player-skill-

@@ -19,6 +19,7 @@ def _season_row(player_id: int, **overrides: float) -> dict:
         "STL": 1.0,
         "BLK": 1.0,
         "OREB": 2.0,
+        "SelfOReb": 1.0,
         "DREB": 5.0,
         "PF": 2.0,
         "PFD": 3.0,
@@ -65,6 +66,11 @@ def test_builder_pools_counts_and_uses_natural_weights(tmp_path) -> None:
     row = features.iloc[0]
     assert row["fg3_pct"] == pytest.approx(6.0 / 20.0)
     assert row["avg_seconds_per_touch"] == pytest.approx(1.7)
+    expected_attempts = 45.0 + 0.44 * 15.0 - 3.0
+    assert row["self_oreb_p100"] == pytest.approx(1.0)
+    assert row["self_oreb_adjusted_true_shooting_pct"] == pytest.approx(
+        60.0 / (2.0 * expected_attempts)
+    )
     assert "AGE" not in features
     assert "MIN" not in features
     assert "GP" not in features

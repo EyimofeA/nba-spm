@@ -53,6 +53,7 @@ def test_build_defensive_tracking_features_resolves_names_and_rates(tmp_path: Pa
     assert features.loc[1, "dfg_attempts_p100"] == pytest.approx(40.0)
     assert features.loc[1, "dfg_diff_pct_eb"] == pytest.approx(-10 / 3)
     assert features.loc[1, "rim_diff_pct_eb"] == pytest.approx(-20 / 3)
+    assert features.loc[1, "rim_points_saved_p100_raw"] == pytest.approx(4.0)
     assert features.loc[1, "rim_points_saved_p100"] == pytest.approx(8 / 3)
     assert features.loc[1, "dfg_two_point_equivalent_saved_p100"] == pytest.approx(8 / 3)
     assert features.loc[1, "rim_matchup_attempt_share"] == pytest.approx(0.5)
@@ -92,6 +93,7 @@ def test_defensive_tracking_never_uses_another_seasons_center() -> None:
     missing_season = features.loc[features["Season"].eq(2017)].iloc[0]
 
     assert missing_season["dfg_attempts_p100"] == 0.0
+    assert missing_season["rim_points_saved_p100_raw"] == 0.0
     assert missing_season["rim_points_saved_p100"] == 0.0
     assert missing_season["deflections_p100"] == 0.0
     assert quality["neutral_fill_policy"] == "same_season_median_then_zero"

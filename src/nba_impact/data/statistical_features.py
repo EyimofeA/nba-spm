@@ -20,6 +20,7 @@ CORE_RATE_SPECS = {
     "STL_p100": ("STL", "DefPoss"),
     "BLK_p100": ("BLK", "DefPoss"),
     "OREB_p100": ("OREB", "OffPoss"),
+    "self_oreb_p100": ("SelfOReb", "OffPoss"),
     "DREB_p100": ("DREB", "DefPoss"),
     "PF_p100": ("PF", "DefPoss"),
     "PFD_p100": ("PFD", "OffPoss"),
@@ -188,6 +189,10 @@ def _aggregate_window(frames: list[pd.DataFrame], window_end: int) -> pd.DataFra
     true_shooting_denominator = 2.0 * (sums["FGA"] + 0.44 * sums["FTA"])
     output_columns["true_shooting_pct"] = _safe_ratio(
         sums["PTS"], true_shooting_denominator
+    )
+    self_oreb_adjusted_attempts = sums["FGA"] + 0.44 * sums["FTA"] - sums["SelfOReb"]
+    output_columns["self_oreb_adjusted_true_shooting_pct"] = _safe_ratio(
+        sums["PTS"], 2.0 * self_oreb_adjusted_attempts
     )
 
     for name, (source, weight) in NATURAL_WEIGHTED_AVERAGES.items():

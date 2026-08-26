@@ -1,0 +1,78 @@
+{
+  "provider": "gabriel1200/player_sheets",
+  "purpose": "Research-only annual player sheets needed to calculate exact SelfORB-adjusted true shooting and reproduce the historical KOBE-style shot-quality prototype. Raw inputs are not public release assets.",
+  "task_defaults": {
+    "provider": "gabriel1200/player_sheets",
+    "license": "not-declared-by-upstream",
+    "max_attempts": 20,
+    "connect_timeout_seconds": 30,
+    "read_timeout_seconds": 300,
+    "retry_initial_seconds": 2,
+    "retry_max_seconds": 300
+  },
+  "tasks": [
+    {
+      "name": "gabriel_player_sheet_2014_self_oreb",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2014.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2014.parquet",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2014,
+      "expected_min_rows": 450,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME", "PTS", "FGA", "FTA", "SelfOReb", "PLAYER_HEIGHT_INCHES"]
+    },
+    {
+      "name": "gabriel_player_sheet_2015_self_oreb",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2015.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2015.parquet",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2015,
+      "expected_min_rows": 450,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME", "PTS", "FGA", "FTA", "SelfOReb", "PLAYER_HEIGHT_INCHES"]
+    },
+    {
+      "name": "gabriel_player_sheet_2016_self_oreb",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2016.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2016.parquet",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2016,
+      "expected_min_rows": 450,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME", "PTS", "FGA", "FTA", "SelfOReb", "PLAYER_HEIGHT_INCHES"]
+    },
+    {
+      "name": "gabriel_player_sheet_2017_self_oreb",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2017.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2017.parquet",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2017,
+      "expected_min_rows": 450,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME", "PTS", "FGA", "FTA", "SelfOReb", "PLAYER_HEIGHT_INCHES"]
+    },
+    {
+      "name": "gabriel_player_sheet_2018_self_oreb",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2018.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2018.parquet",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2018,
+      "expected_min_rows": 450,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME", "PTS", "FGA", "FTA", "SelfOReb", "PLAYER_HEIGHT_INCHES"]
+    },
+    {
+      "name": "gabriel_player_sheet_2019_self_oreb",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2019.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2019.parquet",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2019,
+      "expected_min_rows": 450,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME", "PTS", "FGA", "FTA", "SelfOReb", "PLAYER_HEIGHT_INCHES"]
+    },
+    {
+      "name": "gabriel_player_sheet_2024_self_oreb",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2024.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2024.parquet",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2024,
+      "expected_min_rows": 450,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME", "PTS", "FGA", "FTA", "SelfOReb", "PLAYER_HEIGHT_INCHES"]
+    }
+  ]
+}

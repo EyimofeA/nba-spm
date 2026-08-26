@@ -1,0 +1,132 @@
+{
+  "caveats": [
+    "The public source covers only 2014-15 and has no declared data license; outputs are research-only.",
+    "Closest defender is not necessarily the causally responsible defender.",
+    "The test is one within-season temporal split, not a modern-season validation.",
+    "Fast-break context is fuzzy-matched to play-by-play within five seconds.",
+    "The PBP assisted flag is excluded because assists are recorded only after made shots; zero dribbles and short touch time are the pre-shot pass proxies.",
+    "The KOBE-inspired arm adds shooter-minus-defender height and period clock, but it is a histogram GBM fit in one pooled shot model rather than Narsu's separate close-shot and long-shot logistic regressions."
+  ],
+  "config": {
+    "builder_sha256": "5cd96e5ac6dfad7927ec2fdcb6f2b0fd9af823e8e3d71c696f39459918458fd1",
+    "feature_arms": {
+      "full_context": [
+        "x",
+        "y",
+        "shot_distance",
+        "points_type",
+        "nearest_defender_distance",
+        "shot_clock",
+        "dribbles",
+        "touch_time",
+        "period",
+        "home",
+        "fast_break"
+      ],
+      "kobe_inspired_context": [
+        "x",
+        "y",
+        "shot_distance",
+        "points_type",
+        "nearest_defender_distance",
+        "shot_clock",
+        "dribbles",
+        "touch_time",
+        "period",
+        "clock_seconds",
+        "home",
+        "fast_break",
+        "height_difference_inches"
+      ],
+      "location_defender": [
+        "x",
+        "y",
+        "shot_distance",
+        "points_type",
+        "nearest_defender_distance"
+      ],
+      "location_only": [
+        "x",
+        "y",
+        "shot_distance",
+        "points_type"
+      ]
+    },
+    "pbp_file_count": 1310,
+    "season": 2015,
+    "source_hashes": {
+      "pbp_files_combined": "f3fe80095cbae5b38a8e7b88ce78fc4bc472c67de3e3c808a9825e26010939f4",
+      "player_sheet": "90ddc43dfffcc827e154677ef46f2a0c0b6c31b51784e27832869ea63c49dc20",
+      "shot_log": "bcd050775fc415a3962a8f2c2d4d96c9bcfc6a818281eaf09f33fa14a7b94d30"
+    },
+    "temporal_split": {
+      "test_on_or_after": "2015-01-28",
+      "train_before": "2015-01-28"
+    }
+  },
+  "created_at": "2026-08-26T17:11:51.757585+00:00",
+  "metrics": [
+    {
+      "actual_make_rate": 0.44469460615612233,
+      "arm": "location_only",
+      "auc": 0.6336592155308779,
+      "brier": 0.22733446937202503,
+      "log_loss": 0.645048433325987,
+      "log_loss_improvement_vs_location_only": 0.0,
+      "mean_prediction": 0.454025317037987,
+      "test_shots": 31091,
+      "train_shots": 96978
+    },
+    {
+      "actual_make_rate": 0.44469460615612233,
+      "arm": "location_defender",
+      "auc": 0.6503549807673368,
+      "brier": 0.22443802649485492,
+      "log_loss": 0.6381192342528514,
+      "log_loss_improvement_vs_location_only": 0.006929199073135606,
+      "mean_prediction": 0.45482175051711526,
+      "test_shots": 31091,
+      "train_shots": 96978
+    },
+    {
+      "actual_make_rate": 0.44469460615612233,
+      "arm": "full_context",
+      "auc": 0.657626690736454,
+      "brier": 0.22279221440504754,
+      "log_loss": 0.6339952074308839,
+      "log_loss_improvement_vs_location_only": 0.011053225895103158,
+      "mean_prediction": 0.45548604033939327,
+      "test_shots": 31091,
+      "train_shots": 96978
+    },
+    {
+      "actual_make_rate": 0.44469460615612233,
+      "arm": "kobe_inspired_context",
+      "auc": 0.6590924714928483,
+      "brier": 0.22259150664990385,
+      "log_loss": 0.6335554002710991,
+      "log_loss_improvement_vs_location_only": 0.011493033054887913,
+      "mean_prediction": 0.4553256749830437,
+      "test_shots": 31091,
+      "train_shots": 96978
+    }
+  ],
+  "paths": {
+    "closest_defender_residuals": "closest_defender_residuals.parquet",
+    "metrics": "metrics.parquet",
+    "shotmaking": "shotmaking.parquet"
+  },
+  "quality": {
+    "clock_tolerance_seconds": 5.0,
+    "defender_height_coverage": 0.9983368340503948,
+    "height_difference_coverage": 0.9983368340503948,
+    "height_source_players": 487,
+    "pbp_match_rate": 0.9940032326324091,
+    "rows": 128069,
+    "shooter_height_coverage": 1.0,
+    "test_games": 229,
+    "train_games": 675
+  },
+  "run_id": "historical_shot_quality_2015_v1_c5258e797c",
+  "status": "historical_research_prototype"
+}
