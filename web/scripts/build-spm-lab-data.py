@@ -50,6 +50,24 @@ def latest_comparison_run() -> Path:
     return complete[-1]
 
 
+def latest_weight_ablation_run() -> Path:
+    runs = sorted(
+        (ROOT / "artifacts/research/spm_weight_ablation").glob(
+            "spm_weight_ablation_v1_*/run.json"
+        ),
+        key=lambda path: path.stat().st_mtime,
+    )
+    complete = [
+        path.parent
+        for path in runs
+        if (path.parent / "summary.parquet").exists()
+        and (path.parent / "feature_catalog.parquet").exists()
+    ]
+    if not complete:
+        raise FileNotFoundError("No complete SPM sample-weight ablation exists.")
+    return complete[-1]
+
+
 def clean(frame: pd.DataFrame) -> list[dict]:
     return frame.astype(object).where(pd.notna(frame), None).to_dict("records")
 
@@ -129,7 +147,23 @@ def comparison_payload(run_path: Path) -> dict:
     }
 
 
-def build(run_path: Path, comparison_run_path: Path | None = None) -> dict:
+def weighting_payload(run_path: Path) -> dict:
+    manifest = json.loads((run_path / "run.json").read_text())
+    return {
+        "run_id": manifest["run_id"],
+        "summary": clean(pd.read_parquet(run_path / "summary.parquet")),
+        "fold_metrics": clean(pd.read_parquet(run_path / "fold_metrics.parquet")),
+        "feature_catalog": clean(pd.read_parquet(run_path / "feature_catalog.parquet")),
+        "quality": manifest["quality"],
+        "caveats": manifest["caveats"],
+    }
+
+
+def build(
+    run_path: Path,
+    comparison_run_path: Path | None = None,
+    weight_run_path: Path | None = None,
+) -> dict:
     manifest = json.loads((run_path / "run.json").read_text())
     decisions = pd.read_parquet(run_path / "feature_group_decisions.parquet")
     aio = pd.read_parquet(run_path / "aio_metrics.parquet")
@@ -159,6 +193,7 @@ def build(run_path: Path, comparison_run_path: Path | None = None) -> dict:
         "comparison": comparison_payload(
             comparison_run_path or latest_comparison_run()
         ),
+        "weighting": weighting_payload(weight_run_path or latest_weight_ablation_run()),
     }
     DESTINATION.parent.mkdir(parents=True, exist_ok=True)
     DESTINATION.write_text(json.dumps(payload, separators=(",", ":")))
@@ -169,10 +204,12 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run", type=Path)
     parser.add_argument("--comparison-run", type=Path)
+    parser.add_argument("--weight-run", type=Path)
     args = parser.parse_args()
     payload = build(
         args.run or latest_complete_run(),
         args.comparison_run,
+        args.weight_run,
     )
     print(json.dumps({"run_id": payload["run_id"], "rows": len(payload["ratings"])}, indent=2))
 

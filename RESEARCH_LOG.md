@@ -4007,7 +4007,7 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 
 ## 2026-08-26 - Matched public all-in-one comparison
 
-- **Question:** How do the old and new CourtSignal AIO ratings agree with public
+- **Question:** How do the published website and five-year research AIO ratings agree with public
   all-in-one metrics, and how well does each aggregate to next-season team wins?
 - **Contract:** Pairwise-complete offense, defense, and net correlations use
   2021--24 player-seasons with at least 250 minutes. The team test weights each
@@ -4015,10 +4015,11 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   ratings at `-2.0`, multiplies the weighted mean by five, and correlates it with
   year-Y+1 win percentage. Replacement sensitivity covers `-3.0` through
   `-1.5`.
-- **Result:** Updated run `public_aio_benchmark_v1_0eab706850` ranks MAMBA first
-  at mean R-squared `0.6736`, then xRAPM `0.6439`, Old AIO `0.6407`, New AIO
-  `0.6405`, and EPM `0.6270`. New and old AIO net ratings correlate `0.9994`;
-  the new feature groups have not materially moved the posterior.
+- **Result:** Corrected run `public_aio_benchmark_v1_e411f910ea` ranks MAMBA
+  first at mean R-squared `0.6736`, then xRAPM `0.6439`, five-year research AIO
+  `0.6405`, EPM `0.6270`, and Website AIO `0.6183`. The research and website AIO
+  net ratings correlate `0.9596`. The prior comparison mislabeled a second
+  five-year model as “Old AIO”; this run uses the exact website leaderboard rows.
 - **Limits:** This is oracle-minutes retrodiction, not a preseason forecast.
   Only four folds are common. Supplied historical EPM may use today's model
   rather than archived season-end vintages. BoxPIPM-style is a transparent
@@ -4026,3 +4027,23 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Add the benchmark, full correlation matrix, fold table, and
   metric definitions to the localhost SPM Lab. Do not promote the new AIO from
   these results. Add archived projected minutes before claiming forecast value.
+
+## 2026-08-26 - Published annual SPM sample-weight ablation
+
+- **Question:** Does `sqrt(min(Poss_Off, Poss_Def))` improve the exact published
+  annual SPM relative to giving every player-season equal training weight?
+- **Design:** Refit the website's 127-offense/68-defense feature contract on all
+  2014--26 leave-one-season-out folds. Features, annual RAPM labels, learners,
+  and held-out rows are identical; only the training sample weight changes.
+  Score both possession-weighted and equal-player RMSE.
+- **Result:** Under possession-weighted scoring, removing the weight changes
+  offense RMSE from `1.01234` to `1.01180`, defense from `0.94474` to `0.98145`,
+  and net from `1.38808` to `1.42511`. Under equal-player scoring, it improves
+  offense from `0.93175` to `0.92403` but worsens defense from `0.89000` to
+  `0.89502` and net from `1.28793` to `1.29651`.
+- **Runtime caveat:** The current histogram-GBM runtime correlates `0.9961` with
+  the saved website offense predictions but is not bitwise identical; defense
+  reproduces exactly. Both ablation arms use the same current runtime.
+- **Decision:** Keep weighting for the combined annual SPM because defense and
+  net improve materially. Test unweighted offense plus weighted defense as the
+  next frozen challenger; do not silently change the website fit.

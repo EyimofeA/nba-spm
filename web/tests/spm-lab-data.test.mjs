@@ -37,4 +37,15 @@ test("SPM Lab defaults can render the public metric benchmark", () => {
   assert.equal(lab.comparison.team_win_summary[0].metric, "mamba");
   assert.ok(lab.comparison.pairwise_correlations.length >= 10 * 10 * 3);
   assert.ok(lab.comparison.definitions.some((row) => row.metric === "epm" && row.included));
+  assert.ok(lab.comparison.definitions.some((row) => row.metric === "site_aio" && row.included));
+  assert.ok(!lab.comparison.definitions.some((row) => row.metric === "old_aio"));
+});
+
+test("SPM Lab exposes the exact feature catalog and weight ablation", () => {
+  assert.equal(lab.weighting.quality.rows, 6942);
+  assert.equal(lab.weighting.feature_catalog.length, 170);
+  assert.equal(lab.weighting.feature_catalog.filter((row) => row.offense_input).length, 127);
+  assert.equal(lab.weighting.feature_catalog.filter((row) => row.defense_input).length, 68);
+  assert.ok(lab.weighting.feature_catalog.every((row) => row.description.length > 10));
+  assert.equal(lab.weighting.summary.length, 12);
 });
