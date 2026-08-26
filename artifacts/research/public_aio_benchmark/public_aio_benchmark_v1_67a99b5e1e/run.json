@@ -1,0 +1,87 @@
+{
+  "caveats": [
+    "The next-season team-win benchmark uses observed next-season minutes and is therefore an oracle-minutes retrodiction, not a preseason forecast.",
+    "Metric agreement is not evidence that either metric is correct.",
+    "EPM was not scored because a complete historical export was not available.",
+    "BoxPIPM-style is a transparent box-score-only baseline, not a full PIPM reproduction."
+  ],
+  "config": {
+    "builder_sha256": "12cd43911a06f673ca15b348a97f21836c45cc0a5f7febe4e5a398740eee8172",
+    "common_seasons": [
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "default_replacement_value": -2.0,
+    "minimum_metric_year_minutes": 250.0,
+    "projected_minutes": {
+      "path_sha256": null,
+      "status": "unavailable"
+    },
+    "replacement_values": [
+      -3.0,
+      -2.5,
+      -2.0,
+      -1.5
+    ],
+    "source_hashes": {
+      "annual_spm": "70cd991a8bc931a751bd09c0d138ee12dbe158faa7bdc25d4d8fe232c6b6c594",
+      "box_pipm": "ffcb55b469ca13a2349b18b52c4564b5587bbf1628ce5e72ca59e013c7c39a2f",
+      "external_annual": "46cdef37e6135bf8459023b47a6ae77fc7bb69cbb4382c29c195c72796389770",
+      "historical_player_games": "b7eff30392d62b076bb25da0006f5b4412da6d8c3d8deb422314684bced71428",
+      "lebron": "3749a608559a229bc01e98f2d7a1bf570f85af5acecb9551ba696f953cbe1f90",
+      "mamba": "016a50e7f9eff2cb2f28c6964d6f91ccdd85edf2ba4630a2f7f63928496e8892",
+      "new_aio": "2efa6f191048f417d499533cc61b7200af9daefab5364c6af1e70edbfe46fd5f",
+      "old_aio": "d8787ae8aada5741b036fb17fb0d12a6ef91a1912f250018f093b8648f976031",
+      "recent_player_games": "88ba7fd958c757641b04ceec137817d37cc5bda133c0c74ace5d3acf4b6df21d",
+      "team_games_2022": "916ceb8bee5dab16889e7c911290c185502a6d1a7d6c7e9f4a524b90d65f9a13",
+      "team_games_2023": "0327cbc2fab18c3459ae2d8f2e790bd77c7cda95ecd3979a011b13aee4b9f185",
+      "team_games_2024": "70d48f7d9c23e402cc48a7199a9c18d1bb1fc6f331a19cc946877cf65196bb8d",
+      "team_games_2025": "745d4a4d5e2a56e0346f0696d8881f1026d4cdb507c1ad4e0880fde7c54c24db"
+    },
+    "team_rating_formula": "5 * weighted_average(metric_Y, player_minutes_Y_plus_1)"
+  },
+  "created_at": "2026-08-26T13:36:29.003591+00:00",
+  "model_family": "public_all_in_one_benchmark",
+  "paths": {
+    "coverage": "coverage.parquet",
+    "metric_definitions": "metric_definitions.parquet",
+    "pairwise_correlations": "pairwise_correlations.parquet",
+    "team_win_folds": "team_win_folds.parquet",
+    "team_win_summary": "team_win_summary.parquet",
+    "unmatched_identities": "unmatched_identities.parquet"
+  },
+  "projected_minutes_status": "not_run_no_archived_projection_file",
+  "quality": {
+    "common_seasons": [
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "duplicate_rating_keys": 0,
+    "metrics": [
+      "annual_spm",
+      "box_pipm_style",
+      "bpm",
+      "lebron",
+      "mamba",
+      "new_aio",
+      "old_aio",
+      "rapm",
+      "xrapm"
+    ],
+    "pairwise_rows": 243,
+    "rating_rows": 41521,
+    "team_prediction_rows": 1080,
+    "unmatched_identity_rows": 54,
+    "unmatched_identity_rows_by_metric": {
+      "bpm": 22,
+      "mamba": 16,
+      "xrapm": 16
+    }
+  },
+  "run_id": "public_aio_benchmark_v1_67a99b5e1e",
+  "status": "research_evaluation"
+}
