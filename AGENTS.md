@@ -120,6 +120,22 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
 
 Canonical code: `src/nba_impact/models/five_year_target_spm.py`.
 
+### Same-season feature research
+
+- Stabilize every player-season against that season only. Do not use career,
+  previous-season, future-season, or pooled-era centers to create an annual SPM
+  input.
+- Five-year SPM may possession-weight five already-frozen annual estimates.
+  That model window is intentional history, not a stabilization prior.
+- Run `five_year_spm_feature_research_v1_93c148510e` selected Basketball Index
+  passing context plus RAPTOR-style defended-shot and matchup-volume context on
+  2022-24 development folds. It improved AIO game RMSE through 2025 but lost by
+  `0.0126` in reused 2026, so it remains a localhost-only challenger.
+- Do not add opponent shooting outcome, generic hustle, shooting, screening,
+  transition, or playtype families from this run. They failed the frozen gate.
+
+Canonical code: `src/nba_impact/models/five_year_spm_feature_research.py`.
+
 ### Annual AIO
 
 - SPM supplies the coefficient prior mean.

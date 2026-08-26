@@ -32,6 +32,47 @@ export type ShotQualityRow = {
   shooter_quality_above_league_per_100_shots: number | null;
   shooter_shotmaking_above_quality_per_100_shots: number | null;
 };
+export type SpmLabRating = {
+  PLAYER_ID: number;
+  PLAYER_NAME: string;
+  Season: number;
+  metric: "spm" | "aio";
+  selected_offense: number;
+  selected_defense: number;
+  selected_net: number;
+  baseline_offense: number;
+  baseline_defense: number;
+  baseline_net: number;
+  delta_offense: number;
+  delta_defense: number;
+  delta_net: number;
+};
+export type SpmLabPayload = {
+  run_id: string;
+  scope: "localhost_only";
+  seasons: number[];
+  stabilization: Record<string, string | boolean>;
+  selection_gate: Record<string, string | number | number[] | boolean>;
+  decisions: {
+    group: string;
+    side: "offense" | "defense";
+    feature_count: number;
+    development_mean_rmse_delta: number;
+    development_fold_wins: number;
+    team_changer_mean_rmse_delta: number;
+    team_changer_mean_correlation_delta: number;
+    selected: boolean;
+  }[];
+  validation: {
+    test_season: number;
+    baseline_rmse: number;
+    selected_rmse: number;
+    rmse_delta: number;
+    baseline_correlation: number;
+    selected_correlation: number;
+  }[];
+  ratings: SpmLabRating[];
+};
 export type RapmLabExperiment = {
   id: string;
   title: string;
@@ -550,6 +591,7 @@ export const loadMatchups = (season: number) =>
 export const loadShotQualityMatchups = () =>
   load<ShotQualityRow[]>("/data/shot-quality-lineup-2026.json");
 export const loadRapmLab = () => load<RapmLabPayload>("/data/rapm-lab.json");
+export const loadSpmLab = () => load<SpmLabPayload>("/data/spm-lab.json");
 export const loadLocalSkillIndex = () =>
   load<LocalSkillIndex>("/data/skills/index.json");
 export const loadLocalPlayerSkills = (id: number) =>

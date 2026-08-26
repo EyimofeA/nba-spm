@@ -218,12 +218,15 @@ def compute_defensive_tracking_features(
     ).where(output["rim_dfga_p100"].le(output["dfg_attempts_p100"]))
     missing_before = {name: float(output[name].isna().mean()) for name in DEFENSIVE_TRACKING_FEATURES}
     for feature in DEFENSIVE_TRACKING_FEATURES:
+        # A player-season can borrow the center of its own season, but it must
+        # never borrow another season's distribution.  When a source family is
+        # unavailable for an entire season, zero is the explicit neutral value.
         season_median = output.groupby("Season")[feature].transform("median")
-        global_median = output[feature].median()
-        output[feature] = output[feature].fillna(season_median).fillna(global_median).fillna(0.0)
+        output[feature] = output[feature].fillna(season_median).fillna(0.0)
     quality = {
         "source_join_quality": {"dfg": dfg_quality, "rim_dfg": rim_quality, "hustle": hustle_quality},
         "missing_fraction_before_neutral_fill": missing_before,
+        "neutral_fill_policy": "same_season_median_then_zero",
     }
     return output, quality
 

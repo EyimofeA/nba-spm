@@ -63,3 +63,31 @@ Reproduction:
 - runner: `research/run_five_year_target_spm.py`;
 - model: `src/nba_impact/models/five_year_target_spm.py`;
 - selected artifact: `artifacts/models/five_year_target_spm/five_year_target_spm_v1_65550acb79`.
+
+## Same-season stabilized feature challenger
+
+Run `five_year_spm_feature_research_v1_93c148510e` tests eight grouped feature
+families. Each empirical-Bayes center and opportunity count comes only from the
+same season. Missing source seasons receive an explicit neutral zero. Five-year
+pooling occurs only after those annual estimates are frozen.
+
+The forward gate uses next-season RAPM prediction in 2022--24, requires at
+least two fold wins, and limits degradation among players whose primary team
+changed. It selected:
+
+- offense: pass-creation points per potential assist, high-value assist share,
+  and bad-pass turnovers per 100 passes;
+- defense: defended-two-point value, rim matchup share, contested-three share,
+  and matchup three-point-attempt share.
+
+The selected AIO improved game-margin RMSE by `0.0097`, `0.0061`, and `0.0044`
+in development seasons 2022--24 and by `0.0019` in reused 2025. It worsened
+reused 2026 by `0.0126`. Keep it as a research challenger; the existing
+five-year SPM remains the reference pending Season 2027.
+
+Reproduction:
+
+- runner: `research/run_five_year_spm_feature_research.py`;
+- model: `src/nba_impact/models/five_year_spm_feature_research.py`;
+- artifact: `artifacts/models/five_year_spm_feature_research/five_year_spm_feature_research_v1_93c148510e`;
+- local UI payload: `web/scripts/build-spm-lab-data.py`.

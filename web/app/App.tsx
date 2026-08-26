@@ -9,6 +9,7 @@ import {
   LocalSkillIndex,
   MatchupRow,
   RapmLabPayload,
+  SpmLabPayload,
   ShotQualityRow,
   ModelId,
   Player,
@@ -20,6 +21,7 @@ import {
   loadLocalSkillIndex,
   loadMatchups,
   loadRapmLab,
+  loadSpmLab,
   loadShotQualityMatchups,
   loadPlayer,
   loadSeason,
@@ -30,6 +32,7 @@ import { RatingsView } from "./views/RatingsView";
 import { ResearchView } from "./views/ResearchView";
 import { RolesView } from "./views/RolesView";
 import { RapmLabView } from "./views/RapmLabView";
+import { SpmLabView } from "./views/SpmLabView";
 
 const ALL_TABS = [
   { id: "home", label: "Overview" },
@@ -37,6 +40,7 @@ const ALL_TABS = [
   { id: "player", label: "Player" },
   { id: "roles", label: "Roles" },
   { id: "rapm-lab", label: "RAPM Lab" },
+  { id: "spm-lab", label: "SPM Lab" },
   { id: "research", label: "Research" },
 ] as const;
 
@@ -54,7 +58,7 @@ const isLocalHost = () => {
 const isTab = (value: string, showResearchLab: boolean): value is Tab => {
   const tabs = showResearchLab
     ? ALL_TABS
-    : ALL_TABS.filter((tab) => tab.id !== "rapm-lab");
+    : ALL_TABS.filter((tab) => !tab.id.endsWith("-lab"));
   return tabs.some((tab) => tab.id === value);
 };
 
@@ -85,7 +89,7 @@ export function App() {
     () =>
       hasLocalResearch
         ? ALL_TABS
-        : ALL_TABS.filter((tab) => tab.id !== "rapm-lab"),
+        : ALL_TABS.filter((tab) => !tab.id.endsWith("-lab")),
     [hasLocalResearch],
   );
 
@@ -109,6 +113,7 @@ export function App() {
   const [matchupRows, setMatchupRows] = useState<MatchupRow[]>([]);
   const [shotQualityRows, setShotQualityRows] = useState<ShotQualityRow[]>([]);
   const [rapmLab, setRapmLab] = useState<RapmLabPayload | null>(null);
+  const [spmLab, setSpmLab] = useState<SpmLabPayload | null>(null);
   const [localSkillIndex, setLocalSkillIndex] = useState<LocalSkillIndex | null>(null);
   const [localPlayerSkills, setLocalPlayerSkills] = useState<LocalPlayerSkills | null>(null);
   const [compareLocalSkills, setCompareLocalSkills] = useState<LocalPlayerSkills | null>(null);
@@ -248,6 +253,21 @@ export function App() {
       window.clearTimeout(start);
     };
   }, [catalog, hasLocalResearch, route.tab, season]);
+
+  useEffect(() => {
+    if (!catalog || !hasLocalResearch || route.tab !== "spm-lab") return;
+    let live = true;
+    loadSpmLab()
+      .then((next) => {
+        if (live) setSpmLab(next);
+      })
+      .catch(() => {
+        if (live) setSpmLab(null);
+      });
+    return () => {
+      live = false;
+    };
+  }, [catalog, hasLocalResearch, route.tab]);
 
   useEffect(() => {
     if (!hasLocalResearch || route.tab !== "player") return;
@@ -522,6 +542,7 @@ export function App() {
                 onSeason={setSeason}
               />
             )}
+            {tab === "spm-lab" && <SpmLabView lab={spmLab} />}
             {tab === "research" && <ResearchView catalog={catalog} />}
           </>
         )}
