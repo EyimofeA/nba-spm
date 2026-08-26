@@ -60,6 +60,9 @@ Start at the repository root:
 - [`impact/AIO_PRIOR_CANONICAL_FOLLOWUP_V1.md`](impact/AIO_PRIOR_CANONICAL_FOLLOWUP_V1.md) —
   canonical 2025--26 follow-up that selects BoxPIPM-style as the frozen
   research AIO prior;
+- [`impact/IMPACT_VALIDATION_SUITE_V1.md`](impact/IMPACT_VALIDATION_SUITE_V1.md) —
+  ordered same-season, forward, reverse, midseason, and next-season tests for
+  the frozen statistical priors, with weighted and equal-weight summaries;
 - [`impact/PUBLIC_AIO_BENCHMARK_V1.md`](impact/PUBLIC_AIO_BENCHMARK_V1.md) —
   pairwise public-metric agreement and the oracle-minutes team-win test;
 - [`impact/MODEL_REPLICATION_SPEC.md`](impact/MODEL_REPLICATION_SPEC.md) — exact

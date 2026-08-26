@@ -4396,3 +4396,36 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   the public zero-prior RAPM or production site. The raw-on/off PIPM-like arm
   remains ineligible because it double counts lineup outcomes. Season 2027 is
   the untouched confirmation gate.
+
+## 2026-08-27 - Full statistical-prior validation suite
+
+- **Question:** Does the BoxPIPM-style AIO-prior result survive tests of
+  midseason updating and adjacent-season player impact, or did one future-game
+  metric create a misleading winner?
+- **Design:** Run `impact_validation_suite_v1_4f2ad7cdd8` orders five tests:
+  next-season game MSE, midseason second-half game MSE, forward aging-adjusted
+  annual-RAPM correlation, reverse aging-adjusted annual-RAPM correlation, and
+  same-season annual-RAPM correlation. Declared weights are `.50 / .25 / .15 /
+  .05 / .05`. The composite averages within-fold percentile ranks, not raw
+  metrics. An equal-weight sensitivity is reported beside it.
+- **Primary result:** Across the five saved 2022--26 future-game folds,
+  BoxPIPM-style has mean MSE `206.476` versus `208.128` for selected five-year
+  SPM. The paired whole-game interval for Box minus selected is `[-2.478,
+  -0.836]`. Both beat zero prior.
+- **Other tests:** Selected five-year SPM has the best 2022--24 midseason MSE,
+  `184.335`, and beats the base five-year SPM by `0.244` MSE with interval
+  `[0.069, 0.419]`. Five-year SPM has the best forward annual correlation,
+  `.476`, while BoxPIPM has the lowest forward annual RMSE, `1.851`.
+- **Composite:** Selected five-year SPM ranks first under the declared weights,
+  but base five-year SPM ranks first with equal weights. The ordering is not
+  weight-stable, so the composite cannot support promotion.
+- **Decision:** Keep BoxPIPM-style as the frozen research AIO prior because it
+  wins the primary future-game test. Keep the five-year SPM family for
+  standalone statistical ratings and midseason adaptation. Do not claim one
+  universal metric. Wait for 2027 before public promotion.
+- **QA:** Initial artifact `impact_validation_suite_v1_021be06a12` is invalid.
+  An all-or-nothing age join omitted both adjacent-season tests. The corrected
+  run keeps valid age-matched rows and uses the smaller origin/target exposure
+  weight. It includes all five tests, uses whole games for both split and
+  uncertainty, and contains no 2027 rows. Intermediate artifact
+  `impact_validation_suite_v1_07c7b85efc` is superseded by the exposure fix.
