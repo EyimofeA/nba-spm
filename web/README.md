@@ -31,6 +31,12 @@ Rules the client follows:
   `web/local-data/` and are not copied into a production build.
 - RAPM Lab is localhost-only. It shows the saved test, result, and decision for
   recent experiments, the actual-clock rubber-band estimate, and Matchups.
+- Current Skills is localhost-only on the Player page. It loads one selected
+  player's 34-skill shard, career and current-season views, stabilized/source
+  controls, league references, and a comparison profile. The source-value
+  control is labeled `Source` because some inputs already contain source-level
+  shrinkage. The local payload is
+  excluded from production builds.
 
 The model selector reads `catalog.catalog.models`, which mirrors
 `MODEL_CATALOG` in `src/nba_impact/api/web_snapshot.py`. A model can be selected
@@ -62,6 +68,12 @@ Refresh the local RAPM Lab payload after research runs:
 
 ```bash
 uv run python web/scripts/build-rapm-lab-data.py
+```
+
+Refresh the local Player Skills shards from the pinned audit decision:
+
+```bash
+uv run python web/scripts/build-player-skills-data.py
 ```
 
 Snapshot generation is covered by `tests/test_web_snapshot.py` at the repository

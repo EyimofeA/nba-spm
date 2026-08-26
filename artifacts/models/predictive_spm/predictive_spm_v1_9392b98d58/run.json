@@ -1,12 +1,12 @@
 {
-  "artifact_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/predictive_spm/predictive_spm_v1_9392b98d58",
+  "artifact_path": ".",
   "caveats": [
     "Rookies and returning-after-gap players are out of scope by design.",
     "Targets are noisy one-season normal RAPM labels, not ground truth.",
     "The target panel keeps its explicit legacy/canonical provenance boundary.",
     "Confirmation folds 2025 and 2026 are scored once; do not retune on them."
   ],
-  "checkpoint_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/predictive_spm/predictive_spm_v1_9392b98d58/checkpoints",
+  "checkpoint_path": "checkpoints",
   "config": {
     "experiment_id": "predictive_spm_v1",
     "features": {
@@ -315,7 +315,7 @@
     }
   },
   "model_family": "next_season_predictive_statistical_plus_minus",
-  "predictions_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/predictive_spm/predictive_spm_v1_9392b98d58/predictions.parquet",
+  "predictions_path": "predictions.parquet",
   "quality": {
     "all_comparators_use_common_rows": true,
     "common_scored_rows": 3491,

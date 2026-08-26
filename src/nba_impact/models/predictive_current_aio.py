@@ -323,6 +323,30 @@ def _paired_bootstrap(
     }
 
 
+def _validate_spm_prior_lineage(
+    contract: dict, spm_predictions_path: str | Path, spm_predictions: pd.DataFrame
+) -> None:
+    expected_spm_run = str(contract["spm_prior_run"])
+    actual_spm_run = Path(spm_predictions_path).resolve().parent.name
+    if actual_spm_run != expected_spm_run:
+        raise ValueError(
+            f"Expected SPM prior run {expected_spm_run!r}; found {actual_spm_run!r}."
+        )
+    selected_methods = set(spm_predictions.get("method", pd.Series(dtype=str)).dropna())
+    if selected_methods != {"raw"}:
+        raise ValueError(
+            f"The frozen SPM trajectory winner must be raw; found {selected_methods}."
+        )
+    required_cutoff = {"Target_Season", "training_target_end"}
+    if not required_cutoff.issubset(spm_predictions):
+        raise ValueError("SPM priors must include their forecast season and training cutoff.")
+    if not (
+        pd.to_numeric(spm_predictions["training_target_end"], errors="coerce")
+        < pd.to_numeric(spm_predictions["Target_Season"], errors="coerce")
+    ).all():
+        raise ValueError("Every SPM prior must be trained strictly before its forecast season.")
+
+
 def build_predictive_current_aio(
     contract_path: str | Path,
     spm_predictions_path: str | Path,
@@ -346,11 +370,7 @@ def build_predictive_current_aio(
         raise ValueError("Season 2027 is forbidden.")
 
     spm_predictions = pd.read_parquet(spm_predictions_path)
-    selected_methods = set(spm_predictions.get("method", pd.Series(dtype=str)).dropna())
-    if selected_methods != {"raw"}:
-        raise ValueError(
-            f"The frozen SPM trajectory winner must be raw; found {selected_methods}."
-        )
+    _validate_spm_prior_lineage(contract, spm_predictions_path, spm_predictions)
     frame = load_unified_terminal_possessions(
         legacy_cache_dir,
         current_possessions_path,

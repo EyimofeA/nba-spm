@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 from scipy.sparse import csr_matrix
 
 from nba_impact.models.predictive_current_aio import (
     build_season_statistics,
     build_spm_center,
     fit_from_season_statistics,
+    _validate_spm_prior_lineage,
 )
 from nba_impact.models.rapm import RapmDesign
 
@@ -94,3 +96,23 @@ def test_time_decay_downweights_old_season() -> None:
     )
     assert np.isfinite(beta).all()
     np.testing.assert_allclose(off, [1.0 + old_weight, 1.0 + old_weight])
+
+
+def test_spm_prior_lineage_requires_pinned_run_and_past_only_cutoffs(tmp_path) -> None:
+    run = tmp_path / "frozen_spm_run"
+    run.mkdir()
+    path = run / "selected_predictions.parquet"
+    valid = pd.DataFrame(
+        {
+            "method": ["raw", "raw"],
+            "Target_Season": [2025, 2026],
+            "training_target_end": [2024, 2025],
+        }
+    )
+    _validate_spm_prior_lineage({"spm_prior_run": run.name}, path, valid)
+    leaked = valid.copy()
+    leaked.loc[1, "training_target_end"] = 2026
+    with pytest.raises(ValueError, match="strictly before"):
+        _validate_spm_prior_lineage({"spm_prior_run": run.name}, path, leaked)
+    with pytest.raises(ValueError, match="Expected SPM prior run"):
+        _validate_spm_prior_lineage({"spm_prior_run": "another_run"}, path, valid)

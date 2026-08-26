@@ -1,0 +1,52 @@
+schema_version: experiment_preregistration_v1
+experiment_id: predictive_player_skills_2026_v1
+estimand_id: current_player_skill_v1
+status: preregistered_reused_diagnostic
+created_at: 2026-08-26
+
+season_policy:
+  source_start: 2014
+  development_seasons: [2019, 2020, 2021, 2022, 2023, 2024]
+  final_parameter_cutoff: 2025
+  output_season: 2026
+  output_seasons: [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+  forbidden_season: 2027
+
+sources:
+  player_sheet_dir: data/raw/playersheets/year_totals
+  player_skill: artifacts/features/player_skill/player_skill_features_v1_7395e17902/features.parquet
+  playtype: artifacts/features/playtype_impact/playtype_features_v1_ba00f6fe96/features.parquet
+  statistical: artifacts/research/current_feature_refresh/features/statistical_impact/statistical_features_v2_6bdb60a186/features.parquet
+  defensive_tracking: artifacts/research/current_feature_refresh/features/defensive_tracking/defensive_tracking_features_v1_c2ea07001a/features.parquet
+  defensive_tracking_dfg_observations: data/lake/bronze/official_nba_stats_v3/close_defenders/dfg.csv
+  defensive_tracking_rim_observations: data/lake/bronze/official_nba_stats_v3/close_defenders/rim_dfg.csv
+  defensive_tracking_hustle_observations: data/lake/bronze/gabriel_site_data/revision=782ec8b/hustle.csv
+  matchup_defense: artifacts/research/current_feature_refresh/features/matchup_defense/matchup_defense_features_v1_1684cb4eba/features.parquet
+  player_games:
+    - data/lake/silver/historical_espn_player_games.parquet
+    - data/lake/silver/player_games.parquet
+
+selection:
+  prior_strength_grid: [25.0, 100.0, 250.0, 500.0]
+  half_life_year_grid: [1.0, 2.0, 3.0, 5.0]
+  minimum_exposure_grid: [0.0, 25.0, 100.0]
+  age_alpha_grid: [10.0, 100.0, 1000.0]
+  shooting_primary: equal_season_grouped_binomial_log_loss
+  shooting_secondary: equal_season_brier
+  other_primary: equal_season_opportunity_weighted_rmse
+  other_secondary: equal_season_opportunity_weighted_mae
+
+comparison_arms:
+  - raw_previous_season
+  - career_eb
+  - time_decayed_eb
+  - time_decayed_eb_plus_age
+  - role_conditional_support_gate
+
+stopping_rules:
+  - Select every parameter using future-season observations through 2024 only.
+  - Re-estimate league centers and age residuals through 2025 after selection.
+  - Use 2026 observations only to update the frozen current estimate and as a reused diagnostic.
+  - Never load Season 2027.
+  - Keep player skills separate from RAPM, SPM, and AIO impact.
+  - Skip role conditioning unless a frozen pre-season role label covers every development fold.

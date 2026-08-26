@@ -1,0 +1,17 @@
+{
+  "audit_date": "2026-08-26",
+  "auditors": [
+    "statistical",
+    "temporal_leakage_and_lineage",
+    "basketball_semantics",
+    "localhost_ui"
+  ],
+  "decision": "pass_research_with_documented_limits",
+  "p0_open": 0,
+  "p1_open": 0,
+  "season_2027_loaded": false,
+  "skill_run_id": "predictive_player_skills_2026_v1_a7eb0386fe",
+  "predictive_aio_status": "research_champion_within_frozen_candidates",
+  "luck_adjusted_status": "research_null",
+  "deployment_status": "not_deployed_localhost_only"
+}

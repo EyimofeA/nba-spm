@@ -5,6 +5,8 @@ import {
   Catalog,
   Component,
   LeaderboardRow,
+  LocalPlayerSkills,
+  LocalSkillIndex,
   MatchupRow,
   RapmLabPayload,
   ShotQualityRow,
@@ -14,6 +16,8 @@ import {
   RoleSide,
   loadCatalog,
   loadIndex,
+  loadLocalPlayerSkills,
+  loadLocalSkillIndex,
   loadMatchups,
   loadRapmLab,
   loadShotQualityMatchups,
@@ -105,10 +109,14 @@ export function App() {
   const [matchupRows, setMatchupRows] = useState<MatchupRow[]>([]);
   const [shotQualityRows, setShotQualityRows] = useState<ShotQualityRow[]>([]);
   const [rapmLab, setRapmLab] = useState<RapmLabPayload | null>(null);
+  const [localSkillIndex, setLocalSkillIndex] = useState<LocalSkillIndex | null>(null);
+  const [localPlayerSkills, setLocalPlayerSkills] = useState<LocalPlayerSkills | null>(null);
+  const [compareLocalSkills, setCompareLocalSkills] = useState<LocalPlayerSkills | null>(null);
 
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const comparisonRequest = useRef(0);
 
   /* -------------------------------------------------------------- boot --- */
 
@@ -172,10 +180,19 @@ export function App() {
 
   const openComparison = async (id: number) => {
     if (!catalog) return;
+    const request = ++comparisonRequest.current;
     try {
-      setComparePlayer(await loadPlayer(id, index, catalog.shards));
+      const [nextPlayer, nextSkills] = await Promise.all([
+        loadPlayer(id, index, catalog.shards),
+        localSkillIndex ? loadLocalPlayerSkills(id).catch(() => null) : Promise.resolve(null),
+      ]);
+      if (request !== comparisonRequest.current) return;
+      setComparePlayer(nextPlayer);
+      setCompareLocalSkills(nextSkills);
     } catch {
-      setError("Comparison player unavailable.");
+      if (request === comparisonRequest.current) {
+        setError("Comparison player unavailable.");
+      }
     }
   };
 
@@ -232,6 +249,23 @@ export function App() {
     };
   }, [catalog, hasLocalResearch, route.tab, season]);
 
+  useEffect(() => {
+    if (!hasLocalResearch || route.tab !== "player") return;
+    let live = true;
+    loadLocalSkillIndex()
+      .then((next) => {
+        if (!live) return;
+        setLocalSkillIndex(next);
+        if (!route.playerId) window.location.hash = `player/${next.defaultPlayerId}`;
+      })
+      .catch(() => {
+        if (live) setLocalSkillIndex(null);
+      });
+    return () => {
+      live = false;
+    };
+  }, [hasLocalResearch, route.playerId, route.tab]);
+
   // The route asked for a player; fetch its shard.
   const wanted = route.playerId;
   useEffect(() => {
@@ -262,6 +296,21 @@ export function App() {
     // fight the reader's own selection on the player page.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wanted, catalog, index]);
+
+  useEffect(() => {
+    if (!wanted || !localSkillIndex || route.tab !== "player") return;
+    let live = true;
+    loadLocalPlayerSkills(wanted)
+      .then((next) => {
+        if (live) setLocalPlayerSkills(next);
+      })
+      .catch(() => {
+        if (live) setLocalPlayerSkills(null);
+      });
+    return () => {
+      live = false;
+    };
+  }, [localSkillIndex, route.tab, wanted]);
 
   /* ------------------------------------------------------------- theme --- */
 
@@ -448,6 +497,9 @@ export function App() {
                 onComponent={setComponent}
                 index={index}
                 comparePlayer={comparePlayer}
+                localSkillIndex={localSkillIndex}
+                localSkills={localPlayerSkills}
+                compareLocalSkills={compareLocalSkills}
                 onCompare={openComparison}
               />
             )}

@@ -172,9 +172,19 @@ def _source_hashes(contract_path: Path, contract: dict) -> dict[str, object]:
     }
 
 
+def _identity_inputs(
+    contract_path: Path, contract: dict
+) -> tuple[dict[int, pd.DataFrame], dict[str, object]]:
+    """Load and hash every resume-sensitive input before choosing a run path."""
+    source_hashes = _source_hashes(contract_path, contract)
+    loaded_features, feature_source_hashes = _load_feature_sources(contract)
+    source_hashes["statistical_sources"] = feature_source_hashes
+    return loaded_features, source_hashes
+
+
 def run(contract_path: Path = DEFAULT_CONTRACT) -> dict:
     contract = _load_contract(contract_path)
-    source_hashes = _source_hashes(contract_path, contract)
+    loaded_features, source_hashes = _identity_inputs(contract_path, contract)
     identity = hashlib.sha256(
         json.dumps(source_hashes, sort_keys=True).encode()
     ).hexdigest()[:10]
@@ -237,8 +247,6 @@ def run(contract_path: Path = DEFAULT_CONTRACT) -> dict:
     targets = pd.concat(target_frames, ignore_index=True)
     _write_parquet_atomic(targets, output / "targets.parquet")
 
-    loaded_features, feature_source_hashes = _load_feature_sources(contract)
-    source_hashes["statistical_sources"] = feature_source_hashes
     feature_panels: dict[str, pd.DataFrame] = {}
     for horizon, spec in contract["horizons"].items():
         path = output / f"features_{horizon}.parquet"

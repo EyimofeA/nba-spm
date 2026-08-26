@@ -20,3 +20,4 @@ venv/
 /research/rapm_lab/outputs/
 /research/rapm_lab/external/external/
 /artifacts/models/luck_adjusted_rapm/*/checkpoints/
+/artifacts/models/predictive_player_skills/*/checkpoints/

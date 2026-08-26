@@ -3914,3 +3914,49 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Retain normal realized-points RAPM. Record all luck variants as
   research nulls. Do not redesign on reused 2025/26 results. Season 2027 was
   not loaded.
+
+## 2026-08-26 - Chronologically selected current player skills
+
+- **Question:** Can the site display current underlying player skills without
+  treating noisy current-season rates as ability or mixing them into impact?
+- **Method:** Registered 34 shooting, creation, rebounding, and defense skills.
+  Compared previous-season raw, career empirical Bayes, time-decayed empirical
+  Bayes, and a time-decayed-plus-age residual model on six future-season folds
+  from 2019 through 2024. Shooting proportions use grouped-binomial log loss;
+  other skills use opportunity-weighted RMSE. Age must win at least four of six
+  folds. Role conditioning was skipped because consistent frozen pre-season
+  labels do not cover the folds. Parameters were selected through 2024, refit
+  through 2025, and updated with observed 2026 data. Season 2027 was not loaded.
+- **Result:** Run `predictive_player_skills_2026_v1_9271b4b024` contains 34
+  selected skills, 235,212 player-skill-season rows, 558 current players, and
+  303 players with raw 2026 observations for all skills. Selected arms are one
+  career EB, 20 time-decayed EB, and 13 time-decayed EB plus age.
+- **Decision:** Pass as a research current-skill surface. Keep it localhost-only
+  until source rights, continuous-skill uncertainty, and an untouched season
+  are resolved. Do not feed these estimates into RAPM, SPM, or AIO by default.
+
+## 2026-08-26 - Independent audit corrections for current player skills
+
+- **Audit:** Four independent read-only reviews covered statistical semantics,
+  temporal leakage and lineage, basketball interpretation, and localhost UI.
+- **Age correction:** The first artifact selected 13 age arms but served an
+  EB-only posterior. Run `predictive_player_skills_2026_v1_a7eb0386fe` now
+  applies the selected age residual to the preseason estimate and then updates
+  it with current observations. The posterior identity error is zero. All 7,254
+  comparable 2026 age-arm rows changed; median absolute change is `0.130` in
+  each skill's native unit and the 95th percentile is `1.199`.
+- **Rebounding correction:** Offensive and defensive recorded chances are not
+  bounded binomial trials. Both skills now use rate RMSE/MAE. Selection still
+  chooses a one-year half-life with prior strengths 100 and 250, respectively.
+- **Game trajectory correction:** Playoffs are excluded. FT and three-point
+  charts use the exact frozen preseason estimate and precision, stop at the
+  regular-season prefix matching annual source totals, and must finish at the
+  annual posterior. The build reconciles 490 FT and 511 three-point player
+  series; unmatched series are withheld.
+- **Lineage correction:** Predictive-SPM manifest paths are portable, target-
+  horizon resume identities include statistical source hashes before any
+  checkpoint reuse, and current AIO priors must match the registered source run
+  with training cutoffs strictly before forecast seasons.
+- **Decision:** Pass the corrected artifact for research use and the local UI.
+  Keep 2025-26 labeled reused diagnostics, keep the AIO bootstrap conditional
+  on its selected candidate set, and leave Season 2027 untouched.
