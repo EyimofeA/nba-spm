@@ -1,0 +1,116 @@
+{
+  "caveats": [
+    "This deliberately breaks the stat-only SPM boundary and cannot replace the public SPM without a separate promotion test.",
+    "Observed next-season minutes make the team-win test an oracle-minutes retrodiction, not a preseason forecast.",
+    "The retained year totals assign a traded player to one primary team; the run reports the resulting R-squared drift against the exact-stint benchmark.",
+    "RAPTOR on/off ends in 2022, so later rolling windows have declining source-season coverage.",
+    "The team reconciliation matches observed rating-season team net efficiency and therefore imports team context by construction."
+  ],
+  "config": {
+    "box_alpha_grid": [
+      10.0,
+      30.0,
+      100.0,
+      300.0,
+      1000.0,
+      3000.0
+    ],
+    "feature_timing": "five trailing seasons ending in rating season; demographics use rating-season endpoint",
+    "minimum_rating_season_minutes": 250.0,
+    "outcome_seasons": [
+      2023,
+      2024,
+      2025
+    ],
+    "primary_metric": "equal-season mean next-season team win R-squared",
+    "rating_seasons": [
+      2022,
+      2023,
+      2024
+    ],
+    "replacement_values": [
+      -3.0,
+      -2.5,
+      -2.0,
+      -1.5
+    ],
+    "residual_alpha": 100.0,
+    "runner_sha256": "9b4d38b2f8f47f3b4b3999b70521da437cba0e61625b697d44dec5016f619a8e",
+    "secondary_metric": "five-year RAPM weighted RMSE and correlation",
+    "source_hashes": {
+      "base_predictions": "6faed8e27d6da0bc6052c6d0a5e0c135d1c75b3851f77325fe7c847c2d0df101",
+      "exact_stint_benchmark": "1da7f90d993f66e15a995b04c0058bf1fdfa54e55de75503f24ba0cae472c869",
+      "features": "e1d358837a76975d321823b39119f427bb6771a546ea76211d9c025fe47746d7",
+      "legacy_features": "ad041c9e17234f001a8afc510734bcff12bf2ff5390cc31267d86825bc357364",
+      "player_sheets": {
+        "2014": "5f6b2f77ed2720049a319af35b31cf9a07452454bfe8599551b4439b70ca8966",
+        "2015": "21825d18cece5ac4e0b759d5a6c4013cdbc68915ab86972ba9f0ca89949d41c5",
+        "2016": "3f687993e1a5eae36e72058e43ded53c98db21af4345a1ea0bed749c13faad80",
+        "2017": "448f551c78d7d5fd642add4eb8eee43ab98aefbf0ff18ae10eedb210045004a3",
+        "2018": "f5d6848984398f63ebe2443bfbaa4f0004ce8b3f3e52e17aa57648ba316aeb78",
+        "2019": "592128b19eebc8de29fd90b66e2cd420ecf39a58f7f54dd8e623b029143bcd0b",
+        "2020": "fd7f62933e6fbad6610f58dff051181fd3eb3a481e305910c2d3ff9c98fb0fb7",
+        "2021": "40f426a6a3bfad664333a4721ec18ba56a413583a824198c7ecdd71e1f23c628",
+        "2022": "deb84af6ebecf428c2a159ac472248199ec125a1b78b62126ded71e135e92582",
+        "2023": "07d0ce9028bca9c0ffca46e81a8b66156ec31e8729bfd73c96c8fd2e53420816",
+        "2024": "46587d70f2fb517bc20629ddc30ba0b6952683d2570a373d259202df364e43a3",
+        "2025": "575987a927308bcf478c3b20d9022734d6ad5b75ec63098386b43e9898c2e5ec"
+      },
+      "raptor_onoff": "17c81f6887cab49a7662fbd0e9380e07037c6b783c88f2a9da9188be0d01d2e8",
+      "schedules": {
+        "2014": "fdb22cb03ccb6746cb6ec90313d641e9adddf3576904b71aad0d193158688a8a",
+        "2015": "da5bc17b83798c0e950f207bdd6b1ddec49c737ba6b63fb82662c771333bfdb9",
+        "2016": "95b0cea2b054ae57d0145b82e135d71a2336639001f4ed405a69a6582a4b686e",
+        "2017": "692bd4008b94418900fed3deb826bf539b07e6685cf03105aede695e65782af3",
+        "2018": "16024f2d85457bc66350c7cfe515179e4638cbe5cded0e01e820411a52c58c97",
+        "2019": "ea9352d3a0093a61f1f1ff13e6b4014c7db3525cd54c85d8f0ad6728342b184b",
+        "2020": "dedb97123149cd86f3ea2a9c6c2367e79c4f0fa1c47883d8cb2beedbd968cd31",
+        "2021": "f326e8142726937ba106f32987a3c8c2c337cc470d95362e3004b6c8235c5cb2",
+        "2022": "916ceb8bee5dab16889e7c911290c185502a6d1a7d6c7e9f4a524b90d65f9a13",
+        "2023": "0327cbc2fab18c3459ae2d8f2e790bd77c7cda95ecd3979a011b13aee4b9f185",
+        "2024": "70d48f7d9c23e402cc48a7199a9c18d1bb1fc6f331a19cc946877cf65196bb8d",
+        "2025": "745d4a4d5e2a56e0346f0696d8881f1026d4cdb507c1ad4e0880fde7c54c24db"
+      },
+      "targets": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707",
+      "website_annual_spm": {
+        "2022": "0273b3837ec3a6b919015cc6586dfb71a95d95d5dc9a57d2e7e7d623c71e6e4e",
+        "2023": "f7d50a434b26763b7a490fbb6d7d7ded931b7274019da5b7d0924bc0e18f8454",
+        "2024": "fe2b7d6f638c9455342f22569ce926f9e9a9be37fabde4741f8b1182870d512c"
+      }
+    },
+    "team_minutes_policy": "primary-team year totals; identical for every arm"
+  },
+  "created_at": "2026-08-26T21:34:08.341094+00:00",
+  "experiment_id": "spm_cheating_ladder_v1",
+  "paths": {
+    "coverage": "coverage.parquet",
+    "player_metrics": "player_metrics.parquet",
+    "player_summary": "player_summary.parquet",
+    "ratings": "ratings.parquet",
+    "team_adjustments": "team_adjustments.parquet",
+    "team_bootstrap": "team_bootstrap.parquet",
+    "team_predictions": "team_predictions.parquet",
+    "team_win_folds": "team_win_folds.parquet",
+    "team_win_summary": "team_win_summary.parquet"
+  },
+  "quality": {
+    "component_identity_max_error": 0.0,
+    "derived_onoff_validation": {
+      "mean_absolute_difference": 1.4745856063606209,
+      "pearson": 0.8890893429954593,
+      "rows_at_1000_possessions": 3181,
+      "spearman": 0.9136845106049322
+    },
+    "duplicate_rating_keys": 0,
+    "primary_team_minutes_r2_drift_vs_exact_stints": 0.02971268107872793,
+    "raptor_window_coverage": {
+      "2022": 0.5468277945619335,
+      "2023": 0.49771689497716903,
+      "2024": 0.43151041666666656
+    },
+    "rating_rows": 23464,
+    "season_2027_rows": 0
+  },
+  "run_id": "spm_cheating_ladder_v1_fff340f6b6",
+  "status": "research_pilot"
+}

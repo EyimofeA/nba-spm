@@ -4316,3 +4316,37 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   remainder. Same-team context may absorb team and scheme strength, and annual
   `TEAM_ID` makes traded-player context approximate. This is not causal
   teammate value or independent confirmation.
+
+## 2026-08-26 - Five-year SPM cheating ladder
+
+- **Question:** Does replacing the selected five-year SPM with a five-year
+  BoxPIPM-style model help next-season team prediction, and what happens when
+  the statistical-only boundary is relaxed with age, minutes, position,
+  on/off, AuPM, RAPTOR on/off, or a BPM-style team adjustment?
+- **Design:** Run `spm_cheating_ladder_v1_fff340f6b6` scores rating seasons
+  2022--24 against 2023--25 wins with observed next-season minutes and a
+  250-minute / -2.0 replacement rule. New residual corrections train only on
+  earlier rating windows. The same 963-player matched population is used for
+  the secondary five-year RAPM test. Season 2027 is untouched.
+- **Box result:** Five-year BoxPIPM-style is tied but slightly worse on team
+  wins (`.51811` versus `.51816` mean R-squared) and far worse on player net
+  RAPM (`1.7838` versus `1.4541` weighted RMSE). Do not replace SPM.
+- **Demographic and external result:** Age/minutes/position and legacy AuPM
+  lower mean team-win R-squared. RAPTOR on/off raises it by `.0190`, but its
+  five-season coverage falls from 54.7 percent in 2022 to 43.2 percent in 2024
+  and its player-target correlation degrades. It is stale research context.
+- **On/off result:** Derived raw on/off validates against the retained
+  RAPTOR/WOWY table at `.8891` Pearson and `.9137` rank correlation on 3,181
+  player-seasons with at least 1,000 possessions. Adding it raises team-win
+  R-squared by `.0162`, wins all three folds, and lowers player net RMSE to
+  `1.2869`. The paired 10,000-draw team bootstrap interval is
+  `[-.0028, +.0337]`, so this is not promotion evidence.
+- **Team adjustment:** Reconciling each team's player sum to observed team net
+  raises mean team-win R-squared by `.0599` but worsens player RAPM RMSE to
+  `1.4569`. This is persistent team context, not better individual attribution.
+  Keep it in a future team forecast layer rather than SPM.
+- **Data limit:** Retained annual totals assign traded players to one primary
+  team. This raises the annual-SPM QA benchmark by `.0297` R-squared relative
+  to the exact-stint run. Absolute values are not comparable to the public
+  benchmark; all arms here still use identical rows. Full details are in
+  `docs/impact/SPM_CHEATING_LADDER_V1.md`.
