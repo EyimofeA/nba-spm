@@ -4490,3 +4490,34 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Ryan-target SPM is the next research challenger, not a public
   replacement. The evidence uses three reused folds and the stored base feature
   architecture; it needs a frozen later confirmation before promotion.
+
+## 2026-08-27 - Direct-net SPM with residual defense
+
+- **Question:** Does fitting five-year RAPM net directly, fitting offense
+  separately, and defining defense as `net - offense` improve the SPM prior?
+  Run `net_first_spm_v1_2029e38965` compares two versions: the 151-field union
+  of the stored offense and defense banks for both heads, and that full bank
+  for net with the 126-field offense bank for offense. Both heads use the same
+  frozen histogram GBM. No model or feature tuning follows the results.
+- **SPM target fit:** Direct net improves the component-first CourtSignal
+  baseline on the same 2021--23 player-window rows. Mean weighted net RMSE
+  falls from `1.5760` to `1.5092`, and correlation rises from `.7291` to
+  `.7593`. The later selected five-year SPM remains better at `1.4430` RMSE and
+  `.7838` correlation.
+- **AIO result:** The target-fit gain does not transfer to future games. Mean
+  2022--24 margin RMSE is `13.8957` for either net-first arm, versus `13.8920`
+  for the matched component-first CourtSignal SPM, `13.8902` for selected SPM,
+  `13.8360` for BoxPIPM-style, and `13.8213` for rescaled Ryan-target SPM.
+- **Paired tests:** Against the matched component-first SPM, the net-first full
+  arm wins two of three seasons but has mean MSE delta `+0.132` and a 95 percent
+  whole-game interval of `[-0.450, +0.724]`. It loses to Ryan in all three
+  seasons with delta `+2.106` and interval `[+1.286, +2.928]`, and loses to
+  BoxPIPM with delta `+1.725` and interval `[+0.895, +2.594]`.
+- **Feature-bank result:** Letting the offense head use the 25 defense-only
+  fields changes mean future-game RMSE by less than `0.0001`. It marginally
+  improves same-window offense fit but slightly worsens residual-defense fit.
+- **Decision:** Reject the direct-net residual-defense construction as the AIO
+  prior. It optimizes the intermediate five-year RAPM target without improving
+  the downstream decision metric. Keep Ryan-target and BoxPIPM-style ahead of
+  it. "Full" here means the 151 inputs in the stored matched panel; later zTS
+  and matchup-defense additions were unavailable and were not fabricated.
