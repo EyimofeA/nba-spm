@@ -129,6 +129,15 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   fields makes the standalone SPM worse. Keep matchup fields and their source
   flag. Keep BoxPIPM-style and the completed SPM as separate research AIO
   challengers.
+- Final ladder `final_box_feature_ladder_v1_8bb26f12e7` adds eight frozen
+  feature families to Box15 cumulatively. No step lowers equal-season
+  next-season game-margin MSE after the same RAPM update. Box15 scores `207.421`
+  MSE; the closest matchup step scores `207.537`. Keep Box15 as the research AIO
+  prior and end the current feature search. Interpretation run
+  `final_box_interpretability_v1_652799efb6` splits its dependence into
+  disruption/fouls, shooting/scoring, creation/security, and rebounding. Use
+  `active_2026_leaderboard.parquet`; the earlier unfiltered table includes
+  zero-exposure historical players.
 - Run `full_spm_history_ablation_v1_2eb5eb428c` refits the corrected panel and
   removes the 13 hustle and matchup fields that start in 2018 as one fixed
   block. The reduced SPM loses. Keep the full 127/68 contract.

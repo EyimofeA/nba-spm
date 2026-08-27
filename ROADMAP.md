@@ -1,7 +1,7 @@
 # NBA Impact Roadmap
 
 This is the one file to follow remotely. `RESEARCH_LOG.md` contains evidence and
-dead ends. Updated 2026-08-25. See `docs/README.md` for the document index,
+dead ends. Updated 2026-08-28. See `docs/README.md` for the document index,
 `docs/impact/ROADMAP.md` for the detailed RAPM/all-in-one plan, and
 `docs/modeling/PLAYBOOK.md` for the common statistical modeling procedure.
 
@@ -104,6 +104,12 @@ dead ends. Updated 2026-08-25. See `docs/README.md` for the document index,
   four of five future-game folds. Its AIO gain remains uncertain: raw minus
   stabilized MSE is `+0.1338`, with interval `[-0.2335, +0.5050]`. Keep it for
   SPM research, but treat its AIO effect as null.
+- Final cumulative run `final_box_feature_ladder_v1_8bb26f12e7` compares eight
+  frozen feature additions with Box15 and the complete ridge ceiling. No added
+  family lowers equal-season next-season game-margin MSE after the identical
+  RAPM update. Box15 scores `207.421` MSE; the closest cumulative matchup arm
+  scores `207.537`. Keep Box15 as the research AIO prior. Do not run another
+  feature search before the independent audit or untouched 2027 confirmation.
 - External benchmark `external_impact_benchmark_v1_bab43a4087` matches at least
   98.47% of SPM rows per window to minutes-weighted BPM and xRAPM. Among 2,295
   high-exposure player-windows, net SPM correlates 0.876 with BPM and 0.756 with
@@ -162,6 +168,12 @@ dead ends. Updated 2026-08-25. See `docs/README.md` for the document index,
   localhost-only in RAPM Lab.
 
 ## Active next task
+
+Hand the final Box15 ladder, semantic-completion artifacts, and corrected
+active-player leaderboard to the independent audit. The audit should check the
+estimand, chronological splits, oracle-lineup limitation, cumulative-order
+dependence, and artifact lineage. It should not redesign the model after seeing
+the reused 2022--26 results.
 
 Obtain a better event or lineup source for the nine Gabriel fallback games that
 failed the strict repair gate. The adapter repaired `0022300535`; the 2024
