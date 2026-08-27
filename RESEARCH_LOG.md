@@ -4573,3 +4573,29 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Reject rim assists as an SPM/AIO input. Retain the statistic in
   the descriptive player-skill layer. Full report:
   `docs/impact/RIM_ASSIST_SPM_CHALLENGER_V1.md`.
+
+## 2026-08-27 - BoxPIPM versus PIPM before and after RAPM
+
+- **Question:** Does the 15-feature BoxPIPM recreation beat a public PIPM
+  reference before or after both metrics receive the same one-season RAPM
+  update?
+- **Source QA:** The attached PIPM file is not a complete 2020-21 season. Its
+  latest rows have a maximum of 22 games and a median of 15. The run excludes
+  that file from scoring. It uses the existing third-party regular-season PIPM
+  reference for 2021-23 and replaces rows below 250 minutes with -1 offense and
+  -1 defense.
+- **Design:** Run `pipm_four_way_comparison_v1_0f1473b838` scores four fixed
+  ratings on identical 2022-24 games. Both posterior ratings use the same
+  terminal-lineup one-season RAPM, `3000 / 3000 / 300` penalties, and center
+  scale 1. The bootstrap resamples whole games within season and gives each
+  season equal weight.
+- **Result:** BoxPIPM plus RAPM ranks first at `13.8644` mean fold RMSE and
+  `.3635` mean correlation. PIPM plus RAPM scores `14.0578`, standalone BoxPIPM
+  scores `14.0595`, and standalone PIPM scores `14.0835`.
+- **Paired test:** BoxPIPM plus RAPM beats PIPM plus RAPM in all three folds.
+  Equal-season MSE falls by `5.473`; the 5,000-draw interval is
+  `[-7.108, -3.776]`. Standalone BoxPIPM and PIPM are tied. Their MSE difference
+  is `-0.583` with interval `[-4.373, 3.126]`.
+- **Decision:** Keep BoxPIPM as the research AIO prior. Do not claim that it
+  beats original PIPM because the available full-season source is a third-party
+  reconstruction. Full report: `docs/impact/PIPM_FOUR_WAY_COMPARISON_V1.md`.

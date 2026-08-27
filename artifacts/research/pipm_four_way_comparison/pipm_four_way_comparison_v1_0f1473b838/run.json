@@ -1,0 +1,148 @@
+{
+  "config": {
+    "bootstrap": {
+      "draws": 5000,
+      "interval": "2.5th and 97.5th percentiles of paired MSE differences",
+      "season_aggregation": "equal-season mean MSE",
+      "seed": 20260827,
+      "unit": "whole game within test season"
+    },
+    "box_source_candidate": "box_courtsignal_ridge",
+    "experiment_id": "pipm_four_way_comparison_v1",
+    "inputs": {
+      "attached_pipm": {
+        "path": "PIPM Player Finder through 2021 - Database.csv",
+        "sha256": "fccd30eefb122412dee2901d2bbd543516ae781cd864436cb4beb083d049d3c6"
+      },
+      "box_priors": {
+        "path": "artifacts/research/pipm_breaker/pipm_breaker_v1_d154ebea55/prior_ratings.parquet",
+        "sha256": "f4b15e798985e342e88fe03a4702dcfa10ca8373345a7886e19eb80bda877b9a"
+      },
+      "matrix_manifest_2021": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2021/manifest.json",
+        "sha256": "33be4c9bc5b9f324e0c269b364e71aa4dc26117c20eb7e6640cdcc1b76187c8a"
+      },
+      "matrix_manifest_2022": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2022/manifest.json",
+        "sha256": "5206445af95e91cba94d1350268fe3ca395debb170a61eff0dfd83001fc1ece5"
+      },
+      "matrix_manifest_2023": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2023/manifest.json",
+        "sha256": "4b7d7fbcae5b24c37e795ab115dea03f20c01e4c0456adbe232fe706feafc91a"
+      },
+      "pipm_reference": {
+        "path": "artifacts/research/pipm_reference_comparison/pipm_reference_comparison_v1_49a3c2c973/reference.parquet",
+        "sha256": "ebd7702c2676f44123fafb9ca5ae7d28bbec0b57ec4c696a3a8773e51abb0cd6"
+      },
+      "pipm_reference_run": {
+        "path": "artifacts/research/pipm_reference_comparison/pipm_reference_comparison_v1_49a3c2c973/run.json",
+        "sha256": "e98a74911ba2718ce8453112ce787a4cea8754cb293b7c3ff8e0714d384088a9"
+      },
+      "possessions_2021": {
+        "path": "research/rapm_lab/external/external/poss_data/derived/matchups_2021.parquet",
+        "sha256": "23306bcec04e5a2a8500dc790a2048a881263e1457a386cdf4cba7be59a6b91b"
+      },
+      "possessions_2022": {
+        "path": "research/rapm_lab/external/external/poss_data/derived/matchups_2022.parquet",
+        "sha256": "cf005e48ca763cfd87753c723d1876e8d037ff3ace00d91d2d8fab9b73d731b5"
+      },
+      "possessions_2023": {
+        "path": "research/rapm_lab/external/external/poss_data/derived/matchups_2023.parquet",
+        "sha256": "dceb87e59f604af0fb2fb60c45d3689dba6d383370708fa5b2d765d0437376d9"
+      },
+      "runner": {
+        "path": "research/run_pipm_four_way_comparison.py",
+        "sha256": "dbcf5d3f69e00ff9d80e67ce2977f4aff54bdd5187fbdf1995e3f52dfdacc794"
+      }
+    },
+    "low_minute_rule": {
+      "replacement_defense": -1.0,
+      "replacement_offense": -1.0,
+      "threshold": 250.0
+    },
+    "models": [
+      "box_prior",
+      "pipm_reference",
+      "box_prior_plus_rapm",
+      "pipm_reference_plus_rapm"
+    ],
+    "rapm_center_scale": 1.0,
+    "rapm_penalties": {
+      "defense": 3000.0,
+      "home": 300.0,
+      "offense": 3000.0
+    },
+    "rating_seasons": [
+      2021,
+      2022,
+      2023
+    ],
+    "standalone_nuisance_terms": "shared zero-prior intercept and home coefficient",
+    "test_seasons": [
+      2022,
+      2023,
+      2024
+    ]
+  },
+  "created_at": "2026-08-27T10:57:21.972134+00:00",
+  "estimand": "next-season game margin from prior-season player ratings",
+  "files": {
+    "attached_source_audit.parquet": {
+      "rows": 1,
+      "sha256": "558d1633fca427f57e26754b4071d611e117212e7e959b7eb4a0338f50d1f656"
+    },
+    "bootstrap_model_intervals.parquet": {
+      "rows": 4,
+      "sha256": "5c2e5e9caeef01e13c428fb054ae799da5e36a3f98d6a8c3de5ecb2e1d1ae203"
+    },
+    "fold_metrics.parquet": {
+      "rows": 12,
+      "sha256": "bed724038b9ade84373d875cbe34a57bbc48fbbd329395b813a739a624c17e06"
+    },
+    "game_predictions.parquet": {
+      "rows": 14748,
+      "sha256": "2855ccc68c1eaaf347297c99df7fab3ab2fc48534ffced2c179d5c42c8d709fd"
+    },
+    "paired_bootstrap.parquet": {
+      "rows": 6,
+      "sha256": "af98c6c2ae8a655f4d38030569d8c27a6d59f883f2e2bbf5256ff1233012f07b"
+    },
+    "prior_agreement.parquet": {
+      "rows": 9,
+      "sha256": "b531ad8d300322ee4b08785b18ef71e0d6e8e3dabea34e00785998d417d7e32c"
+    },
+    "prior_coverage.parquet": {
+      "rows": 6,
+      "sha256": "f67201f01096eacd099ab04f7d028bdfb92f1d5b015e479b345fa5f4687e322c"
+    },
+    "ratings.parquet": {
+      "rows": 12960,
+      "sha256": "13e3165d1c46ce1e7a8550f112c594e1583e5aec1be0cf7d108106dee4361f12"
+    },
+    "source_coverage.parquet": {
+      "rows": 3,
+      "sha256": "158d4e86f09e5f23e44306e1c45a905145225a639bcec91fd5ae76f34d8370d7"
+    },
+    "source_priors.parquet": {
+      "rows": 4611,
+      "sha256": "109439d33b1aa7e193678f85ffe220a45abbce8dbe49faa9a9d0eb14bde3c435"
+    },
+    "summary.parquet": {
+      "rows": 4,
+      "sha256": "3491b2e0b916bef71107fe0c9020152fee8b982070a8e913bddeefddd9dfa717"
+    }
+  },
+  "fold_definition": "Build ratings through season t, apply the optional same-season RAPM update, then score the fixed t+1 games.",
+  "forbidden_interpretation": "The PIPM reference is not an original release. These reused folds do not establish a universal winner or support public promotion before the 2027 confirmation.",
+  "quality": {
+    "attached_pipm_excluded": true,
+    "folds": 3,
+    "identical_games_within_fold": true,
+    "maximum_component_identity_error": 0.0,
+    "models": 4,
+    "season_2027_loaded": false
+  },
+  "run_id": "pipm_four_way_comparison_v1_0f1473b838",
+  "source_scope": "The scored PIPM source is a third-party regular-season table reconstruction. The attached original PIPM file has a partial 2020-21 season and is not scored.",
+  "status": "reused_historical_diagnostic"
+}
