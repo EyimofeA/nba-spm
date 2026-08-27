@@ -8,8 +8,7 @@ work. Read this file before making changes. Keep it under 250 lines.
 1. Read `ROADMAP.md` for current priorities.
 2. Read `docs/ARCHITECTURE.md` for the production, research, and legacy map.
 3. Read `docs/README.md` for topic-specific specifications.
-4. Read `research/estimands.yml` and `research/season_exposure.yml` before
-   changing a model claim or evaluation split.
+4. Read `research/estimands.yml` and `research/season_exposure.yml` before changing a model claim or evaluation split.
 5. Read `docs/product/UI_GUIDE.md` and `web/README.md` before changing the site.
 
 The public site is `https://courtsignalnba.pages.dev`. Do not deploy unless the
@@ -18,24 +17,21 @@ user explicitly asks. Do not publish raw NBA rows.
 ## Working style
 
 - Lead with the outcome and next action.
-- Be concise, direct, and candid. Separate verified facts, interpretations, and
-  unresolved uncertainty.
+- Be concise, direct, and candid. Separate verified facts, interpretations, and unresolved uncertainty.
 - Use short active sentences and one consistent term for each concept.
+- Use clear subject, verb, and object constructions. Do not use cleft sentences, contrastive appositives, appended glosses, or trailing clauses.
+- Assume the user may edit documents, especially Markdown files. Preserve the user's edits and inspect current contents before changing them.
+- Write Markdown for an independent reader. Do not refer to conversations, tasks, threads, or unstated context that the reader cannot access.
 - Push back on statistically weak assumptions.
 - Preserve the user's goal and unrelated dirty files.
 - Ask only when a decision is materially ambiguous, risky, or needs approval.
-- Use subagents only for independent work that materially improves speed or
-  verification. Never exceed four concurrent tasks. Verify their output.
-- Use Terra high for normal repository work. Use Sol xhigh only for a frozen
-  statistical review or promotion decision.
+- Use subagents only for independent work that materially improves speed or verification. Never exceed four concurrent tasks. Verify their output.
+- Use Terra high for normal repository work. Use Sol xhigh only for a frozen statistical review or promotion decision.
 - Python computes numerical results. A language model designs and audits them.
-- Before an expensive run, estimate runtime and value. Start with the smallest
-  decisive pilot. Never start a downloader or full model run during a smoke test.
-- Test observable behavior. Do not claim completion from a successful build
-  alone when a user-facing result also needs inspection.
+- Before an expensive run, estimate runtime and value. Start with the smallest decisive pilot. Never start a downloader or full model run during a smoke test.
+- Test observable behavior. Do not claim completion from a successful build alone when a user-facing result also needs inspection.
 
-Use a visualization only when it materially improves understanding. Do not add
-decorative diagrams.
+Use a visualization only when it materially improves understanding. Do not add decorative diagrams.
 
 ## Canonical lanes
 
@@ -118,6 +114,10 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
 - Teammate-context correction `five_year_spm_teammate_context_v1_13d270986a`
   improves two reused next-season RAPM folds by only `.002` and `.012` RMSE.
   Keep the family for a joint refit; do not change the frozen research SPM.
+- Stabilized rim assists failed as an additional offense input. Run
+  `rim_assist_spm_challenger_v1_23e599d812` lost all three reused future-game
+  folds and increased paired MSE. Keep rim assists in the descriptive skill
+  layer. Do not add them to the impact prior.
 - Treat it as the research replacement, not a public promotion, until the
   untouched 2027 confirmation.
 

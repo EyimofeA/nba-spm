@@ -4553,3 +4553,23 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   control for research and require one mechanism-driven feature family at a
   time under the same downstream gate. Full report:
   `docs/impact/PIPM_BREAKER_V1.md`.
+
+## 2026-08-27 - Stabilized rim assists in the five-year prior
+
+- **Question:** Do rim assists add transferable creation information to the
+  15-feature CourtSignal-targeted prior?
+- **Design:** Run `rim_assist_spm_challenger_v1_23e599d812` builds annual rim
+  assists per 100 offensive possessions. The estimator shrinks each player to
+  the same-season league center with 500 prior possessions. The five-year
+  feature pools frozen annual estimates with offensive-possession weights.
+  The source observes 89.23% of matched player-window rows and 98.79% of their
+  possessions. Missing fringe-player rows receive the same-window neutral
+  center. The challenger changes only the offense prior. Both models receive
+  the same one-season RAPM update and score identical 2022--24 games.
+- **Result:** Rim assists lose all three folds. Mean game-margin RMSE rises from
+  `13.8644` to `13.8764`; mean correlation falls from `.3635` to `.3620`.
+  Paired MSE increases by `0.337` points squared per game. The 5,000-draw 95%
+  interval is `[+0.172, +0.508]`.
+- **Decision:** Reject rim assists as an SPM/AIO input. Retain the statistic in
+  the descriptive player-skill layer. Full report:
+  `docs/impact/RIM_ASSIST_SPM_CHALLENGER_V1.md`.
