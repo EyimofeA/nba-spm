@@ -61,10 +61,18 @@ def build_observed_defense_dashboards(
     if historical_rim_dfg_source:
         hashes[str(Path(historical_rim_dfg_source).resolve())] = sha256_file(historical_rim_dfg_source)
     for season in seasons:
-        path = source / f"{season}.csv"
-        if not path.exists():
-            raise FileNotFoundError(path)
-        frame = pd.read_csv(path, low_memory=False)
+        csv_path = source / f"{season}.csv"
+        parquet_path = source / f"{season}.parquet"
+        if csv_path.exists():
+            path = csv_path
+            frame = pd.read_csv(path, low_memory=False)
+        elif parquet_path.exists():
+            path = parquet_path
+            frame = pd.read_parquet(path)
+        else:
+            raise FileNotFoundError(
+                f"No player sheet for season {season}: expected {csv_path} or {parquet_path}."
+            )
         try:
             dfg_rows.append(_annual_source(frame, season, rim=False))
         except ValueError:

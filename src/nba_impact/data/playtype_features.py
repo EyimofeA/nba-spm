@@ -41,8 +41,19 @@ def _load_box(source_dir: str | Path, seasons: tuple[int, ...]) -> tuple[pd.Data
     rows = []
     hashes = {}
     for season in seasons:
-        path = Path(source_dir) / f"{season}.csv"
-        frame = pd.read_csv(path, low_memory=False)
+        source = Path(source_dir)
+        csv_path = source / f"{season}.csv"
+        parquet_path = source / f"{season}.parquet"
+        if csv_path.exists():
+            path = csv_path
+            frame = pd.read_csv(path, low_memory=False)
+        elif parquet_path.exists():
+            path = parquet_path
+            frame = pd.read_parquet(path)
+        else:
+            raise FileNotFoundError(
+                f"No player sheet for season {season}: expected {csv_path} or {parquet_path}."
+            )
         required = {"PLAYER_ID", "PTS", "FGA", "FTA"}
         if missing := sorted(required - set(frame.columns)):
             raise ValueError(f"Box source {path} is missing {missing}.")

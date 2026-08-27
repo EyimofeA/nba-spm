@@ -107,6 +107,13 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
 - Complete windows run from 2018 through 2026. Historical fits train only on
   earlier window ends.
 - The model retains the frozen 127 offense and 68 defense inputs and learners.
+- Canonical complete feature input:
+  `full_spm_features_2014_2026_v1_4c77ae6acc`. It contains 6,942 annual rows
+  for 2014--26 and 8,620 rolling rows for window ends 2018--26.
+- Hustle and matchup-assignment sources start in 2018. The coverage ledger
+  marks 2014--17 unavailable. Do not fabricate observed rows for those seasons.
+- This feature refresh closes the 2025--26 input gap. It does not refit or
+  promote the five-year SPM or AIO.
 - For AIO season `t`, this SPM is the prior and only season `t` possessions are
   the likelihood. It is not a five-year RAPM likelihood.
 - Run `five_year_target_spm_v1_65550acb79` beat the annual-prior AIO and

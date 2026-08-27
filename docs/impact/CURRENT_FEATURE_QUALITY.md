@@ -1,18 +1,18 @@
 # Current Statistical Feature Quality
 
-Updated 2026-08-18. This note covers season labels 2025 and 2026, which mean the
+Updated 2026-08-27. This note covers season labels 2025 and 2026, which mean the
 2024–25 and 2025–26 NBA seasons.
 
 > **Supersession — current refresh.** The source-gap claims below are retained
 > as historical diagnosis, not current status. The current 2014--26 research
-> panel uses `statistical_features_v2_6bdb60a186`, which has 6,942 unique
-> player-seasons. Its 2026 block uses all 582 target-panel players, direct NBA
-> `LeagueDashPtDefend` DFG/rim-DFG dashboards, and official NBA
-> `BoxScoreMatchupsV3` across all 1,230 regular-season games. The derived
-> defensive-tracking and matchup artifacts pass their row-key, finiteness,
-> point-reconciliation, and exposure checks. The remaining research-only label
-> is about the explicit 2014--23 legacy to 2024--26 canonical RAPM source
-> transition, not missing 2025--26 feature families.
+> panel uses `statistical_features_v2_cb03edaf32`, which has 6,942 unique
+> player-seasons. The exact frozen 127-offense and 68-defense contract is stored
+> in `full_spm_features_2014_2026_v1_4c77ae6acc`. Its 2026 block uses the pinned
+> Gabriel player sheet, observed DFG/rim fields, and the pinned Apache-2.0
+> matchup archive across all 1,230 regular-season games. The feature-input
+> blocker for 2025--26 is closed. No model has been refit or promoted from this
+> refresh. Hustle and matchup-assignment sources did not exist in this data
+> contract before 2018; the coverage ledger records those rows as unavailable.
 
 ## Decision
 
