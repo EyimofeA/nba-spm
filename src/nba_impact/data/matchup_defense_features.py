@@ -310,6 +310,19 @@ def _read_source(path: Path) -> tuple[pd.DataFrame, dict]:
 _read_archive = _read_source
 
 
+def _aggregate_box_exposure(box: pd.DataFrame) -> pd.DataFrame:
+    """Collapse repeated season totals while preserving genuine stint rows."""
+    exposure = box[["PLAYER_ID", "DefPoss"]].copy()
+    exposure["PLAYER_ID"] = pd.to_numeric(exposure["PLAYER_ID"], errors="coerce")
+    exposure["DefPoss"] = pd.to_numeric(exposure["DefPoss"], errors="coerce")
+    return (
+        exposure.dropna()
+        .drop_duplicates(["PLAYER_ID", "DefPoss"])
+        .groupby("PLAYER_ID", as_index=False)["DefPoss"]
+        .sum()
+    )
+
+
 def build_matchup_defense_features(
     archive_root: str | Path,
     box_source_dir: str | Path,
@@ -353,9 +366,10 @@ def build_matchup_defense_features(
             if box_path.suffix == ".parquet"
             else pd.read_csv(box_path, usecols=["PLAYER_ID", "DefPoss"])
         )
-        box["PLAYER_ID"] = pd.to_numeric(box["PLAYER_ID"], errors="coerce")
-        box["DefPoss"] = pd.to_numeric(box["DefPoss"], errors="coerce")
-        box = box.dropna().groupby("PLAYER_ID", as_index=False)["DefPoss"].sum()
+        # Current Parquet player sheets can repeat the same season-total row
+        # once per source table. Remove exact exposure duplicates before
+        # summing genuine team-stint rows.
+        box = _aggregate_box_exposure(box)
         joined = features.merge(box, on="PLAYER_ID", how="left", validate="one_to_one")
         matched = joined["DefPoss"].notna()
         quality["box_id_row_match_rate"] = float(matched.mean())

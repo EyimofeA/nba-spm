@@ -1,0 +1,34 @@
+{
+  "provider": "gabriel1200/player_sheets",
+  "purpose": "Pinned lag history required to build leak-safe 2014 annual features.",
+  "task_defaults": {
+    "license": "not-declared-by-upstream",
+    "max_attempts": 20,
+    "connect_timeout_seconds": 30,
+    "read_timeout_seconds": 300,
+    "retry_initial_seconds": 2,
+    "retry_max_seconds": 300
+  },
+  "tasks": [
+    {
+      "name": "gabriel_player_sheet_2012_feature_history",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2012.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2012.parquet",
+      "provider": "gabriel1200/player_sheets",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2012,
+      "expected_min_rows": 400,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME"]
+    },
+    {
+      "name": "gabriel_player_sheet_2013_feature_history",
+      "url": "https://raw.githubusercontent.com/gabriel1200/player_sheets/54b57cf0773cca30f22d36e340b6530a89da1190/year_totals/2013.parquet",
+      "destination": "gabriel_player_sheets/revision=54b57cf/year_totals/2013.parquet",
+      "provider": "gabriel1200/player_sheets",
+      "source_revision": "54b57cf0773cca30f22d36e340b6530a89da1190",
+      "season": 2013,
+      "expected_min_rows": 400,
+      "required_columns": ["PLAYER_ID", "PLAYER_NAME"]
+    }
+  ]
+}

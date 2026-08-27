@@ -4599,3 +4599,27 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Keep BoxPIPM as the research AIO prior. Do not claim that it
   beats original PIPM because the available full-season source is a third-party
   reconstruction. Full report: `docs/impact/PIPM_FOUR_WAY_COMPARISON_V1.md`.
+
+## 2026-08-27 - Full frozen feature contract through 2026
+
+- **Question:** Can the exact 127-offense and 68-defense full-SPM contract be
+  built on one reproducible annual spine from 2014 through 2026?
+- **Design:** Pin Gabriel player sheets through 2026, add 2012--13 only as lag
+  history for 2014 engineering, rebuild playtype/zTS and observed defense, and
+  ingest pinned Apache-2.0 matchup archives through 2026. Preserve same-season
+  annual estimates. Pool only the finished annual estimates for five-year rows.
+- **Fix:** Parquet player sheets repeat identical season-total defensive
+  exposure rows. Summing those rows broke matchup exposure QA. The matchup
+  builder now deduplicates identical `(PLAYER_ID, DefPoss)` rows before it sums
+  distinct stints. The 2018 correlation rose from `.23` to `.99981`.
+- **Result:** Run `full_spm_features_2014_2026_v1_4c77ae6acc` contains 6,942
+  annual player-seasons for 2014--26 and 8,620 rolling five-year rows for
+  2018--26. It has zero duplicate keys, zero infinite selected values, and zero
+  2027 rows. The 2026 matchup source covers 1,230 games and 240,839 raw rows;
+  point reconciliation has zero failures and exposure correlation is `.99994`.
+- **Coverage:** Hustle and matchup assignments start in 2018. The source ledger
+  records 2014--17 as unavailable. Low-opportunity player fields retain missing
+  values for training-fold median imputation.
+- **Decision:** The 2025--26 feature-input blocker is closed. Do not promote a
+  model from this data refresh. Refit and validate the SPM/AIO as a separate
+  experiment. Full report: `docs/impact/FULL_SPM_FEATURES_2014_2026.md`.

@@ -4,6 +4,7 @@ import pandas as pd
 
 from nba_impact.data.matchup_defense_features import (
     MATCHUP_DEFENSE_FEATURES,
+    _aggregate_box_exposure,
     compute_matchup_defense_features,
 )
 
@@ -99,3 +100,17 @@ def test_matchup_features_reject_point_conservation_failure() -> None:
         assert "point_mismatches=1" in str(error)
     else:
         raise AssertionError("Expected point conservation failure.")
+
+
+def test_box_exposure_deduplicates_repeated_totals_before_summing_stints() -> None:
+    box = pd.DataFrame(
+        {
+            "PLAYER_ID": [1, 1, 1, 2, 2],
+            "DefPoss": [100, 100, 40, 80, 80],
+        }
+    )
+
+    result = _aggregate_box_exposure(box).set_index("PLAYER_ID")
+
+    assert result.loc[1, "DefPoss"] == 140
+    assert result.loc[2, "DefPoss"] == 80

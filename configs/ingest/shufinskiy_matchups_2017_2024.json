@@ -117,6 +117,20 @@
       "expected_bytes": 4013596,
       "expected_min_rows": 50000,
       "required_columns": ["game_id", "team_id", "person_id", "matchups_person_id", "matchup_minutes_sort", "partial_possessions", "player_points", "matchup_field_goals_made", "matchup_field_goals_attempted", "matchup_three_pointers_made", "matchup_three_pointers_attempted", "matchup_turnovers", "matchup_assists", "shooting_fouls"]
+    },
+    {
+      "name": "shufinskiy_matchups_2025_26",
+      "url": "https://github.com/shufinskiy/nba_data/raw/e829d4678be1e075f99e5d41a1c5f97089be446b/datasets/matchups_2025.tar.xz",
+      "destination": "shufinskiy_nba_data/revision=e829d46/matchups/season=2026/matchups_2025.tar.xz",
+      "provider": "shufinskiy/nba_data",
+      "license": "Apache-2.0",
+      "season": 2026,
+      "season_type": "regular",
+      "source_revision": "e829d4678be1e075f99e5d41a1c5f97089be446b",
+      "archive_member": "matchups_2025.csv",
+      "expected_bytes": 4152096,
+      "expected_min_rows": 50000,
+      "required_columns": ["game_id", "team_id", "person_id", "matchups_person_id", "matchup_minutes_sort", "partial_possessions", "player_points", "matchup_field_goals_made", "matchup_field_goals_attempted", "matchup_three_pointers_made", "matchup_three_pointers_attempted", "matchup_turnovers", "matchup_assists", "shooting_fouls"]
     }
   ]
 }
