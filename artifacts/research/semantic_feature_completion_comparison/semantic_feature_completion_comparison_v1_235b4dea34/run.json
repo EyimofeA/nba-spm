@@ -1,0 +1,138 @@
+{
+  "config": {
+    "bootstrap": {
+      "aggregation": "equal-season mean MSE",
+      "draws": 5000,
+      "seed": 20260827,
+      "unit": "whole game within test season"
+    },
+    "evaluated_rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "experiment_id": "semantic_feature_completion_comparison_v1",
+    "matchup_features_removed": [
+      "matchup_opponent_adjusted_points_saved_p100_eb",
+      "matchup_fga_suppressed_vs_scorer_p100_eb",
+      "matchup_shotmaking_points_saved_vs_scorer_p100_eb",
+      "matchup_three_pa_suppressed_vs_scorer_p100_eb",
+      "matchup_turnovers_forced_vs_scorer_p100_eb",
+      "matchup_assists_suppressed_vs_scorer_p100_eb",
+      "matchup_shooting_fouls_prevented_vs_scorer_p100_eb",
+      "matchup_blocks_p100"
+    ],
+    "model_order": [
+      "complete_spm",
+      "no_matchup_spm",
+      "current_missing_spm",
+      "box_pipm",
+      "zero_prior_rapm",
+      "complete_spm_aio",
+      "no_matchup_spm_aio",
+      "current_missing_spm_aio",
+      "box_pipm_aio"
+    ],
+    "rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "season_2027": "forbidden",
+    "sources": {
+      "feature_manifest": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_8be676bd0f/run.json",
+        "sha256": "a5ad9d0a584a13b1877ebe0670508a4e2b1c902aba6c851a05e2e1c5148abe26"
+      },
+      "features": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_8be676bd0f/five_year_features.parquet",
+        "sha256": "6a31110d159667f941f24a8ad00051881aa991a9e3329d1c860a472119de6ad1"
+      },
+      "old_game_predictions": {
+        "path": "artifacts/research/full_spm_history_ablation/full_spm_history_ablation_v1_2eb5eb428c/game_predictions.parquet",
+        "sha256": "b89d16d8696d36775a7ba951438ac04fa06232ed3828889c42544d0d13c8d6da"
+      },
+      "runner": {
+        "path": "research/run_semantic_feature_completion_comparison.py",
+        "sha256": "3cd7afa38d3bb18df7b8f2dc3360d5cedcc1b0545bbdbb86b18d5ccc838e7a91"
+      },
+      "targets": {
+        "path": "artifacts/models/five_year_target_spm/five_year_target_spm_v1_65550acb79/five_year_targets.parquet",
+        "sha256": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+      }
+    }
+  },
+  "created_at": "2026-08-27T18:00:12.475892+00:00",
+  "estimand": "next-season game margin from prior-season player ratings",
+  "files": {
+    "bootstrap_model_intervals.parquet": {
+      "path": "bootstrap_model_intervals.parquet",
+      "rows": 9,
+      "sha256": "3e2791f98b0365e4be280188b7e52efea6731fbf7c55177b5ee76fc4189b9622"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "rows": 45,
+      "sha256": "a245cdab49132f2d6271f3d14200ec0253a6b118ce1bd72ce0d418fd9ef81b60"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 55269,
+      "sha256": "ccc3da6501843b59846ca4cd6c9c5db51d785e8a6d17b46885beb63e2aae576f"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "model_selection.parquet": {
+      "path": "model_selection.parquet",
+      "rows": 36,
+      "sha256": "88e80ec4b7dba862b9dd1afbe5dc85c174c4b7a3e9d179abc2233bb3f2f540c9"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 36,
+      "sha256": "76d7425891018e21917075237e67d1af89d36a0908396fe14353e35dede78d62"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "rows": 18,
+      "sha256": "a8fd2f7d352eaac1836979354237cd80f468d87e0a7876a3eccbf2010687a3ce"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "rows": 17733,
+      "sha256": "52457110d8c7578a13bb79ff8b63e8116233492189146431821b2355e5de529e"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "rows": 45024,
+      "sha256": "14205434f9e3f832e5f89c8132a2acaccf105b28d883607d7582683999e07050"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "rows": 9,
+      "sha256": "5cfbdef003716b8e941d971bebcf3e09ac28ff7795c1ae74386d5e224d40ce4c"
+    },
+    "target_metrics.parquet": {
+      "path": "target_metrics.parquet",
+      "rows": 54,
+      "sha256": "18ab9b5971c5dd8ca88f73fdbb1f7c232500876d40cd99a4db909802d83012ef"
+    }
+  },
+  "forbidden_interpretation": "All five test seasons are reused evidence. This run cannot promote a public model.",
+  "quality": {
+    "identical_games_within_fold": true,
+    "panel_missing_values": 0,
+    "panel_rows": 8620,
+    "season_2027_loaded": false
+  },
+  "run_id": "semantic_feature_completion_comparison_v1_235b4dea34",
+  "status": "reused_diagnostic_complete"
+}

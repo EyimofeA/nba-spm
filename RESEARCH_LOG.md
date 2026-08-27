@@ -4702,3 +4702,29 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   BoxPIPM-style as research AIO challengers. Reserve 2027 for frozen
   confirmation. Full report:
   `docs/impact/FULL_FEATURE_COVERAGE_AND_REFIT_2026_08_27.md`.
+
+## 2026-08-27 - Semantic completion of every selected SPM input
+
+- **Question:** Can the full 2014 through 2026 feature contract reach 100%
+  model-ready coverage without treating every missing value as a real zero?
+- **Design:** Run `semantically_complete_spm_features_v1_8be676bd0f` applies
+  rules by unit. Missing event rates become zero after exposure repair. Raw
+  ratios use same-season empirical-Bayes estimates. Missing level metrics use
+  same-season medians. Source-specific defense fields use zero plus explicit
+  availability fields. zTS uses low-sample playtype rows before it falls back
+  to season-relative TS.
+- **Coverage:** The annual panel has 6,942 rows. The five-year panel has 8,620
+  rows. The expanded 175-feature contract has zero missing values in both.
+  The run maps all 75 selected fields below 99% observed coverage to an exact
+  reason and completion method.
+- **Comparison:** Run `semantic_feature_completion_comparison_v1_235b4dea34`
+  scores identical future games for five seasons. Completed SPM beats
+  BoxPIPM-style standalone by `-3.104` MSE, with interval
+  `[-5.219, -0.982]`. Completed and previous AIO are tied at `+0.030`, with
+  interval `[-0.153, +0.212]`.
+- **Matchups:** Removing the eight matchup fields worsens standalone SPM by
+  `+2.757` MSE. Its interval is `[+1.534, +3.984]`. Keep the fields and their
+  source flag.
+- **Decision:** Use the finite panel for research. Keep BoxPIPM-style and the
+  completed SPM as separate AIO challengers. Do not promote either from reused
+  evidence. Full report: `docs/impact/SEMANTIC_FEATURE_COMPLETION_V1.md`.
