@@ -4429,3 +4429,64 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   weight. It includes all five tests, uses whole games for both split and
   uncertainty, and contains no 2027 rows. Intermediate artifact
   `impact_validation_suite_v1_07c7b85efc` is superseded by the exposure fix.
+
+## 2026-08-27 - Current BoxPIPM-prior AIO leaderboard
+
+- **Question:** What does the frozen BoxPIPM-style research prior produce when
+  it is updated by the complete 2026 single-season possession likelihood?
+- **Design:** Run `current_box_pipm_aio_v1_939ad77840` builds rolling five-year
+  box inputs through 2026, selects side-specific ridge penalties on earlier
+  windows (`100` offense, `30` defense), and applies the fixed one-season
+  terminal-lineup `3000 / 3000 / 300` AIO update with center scale one.
+- **QA:** The 2024--26 annual matrices are recovered exactly from canonical
+  rolling matrices and legacy annual sufficient statistics; maximum matrix
+  error is `1.14e-13`. All 582 active players have names, the prior covers 100
+  percent of active possessions, offense plus defense equals net exactly, and
+  Season 2027 is absent.
+- **Leaderboard:** With at least 1,000 possessions on each side, the top five
+  are Victor Wembanyama (`+8.65`), Nikola Jokic (`+8.19`), Shai
+  Gilgeous-Alexander (`+7.97`), Kawhi Leonard (`+7.76`) and Jimmy Butler III
+  (`+6.64`) points per 100. This is a retrospective research leaderboard, not
+  a 2027 forecast.
+
+## 2026-08-27 - External PIPM reconstruction comparison
+
+- **Source boundary:** No verified original Goldstein PIPM release is present.
+  Run `pipm_reference_comparison_v1_49a3c2c973` parses the public
+  Basketball Database reconstruction for 2015--24 using exact NBA player IDs.
+  Traded-player rows are possession-weighted across teams. The 2024 page has
+  zero PIPM fields, so it is retained for QA and excluded from scoring.
+- **Matched comparison:** On 1,106 player-seasons from 2021--23 with at least
+  1,000 possessions in both sources, the BoxPIPM-style prior has pooled net
+  Pearson/Spearman agreement of `.631/.583`. After the single-season RAPM
+  update, agreement rises to `.808/.779`; net RMSE versus the reconstruction
+  falls from `1.587` to `1.360` points per 100.
+- **Interpretation:** The update moves the simple box prior substantially
+  toward an external PIPM-like rating. This is agreement, not proof of better
+  prediction, and the external values are a third-party reconstruction rather
+  than source-of-truth PIPM.
+
+## 2026-08-27 - Ryan Davis RAPM labels for SPM
+
+- **Question:** Does training the same SPM architecture on Ryan Davis's exact
+  five-year RAPM coefficients improve the downstream AIO? Ryan's released
+  tables contain no player-window exposure weights. His public possession
+  regression weights retained rows by possession count, which is one per row;
+  it does not publish an alternative set of player-level SPM weights.
+- **Design:** Run `ryan_target_spm_v1_31eccca595` holds the 126-offense and
+  50-defense feature set, learner families, matched player-windows, AIO
+  penalties, center scale and 2022--24 future games fixed. It changes only the
+  five-year training labels. The weighted arm uses CourtSignal exposure weights
+  to isolate the target; a uniform-weight sensitivity is reported separately.
+- **Result:** Ryan-target SPM wins all three future-game folds. Mean RMSE falls
+  from `13.8920` to `13.8267`; after scaling Ryan's side-specific target spread
+  using training windows only, it falls to `13.8213` and mean correlation rises
+  from `.3614` to `.3750`. The paired whole-game MSE difference is `-1.974`,
+  with a 5,000-draw 95 percent interval of `[-2.648, -1.330]`.
+- **Controls:** Uniform weighting wins only one of three seasons and its MSE
+  interval crosses zero. Merely shrinking the CourtSignal center produces only
+  a `0.0045` RMSE gain, so Ryan's advantage is not explained by its smaller
+  coefficient variance alone.
+- **Decision:** Ryan-target SPM is the next research challenger, not a public
+  replacement. The evidence uses three reused folds and the stored base feature
+  architecture; it needs a frozen later confirmation before promotion.
