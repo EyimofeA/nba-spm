@@ -1,0 +1,175 @@
+schema_version: experiment_preregistration_v1
+experiment_id: final_box_feature_ladder_v1
+status: frozen_reused_diagnostic
+estimand_id: prior_validation_suite_v1
+
+question: >-
+  Which small, interpretable feature families add transferable signal to the
+  15-feature BoxPIPM-style prior before and after the same one-season RAPM
+  update?
+
+information_cutoff:
+  rating_seasons: [2021, 2022, 2023, 2024, 2025, 2026]
+  evaluated_rating_seasons: [2021, 2022, 2023, 2024, 2025]
+  test_seasons: [2022, 2023, 2024, 2025, 2026]
+  training_rule: window_end strictly before rating_season
+  final_unscored_rating_season: 2026
+  season_2027: forbidden
+
+data:
+  features: semantically_complete_spm_features_v1_8be676bd0f
+  targets: five_year_target_spm_v1_65550acb79
+  required_feature_missing_values: 0
+  target_window_seasons: 5
+
+learner:
+  family: ridge
+  sample_weight: sqrt_min_offensive_and_defensive_possessions
+  alpha_grid: [10, 30, 100, 300, 1000, 3000]
+  alpha_selection: leave_one_training_season_out_inside_each_outer_fold
+
+base_features:
+  offense_and_defense:
+    - PTS_p100
+    - AST_p100
+    - TOV_p100
+    - STL_p100
+    - BLK_p100
+    - OREB_p100
+    - DREB_p100
+    - PF_p100
+    - PFD_p100
+    - FTA_p100
+    - FTM_p100
+    - FG2A_p100
+    - FG2M_p100
+    - FG3A_p100
+    - FG3M_p100
+
+feature_families:
+  - family: shooting_efficiency
+    side: offense
+    features:
+      - zts_pct_points
+      - zts_source_tier
+      - shooting_proficiency_2017_eb
+
+  - family: shot_profile_spacing
+    side: offense
+    features:
+      - shot_quality_average_relative
+      - crafted_spacing_stable_v1
+      - at_rim_frequency_eb
+      - corner3_frequency_eb
+
+  - family: creation_passing
+    side: offense
+    features:
+      - box_creation_2017_eb_p100
+      - behavioral_passer_score_v1
+      - potential_assists_per_touch_eb
+      - drive_assists_per_drive_eb
+
+  - family: load_security
+    side: offense
+    features:
+      - offensive_load_2017_eb_p100
+      - turnover_to_load_2017_eb
+      - live_ball_turnover_share_eb
+      - drive_turnovers_per_drive_eb
+
+  - family: defensive_events
+    side: defense
+    features:
+      - recovered_blocks_p100
+      - deflections_p100
+      - charges_drawn_p100
+      - has_hustle_tracking
+
+  - family: shot_defense
+    side: defense
+    features:
+      - dfg_attempts_p100
+      - dfg_diff_pct_eb
+      - rim_dfga_p100
+      - rim_points_saved_p100
+      - has_dfg_tracking
+      - has_rim_defense_tracking
+
+  - family: contest_rebounding
+    side: defense
+    features:
+      - dreb_contests_p100
+      - dreb_chances_p100
+      - contested_2pt_p100
+      - contested_3pt_p100
+      - def_loose_balls_recovered_p100
+
+  - family: matchup_defense
+    side: defense
+    features:
+      - matchup_opponent_adjusted_points_saved_p100_eb
+      - matchup_fga_suppressed_vs_scorer_p100_eb
+      - matchup_shotmaking_points_saved_vs_scorer_p100_eb
+      - matchup_three_pa_suppressed_vs_scorer_p100_eb
+      - matchup_turnovers_forced_vs_scorer_p100_eb
+      - matchup_assists_suppressed_vs_scorer_p100_eb
+      - matchup_shooting_fouls_prevented_vs_scorer_p100_eb
+      - matchup_blocks_p100
+      - has_matchup_tracking
+
+ladder:
+  construction: cumulative_in_declared_family_order
+  controls:
+    - box_15
+    - completed_full_ridge_ceiling
+  eligible_steps:
+    - box_plus_shooting_efficiency
+    - box_plus_shot_profile_spacing
+    - box_plus_creation_passing
+    - box_plus_load_security
+    - box_plus_defensive_events
+    - box_plus_shot_defense
+    - box_plus_contest_rebounding
+    - box_plus_matchup_defense
+
+fixed_aio:
+  likelihood_seasons: 1
+  lambda_offense: 3000
+  lambda_defense: 3000
+  lambda_home: 300
+  center_scale: 1
+
+primary_evaluation:
+  metric: equal_season_mean_next_season_game_margin_mse
+  readable_metric: rmse
+  comparison: identical_games_and_actual_margins
+  uncertainty: 5000_paired_whole_game_bootstrap_draws_within_test_season
+  correlation_guard: no_more_than_0.01_below_box_15_aio
+
+selection:
+  eligible_candidates: cumulative_ladder_steps_only
+  rule: >-
+    Select the eligible candidate with the lowest equal-season game-margin MSE
+    if it passes the correlation guard. Report every step and every paired
+    comparison. Do not treat the selected step as independent promotion
+    evidence because all scored seasons are reused.
+
+interpretability:
+  selected_model_only: true
+  primary: grouped_downstream_aio_permutation
+  repeats: 5
+  secondary: standardized_ridge_coefficients_by_fold
+  warning: model_dependence_not_causal_player_credit
+
+acceptance:
+  - every declared feature exists in the completed feature contract
+  - annual and five_year selected inputs contain zero missing or nonfinite values
+  - every candidate scores identical games in every test season
+  - offense_plus_defense_equals_net_for_every_rating
+  - model_and_data_hashes_are_saved
+  - season_2027_is_not_loaded
+
+forbidden_interpretation: >-
+  This reused diagnostic cannot promote a public model, establish causal
+  feature value, or consume Season 2027 confirmation evidence.
