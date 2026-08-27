@@ -1,0 +1,452 @@
+{
+  "config": {
+    "alpha_grid": [
+      10.0,
+      30.0,
+      100.0,
+      300.0,
+      1000.0,
+      3000.0
+    ],
+    "bootstrap": {
+      "aggregation": "equal-season mean MSE",
+      "draws": 5000,
+      "seed": 20260827,
+      "unit": "whole game within test season"
+    },
+    "candidate_order": [
+      "box_15",
+      "box_plus_shooting_efficiency",
+      "box_plus_shot_profile_spacing",
+      "box_plus_creation_passing",
+      "box_plus_load_security",
+      "box_plus_defensive_events",
+      "box_plus_shot_defense",
+      "box_plus_contest_rebounding",
+      "box_plus_matchup_defense",
+      "completed_full_ridge_ceiling"
+    ],
+    "contract_sha256": "ddea703a2b011143707f168c21d810d7ff37b0e10df23a4d2ed5af29d422d6ae",
+    "experiment_id": "final_box_feature_ladder_v1",
+    "model_order": [
+      "box_15",
+      "box_plus_shooting_efficiency",
+      "box_plus_shot_profile_spacing",
+      "box_plus_creation_passing",
+      "box_plus_load_security",
+      "box_plus_defensive_events",
+      "box_plus_shot_defense",
+      "box_plus_contest_rebounding",
+      "box_plus_matchup_defense",
+      "completed_full_ridge_ceiling",
+      "zero_prior_rapm",
+      "box_15_aio",
+      "box_plus_shooting_efficiency_aio",
+      "box_plus_shot_profile_spacing_aio",
+      "box_plus_creation_passing_aio",
+      "box_plus_load_security_aio",
+      "box_plus_defensive_events_aio",
+      "box_plus_shot_defense_aio",
+      "box_plus_contest_rebounding_aio",
+      "box_plus_matchup_defense_aio",
+      "completed_full_ridge_ceiling_aio"
+    ],
+    "permutation": {
+      "repeats": 5,
+      "score": "downstream next-season AIO game-margin MSE",
+      "seed": 20260828,
+      "unit": "player row within rating season"
+    },
+    "sources": {
+      "contract": {
+        "path": "research/experiments/final_box_feature_ladder_v1.yml",
+        "sha256": "ddea703a2b011143707f168c21d810d7ff37b0e10df23a4d2ed5af29d422d6ae"
+      },
+      "feature_manifest": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_8be676bd0f/run.json",
+        "sha256": "a5ad9d0a584a13b1877ebe0670508a4e2b1c902aba6c851a05e2e1c5148abe26"
+      },
+      "features": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_8be676bd0f/five_year_features.parquet",
+        "sha256": "6a31110d159667f941f24a8ad00051881aa991a9e3329d1c860a472119de6ad1"
+      },
+      "matrix_2021": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2021/manifest.json",
+        "sha256": "33be4c9bc5b9f324e0c269b364e71aa4dc26117c20eb7e6640cdcc1b76187c8a"
+      },
+      "matrix_2022": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2022/manifest.json",
+        "sha256": "5206445af95e91cba94d1350268fe3ca395debb170a61eff0dfd83001fc1ece5"
+      },
+      "matrix_2023": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2023/manifest.json",
+        "sha256": "4b7d7fbcae5b24c37e795ab115dea03f20c01e4c0456adbe232fe706feafc91a"
+      },
+      "matrix_2024": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2024/manifest.json",
+        "sha256": "fca774fbfa755851d5325eae7ab1c6626ae0108d193d029bfeae537f6edde83d"
+      },
+      "matrix_2025": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2025/manifest.json",
+        "sha256": "0fc7d3316833f2984ae365fe492519128e120808061068190484fc614c94de10"
+      },
+      "matrix_2026": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2026/manifest.json",
+        "sha256": "be8714d9da8db5465e68f107126eebddadc710dc5947d85f5fd1a023b8a1de75"
+      },
+      "player_sheet_2026": {
+        "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2026.parquet",
+        "sha256": "09a6a34855a3685e89ced2dcb2f79b60ed2ef97b9709b29d30848a3165fe7e2c"
+      },
+      "possessions_2020": {
+        "path": "rapm/data/possession_cache/matchups_2020.parquet",
+        "sha256": "b177865501897984437fcc8c08ee229ff462e0319e032f7642b5077670d375c6"
+      },
+      "possessions_2021": {
+        "path": "rapm/data/possession_cache/matchups_2021.parquet",
+        "sha256": "0bfd107dad6959b1a45e4c7762fcde2d901e364d64b632299deeb22092749a6a"
+      },
+      "possessions_2022": {
+        "path": "rapm/data/possession_cache/matchups_2022.parquet",
+        "sha256": "b04388818590ad1bff4fb6b9ca9d27dd4ac9dc6dd744c34160153206bcb32248"
+      },
+      "possessions_2023": {
+        "path": "rapm/data/possession_cache/matchups_2023.parquet",
+        "sha256": "15f710ba2964bcbc80ca4753038b8c22fb18188bafd0cb62c886ac39840faa15"
+      },
+      "runner": {
+        "path": "research/run_final_box_feature_ladder.py",
+        "sha256": "e353c1c1475df1e98e2f91151a8afe7939a2fe82b9b9484650f35cae46b448c6"
+      },
+      "targets": {
+        "path": "artifacts/models/five_year_target_spm/five_year_target_spm_v1_65550acb79/five_year_targets.parquet",
+        "sha256": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+      }
+    }
+  },
+  "contract": {
+    "acceptance": [
+      "every declared feature exists in the completed feature contract",
+      "annual and five_year selected inputs contain zero missing or nonfinite values",
+      "every candidate scores identical games in every test season",
+      "offense_plus_defense_equals_net_for_every_rating",
+      "model_and_data_hashes_are_saved",
+      "season_2027_is_not_loaded"
+    ],
+    "base_features": {
+      "offense_and_defense": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100"
+      ]
+    },
+    "data": {
+      "features": "semantically_complete_spm_features_v1_8be676bd0f",
+      "required_feature_missing_values": 0,
+      "target_window_seasons": 5,
+      "targets": "five_year_target_spm_v1_65550acb79"
+    },
+    "estimand_id": "prior_validation_suite_v1",
+    "experiment_id": "final_box_feature_ladder_v1",
+    "feature_families": [
+      {
+        "family": "shooting_efficiency",
+        "features": [
+          "zts_pct_points",
+          "zts_source_tier",
+          "shooting_proficiency_2017_eb"
+        ],
+        "side": "offense"
+      },
+      {
+        "family": "shot_profile_spacing",
+        "features": [
+          "shot_quality_average_relative",
+          "crafted_spacing_stable_v1",
+          "at_rim_frequency_eb",
+          "corner3_frequency_eb"
+        ],
+        "side": "offense"
+      },
+      {
+        "family": "creation_passing",
+        "features": [
+          "box_creation_2017_eb_p100",
+          "behavioral_passer_score_v1",
+          "potential_assists_per_touch_eb",
+          "drive_assists_per_drive_eb"
+        ],
+        "side": "offense"
+      },
+      {
+        "family": "load_security",
+        "features": [
+          "offensive_load_2017_eb_p100",
+          "turnover_to_load_2017_eb",
+          "live_ball_turnover_share_eb",
+          "drive_turnovers_per_drive_eb"
+        ],
+        "side": "offense"
+      },
+      {
+        "family": "defensive_events",
+        "features": [
+          "recovered_blocks_p100",
+          "deflections_p100",
+          "charges_drawn_p100",
+          "has_hustle_tracking"
+        ],
+        "side": "defense"
+      },
+      {
+        "family": "shot_defense",
+        "features": [
+          "dfg_attempts_p100",
+          "dfg_diff_pct_eb",
+          "rim_dfga_p100",
+          "rim_points_saved_p100",
+          "has_dfg_tracking",
+          "has_rim_defense_tracking"
+        ],
+        "side": "defense"
+      },
+      {
+        "family": "contest_rebounding",
+        "features": [
+          "dreb_contests_p100",
+          "dreb_chances_p100",
+          "contested_2pt_p100",
+          "contested_3pt_p100",
+          "def_loose_balls_recovered_p100"
+        ],
+        "side": "defense"
+      },
+      {
+        "family": "matchup_defense",
+        "features": [
+          "matchup_opponent_adjusted_points_saved_p100_eb",
+          "matchup_fga_suppressed_vs_scorer_p100_eb",
+          "matchup_shotmaking_points_saved_vs_scorer_p100_eb",
+          "matchup_three_pa_suppressed_vs_scorer_p100_eb",
+          "matchup_turnovers_forced_vs_scorer_p100_eb",
+          "matchup_assists_suppressed_vs_scorer_p100_eb",
+          "matchup_shooting_fouls_prevented_vs_scorer_p100_eb",
+          "matchup_blocks_p100",
+          "has_matchup_tracking"
+        ],
+        "side": "defense"
+      }
+    ],
+    "fixed_aio": {
+      "center_scale": 1,
+      "lambda_defense": 3000,
+      "lambda_home": 300,
+      "lambda_offense": 3000,
+      "likelihood_seasons": 1
+    },
+    "forbidden_interpretation": "This reused diagnostic cannot promote a public model, establish causal feature value, or consume Season 2027 confirmation evidence.",
+    "information_cutoff": {
+      "evaluated_rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "final_unscored_rating_season": 2026,
+      "rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "season_2027": "forbidden",
+      "test_seasons": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "training_rule": "window_end strictly before rating_season"
+    },
+    "interpretability": {
+      "primary": "grouped_downstream_aio_permutation",
+      "repeats": 5,
+      "secondary": "standardized_ridge_coefficients_by_fold",
+      "selected_model_only": true,
+      "warning": "model_dependence_not_causal_player_credit"
+    },
+    "ladder": {
+      "construction": "cumulative_in_declared_family_order",
+      "controls": [
+        "box_15",
+        "completed_full_ridge_ceiling"
+      ],
+      "eligible_steps": [
+        "box_plus_shooting_efficiency",
+        "box_plus_shot_profile_spacing",
+        "box_plus_creation_passing",
+        "box_plus_load_security",
+        "box_plus_defensive_events",
+        "box_plus_shot_defense",
+        "box_plus_contest_rebounding",
+        "box_plus_matchup_defense"
+      ]
+    },
+    "learner": {
+      "alpha_grid": [
+        10,
+        30,
+        100,
+        300,
+        1000,
+        3000
+      ],
+      "alpha_selection": "leave_one_training_season_out_inside_each_outer_fold",
+      "family": "ridge",
+      "sample_weight": "sqrt_min_offensive_and_defensive_possessions"
+    },
+    "primary_evaluation": {
+      "comparison": "identical_games_and_actual_margins",
+      "correlation_guard": "no_more_than_0.01_below_box_15_aio",
+      "metric": "equal_season_mean_next_season_game_margin_mse",
+      "readable_metric": "rmse",
+      "uncertainty": "5000_paired_whole_game_bootstrap_draws_within_test_season"
+    },
+    "question": "Which small, interpretable feature families add transferable signal to the 15-feature BoxPIPM-style prior before and after the same one-season RAPM update?",
+    "schema_version": "experiment_preregistration_v1",
+    "selection": {
+      "eligible_candidates": "cumulative_ladder_steps_only",
+      "rule": "Select the eligible candidate with the lowest equal-season game-margin MSE if it beats box_15 and passes the correlation guard. Otherwise retain box_15. Report every step and every paired comparison. Do not treat the selected step as independent promotion evidence because all scored seasons are reused."
+    },
+    "status": "frozen_reused_diagnostic"
+  },
+  "created_at": "2026-08-27T22:55:55.827163+00:00",
+  "estimand": "next-season game margin from a five-year statistical prior",
+  "experiment_id": "final_box_feature_ladder_v1",
+  "files": {
+    "alpha_selection.parquet": {
+      "path": "alpha_selection.parquet",
+      "rows": 120,
+      "sha256": "36193b6e4b14a95245342f0a34a82deadb4d122199b42cb428317b690761ddde"
+    },
+    "bootstrap_model_intervals.parquet": {
+      "path": "bootstrap_model_intervals.parquet",
+      "rows": 21,
+      "sha256": "9828ae0e38cf10ac42ff507624609f8cdcb6c43e7f57651580937ff2b2a6bf93"
+    },
+    "candidate_features.parquet": {
+      "path": "candidate_features.parquet",
+      "rows": 619,
+      "sha256": "9884ed198299f41f66e624a87fc7d2fb6f89e4d5183026262b540d573794e4ef"
+    },
+    "coefficient_summary.parquet": {
+      "path": "coefficient_summary.parquet",
+      "rows": 30,
+      "sha256": "7dfc55b759329f7f96cf60fd5868ee1a333df340d6831616a0940f4d36144205"
+    },
+    "final_2026_leaderboards.parquet": {
+      "path": "final_2026_leaderboards.parquet",
+      "rows": 2058,
+      "sha256": "8fd399ef952721ddc90b0bd881ab88591fc84267cfffc71ecea3f9df03a36035"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "rows": 105,
+      "sha256": "e95353393369155a3ae4916e78e442908c4232a46bf0749082a67d5eb3ab301d"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 128961,
+      "sha256": "f76745c953296c293d938c0142cc80b6b4f5a453afee3e6947167ea1507413aa"
+    },
+    "group_permutation_detail.parquet": {
+      "path": "group_permutation_detail.parquet",
+      "rows": 25,
+      "sha256": "1f242cf8f06a3b6151dde584f2c1a6d9511dee98268f6f95f279faef0332a90a"
+    },
+    "group_permutation_summary.parquet": {
+      "path": "group_permutation_summary.parquet",
+      "rows": 1,
+      "sha256": "b6bd15176d0ffb141121e53b036f99bbe35d0301cc5591560ab3bd830239973d"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 210,
+      "sha256": "49bfacc9d7ad585e85ba8f2e4488f971e955a1667853661dd0eb90ce9aa89788"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "rows": 60,
+      "sha256": "5c77b8b7d3145a760f7f8c9faeb1dddd703684b2f24c27d1424c8b60a2f9d228"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "rows": 59110,
+      "sha256": "172b3cf19ee1053cd5aa0b0cf95588f0ad15f99f6329997c51864bd38638b4d3"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "rows": 135072,
+      "sha256": "951b7c3c8265c7bfb1d4d5d357b1995df1f5c783f766bc25ab524a444c24a058"
+    },
+    "selected_standardized_coefficients.parquet": {
+      "path": "selected_standardized_coefficients.parquet",
+      "rows": 180,
+      "sha256": "d2681599e8ce1c9a5aad84959797425aa64d01f7f2bd5151ecdaf15d7b0f1ab9"
+    },
+    "selection.parquet": {
+      "path": "selection.parquet",
+      "rows": 8,
+      "sha256": "d94b3c43315a908f0ac9bd8d4af4eb3695f3c40b061d70e904bce8757235d166"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "rows": 21,
+      "sha256": "6e965d93cf54254fd0a05549cacff638bff23e08d8406001525ebda82515272e"
+    },
+    "target_metrics.parquet": {
+      "path": "target_metrics.parquet",
+      "rows": 180,
+      "sha256": "3b095d46d9cdbd1d4b9a96d2c01198a98633965d21f2addcc965194b1b57f11c"
+    }
+  },
+  "forbidden_interpretation": "This reused diagnostic cannot promote a public model, establish causal feature value, or consume Season 2027 confirmation evidence.",
+  "models": {
+    "count": 120,
+    "path": "models"
+  },
+  "quality": {
+    "final_leaderboard_name_coverage": 0.565597667638484,
+    "identical_games_within_fold": true,
+    "maximum_component_identity_error": 0.0,
+    "panel_rows": 8620,
+    "season_2027_loaded": false,
+    "selected_input_missing_values": 0,
+    "selected_input_nonfinite_values": 0
+  },
+  "run_id": "final_box_feature_ladder_v1_8bb26f12e7",
+  "selected_aio": "box_15_aio",
+  "selected_candidate": "box_15",
+  "status": "reused_diagnostic_complete"
+}

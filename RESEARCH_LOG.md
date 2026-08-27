@@ -4728,3 +4728,30 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Use the finite panel for research. Keep BoxPIPM-style and the
   completed SPM as separate AIO challengers. Do not promote either from reused
   evidence. Full report: `docs/impact/SEMANTIC_FEATURE_COMPLETION_V1.md`.
+
+## 2026-08-28 - Final BoxPIPM feature ladder and interpretability
+
+- **Question:** Can a small, cumulative sequence of completed SPM feature
+  families improve the BoxPIPM-style prior after the same one-season RAPM
+  update?
+- **Design:** Freeze eight ordered feature additions before the run. Train each
+  statistical prior on earlier five-year RAPM windows. Tune ridge alpha inside
+  each training fold. Apply the same `3000 / 3000 / 300` season-specific RAPM
+  update. Score identical next-season games for outcome seasons 2022--26. Use
+  equal-season MSE and 5,000 within-season whole-game bootstrap draws.
+- **Result:** Box15 has the lowest point MSE at `207.421` and RMSE `14.402`.
+  The closest cumulative matchup-defense arm has MSE `207.537` and interval for
+  Box15 minus matchup `[-0.944, +0.737]`. The full completed ridge ceiling has
+  MSE `208.443`; Box15 beats it by `-1.022`, with interval
+  `[-2.007, -0.022]`. No added family passes the frozen selection rule.
+- **Interpretation:** Fixed-model grouped permutation raises MSE by `7.063` for
+  disruption/fouls, `6.076` for shooting/scoring, `3.059` for
+  creation/security, and `1.361` for rebounding. Every group is positive in all
+  five repeats. These values measure dependence, not causality.
+- **QA:** The original generated leaderboard included five-year matrix players
+  with zero 2026 exposure. Interpretation run
+  `final_box_interpretability_v1_652799efb6` removes 894 such rows and reaches
+  100% active-player name coverage. Fits and game predictions are unchanged.
+- **Decision:** Keep Box15 as the research AIO prior. End the current feature
+  search. Reserve Season 2027 for untouched confirmation. Full report:
+  `docs/impact/FINAL_BOX_FEATURE_LADDER_V1.md`.
