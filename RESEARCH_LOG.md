@@ -4521,3 +4521,35 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
   the downstream decision metric. Keep Ryan-target and BoxPIPM-style ahead of
   it. "Full" here means the 151 inputs in the stored matched panel; later zTS
   and matchup-defense additions were unavailable and were not fabricated.
+
+## 2026-08-27 - PIPM breaker: target, features, learner and context
+
+- **Question:** Does BoxPIPM's apparent advantage come from its small feature
+  bank, its RAPM label, its learner, or context such as minutes, `(GS/GP)^2`,
+  normal on/off, position-adjusted offensive rebounding and spacing?
+- **Design:** Run `pipm_breaker_v1_d154ebea55` compares 15 candidates. The
+  fixed 2-by-2 crosses 15 box versus 126-offense/50-defense full features with
+  CourtSignal versus training-fold-rescaled Ryan five-year RAPM labels. Tuned
+  arms search ridge, elastic net and histogram GBM inside earlier windows.
+  Every prior receives the same one-season terminal-lineup `3000 / 3000 / 300`
+  update and scores identical 2022--24 games. The attached PIPM database is an
+  agreement check only because it mixes regular season and playoffs.
+- **Result:** The 15-feature CourtSignal-targeted ridge control is first at
+  `13.8644` mean game-margin RMSE and `.3635` correlation. Box/Ryan ridge is
+  statistically tied at `13.8668`; paired MSE delta `+0.073`, 95% interval
+  `[-0.030, +0.179]`. Minutes plus starter share scores `13.9029`, tuned box
+  `13.9050`, tuned full CourtSignal `13.9198`, adjusted OREB plus spacing
+  `13.9387`, ordinary on/off `13.9424`, and all context `13.9693`. None wins.
+- **Correlation:** Nineteen feature pairs exceed `.95` absolute correlation.
+  A training-only `.98` pruning arm drops nine offense and two defense fields
+  per fold but worsens RMSE to `13.9457`; no silent deletion is made.
+- **QA:** Basketball-Reference starts/minutes map 100% of source minutes for
+  2014--23. PIPM identity coverage is 99.12% of source minutes. The Gabriel
+  possession source retains 681,393 possessions across 3,442 games after
+  quarantining 90 official-score mismatches. Candidates score identical games,
+  offense plus defense equals net exactly, and Season 2027 is absent.
+- **Decision:** Reject the new context and large-model candidates. Better
+  five-year RAPM fit does not transfer to future games. Keep the small ridge
+  control for research and require one mechanism-driven feature family at a
+  time under the same downstream gate. Full report:
+  `docs/impact/PIPM_BREAKER_V1.md`.

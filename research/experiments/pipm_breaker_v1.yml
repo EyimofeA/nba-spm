@@ -1,0 +1,79 @@
+experiment_id: pipm_breaker_v1
+status: frozen_reused_development
+estimand_id: prior_validation_suite_v1
+
+question: >-
+  Can a five-year statistical prior beat the frozen BoxPIPM-style prior after
+  the same single-season RAPM update, and which gains come from the feature
+  bank, RAPM target, learner, or added context?
+
+information_cutoff:
+  rating_seasons: [2021, 2022, 2023]
+  test_seasons: [2022, 2023, 2024]
+  training_rule: window_end strictly before rating_season
+  season_2027: forbidden
+
+primary_test:
+  metric: equal-season mean next-season whole-game margin MSE
+  comparison: identical games and actual margins
+  uncertainty: paired whole-game bootstrap
+
+fixed_aio:
+  likelihood_seasons: 1
+  lambda_offense: 3000
+  lambda_defense: 3000
+  lambda_home: 300
+  center_scale: 1
+
+factorial:
+  feature_banks: [box_15, selected_full]
+  targets: [courtsignal_five_year_rapm, ryan_five_year_rapm_rescaled_in_training]
+  learner: ridge_selected_inside_training_history
+
+candidate_additions:
+  - log_five_year_minutes
+  - squared_starter_share
+  - ordinary_five_year_on_off
+  - position_adjusted_offensive_rebound_rate
+  - corrected_spacing_value
+
+model_families:
+  - ridge
+  - elastic_net
+  - histogram_gradient_boosting
+
+model_family_fairness:
+  rule: >-
+    Search all three families for both the small and full feature banks under
+    each target. Keep ridge-only arms as the fixed 2-by-2 target/feature
+    decomposition.
+
+correlation_policy:
+  report_threshold: 0.95
+  prune_threshold: 0.98
+  rule: >-
+    Correlation pruning is a separately scored challenger. It may not silently
+    alter the full feature bank.
+
+residual_model:
+  base: box_features_trained_on_rescaled_ryan_target
+  target: rescaled_ryan_target_minus_cross_fitted_box_prediction
+  gamma_grid: [0, 0.25, 0.5, 0.75, 1]
+  selection: grouped cross-fit inside training windows only
+
+source_boundaries:
+  public_pipm: >-
+    The attached PIPM file combines regular season and playoffs. Use it only
+    for external agreement and formula checks, not as the clean training label.
+  ordinary_on_off: >-
+    On/off reuses lineup-outcome information that also enters the AIO
+    likelihood. It is an impure diagnostic and cannot be promoted from this run.
+  minutes_and_starts: >-
+    These are availability and role signals. They are allowed only in explicit
+    predictive challengers, never silently added to the statistical impact
+    interpretation.
+
+decision_rule: >-
+  A candidate must lower paired next-season game MSE versus BoxPIPM-style and
+  avoid a material correlation loss. All seasons are reused evidence, so no
+  result can replace the public model before the reserved 2027 confirmation.
