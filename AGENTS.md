@@ -176,6 +176,12 @@ Canonical code: `src/nba_impact/models/five_year_target_spm.py`.
   are candidates, not selected SPM inputs. KOBE-style row-level shot context
   remains a 2014-15 historical prototype because modern nearest-defender rows
   are unavailable under the current source contract.
+- Controlled run `spm_stabilization_ablation_v1_db618f06e8` compares one raw or
+  stabilized value for each of 37 offense and 10 defense concepts. Stabilization
+  improves standalone five-year SPM target fit and wins four of five future-game
+  folds, but the one-season RAPM update weakens the difference. Raw minus
+  stabilized AIO MSE is `+0.1338`, with interval `[-0.2335, +0.5050]`. Retain
+  same-season stabilization in SPM research. Do not claim an AIO gain.
 
 Canonical code: `src/nba_impact/models/five_year_spm_feature_research.py`.
 
