@@ -1,0 +1,68 @@
+{
+  "caveats": [
+    "This is a third-party published-formula reconstruction, not verified original Goldstein PIPM data.",
+    "The source's 2023-24 page has zero PIPM values and is retained for QA but excluded from scored comparisons.",
+    "The source contains unstable extreme values for tiny samples; both source and AIO possession filters are applied.",
+    "Correlation measures agreement, not predictive superiority or model validity."
+  ],
+  "config": {
+    "bakeoff_hashes": {
+      "posterior_ratings": "857af97189a139ef57489917c007c1ada097bfb60161c62d5fef9f9525c73bac",
+      "priors": "7425c66f4c4fa33ceba1ae8ef46f852eeb4182e61e912172b4511c19719b7b91"
+    },
+    "bakeoff_run": "aio_prior_bakeoff_v1_0a3591a402",
+    "min_possessions_each_source": 1000.0,
+    "runner_hash": "e67f880390f6f63508115b6f2d543b33a4979a36dc437fb9c22ca9f616f96840",
+    "scored_seasons": [
+      2021,
+      2022,
+      2023
+    ],
+    "source": "The Basketball Database PIPM reconstruction",
+    "source_hashes": {
+      "2014-15": "f9d97cc2e9cad7ec509c1ada4ddbb126236c96926bab11961f5f4473c6261340",
+      "2015-16": "ee98f56c81f25eef4c05a7cddb87a44e55a08e617527dc8326c1b56569c89f05",
+      "2016-17": "fe4c812d4b58e98243db0890d8f3d14d8057a20b1dba485c93abdb616d886a6a",
+      "2017-18": "92351e6591473047922d7b116aa2c1f892fa931fb32adddb21fe7a9b2659c1e1",
+      "2018-19": "77bf3380e9ce58303f4e594da8c327e80f8e713bd2e5031e21172d4b87a6a88b",
+      "2019-20": "c570342ed7defe4dc0405321bb73b6b3ed0306212292448e06fa6972f7cc751b",
+      "2020-21": "ab1ff0d789eb12b4288f3af4f1808af778b325a28a815f43cb5391dcb6895d83",
+      "2021-22": "b3e28430555c9f2bb8e2389a5589babd3d9045b14409da778bbccdea3a3b9f20",
+      "2022-23": "3fb7bb76f446e0556423ca7253e8063e857455544306ec869e6dbb88048dd1c4",
+      "2023-24": "f9eaf768d52a88489b403cdff628f93da5c6ee5911fdbf8ef20a496428cb8061"
+    },
+    "source_urls": [
+      "https://www.thebasketballdatabase.com/2014-15RegularSeasonPlayerPIPM.html",
+      "https://www.thebasketballdatabase.com/2015-16RegularSeasonPlayerPIPM.html",
+      "https://www.thebasketballdatabase.com/2016-17RegularSeasonPlayerPIPM.html",
+      "https://www.thebasketballdatabase.com/2017-18RegularSeasonPlayerPIPM.html",
+      "https://www.thebasketballdatabase.com/2018-19RegularSeasonPlayerPIPM.html",
+      "https://www.thebasketballdatabase.com/2019-20RegularSeasonPlayerPIPM.html",
+      "https://www.thebasketballdatabase.com/2020-21RegularSeasonPlayerPIPM.html",
+      "https://www.thebasketballdatabase.com/2021-22RegularSeasonPlayerPIPM.html",
+      "https://www.thebasketballdatabase.com/2022-23RegularSeasonPlayerPIPM.html",
+      "https://www.thebasketballdatabase.com/2023-24RegularSeasonPlayerPIPM.html"
+    ]
+  },
+  "created_at": "2026-08-26T23:58:15.226075+00:00",
+  "experiment_id": "pipm_reference_comparison_v1",
+  "paths": {
+    "comparisons": "comparisons.parquet",
+    "matched_players": "matched_players.parquet",
+    "reference": "reference.parquet",
+    "season_quality": "season_quality.parquet"
+  },
+  "quality": {
+    "duplicate_reference_keys": 0,
+    "matched_rows": 1106,
+    "matched_seasons": [
+      2021,
+      2022,
+      2023
+    ],
+    "reference_rows": 5259,
+    "season_2024_nonzero_rows": 0
+  },
+  "run_id": "pipm_reference_comparison_v1_49a3c2c973",
+  "status": "research_diagnostic"
+}

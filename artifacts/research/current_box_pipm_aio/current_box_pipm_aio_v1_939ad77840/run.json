@@ -1,0 +1,118 @@
+{
+  "caveats": [
+    "BoxPIPM-style is the box-only reproducible baseline, not full PIPM.",
+    "The 2026 leaderboard has no Season 2027 predictive evaluation.",
+    "The prior uses a rolling five-year box feature window; the RAPM likelihood uses only 2026 possessions."
+  ],
+  "config": {
+    "aio": {
+      "center_scale": 1.0,
+      "lambda_def": 3000.0,
+      "lambda_home": 300.0,
+      "lambda_off": 3000.0,
+      "likelihood_seasons": 1
+    },
+    "box_features": [
+      "PTS_p100",
+      "AST_p100",
+      "TOV_p100",
+      "STL_p100",
+      "BLK_p100",
+      "OREB_p100",
+      "DREB_p100",
+      "PF_p100",
+      "PFD_p100",
+      "FTA_p100",
+      "FTM_p100",
+      "FG2A_p100",
+      "FG2M_p100",
+      "FG3A_p100",
+      "FG3M_p100"
+    ],
+    "rating_season": 2026,
+    "selected_alpha": {
+      "defense": 30.0,
+      "offense": 100.0
+    },
+    "source_hashes": {
+      "matrix_2026_manifest": "be8714d9da8db5465e68f107126eebddadc710dc5947d85f5fd1a023b8a1de75",
+      "player_sheets": {
+        "2014": "30ffc3f5090e76d9ddda98cb41ca72785e296430dae2aa3cad165318025f62dc",
+        "2015": "90ddc43dfffcc827e154677ef46f2a0c0b6c31b51784e27832869ea63c49dc20",
+        "2016": "62690961d72c732b7b0bcf6e8fb8d7921ce3c3715bb45a52d285171b831697b9",
+        "2017": "590d42a93951e43f55413582e65f4539a44b7257a24e531cf721f58ed135098e",
+        "2018": "e26f1af99c6ae9a8ba9632d5522079b4b2d38265ac2008ae9f9d8738bab83770",
+        "2019": "ebebe7174b1ab529eaa6299d6da73783420424e59bbb125d65925f1155675340",
+        "2020": "a8f0e782be214a72bee072781152d5ae637e5b80d508f46ee7efdb919d658065",
+        "2021": "7f542206d8a6206b25ff6397ef34d75fc9cb1c6315aab84b9c401c59ba6ca51f",
+        "2022": "4e46a94b3c9f85aeb0dfe49abc08340a4c86720e192783b0319ff0e375f0f95b",
+        "2023": "6d85fb54ac49f6c73e4d6dedacb216f2b28d5db475153d1bebffa9585ec1268d",
+        "2024": "beb5a5aceb7d1d3504529102a4c93eb4898ff525474ea75bd3babeeeb0e38ad3",
+        "2025": "8cbeab5559385f7be8226e168e4b2eceac3ce40029360fb770ff40770a7fc4ed",
+        "2026": "09a6a34855a3685e89ced2dcb2f79b60ed2ef97b9709b29d30848a3165fe7e2c"
+      },
+      "reference_aio": "d8787ae8aada5741b036fb17fb0d12a6ef91a1912f250018f093b8648f976031",
+      "runner": "a141b7972b97b331198a85fbea8a317b90629d1f3af918955b93c6e81ac488cb",
+      "targets": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+    }
+  },
+  "created_at": "2026-08-26T23:59:28.739284+00:00",
+  "experiment_id": "current_box_pipm_aio_v1",
+  "paths": {
+    "comparisons": "comparisons.parquet",
+    "matrix_reconstruction": "matrix_reconstruction.parquet",
+    "prior": "prior.parquet",
+    "ratings": "ratings.parquet"
+  },
+  "quality": {
+    "active_players": 582,
+    "active_players_with_names": 582,
+    "component_identity_max_error": 0.0,
+    "matrix_reconstruction": [
+      {
+        "def_possession_max_error": 0.0,
+        "minimum_def_possessions": 0.0,
+        "minimum_off_possessions": 0.0,
+        "off_possession_max_error": 0.0,
+        "players": 1068,
+        "rows": 246769,
+        "season": 2024,
+        "xtx_max_error": 0.0,
+        "xty_max_error": 5.684341886080802e-14
+      },
+      {
+        "def_possession_max_error": 0.0,
+        "minimum_def_possessions": 0.0,
+        "minimum_off_possessions": 0.0,
+        "off_possession_max_error": 0.0,
+        "players": 1095,
+        "rows": 247630,
+        "season": 2025,
+        "xtx_max_error": 0.0,
+        "xty_max_error": 1.1368683772161603e-13
+      },
+      {
+        "def_possession_max_error": 0.0,
+        "minimum_def_possessions": 0.0,
+        "minimum_off_possessions": 0.0,
+        "off_possession_max_error": 0.0,
+        "players": 1029,
+        "rows": 249547,
+        "season": 2026,
+        "xtx_max_error": 0.0,
+        "xty_max_error": 5.684341886080802e-14
+      }
+    ],
+    "players_with_names": 582,
+    "prior_coverage": {
+      "def_possession_coverage": 1.0,
+      "off_possession_coverage": 1.0,
+      "players": 1029,
+      "players_with_prior": 1029
+    },
+    "ratings": 1029,
+    "season_2027_rows": 0
+  },
+  "run_id": "current_box_pipm_aio_v1_939ad77840",
+  "status": "research_leaderboard"
+}
