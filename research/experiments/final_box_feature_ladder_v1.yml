@@ -151,9 +151,10 @@ selection:
   eligible_candidates: cumulative_ladder_steps_only
   rule: >-
     Select the eligible candidate with the lowest equal-season game-margin MSE
-    if it passes the correlation guard. Report every step and every paired
-    comparison. Do not treat the selected step as independent promotion
-    evidence because all scored seasons are reused.
+    if it beats box_15 and passes the correlation guard. Otherwise retain
+    box_15. Report every step and every paired comparison. Do not treat the
+    selected step as independent promotion evidence because all scored seasons
+    are reused.
 
 interpretability:
   selected_model_only: true
