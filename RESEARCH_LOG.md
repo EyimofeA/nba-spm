@@ -4623,3 +4623,26 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** The 2025--26 feature-input blocker is closed. Do not promote a
   model from this data refresh. Refit and validate the SPM/AIO as a separate
   experiment. Full report: `docs/impact/FULL_SPM_FEATURES_2014_2026.md`.
+
+## 2026-08-27 - Full SPM refit and late-start feature ablation
+
+- **Question:** Do the five hustle and eight matchup-defense fields that start
+  in 2018 improve the five-year SPM and its one-season RAPM posterior?
+- **Design:** Run `full_spm_history_ablation_v1_34725a86aa` compares the full
+  127/68 contract, a fixed 127/55 history-complete ablation, and BoxPIPM-style.
+  Each rating fold trains on earlier five-year windows. All priors receive the
+  same `3000 / 3000 / 300` one-season RAPM update. Five test seasons cover
+  2022--26. The paired test resamples whole games 5,000 times inside season.
+- **Result:** Full SPM beats the reduced SPM standalone by `-2.820` MSE, with
+  interval `[-4.095, -1.555]`. After RAPM, the difference shrinks to `-0.461`,
+  with interval `[-1.026, +0.109]`. Do not remove the 13 fields.
+- **Box comparison:** Full SPM and BoxPIPM-style are tied standalone. Their MSE
+  difference is `-0.843`, with interval `[-2.800, +1.112]`. Full SPM plus RAPM
+  loses to BoxPIPM-style plus RAPM by `+1.550` MSE, with interval
+  `[+0.690, +2.399]`. BoxPIPM-style wins four of five seasons.
+- **QA:** Candidates score identical games. Prior possession coverage is 100%.
+  Offense plus defense equals net exactly. Matrix reconstruction error is below
+  `1.14e-13`. Season 2027 is absent.
+- **Decision:** Keep the full feature contract. Keep BoxPIPM-style as the
+  research AIO prior. Do not promote from reused evidence. Full report:
+  `docs/impact/FULL_SPM_HISTORY_ABLATION_V1.md`.

@@ -1,0 +1,18 @@
+{
+  "experiment_id": "full_spm_history_ablation_v1",
+  "selected_run_id": "full_spm_history_ablation_v1_34725a86aa",
+  "status": "reused_diagnostic_complete",
+  "history_ablation_decision": "reject",
+  "research_aio_prior": "box_pipm",
+  "production_promotion": false,
+  "evidence": {
+    "full_vs_history_standalone_mse_delta": -2.820368,
+    "full_vs_history_standalone_ci_95": [-4.095079, -1.554656],
+    "full_aio_vs_history_aio_mse_delta": -0.460936,
+    "full_aio_vs_history_aio_ci_95": [-1.025527, 0.108814],
+    "full_aio_vs_box_aio_mse_delta": 1.549573,
+    "full_aio_vs_box_aio_ci_95": [0.690124, 2.399152]
+  },
+  "reason": "Removing all 13 late-start defense fields worsened the standalone SPM and did not improve its RAPM posterior. BoxPIPM-style plus RAPM retained the lowest future-game MSE.",
+  "season_2027_used": false
+}

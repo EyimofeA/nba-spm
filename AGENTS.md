@@ -114,6 +114,15 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   marks 2014--17 unavailable. Do not fabricate observed rows for those seasons.
 - This feature refresh closes the 2025--26 input gap. It does not refit or
   promote the five-year SPM or AIO.
+- Run `full_spm_history_ablation_v1_34725a86aa` refits the complete panel and
+  removes the 13 hustle and matchup fields that start in 2018 as one fixed
+  block. The reduced SPM loses. Keep the full 127/68 contract.
+- BoxPIPM-style plus RAPM still beats full SPM plus RAPM on equal-season
+  future-game MSE. The paired MSE delta for full minus BoxPIPM-style is
+  `+1.550`, with interval `[+0.690, +2.399]`. Keep BoxPIPM-style as the research
+  AIO prior.
+- The run emits current 2026 SPM and AIO ratings. It does not load or score
+  2027.
 - For AIO season `t`, this SPM is the prior and only season `t` possessions are
   the likelihood. It is not a five-year RAPM likelihood.
 - Run `five_year_target_spm_v1_65550acb79` beat the annual-prior AIO and
