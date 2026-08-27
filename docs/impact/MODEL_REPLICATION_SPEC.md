@@ -18,10 +18,11 @@ repository. They must not be conflated.
 | Rolling statistical AIO | `statistical_feature_v2` plus `statistical_aio` artifacts | three-season feature model predicting RAPM components | research challenger; not the annual centered-RAPM posterior |
 
 The pinned annual AIO artifact is
-`annual_aio_ratings_v1_23c4895f8f` (the later
-`annual_aio_ratings_v1_b52b5aecd9` uses the same 2017–24 rating scope with
-leave-one-season-out priors). The pinned annual SPM artifact audited here is
-`single_season_spm_v1_47b3bd9b17`.
+`annual_aio_ratings_v1_b52b5aecd9`. It covers 2017–24 and uses
+leave-one-season-out SPM priors. The validated public annual SPM lineage is
+`single_season_spm_v1_18496f5af4`. The later
+`single_season_spm_v1_47b3bd9b17` refresh extends through 2026. It is a blocked
+research result and must not silently replace the public lineage.
 
 ## 2. Normal RAPM: exact input and equation
 
@@ -113,12 +114,13 @@ target_net = target_offense + target_defense
 ```
 
 The panel uses `sample_weight = sqrt(min(Poss_Off, Poss_Def))`. This is a
-training reliability weight. It is not a model feature. The final audited run
-has 6,942 panel rows and 10 leave-one-season-out folds for output seasons
-2017–26. For the held-out season `T`, the model trains on every other available
-season in the panel. This is a descriptive reconstruction test, not a
-next-season forecast. The final leaderboard refit uses every available labeled
-season.
+training reliability weight. It is not a model feature. The validated public
+run trains on 2014–24 and publishes 2017–24. For a held-out season `T`, the
+model trains on every other available season in the panel. This is a
+descriptive reconstruction test, not a next-season forecast. The final
+leaderboard refit uses every available labeled season. The separate 2014–26
+research refresh has 6,942 panel rows and 10 leave-one-season-out folds for
+output seasons 2017–26.
 
 The public reference remains the 2017–24 SPM/AIO. The 2014–26 refresh exists as
 an artifact, but it did not improve the matched 2017–24 result and had weak

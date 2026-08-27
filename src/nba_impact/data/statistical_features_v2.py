@@ -14,7 +14,12 @@ import pandas as pd
 from nba_impact.data.manifest import sha256_file, write_json_atomic
 from nba_impact.data.player_skill_features import PLAYER_SKILL_MODEL_FEATURES
 from nba_impact.data.behavior_roles import ROLE_MODEL_FEATURES
-from nba_impact.data.statistical_features import RATIO_SPECS, _aggregate_window, _load_source
+from nba_impact.data.statistical_features import (
+    RATIO_SPECS,
+    _aggregate_window,
+    _load_source,
+    apply_possession_exposure_override,
+)
 
 TEMPORAL_FEATURES = (
     "PTS_p100", "AST_p100", "TOV_p100", "STL_p100", "BLK_p100",
@@ -374,6 +379,7 @@ def build_statistical_features_v2(
     offense_roles_path: str | Path | None = None,
     defense_roles_path: str | Path | None = None,
     source_overrides: Mapping[int, str | Path] | None = None,
+    exposure_overrides_path: str | Path | None = None,
 ) -> dict:
     if pooled_window_seasons < 1:
         raise ValueError("pooled_window_seasons must be positive.")
@@ -383,9 +389,21 @@ def build_statistical_features_v2(
     source_hashes = {}
     source_overrides = dict(source_overrides or {})
     history_seasons = max(3, pooled_window_seasons)
+    exposure_overrides = (
+        pd.read_parquet(exposure_overrides_path)
+        if exposure_overrides_path is not None
+        else None
+    )
+    exposure_cells_filled = 0
     for season in range(min(window_ends) - history_seasons + 1, max(window_ends) + 1):
         path = Path(source_overrides.get(season, source / f"{season}.csv"))
-        loaded[season] = _load_source(path, season)[0]
+        frame = _load_source(path, season)[0]
+        if exposure_overrides is not None:
+            frame, filled = apply_possession_exposure_override(
+                frame, exposure_overrides, season
+            )
+            exposure_cells_filled += filled
+        loaded[season] = frame
         source_hashes[str(season)] = sha256_file(path)
     outputs = []
     for end in window_ends:
@@ -566,6 +584,9 @@ def build_statistical_features_v2(
         "builder_sha256": sha256_file(Path(__file__)),
         "window_ends": list(window_ends),
         "pooled_window_seasons": pooled_window_seasons,
+        "exposure_overrides_sha256": (
+            sha256_file(exposure_overrides_path) if exposure_overrides_path else None
+        ),
         "playtype_features_sha256": (
             sha256_file(playtype_features_path) if playtype_features_path else None
         ),
@@ -618,6 +639,7 @@ def build_statistical_features_v2(
             "infinite_values": int(np.isinf(features.select_dtypes(include="number")).sum().sum()),
             "bounded_feature_violations": int(sum(bound_violations.values())),
             "max_new_feature_missing_fraction_before_neutral_fill": float(missing_by_feature.max()),
+            "missing_possession_exposure_cells_filled": exposure_cells_filled,
             "new_feature_missing_values_after_neutral_fill": int(
                 features[new_features].isna().sum().sum()
             ),

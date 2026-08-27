@@ -2,7 +2,7 @@
 
 ## Result
 
-Run `full_spm_features_2014_2026_v1_4c77ae6acc` supplies the exact frozen
+Run `full_spm_features_2014_2026_v1_21885aaf37` supplies the exact frozen
 127-offense and 68-defense feature contract for every season from 2014 through
 2026. It contains 6,942 annual player-seasons and 8,620 rolling five-year rows.
 Complete five-year windows end from 2018 through 2026.
@@ -50,6 +50,10 @@ without an observed defended-shot row.
 Hustle and matchup assignments are unavailable before 2018. The builder does
 not label those seasons as observed. Player-level low-opportunity fields retain
 missing values. The fitted pipelines impute medians from their training folds.
+The canonical RAPM target panel fills 506 missing player-sheet possession
+exposures without overwriting observed values. Run
+`full_feature_coverage_v1_3de4ec8954` records observed coverage and one explicit
+cause for every selected field below 99% coverage.
 
 ## QA
 
@@ -71,7 +75,9 @@ from 0.23 to 0.99981 after this correction.
 Run:
 
 ```bash
-uv run python research/build_full_spm_features_2014_2026.py
+uv run python research/rebuild_full_features_with_canonical_exposure.py
+uv run python research/run_full_feature_coverage_audit.py \
+  --panel-run full_spm_features_2014_2026_v1_21885aaf37
 ```
 
 The result stores relative artifact paths and SHA-256 hashes for every direct

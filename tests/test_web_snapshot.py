@@ -341,10 +341,12 @@ def test_snapshot_external_benchmark_matches_verified_runs(tmp_path: Path) -> No
     output_dir = _build(tmp_path)
     benchmark = _read(output_dir, "catalog.json")["validation"]["external_benchmark"]
     assert benchmark == json.loads(json.dumps(EXTERNAL_BENCHMARK))
-    windows = next(
-        row
-        for row in benchmark["rows"]
-        if row["scope"] == "Three-season SPM windows" and row["component"] == "net"
-    )
-    # Verified in external_impact_benchmark_v1_bab43a4087.
-    assert (windows["players"], windows["bpm"], windows["xrapm"]) == (2295, 0.876, 0.756)
+    assert benchmark == {}
+
+
+def test_snapshot_writes_a_portable_release_manifest(tmp_path: Path) -> None:
+    output_dir = _build(tmp_path)
+    manifest = _read(output_dir, "snapshot-manifest.json")
+    assert manifest["schema_version"] == "nba_impact_release_v1"
+    assert len(manifest["row_set_sha256"]) == 64
+    assert all(not row["relative_path"].startswith("/") for row in manifest["artifacts"])

@@ -1,0 +1,33 @@
+{
+  "created_at": "2026-08-27T16:15:40.390141+00:00",
+  "forbidden_interpretation": "Reused folds cannot promote a public model.",
+  "paths": {
+    "game_predictions": "game_predictions.parquet",
+    "paired_intervals": "paired_intervals.parquet",
+    "selections": "selections.parquet",
+    "summary": "summary.parquet",
+    "unknown_player_exposure": "unknown_player_exposure.parquet"
+  },
+  "run_id": "aio_prior_scale_audit_v1_aeca5715b3",
+  "scale_grid": [
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "scored_test_seasons": [
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "season_2027_loaded": false,
+  "selection_rule": "For each rating season, select the scale on all strictly earlier stored next-season games.",
+  "source_hashes": {
+    "runner": "5a3a1403fa6deb9a9b64d336e457dd1e5975ff672ea1751104698e37c6e4dcd9",
+    "source_manifest": "76367c0290a87cbb85d8effca02854e98b36acc5d6d10226cf260a64d9f877ae",
+    "source_priors": "fa93ff8edf302ccef0469c022ae3789e1fae86ea12da01446a6f900edd899dc2"
+  },
+  "source_run_id": "full_spm_history_ablation_v1_2eb5eb428c",
+  "status": "reused_diagnostic_complete"
+}

@@ -1,0 +1,92 @@
+{
+  "artifact_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/rapm_uncertainty/normal_rapm_uncertainty_v1_626ef1600b83",
+  "caveats": [
+    "Bootstrap is the publication uncertainty method; analytic CR0 is diagnostic only.",
+    "Intervals quantify resampled-game variation, not ridge bias, lineup attribution error, or latent ability.",
+    "Rows with missing component draws do not receive a complete joint interval."
+  ],
+  "config": {
+    "data_scope": "current_terminal_lineup",
+    "game_types": [
+      "regular"
+    ],
+    "include_home": true,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "lambda_off": 3000.0,
+    "seasons": [
+      2025
+    ],
+    "uncertainty": {
+      "contract_version": "normal_rapm_uncertainty_contract_v1",
+      "draws": 1000,
+      "method": "whole_game_bootstrap_stratified_by_season",
+      "seed": 20260812
+    }
+  },
+  "created_at": "2026-08-12T22:14:37.988403+00:00",
+  "draws_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/rapm_uncertainty/normal_rapm_uncertainty_v1_626ef1600b83/bootstrap_draws.parquet",
+  "estimand": "retrospective terminal-lineup adjusted points per 100 possessions",
+  "estimand_id": "trailing_observed_lineup_rapm_v1",
+  "metrics": {
+    "median_joint_draw_coverage": 1000.0,
+    "median_net_bootstrap_standard_error": 1.2568172961719926,
+    "players_with_complete_joint_draw_coverage": 521
+  },
+  "model_family": "zero_prior_normal_rapm_game_bootstrap",
+  "quality": {
+    "analytic_bootstrap_agreement": {
+      "defense": {
+        "high_exposure_players": 276,
+        "median_95_interval_width_ratio": 1.010875994322995
+      },
+      "net": {
+        "high_exposure_players": 276,
+        "median_95_interval_width_ratio": 1.009054931458014
+      },
+      "offense": {
+        "high_exposure_players": 276,
+        "median_95_interval_width_ratio": 1.0113080830320214
+      }
+    },
+    "analytic_method": "CR0 game-cluster ridge sandwich diagnostic",
+    "bootstrap_method": "whole_game_bootstrap_stratified_by_season",
+    "component_identity_max_error": 4.440892098500626e-16,
+    "draws_complete": 1000,
+    "draws_requested": 1000,
+    "games": 1226,
+    "players": 569,
+    "rows": 247630
+  },
+  "ratings_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/rapm_uncertainty/normal_rapm_uncertainty_v1_626ef1600b83/ratings_uncertainty.parquet",
+  "run_id": "normal_rapm_uncertainty_v1_626ef1600b83",
+  "source_hashes": {
+    "frame_hash": "950a3bab788a6e4adb63f24f398181efa0b6311f0bdbdfdc3ad4e1e4503196b5",
+    "rapm_config": {
+      "data_scope": "current_terminal_lineup",
+      "game_types": [
+        "regular"
+      ],
+      "include_home": true,
+      "lambda_def": 3000.0,
+      "lambda_home": 300.0,
+      "lambda_off": 3000.0,
+      "seasons": [
+        2025
+      ]
+    },
+    "source_code": "bc69ca34ede2493907e6fc75e41fc8e9cc9f701ea5f1011e8f04c4a8c2d6d193",
+    "source_hashes": {
+      "player_games": "88ba7fd958c757641b04ceec137817d37cc5bda133c0c74ace5d3acf4b6df21d",
+      "possessions": "5d97a6aec9e544d46adbd970e95f6d2226a15d2c5d9a3832ef1f915170182f75",
+      "segments": "68bc998a6ddb4bf02fcd962154a68c37db15f29c33d5bad2a2897926821b4063"
+    },
+    "uncertainty_config": {
+      "contract_version": "normal_rapm_uncertainty_contract_v1",
+      "draws": 1000,
+      "method": "whole_game_bootstrap_stratified_by_season",
+      "seed": 20260812
+    }
+  },
+  "status": "research_uncertainty_complete"
+}

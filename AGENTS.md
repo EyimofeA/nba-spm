@@ -108,19 +108,27 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   earlier window ends.
 - The model retains the frozen 127 offense and 68 defense inputs and learners.
 - Canonical complete feature input:
-  `full_spm_features_2014_2026_v1_4c77ae6acc`. It contains 6,942 annual rows
+  `full_spm_features_2014_2026_v1_21885aaf37`. It contains 6,942 annual rows
   for 2014--26 and 8,620 rolling rows for window ends 2018--26.
 - Hustle and matchup-assignment sources start in 2018. The coverage ledger
   marks 2014--17 unavailable. Do not fabricate observed rows for those seasons.
 - This feature refresh closes the 2025--26 input gap. It does not refit or
   promote the five-year SPM or AIO.
-- Run `full_spm_history_ablation_v1_34725a86aa` refits the complete panel and
+- Coverage run `full_feature_coverage_v1_3de4ec8954` audits all 170 selected
+  fields before imputation. It assigns an explicit source or opportunity cause
+  to every field below 99% observed coverage. Undefined rate fields remain
+  missing and receive training-fold median imputation.
+- Run `full_spm_history_ablation_v1_2eb5eb428c` refits the corrected panel and
   removes the 13 hustle and matchup fields that start in 2018 as one fixed
   block. The reduced SPM loses. Keep the full 127/68 contract.
-- BoxPIPM-style plus RAPM still beats full SPM plus RAPM on equal-season
-  future-game MSE. The paired MSE delta for full minus BoxPIPM-style is
-  `+1.550`, with interval `[+0.690, +2.399]`. Keep BoxPIPM-style as the research
-  AIO prior.
+- Corrected full SPM beats BoxPIPM-style standalone by `-2.750` paired MSE,
+  with interval `[-4.821, -0.702]`. After the same RAPM update, full minus
+  BoxPIPM-style is `+0.681`, with interval `[-0.227, +1.587]`. The final AIO
+  comparison remains unresolved.
+- Prior-scale audit `aio_prior_scale_audit_v1_aeca5715b3` selects each season's
+  scale from earlier folds. Full SPM selects `0.75`; BoxPIPM-style selects
+  `1.00`. Scaling does not improve full SPM AIO accuracy. Keep both as research
+  challengers.
 - The run emits current 2026 SPM and AIO ratings. It does not load or score
   2027.
 - For AIO season `t`, this SPM is the prior and only season `t` possessions are

@@ -175,6 +175,35 @@ def _load_source(path: Path, season: int) -> tuple[pd.DataFrame, int]:
     return frame, removed
 
 
+def apply_possession_exposure_override(
+    frame: pd.DataFrame,
+    exposure: pd.DataFrame,
+    season: int,
+) -> tuple[pd.DataFrame, int]:
+    """Fill missing player-sheet exposure from the canonical RAPM target panel.
+
+    The override supplies reliability denominators only. It never replaces an
+    observed player-sheet exposure and does not add an outcome to the feature
+    matrix.
+    """
+    season_exposure = exposure.loc[
+        exposure["Season"].eq(season),
+        ["PLAYER_ID", "Poss_Off", "Poss_Def"],
+    ].rename(columns={"Poss_Off": "OffPoss_override", "Poss_Def": "DefPoss_override"})
+    if season_exposure.duplicated("PLAYER_ID").any():
+        raise ValueError(f"Exposure override has duplicate PLAYER_ID rows for {season}.")
+    output = frame.merge(season_exposure, on="PLAYER_ID", how="left", validate="one_to_one")
+    filled = 0
+    for field in ("OffPoss", "DefPoss"):
+        override = f"{field}_override"
+        missing = pd.to_numeric(output[field], errors="coerce").isna()
+        available = pd.to_numeric(output[override], errors="coerce").gt(0)
+        use = missing & available
+        output.loc[use, field] = output.loc[use, override]
+        filled += int(use.sum())
+    return output.drop(columns=["OffPoss_override", "DefPoss_override"]), filled
+
+
 def _aggregate_window(frames: list[pd.DataFrame], window_end: int) -> pd.DataFrame:
     frame = pd.concat(frames, ignore_index=True)
     needed = _required_source_columns()
@@ -227,6 +256,7 @@ def build_statistical_feature_windows(
     window_ends: tuple[int, ...] = tuple(range(2016, 2025)),
     window_seasons: int = 3,
     source_overrides: Mapping[int, str | Path] | None = None,
+    exposure_overrides_path: str | Path | None = None,
 ) -> dict:
     """Build content-addressed pooled features from complete source seasons."""
     if window_seasons < 1:
@@ -239,11 +269,22 @@ def build_statistical_feature_windows(
     source_records = []
     source_overrides = dict(source_overrides or {})
     duplicate_rows_removed = 0
+    exposure_overrides = (
+        pd.read_parquet(exposure_overrides_path)
+        if exposure_overrides_path is not None
+        else None
+    )
+    exposure_cells_filled = 0
     for season in required_seasons:
         path = Path(source_overrides.get(season, source / f"{season}.csv"))
         if not path.exists():
             raise FileNotFoundError(f"Missing source season {path}.")
         frame, removed = _load_source(path, season)
+        if exposure_overrides is not None:
+            frame, filled = apply_possession_exposure_override(
+                frame, exposure_overrides, season
+            )
+            exposure_cells_filled += filled
         loaded[season] = frame
         duplicate_rows_removed += removed
         source_records.append(
@@ -294,6 +335,9 @@ def build_statistical_feature_windows(
         "window_seasons": window_seasons,
         "builder_sha256": sha256_file(Path(__file__)),
         "source_hashes": {str(record["season"]): record["sha256"] for record in source_records},
+        "exposure_overrides_sha256": (
+            sha256_file(exposure_overrides_path) if exposure_overrides_path else None
+        ),
     }
     identity = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()[:10]
     run_id = f"statistical_features_v1_{identity}"
@@ -332,6 +376,7 @@ def build_statistical_feature_windows(
             "players": features["PLAYER_ID"].nunique(),
             "features": len(features.columns) - 4,
             "duplicate_source_rows_collapsed_on_feature_contract": duplicate_rows_removed,
+            "missing_possession_exposure_cells_filled": exposure_cells_filled,
             "duplicate_keys": 0,
             "bounded_ratio_violations": 0,
             "latest_season_exposure_ratio_to_prior_two_median": latest_exposure_ratio,
