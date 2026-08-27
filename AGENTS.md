@@ -118,6 +118,17 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   fields before imputation. It assigns an explicit source or opportunity cause
   to every field below 99% observed coverage. Undefined rate fields remain
   missing and receive training-fold median imputation.
+- Completion run `semantically_complete_spm_features_v1_8be676bd0f` converts
+  the same contract into 175 fully finite inputs. Event rates use zero, raw
+  ratios use same-season empirical-Bayes estimates, and source-specific values
+  use zero with an availability field. Low-sample zTS uses all observed
+  playtype possessions. Rows without playtype data use season-relative TS.
+  The annual and five-year panels have zero missing selected inputs.
+- Comparison run `semantic_feature_completion_comparison_v1_235b4dea34` finds
+  no AIO gain over the previous missing-data implementation. Removing matchup
+  fields makes the standalone SPM worse. Keep matchup fields and their source
+  flag. Keep BoxPIPM-style and the completed SPM as separate research AIO
+  challengers.
 - Run `full_spm_history_ablation_v1_2eb5eb428c` refits the corrected panel and
   removes the 13 hustle and matchup fields that start in 2018 as one fixed
   block. The reduced SPM loses. Keep the full 127/68 contract.
