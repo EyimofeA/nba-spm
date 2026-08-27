@@ -1,0 +1,86 @@
+schema_version: experiment_preregistration_v1
+experiment_id: full_spm_history_ablation_v1
+status: frozen_reused_diagnostic
+created_at: 2026-08-27
+estimand_id: prior_validation_suite_v1
+
+question: >-
+  Does removing defense feature families that lack observed 2014--17 inputs
+  improve the five-year SPM and its one-season RAPM posterior relative to the
+  full feature contract and BoxPIPM-style?
+
+information_cutoff:
+  rating_seasons: [2021, 2022, 2023, 2024, 2025, 2026]
+  evaluated_rating_seasons: [2021, 2022, 2023, 2024, 2025]
+  final_unscored_rating_season: 2026
+  test_seasons: [2022, 2023, 2024, 2025, 2026]
+  training_rule: window_end strictly before rating_season
+  season_2027: forbidden
+
+feature_arms:
+  full_spm:
+    offense_features: frozen 127-field contract
+    defense_features: frozen 68-field contract
+  history_complete_spm:
+    offense_features: frozen 127-field contract
+    defense_features: frozen 68-field contract minus the fields below
+  box_pipm:
+    offense_features: fixed BoxPIPM-style box rates
+    defense_features: fixed BoxPIPM-style box rates
+
+removed_defense_features:
+  - deflections_p100
+  - charges_drawn_p100
+  - contested_2pt_p100
+  - contested_3pt_p100
+  - def_loose_balls_recovered_p100
+  - matchup_opponent_adjusted_points_saved_p100_eb
+  - matchup_fga_suppressed_vs_scorer_p100_eb
+  - matchup_shotmaking_points_saved_vs_scorer_p100_eb
+  - matchup_three_pa_suppressed_vs_scorer_p100_eb
+  - matchup_turnovers_forced_vs_scorer_p100_eb
+  - matchup_assists_suppressed_vs_scorer_p100_eb
+  - matchup_shooting_fouls_prevented_vs_scorer_p100_eb
+  - matchup_blocks_p100
+
+model_contract:
+  target: zero-prior terminal-lineup RAPM over the same rolling five seasons
+  full_and_history_offense_learner: frozen histogram gradient boosting
+  full_and_history_defense_learner: frozen ridge
+  box_learner: ridge with alpha selected only inside earlier training windows
+  sample_weight: square root of the smaller five-year offensive or defensive exposure
+  net_identity: offense plus defense
+
+aio_contract:
+  likelihood_seasons: 1
+  lambda_offense: 3000
+  lambda_defense: 3000
+  lambda_home: 300
+  center_scale: 1
+  lineup_policy: terminal
+
+evaluation:
+  primary: equal-season mean next-season whole-game margin MSE
+  reported_scale: RMSE in final-margin points
+  secondary:
+    - next-season game-margin correlation
+    - same-window five-year RAPM target RMSE and correlation
+    - paired whole-game MSE interval
+  identical_games: required within each test season
+  uncertainty:
+    draws: 5000
+    unit: whole game within test season
+    seed: 20260827
+
+decision_rule: >-
+  Prefer the history-complete arm only if its AIO lowers paired next-season MSE
+  against full SPM without a material correlation decline. Compare the winning
+  SPM and AIO with BoxPIPM-style under the same rows. Reused seasons cannot
+  promote a public model.
+
+stopping_rules:
+  - Remove the declared 13-field family as one block. Do not subset-search it.
+  - Keep the feature learners and RAPM penalties fixed.
+  - Do not load or score Season 2027.
+  - Build the 2026 rating, but do not score it against 2027.
+  - Record a null or loss in the research log.

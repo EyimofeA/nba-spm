@@ -92,6 +92,12 @@ dead ends. Updated 2026-08-25. See `docs/README.md` for the document index,
   both seasons, and has paired MSE interval `[-3.0402, -0.4367]`. Freeze it as
   the research AIO prior. Keep zero-prior RAPM public and reserve 2027 for the
   untouched production decision.
+- Full-panel run `full_spm_history_ablation_v1_34725a86aa` refits the exact
+  127/68 contract through the current 2026 rating. Removing all 13 hustle and
+  matchup fields that start in 2018 worsens the standalone SPM. Full SPM plus
+  RAPM still loses to BoxPIPM-style plus RAPM by `1.550` paired MSE, with
+  interval `[0.690, 2.399]`. Keep the full feature contract and the BoxPIPM-style
+  research prior.
 - External benchmark `external_impact_benchmark_v1_bab43a4087` matches at least
   98.47% of SPM rows per window to minutes-weighted BPM and xRAPM. Among 2,295
   high-exposure player-windows, net SPM correlates 0.876 with BPM and 0.756 with
