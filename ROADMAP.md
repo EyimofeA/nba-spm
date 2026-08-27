@@ -98,6 +98,12 @@ dead ends. Updated 2026-08-25. See `docs/README.md` for the document index,
   RAPM still loses to BoxPIPM-style plus RAPM by `1.550` paired MSE, with
   interval `[0.690, 2.399]`. Keep the full feature contract and the BoxPIPM-style
   research prior.
+- Stabilization run `spm_stabilization_ablation_v1_db618f06e8` removes raw/EB
+  duplicates and compares 37 offense plus 10 defense pairs under identical
+  learners and games. Stabilization improves the standalone five-year SPM in
+  four of five future-game folds. Its AIO gain remains uncertain: raw minus
+  stabilized MSE is `+0.1338`, with interval `[-0.2335, +0.5050]`. Keep it for
+  SPM research, but treat its AIO effect as null.
 - External benchmark `external_impact_benchmark_v1_bab43a4087` matches at least
   98.47% of SPM rows per window to minutes-weighted BPM and xRAPM. Among 2,295
   high-exposure player-windows, net SPM correlates 0.876 with BPM and 0.756 with

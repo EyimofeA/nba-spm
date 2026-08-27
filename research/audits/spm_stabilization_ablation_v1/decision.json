@@ -1,0 +1,26 @@
+{
+  "audit_id": "spm_stabilization_ablation_v1",
+  "run_id": "spm_stabilization_ablation_v1_db618f06e8",
+  "status": "research_null_for_aio",
+  "decision": "retain_stabilization_for_spm_but_not_as_aio_improvement_claim",
+  "primary_estimand": "equal-season mean next-season whole-game margin MSE",
+  "standalone_spm": {
+    "raw_minus_stabilized_mse": 0.42519392583875515,
+    "bootstrap_95_low": -0.29140658873796993,
+    "bootstrap_95_high": 1.1671623064365646,
+    "probability_stabilized_lower_mse": 0.887,
+    "stabilized_fold_wins": 4,
+    "raw_fold_wins": 1
+  },
+  "aio": {
+    "raw_minus_stabilized_mse": 0.13378189014457575,
+    "bootstrap_95_low": -0.23346714823139222,
+    "bootstrap_95_high": 0.5050155283846008,
+    "probability_stabilized_lower_mse": 0.7682,
+    "stabilized_fold_wins": 3,
+    "raw_fold_wins": 2
+  },
+  "promotion_allowed": false,
+  "reason": "The AIO point estimates are tied and the paired interval spans zero. All scored seasons are reused evidence.",
+  "season_2027_used": false
+}

@@ -1,0 +1,315 @@
+{
+  "config": {
+    "bootstrap": {
+      "aggregation": "equal-season mean MSE",
+      "draws": 5000,
+      "seed": 20260827,
+      "unit": "whole game within test season"
+    },
+    "center_scale": 1.0,
+    "evaluated_rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "experiment_id": "spm_stabilization_ablation_v1",
+    "feature_counts": {
+      "raw_spm": {
+        "defense": 68,
+        "offense": 98
+      },
+      "stabilized_spm": {
+        "defense": 68,
+        "offense": 98
+      }
+    },
+    "final_unscored_rating_season": 2026,
+    "paired_concepts": {
+      "defense": 10,
+      "offense": 37
+    },
+    "rapm_penalties": {
+      "defense": 3000.0,
+      "home": 300.0,
+      "offense": 3000.0
+    },
+    "rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "sources": {
+      "annual_features": {
+        "path": "artifacts/research/full_feature_2014_2026/features/statistical_impact/statistical_features_v2_cb03edaf32/features.parquet",
+        "sha256": "452793dfefafb0a5d678471cd53dd7a86cb352fd0f30de57426dfd35211a0f84"
+      },
+      "contract": {
+        "path": "research/experiments/spm_stabilization_ablation_v1.yml",
+        "sha256": "9f8763a78146e43df3f5d33325f3739d05ea445b2f1640a9e606c4b477c51865"
+      },
+      "five_year_features": {
+        "path": "artifacts/research/full_feature_2014_2026/panels/full_spm_features_2014_2026_v1_4c77ae6acc/five_year_features.parquet",
+        "sha256": "1891fdb53e416f784318daf47352b6ce88c8ad84f3ea567780f9dcc8eca655c2"
+      },
+      "matchup_features": {
+        "path": "artifacts/research/full_feature_2014_2026/features/matchup_defense/matchup_defense_features_v1_72fcc2f921/features.parquet",
+        "sha256": "d3aec3591b18e4e96e1758ab8b3c02811dd5b79812b9fca38b75609d2dee730b"
+      },
+      "matrix_2021": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2021/manifest.json",
+        "sha256": "33be4c9bc5b9f324e0c269b364e71aa4dc26117c20eb7e6640cdcc1b76187c8a"
+      },
+      "matrix_2022": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2022/manifest.json",
+        "sha256": "5206445af95e91cba94d1350268fe3ca395debb170a61eff0dfd83001fc1ece5"
+      },
+      "matrix_2023": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2023/manifest.json",
+        "sha256": "4b7d7fbcae5b24c37e795ab115dea03f20c01e4c0456adbe232fe706feafc91a"
+      },
+      "matrix_2024": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2024/manifest.json",
+        "sha256": "fca774fbfa755851d5325eae7ab1c6626ae0108d193d029bfeae537f6edde83d"
+      },
+      "matrix_2025": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2025/manifest.json",
+        "sha256": "0fc7d3316833f2984ae365fe492519128e120808061068190484fc614c94de10"
+      },
+      "matrix_2026": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2026/manifest.json",
+        "sha256": "be8714d9da8db5465e68f107126eebddadc710dc5947d85f5fd1a023b8a1de75"
+      },
+      "possessions_2020": {
+        "path": "rapm/data/possession_cache/matchups_2020.parquet",
+        "sha256": "b177865501897984437fcc8c08ee229ff462e0319e032f7642b5077670d375c6"
+      },
+      "possessions_2021": {
+        "path": "rapm/data/possession_cache/matchups_2021.parquet",
+        "sha256": "0bfd107dad6959b1a45e4c7762fcde2d901e364d64b632299deeb22092749a6a"
+      },
+      "possessions_2022": {
+        "path": "rapm/data/possession_cache/matchups_2022.parquet",
+        "sha256": "b04388818590ad1bff4fb6b9ca9d27dd4ac9dc6dd744c34160153206bcb32248"
+      },
+      "possessions_2023": {
+        "path": "rapm/data/possession_cache/matchups_2023.parquet",
+        "sha256": "15f710ba2964bcbc80ca4753038b8c22fb18188bafd0cb62c886ac39840faa15"
+      },
+      "runner": {
+        "path": "research/run_spm_stabilization_ablation.py",
+        "sha256": "561d71048d979750c85e8ad2dab4c630423c336bc6fed8e76f6e952ad62824b5"
+      },
+      "selected_manifest": {
+        "path": "artifacts/research/full_feature_2014_2026/panels/full_spm_features_2014_2026_v1_4c77ae6acc/run.json",
+        "sha256": "12266e50122a7bca9f01202ad171352ddc1d51bb0a37dc4325dc2602c8d95a29"
+      },
+      "targets": {
+        "path": "artifacts/models/five_year_target_spm/five_year_target_spm_v1_65550acb79/five_year_targets.parquet",
+        "sha256": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+      }
+    },
+    "test_seasons": [
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ]
+  },
+  "contract": {
+    "aio_contract": {
+      "center_scale": 1,
+      "lambda_defense": 3000,
+      "lambda_home": 300,
+      "lambda_offense": 3000,
+      "likelihood_seasons": 1,
+      "lineup_policy": "terminal"
+    },
+    "created_at": "2026-08-27",
+    "decision_rule": "Prefer stabilization only if the stabilized AIO lowers paired next-season MSE against the raw AIO without a material correlation decline. Reused seasons cannot promote a public model.",
+    "estimand_id": "prior_validation_suite_v1",
+    "evaluation": {
+      "identical_games": "required within each test season",
+      "primary": "equal-season mean next-season whole-game margin MSE",
+      "reported_scale": "RMSE in final-margin points",
+      "secondary": [
+        "next-season game-margin correlation",
+        "same-window five-year RAPM target RMSE and correlation",
+        "paired whole-game MSE interval"
+      ],
+      "uncertainty": {
+        "draws": 5000,
+        "seed": 20260827,
+        "unit": "whole game within test season"
+      }
+    },
+    "experiment_id": "spm_stabilization_ablation_v1",
+    "feature_contract": {
+      "common_features": "Keep every frozen selected feature that has no declared raw/stabilized pair.",
+      "defense_pairs": {
+        "dfg_diff_pct_eb": "dfg_diff_pct_raw",
+        "matchup_assists_suppressed_vs_scorer_p100_eb": "matchup_assists_suppressed_vs_scorer_p100_raw",
+        "matchup_fga_suppressed_vs_scorer_p100_eb": "matchup_fga_suppressed_vs_scorer_p100_raw",
+        "matchup_opponent_adjusted_points_saved_p100_eb": "matchup_opponent_adjusted_points_saved_p100",
+        "matchup_shooting_fouls_prevented_vs_scorer_p100_eb": "matchup_shooting_fouls_prevented_vs_scorer_p100_raw",
+        "matchup_shotmaking_points_saved_vs_scorer_p100_eb": "matchup_shotmaking_points_saved_vs_scorer_p100_raw",
+        "matchup_three_pa_suppressed_vs_scorer_p100_eb": "matchup_three_pa_suppressed_vs_scorer_p100_raw",
+        "matchup_turnovers_forced_vs_scorer_p100_eb": "matchup_turnovers_forced_vs_scorer_p100_raw",
+        "rim_diff_pct_eb": "rim_diff_pct_raw",
+        "rim_points_saved_p100": "rim_points_saved_p100_raw"
+      },
+      "exclusions": [
+        "Do not include both values from one pair in either arm.",
+        "Do not change unrelated features between arms.",
+        "Do not use another season to stabilize or fill a feature value."
+      ],
+      "offense_composite_pairs": {
+        "assist_to_load_2017_eb": "assist_to_load_2017",
+        "behavioral_passer_score_v1": "behavioral_passer_score_raw_v1",
+        "box_creation_2017_eb_p100": "box_creation_2017_p100",
+        "crafted_spacing_stable_v1": "crafted_spacing_proxy_v1",
+        "creation_to_load_2017_eb": "creation_to_load_2017",
+        "offensive_load_2017_eb_p100": "offensive_load_2017_p100",
+        "shooting_proficiency_2017_eb": "shooting_proficiency_2017",
+        "turnover_to_load_2017_eb": "turnover_to_load_2017"
+      },
+      "offense_ratio_rule": "Pair each selected offense field ending in _eb with its selected field of the same name without _eb. Remove the raw duplicate from the stabilized arm."
+    },
+    "information_cutoff": {
+      "evaluated_rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "final_unscored_rating_season": 2026,
+      "rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "season_2027": "forbidden",
+      "test_seasons": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "training_rule": "window_end strictly before rating_season"
+    },
+    "model_contract": {
+      "defense_learner": "frozen ridge",
+      "net_identity": "offense plus defense",
+      "offense_learner": "frozen histogram gradient boosting",
+      "sample_weight": "square root of the smaller five-year offensive or defensive exposure",
+      "target": "zero-prior terminal-lineup RAPM over the same rolling five seasons"
+    },
+    "question": "Does same-season empirical-Bayes stabilization improve the frozen five-year SPM and its one-season RAPM posterior when the raw and stabilized arms use the same concepts, rows, learners, targets, and evaluation games?",
+    "schema_version": "experiment_preregistration_v1",
+    "status": "frozen_reused_diagnostic",
+    "stopping_rules": [
+      "Freeze the complete concept map before fitting.",
+      "Keep learners, targets, sample weights, and RAPM penalties fixed.",
+      "Do not subset-search feature pairs after seeing results.",
+      "Do not load or score Season 2027.",
+      "Build the 2026 rating, but do not score it against 2027.",
+      "Record a null or loss in the research log."
+    ]
+  },
+  "created_at": "2026-08-27T12:55:26.224289+00:00",
+  "estimand": "next-season game margin from prior-season player ratings",
+  "experiment_id": "spm_stabilization_ablation_v1",
+  "files": {
+    "bootstrap_model_intervals.parquet": {
+      "path": "bootstrap_model_intervals.parquet",
+      "rows": 5,
+      "sha256": "af4001c706b5906dd936a5ae4f01f11d0155b0940c874d0d8aff6513239361d0"
+    },
+    "feature_pair_coverage.parquet": {
+      "path": "feature_pair_coverage.parquet",
+      "rows": 423,
+      "sha256": "1add29e7a0f509375b67febd867aa73a264ddd7a5c291ae80460b575a871e7fe"
+    },
+    "feature_pair_map.parquet": {
+      "path": "feature_pair_map.parquet",
+      "rows": 47,
+      "sha256": "2bd43054f2f41086f136f10f8656656d132daf3c72689ac46dc2a94ce30602e3"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "rows": 25,
+      "sha256": "d54bd76fdcceb5fac57e0a95669387506733cea1d56adbf7b0feb0a6f2d4f7a4"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 30705,
+      "sha256": "a8b1d1698555b233caa0190de5dc8e05683690b111d2c6402693ae2bbf371a2e"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "model_selection.parquet": {
+      "path": "model_selection.parquet",
+      "rows": 24,
+      "sha256": "a7a8dd382eaeb9b0c81a54dcd2555fbf3d130d6513b7fe0bfd294ae09aeac18e"
+    },
+    "models": {
+      "files": 24,
+      "path": "models"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 10,
+      "sha256": "d713d9f2f6cef3a824fbc564ae31b13dd39e919b39595ee69ba1c4ba9e06a335"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "rows": 12,
+      "sha256": "7f031e5b04699a9232eccf2f7f1a33c992a1140545667cf3f69fe059e9223f8b"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "rows": 11822,
+      "sha256": "a943f10de117de53252dee41d6a9a795da53c545b8df636f086e617b58188979"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "rows": 32160,
+      "sha256": "3555ad414b1e852c6ae4d088da2b43a55fc78317795db4aefc5ce069e98f4be3"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "rows": 5,
+      "sha256": "0d32f7bfd40e9781d8c8cae46e4fd6feee60fbbc93a9ffd495cca0a69a5ab307"
+    },
+    "target_metrics.parquet": {
+      "path": "target_metrics.parquet",
+      "rows": 36,
+      "sha256": "070cb7d8be3a152236d35e8518b6b7c9f831611f2a0a7e23be72f3d6f148a6df"
+    }
+  },
+  "forbidden_interpretation": "All five test seasons are reused evidence. This run cannot promote a public model.",
+  "quality": {
+    "equal_feature_counts_within_side": true,
+    "final_rating_season": 2026,
+    "identical_games_within_fold": true,
+    "maximum_component_identity_error": 0.0,
+    "panel_rows": 8620,
+    "raw_and_stabilized_use_one_value_per_paired_concept": true,
+    "season_2027_loaded": false
+  },
+  "run_id": "spm_stabilization_ablation_v1_db618f06e8",
+  "status": "reused_diagnostic_complete"
+}

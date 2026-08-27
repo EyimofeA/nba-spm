@@ -4646,3 +4646,27 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Keep the full feature contract. Keep BoxPIPM-style as the
   research AIO prior. Do not promote from reused evidence. Full report:
   `docs/impact/FULL_SPM_HISTORY_ABLATION_V1.md`.
+
+## 2026-08-27 - Same-season stabilization ablation
+
+- **Question:** Does same-season empirical-Bayes stabilization improve the
+  five-year SPM or its one-season RAPM posterior when raw and stabilized arms
+  use the same concepts?
+- **Design:** Run `spm_stabilization_ablation_v1_db618f06e8` removes the raw
+  duplicates from the stabilized offense contract. Each arm uses 98 offense
+  and 68 defense fields, including 37 offense and 10 defense value pairs. Both
+  arms use the same frozen learners, five-year RAPM targets, chronological
+  folds, square-root exposure weights, and `3000 / 3000 / 300` AIO update.
+- **SPM result:** Stabilization lowers mean net target RMSE from `1.5281` to
+  `1.4803` and raises correlation from `.6607` to `.6982`. It wins four of five
+  future-game folds. Raw minus stabilized MSE is `+0.4252`, with interval
+  `[-0.2914, +1.1672]` and 88.70% probability that stabilization is better.
+- **AIO result:** The RAPM update weakens the difference. Raw minus stabilized
+  MSE is `+0.1338`, with interval `[-0.2335, +0.5050]`. Stabilized wins three
+  folds. The probability that stabilization is better is 76.82%.
+- **QA:** Candidates score identical games. Prior possession coverage is 100%.
+  Offense plus defense equals net exactly. Matrix reconstruction error is below
+  `1.14e-13`. Season 2027 is absent.
+- **Decision:** Retain same-season stabilization for standalone SPM research.
+  Record a null for final AIO accuracy. Do not promote from reused evidence.
+  Full report: `docs/impact/SPM_STABILIZATION_ABLATION_V1.md`.
