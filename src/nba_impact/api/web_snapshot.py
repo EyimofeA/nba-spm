@@ -13,6 +13,7 @@ import pandas as pd
 
 from nba_impact.api.player_profiles import PROFILE_AXES, build_player_skill_profiles
 from nba_impact.api.ratings import ROLE_LABELS, RatingsApiConfig, RatingsStore
+from nba_impact.research.control_plane import validate_release_manifest
 
 
 COMPONENTS = ("offense", "defense", "net")
@@ -25,93 +26,27 @@ MODEL_CATALOG = [
         "label": "AIO",
         "prefix": "aio_",
         "source": "aio_",
-        "note": "SPM center plus the RAPM update.",
+        "note": "One-season possession fit centered on the SPM estimate.",
     },
     {
         "id": "rapm",
         "label": "RAPM",
         "prefix": "normal_rapm_",
         "source": "normal_rapm_",
-        "note": "Zero-prior one-season ridge on possessions.",
+        "note": "One-season zero-prior ridge fit on possession lineups.",
     },
     {
         "id": "spm",
         "label": "SPM",
         "prefix": "spm_",
         "source": "spm_center_",
-        "note": "Held-out statistical prediction that centers the RAPM fit.",
+        "note": "Box and tracking model trained to reproduce annual RAPM.",
     },
 ]
 
-# Verified external agreement, transcribed from frozen benchmark runs.  These
-# are diagnostics against public metrics, never labels or ground truth.
-EXTERNAL_BENCHMARK = {
-    "note": (
-        "Basketball Reference BPM and xrapm.com are external diagnostics. "
-        "They are not training labels and not ground truth."
-    ),
-    "rows": [
-        {
-            "scope": "Three-season SPM windows",
-            "exposure": "3,000+ possessions per side",
-            "players": 2295,
-            "component": "net",
-            "bpm": 0.876,
-            "xrapm": 0.756,
-            "run_id": "external_impact_benchmark_v1_bab43a4087",
-        },
-        {
-            "scope": "Three-season SPM windows",
-            "exposure": "3,000+ possessions per side",
-            "players": 2295,
-            "component": "offense",
-            "bpm": None,
-            "xrapm": 0.831,
-            "run_id": "external_impact_benchmark_v1_bab43a4087",
-        },
-        {
-            "scope": "Three-season SPM windows",
-            "exposure": "3,000+ possessions per side",
-            "players": 2295,
-            "component": "defense",
-            "bpm": None,
-            "xrapm": 0.630,
-            "run_id": "external_impact_benchmark_v1_bab43a4087",
-        },
-        {
-            "scope": "Annual SPM baseline",
-            "exposure": "1,000+ possessions per side",
-            "players": 2860,
-            "component": "net",
-            "bpm": 0.897,
-            "xrapm": 0.762,
-            "run_id": "single_season_spm_v1_51adc53061",
-        },
-        {
-            "scope": "Annual SPM baseline",
-            "exposure": "1,000+ possessions per side",
-            "players": 2860,
-            "component": "defense",
-            "bpm": 0.803,
-            "xrapm": 0.590,
-            "run_id": "single_season_spm_v1_51adc53061",
-        },
-        {
-            "scope": "Annual SPM plus tracking",
-            "exposure": "1,000+ possessions per side",
-            "players": None,
-            "component": "defense",
-            "bpm": 0.690,
-            "xrapm": 0.701,
-            "run_id": "single_season_spm_v1_bff6060df6",
-        },
-    ],
-    "pinned_model_note": (
-        "The pinned rating model adds scorer-adjusted matchup features. Its "
-        "defense agreement improves against xRAPM and declines against BPM; "
-        "exact values are not published."
-    ),
-}
+# Public snapshots must not transcribe values from unrelated model runs. The
+# research app can load a benchmark artifact with matching lineage separately.
+EXTERNAL_BENCHMARK: dict[str, Any] = {}
 
 
 def _compact_memberships(items: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
@@ -811,8 +746,54 @@ def build_web_snapshot(
         rows = {player_id: player for player_id, player in players.items() if int(player_id) % shards == shard}
         files[name] = write(name, rows)
     total_bytes = sum(size for size, _ in files.values())
+    row_set_sha256 = hashlib.sha256(
+        "|".join(f"{name}:{digest}" for name, (_, digest) in sorted(files.items())).encode()
+    ).hexdigest()
+    release_artifacts = [
+        {
+            "artifact_id": config.annual_run_id,
+            "relative_path": f"models/{config.annual_model_family}/{config.annual_run_id}",
+            "season_scope": f"{historical_seasons[0]}-{historical_seasons[-1]}",
+            "evidence_status": "research_challenger_not_production",
+            "run_status": str(store.annual_manifest.get("status", "unknown")),
+        }
+    ]
+    if current_run_id is not None:
+        release_artifacts.append(
+            {
+                "artifact_id": current_run_id,
+                "relative_path": (
+                    "models/current_single_season_rapm_targets/"
+                    f"{current_run_id}"
+                ),
+                "season_scope": "2025-2026",
+                "evidence_status": "production_reference_method",
+                "run_status": "research_frozen_baseline",
+            }
+        )
+    release = {
+        "schema_version": "nba_impact_release_v1",
+        "created_at": catalog["created_at"],
+        "row_set_sha256": row_set_sha256,
+        "artifacts": release_artifacts,
+        "files": {
+            name: {"bytes": size, "sha256": digest}
+            for name, (size, digest) in sorted(files.items())
+        },
+    }
+    manifest_name = "snapshot-manifest.json"
+    manifest_size, manifest_hash = write(manifest_name, release)
+    files[manifest_name] = (manifest_size, manifest_hash)
+    issues = validate_release_manifest(output / manifest_name)
+    if issues:
+        raise ValueError(
+            "Invalid web release manifest: "
+            + "; ".join(f"{issue.code}: {issue.message}" for issue in issues)
+        )
+    total_bytes += manifest_size
     return {
         "output_dir": str(output.resolve()), "players": len(players),
         "seasons": seasons, "shards": shards, "bytes": total_bytes,
+        "row_set_sha256": row_set_sha256,
         "files": {name: {"bytes": size, "sha256": digest} for name, (size, digest) in files.items()},
     }

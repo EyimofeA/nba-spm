@@ -1,0 +1,69 @@
+{
+  "artifact_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/rapm/rapm_v0_01b5084f0a",
+  "caveats": [
+    "The estimand is descriptive and uses observed lineups, not a pregame forecast.",
+    "Source games that fail lineup quality gates are excluded rather than repaired.",
+    "The latest-season retrodiction contains players absent from earlier training seasons.",
+    "Uncertainty is not estimated in this version."
+  ],
+  "config": {
+    "data_scope": "current_cdn_terminal_lineup",
+    "game_types": [
+      "regular"
+    ],
+    "include_home": true,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "lambda_off": 3000.0,
+    "lineup_policy": "terminal",
+    "possessions_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/silver/possessions.parquet",
+    "seasons": [
+      2024,
+      2025,
+      2026
+    ],
+    "segments_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/silver/possession_lineup_segments.parquet",
+    "source_code_sha256": "f8a3bc638c61a074d63c93ecc7d1405e49a9a17c1336fe04a84c8d8d84b37de6",
+    "source_hashes": {
+      "legacy_names": "b15308f5a936c44111957e116ea58b1467a673b1b57a25375cbe6be40cde9074",
+      "player_games": "88ba7fd958c757641b04ceec137817d37cc5bda133c0c74ace5d3acf4b6df21d",
+      "possessions": "5d97a6aec9e544d46adbd970e95f6d2226a15d2c5d9a3832ef1f915170182f75",
+      "segments": "68bc998a6ddb4bf02fcd962154a68c37db15f29c33d5bad2a2897926821b4063"
+    }
+  },
+  "created_at": "2026-08-10T14:48:47.653863+00:00",
+  "dataset_snapshot_id": "possessions_769070fb3b70f511",
+  "estimand": "lineup_adjusted_descriptive_points_per_100",
+  "metrics": {
+    "games": 3681,
+    "in_sample_rmse": 1.1900385123396287,
+    "intercept_points_per_possession": 1.1348806258390556,
+    "missing_player_names": 0,
+    "players": 802,
+    "quarantine_counts": {},
+    "retrodiction": {
+      "actual_margin_sd": 16.36204095639413,
+      "calibration_intercept": 0.01104268787735263,
+      "calibration_slope": 0.8165221407228758,
+      "evaluation": "lineup_conditioned_retrodiction",
+      "games": 1228,
+      "games_with_unknown_players": 1122,
+      "known_player_rate": 0.8653366583541147,
+      "margin_correlation": 0.33444090760750234,
+      "margin_mae": 12.197004478907441,
+      "margin_rmse": 15.473200052164126,
+      "predicted_margin_sd": 6.701760497177753,
+      "status": "complete",
+      "test_season": 2026,
+      "train_seasons": [
+        2024,
+        2025
+      ],
+      "warning": "Uses observed test-season lineups; this is retrodiction, not a deployable forecast."
+    },
+    "rows": 743946
+  },
+  "model_family": "zero_prior_rapm",
+  "run_id": "rapm_v0_01b5084f0a",
+  "status": "research_frozen_baseline"
+}

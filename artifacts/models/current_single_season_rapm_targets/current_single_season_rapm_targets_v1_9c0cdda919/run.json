@@ -1,0 +1,76 @@
+{
+  "artifact_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/current_single_season_rapm_targets/current_single_season_rapm_targets_v1_9c0cdda919",
+  "caveats": [
+    "One-season RAPM is noisy and is a target for research, not ground truth.",
+    "Canonical current targets must pass an overlap comparison before they are joined to legacy annual targets.",
+    "Games that fail canonical lineup-quality gates are excluded."
+  ],
+  "config": {
+    "builder_sha256": "ee555e67b2f3b7bc824124d54c6d1e3329824664a20ede64e826330b8bc2aea5",
+    "game_types": [
+      "regular"
+    ],
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "lambda_off": 3000.0,
+    "lineup_policy": "terminal",
+    "prior": "zero",
+    "season_label_convention": "season-ending year",
+    "seasons": [
+      2024,
+      2025,
+      2026
+    ],
+    "source_hashes": {
+      "legacy_player_names": "b15308f5a936c44111957e116ea58b1467a673b1b57a25375cbe6be40cde9074",
+      "player_games": "88ba7fd958c757641b04ceec137817d37cc5bda133c0c74ace5d3acf4b6df21d",
+      "possession_lineup_segments": "68bc998a6ddb4bf02fcd962154a68c37db15f29c33d5bad2a2897926821b4063",
+      "possessions": "5d97a6aec9e544d46adbd970e95f6d2226a15d2c5d9a3832ef1f915170182f75"
+    }
+  },
+  "created_at": "2026-08-14T00:00:50.233585+00:00",
+  "estimand": "single_regular_season_offense_defense_and_net_points_per_100",
+  "metrics": {
+    "season_quality": [
+      {
+        "games": 1227,
+        "minimum_defensive_possessions": 2,
+        "minimum_offensive_possessions": 1,
+        "missing_player_names": 0,
+        "players": 572,
+        "possession_rows": 246769,
+        "season": 2024
+      },
+      {
+        "games": 1226,
+        "minimum_defensive_possessions": 7,
+        "minimum_offensive_possessions": 6,
+        "missing_player_names": 0,
+        "players": 569,
+        "possession_rows": 247630,
+        "season": 2025
+      },
+      {
+        "games": 1228,
+        "minimum_defensive_possessions": 5,
+        "minimum_offensive_possessions": 5,
+        "missing_player_names": 0,
+        "players": 582,
+        "possession_rows": 249547,
+        "season": 2026
+      }
+    ]
+  },
+  "model_family": "canonical_current_single_season_zero_prior_normal_rapm_targets",
+  "quality": {
+    "duplicate_keys": 0,
+    "maximum_component_identity_error": 4.440892098500626e-16,
+    "maximum_missing_player_names": 0,
+    "minimum_games_per_season": 1226,
+    "players": 802,
+    "rows": 1723
+  },
+  "run_id": "current_single_season_rapm_targets_v1_9c0cdda919",
+  "status": "research_canonical_training_labels",
+  "targets_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/current_single_season_rapm_targets/current_single_season_rapm_targets_v1_9c0cdda919/targets.parquet"
+}

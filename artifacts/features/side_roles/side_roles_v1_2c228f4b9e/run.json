@@ -1,0 +1,247 @@
+{
+  "artifact_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/features/side_roles/side_roles_v1_2c228f4b9e",
+  "config": {
+    "defense_config": {
+      "candidate_clusters": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "development_seasons": [
+        2018,
+        2019,
+        2020,
+        2021
+      ],
+      "maximum_cluster_share": 0.36,
+      "minimum_cluster_share": 0.015,
+      "minimum_descriptor_coverage": 0.8,
+      "minimum_seed_ari": 0.9,
+      "n_axes": 6,
+      "prefix": "def_role",
+      "seed": 20260817,
+      "stability_seeds": [
+        11,
+        29,
+        47,
+        71,
+        101
+      ]
+    },
+    "defense_inputs": [
+      "rebound_contest_share",
+      "dreb_contested_share",
+      "dfg_attempts_p100",
+      "rim_dfga_p100",
+      "contested_2pt_p100",
+      "contested_3pt_p100",
+      "def_matchup_switches_p100",
+      "def_matchup_fga_p100",
+      "def_matchup_3pa_share",
+      "def_matchup_potential_assists_p100",
+      "def_matchup_help_fga_p100",
+      "def_opponent_off_role_affinity_0",
+      "def_opponent_off_role_affinity_1",
+      "def_opponent_off_role_affinity_2",
+      "def_opponent_off_role_affinity_3",
+      "def_opponent_off_role_affinity_4",
+      "def_opponent_off_role_affinity_5"
+    ],
+    "defense_seasons": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "matchup_offense_role_coverage_by_season": {
+      "2018": 0.9687537700157614,
+      "2019": 0.970962868470345,
+      "2020": 0.9805348988232849,
+      "2021": 0.974568114062102,
+      "2022": 0.9805745488777864,
+      "2023": 0.9845180596833383,
+      "2024": 0.972629878187311
+    },
+    "offense_config": {
+      "candidate_clusters": [
+        6,
+        8,
+        10,
+        12
+      ],
+      "development_seasons": [
+        2014,
+        2015,
+        2016,
+        2017,
+        2018
+      ],
+      "maximum_cluster_share": 0.36,
+      "minimum_cluster_share": 0.015,
+      "minimum_descriptor_coverage": 0.8,
+      "minimum_seed_ari": 0.9,
+      "n_axes": 8,
+      "prefix": "off_role",
+      "seed": 20260817,
+      "stability_seeds": [
+        11,
+        29,
+        47,
+        71,
+        101
+      ]
+    },
+    "offense_inputs": [
+      "FG2A_p100",
+      "FG3A_p100",
+      "FTA_p100",
+      "OREB_p100",
+      "drives_p100",
+      "touches_p100",
+      "front_court_touches_p100",
+      "paint_touches_p100",
+      "post_touches_p100",
+      "elbow_touches_p100",
+      "time_of_possession_p100",
+      "passes_made_p100",
+      "potential_assists_p100",
+      "avg_seconds_per_touch",
+      "avg_dribbles_per_touch",
+      "self_created_point_share",
+      "assisted_three_share",
+      "pull_up_attempt_share",
+      "drive_pass_rate",
+      "creation_load_p100",
+      "interior_role_load",
+      "at_rim_frequency",
+      "short_mid_frequency",
+      "long_mid_frequency",
+      "corner3_frequency",
+      "arc3_frequency",
+      "all_shot_zero_dribble_share",
+      "all_shot_three_plus_dribble_share",
+      "jump_shot_zero_dribble_share",
+      "jump_shot_three_plus_dribble_share",
+      "playtype_share_cut",
+      "playtype_share_hand_off",
+      "playtype_share_iso",
+      "playtype_share_misc",
+      "playtype_share_off_screen",
+      "playtype_share_post",
+      "playtype_share_pr_ball",
+      "playtype_share_pr_roll",
+      "playtype_share_putback",
+      "playtype_share_spot",
+      "playtype_share_transition"
+    ],
+    "offense_seasons": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "source_hashes": {
+      "annual_features": "815dce8da8f3e7735dccf03271678e647c309b51f95fc8d509e3ec3cb3e0a5cc",
+      "builder": "24e3f699937682499c2e6641db90f8ce07824b4f7569b89f160905df22fd4460",
+      "defensive_tracking": "d081030d0ce443b7a4de6abe9ebbdef3595b856816beb44064df33d7986cb4d9",
+      "dribble_context": "eb65d4e3b34bfe532043b40a8b903c1172e7b76d0a52fe636a3612fbeb585d28",
+      "matchup_archives": {
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/shufinskiy_nba_data/revision=e829d46/matchups/season=2018/matchups_2017.tar.xz": "c09c1c5a54ceb9af0e3c31a3452f912ebdc721a763be9e0360b0a6f8abcb0d66",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/shufinskiy_nba_data/revision=e829d46/matchups/season=2019/matchups_2018.tar.xz": "e618b602d809969384c583e263896397b8279abe456e435f38bae2b9d64e5644",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/shufinskiy_nba_data/revision=e829d46/matchups/season=2020/matchups_2019.tar.xz": "930ee633aa45645ace1e3c4c6111139ee0c85363d74786ec2ad96e6ae9b95ea4",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/shufinskiy_nba_data/revision=e829d46/matchups/season=2021/matchups_2020.tar.xz": "2d5ea06bf51c59fe0903e90a81de601d3d1751b15e811d2ba731ab68846d4dd8",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/shufinskiy_nba_data/revision=e829d46/matchups/season=2022/matchups_2021.tar.xz": "71e5fff86639b5e08d29a77692013e5a4eee8a5f3733c7af870656b2c6f81b3c",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/shufinskiy_nba_data/revision=e829d46/matchups/season=2023/matchups_2022.tar.xz": "9beaa66f389b6e2b5c538ab8738332c09f1b6a57087065b097da35eacc69b215",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/shufinskiy_nba_data/revision=e829d46/matchups/season=2024/matchups_2023.tar.xz": "c91a1dad0d7649b38eb885455291c63139675e52eeda75c0b6269e4bc64aa52e"
+      },
+      "playtype": "3503146f6a38eff8ca2ae39c7c838dacd2c90ec739b8e5f10b1b41b8a12d6d22"
+    }
+  },
+  "created_at": "2026-08-17T19:21:06.795063+00:00",
+  "dataset": "annual_side_specific_behavior_roles_v1",
+  "interpretation": "Roles describe observed deployment. Cluster labels are anonymous and are not BBall Index grades, positions, player value, or role-fit counterfactuals.",
+  "metrics": {
+    "defense": {
+      "adjacent_pairs": 1333,
+      "adjacent_same_role_rate": 0.7044261065266316,
+      "coverage": 0.9958495460440986,
+      "development_rows": 2123,
+      "eligible_rows": 3839,
+      "input_features": 17,
+      "maximum_out_of_sample_cluster_share": 0.3473193473193473,
+      "median_adjacent_axis_cosine": 0.8450956602656228,
+      "median_seed_adjusted_rand": 0.9910433143221012,
+      "minimum_out_of_sample_cluster_share": 0.02564102564102564,
+      "out_of_sample_rows": 1716,
+      "pca_explained_variance": 0.9201323326280726,
+      "rows": 3855,
+      "selected_clusters": 5,
+      "silhouette": 0.24702359802579169
+    },
+    "offense": {
+      "adjacent_pairs": 2094,
+      "adjacent_same_role_rate": 0.7129894937917861,
+      "coverage": 0.8014159903298221,
+      "development_rows": 1997,
+      "eligible_rows": 4641,
+      "input_features": 41,
+      "maximum_out_of_sample_cluster_share": 0.2704236006051437,
+      "median_adjacent_axis_cosine": 0.9102696031740586,
+      "median_seed_adjusted_rand": 0.9809383780741907,
+      "minimum_out_of_sample_cluster_share": 0.10514372163388805,
+      "out_of_sample_rows": 2644,
+      "pca_explained_variance": 0.84370744038808,
+      "rows": 5791,
+      "selected_clusters": 6,
+      "silhouette": 0.23226474147794784
+    }
+  },
+  "model_features": {
+    "defense": [
+      "def_role_axis_1",
+      "def_role_axis_2",
+      "def_role_axis_3",
+      "def_role_axis_4",
+      "def_role_axis_5",
+      "def_role_axis_6",
+      "def_role_affinity_0",
+      "def_role_affinity_1",
+      "def_role_affinity_2",
+      "def_role_affinity_3"
+    ],
+    "offense": [
+      "off_role_axis_1",
+      "off_role_axis_2",
+      "off_role_axis_3",
+      "off_role_axis_4",
+      "off_role_axis_5",
+      "off_role_axis_6",
+      "off_role_axis_7",
+      "off_role_axis_8",
+      "off_role_affinity_0",
+      "off_role_affinity_1",
+      "off_role_affinity_2",
+      "off_role_affinity_3",
+      "off_role_affinity_4"
+    ]
+  },
+  "paths": {
+    "defense_assignments": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/features/side_roles/side_roles_v1_2c228f4b9e/defense_assignments.parquet",
+    "defensive_matchup_context": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/features/side_roles/side_roles_v1_2c228f4b9e/defensive_matchup_context.parquet",
+    "offense_assignments": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/features/side_roles/side_roles_v1_2c228f4b9e/offense_assignments.parquet"
+  },
+  "run_id": "side_roles_v1_2c228f4b9e",
+  "status": "validated_research_input"
+}

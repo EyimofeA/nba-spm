@@ -1,0 +1,53 @@
+{
+  "artifact_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/features/role_stabilization/role_stabilization_v1_f5b426dd5d",
+  "caveats": [
+    "Stabilization is a forward-only display layer and is not an SPM feature.",
+    "A stable label can lag a real role change.",
+    "The selection target is next-season raw role affinity, not player impact."
+  ],
+  "config": {
+    "candidate_current_weights": [
+      0.4,
+      0.55,
+      0.7,
+      0.85,
+      1.0
+    ],
+    "gap_rule": "reset to current raw affinities after any missing season",
+    "selection_rule": "minimum prior-state prediction MSE on development-season adjacent pairs",
+    "source_code": "ddd251c6ddc4bc35dace69d237de8f3c21a243b2bbf01483bea946ad796fdb83",
+    "source_hashes": {
+      "defense": "cb42a53aefd1419e95c15d619b666fae52bf73bb7e8d34b5a3a34d62eca523c8",
+      "offense": "04e27f9df444da9bba73db070402f93c4e266f2251a6f26daf54b1d6409db449",
+      "run": "64b4b6d3aa601709f9446fca8dc9da04c76e1db13216a38b4ff25a8682f10222"
+    },
+    "source_side_roles_run_id": "side_roles_v1_2c228f4b9e"
+  },
+  "created_at": "2026-08-17T20:29:44.445050+00:00",
+  "dataset": "forward_filtered_side_role_memberships_v1",
+  "metrics": {
+    "defense": {
+      "later_adjacent_pairs": 1333,
+      "later_raw_same_role_rate": 0.7044261065266316,
+      "later_stable_raw_disagreement_rate": 0.06526631657914479,
+      "later_stable_same_role_rate": 0.7696924231057765,
+      "selected_current_weight": 0.7,
+      "selected_development_prediction_mse": 0.019600692354585825
+    },
+    "offense": {
+      "later_adjacent_pairs": 2094,
+      "later_raw_same_role_rate": 0.7129894937917861,
+      "later_stable_raw_disagreement_rate": 0.07545367717287488,
+      "later_stable_same_role_rate": 0.7989493791786055,
+      "selected_current_weight": 0.7,
+      "selected_development_prediction_mse": 0.009033198951771692
+    }
+  },
+  "quality": {
+    "defense_rows": 3839,
+    "nonfinite_values": 0,
+    "offense_rows": 4641
+  },
+  "run_id": "role_stabilization_v1_f5b426dd5d",
+  "status": "validated_descriptive_stabilization"
+}

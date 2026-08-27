@@ -4670,3 +4670,35 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Retain same-season stabilization for standalone SPM research.
   Record a null for final AIO accuracy. Do not promote from reused evidence.
   Full report: `docs/impact/SPM_STABILIZATION_ABLATION_V1.md`.
+
+## 2026-08-27 - Coverage-gated full-feature refit and prior-scale audit
+
+- **Gate:** Run `full_feature_coverage_v1_3de4ec8954` audits all 170 selected
+  features before imputation. The rebuild fills 1,012 missing possession cells
+  for 506 player-seasons from the canonical RAPM target panel. It preserves all
+  observed player-sheet exposures.
+- **Coverage:** Seventy-five annual fields and 77 pooled five-year fields remain
+  below 99% observed coverage. Every field has an explicit source, eligibility,
+  opportunity, or missing-row cause. No field has an unexplained gap.
+- **Corrected design:** Five-year rows now pool frozen annual feature estimates
+  by possession exposure. They no longer re-engineer stabilized ratios from a
+  raw five-year aggregate.
+- **Refit:** Run `full_spm_history_ablation_v1_2eb5eb428c` finds that full SPM
+  beats BoxPIPM-style standalone by `-2.750` paired MSE, with interval
+  `[-4.821, -0.702]`. Full SPM plus RAPM trails BoxPIPM-style plus RAPM by
+  `+0.681`, with interval `[-0.227, +1.587]`. The posterior comparison remains
+  unresolved.
+- **Feature history:** The full AIO beats the history-complete AIO by `-0.756`
+  MSE, with interval `[-1.362, -0.151]`. Retain late-start hustle and matchup
+  inputs with explicit missing-history indicators.
+- **Prior scale:** Run `aio_prior_scale_audit_v1_aeca5715b3` selects scales from
+  earlier folds only. Full SPM selects `.75`; BoxPIPM-style selects `1.00`.
+  Scaling full SPM changes MSE by `-0.014`, with interval
+  `[-0.543, +0.515]`. Prior scale does not explain the unresolved AIO result.
+- **Forecast limitation:** Actual future lineups supply oracle exposure in this
+  diagnostic. Unknown player slots rise from 8.28% in 2023 to 10.74% in 2026.
+  Do not describe the result as a deployable forecast.
+- **Decision:** Keep the public 2017–24 lineage unchanged. Keep full SPM and
+  BoxPIPM-style as research AIO challengers. Reserve 2027 for frozen
+  confirmation. Full report:
+  `docs/impact/FULL_FEATURE_COVERAGE_AND_REFIT_2026_08_27.md`.

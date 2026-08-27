@@ -145,3 +145,27 @@ def test_builder_separates_shooting_fouls_drawn_from_committed(tmp_path) -> None
     feature = pd.read_parquet(run["features_path"]).iloc[0]
     assert feature["shooting_fouls_drawn_p100"] == pytest.approx(4.0)
     assert feature["shooting_fouls_committed_p100"] == pytest.approx(8.0)
+
+
+def test_builder_fills_only_missing_exposure_from_canonical_targets(tmp_path) -> None:
+    source = tmp_path / "raw"
+    _write_sources(
+        source,
+        {2024: [_season_row(1, OffPoss=float("nan"), DefPoss=float("nan"))]},
+    )
+    exposure = tmp_path / "targets.parquet"
+    pd.DataFrame(
+        {"PLAYER_ID": [1], "Season": [2024], "Poss_Off": [200.0], "Poss_Def": [250.0]}
+    ).to_parquet(exposure, index=False)
+    run = build_statistical_feature_windows(
+        source,
+        artifact_root=tmp_path,
+        window_ends=(2024,),
+        window_seasons=1,
+        exposure_overrides_path=exposure,
+    )
+    feature = pd.read_parquet(run["features_path"]).iloc[0]
+    assert feature["OffPoss"] == pytest.approx(200.0)
+    assert feature["DefPoss"] == pytest.approx(250.0)
+    assert feature["PTS_p100"] == pytest.approx(10.0)
+    assert run["quality"]["missing_possession_exposure_cells_filled"] == 2

@@ -1,0 +1,158 @@
+{
+  "artifact_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/annual_aio_ratings/annual_aio_ratings_v1_b52b5aecd9",
+  "caveats": [
+    "These ratings use complete-season features and possessions; they are descriptive, not preseason forecasts.",
+    "The SPM prior training rule is: all labeled seasons except the rated season.",
+    "The feature family and 2022-2024 seasons are already inspected and are not untouched promotion evidence.",
+    "Legacy possessions stop after 2024 and the 2024 regular-season cache has 1,229 games.",
+    "Uncertainty is not estimated in this version."
+  ],
+  "config": {
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "lambda_off": 3000.0,
+    "lineup_policy": "legacy possession terminal lineup",
+    "prior_center_scale": 1.0,
+    "prior_run_id": "annual_spm_oof_priors_v1_7810d88ec3",
+    "prior_training_rule": "all labeled seasons except the rated season",
+    "seasons": [
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "source_hashes": {
+      "names": "b15308f5a936c44111957e116ea58b1467a673b1b57a25375cbe6be40cde9074",
+      "possessions": {
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/rapm/data/possession_cache/matchups_2017.parquet": "a3845ef9eb7c9e777f9785fdf83a5baec992f151822c96c71e340f234af340e5",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/rapm/data/possession_cache/matchups_2018.parquet": "9795706ae88602450e2e8e51cf18334ca90e838ab60ecabf48c6a2628b007f92",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/rapm/data/possession_cache/matchups_2019.parquet": "13c96c21ec744bb50eadba1f385b75800895f78af00cc9535502803998c4103f",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/rapm/data/possession_cache/matchups_2020.parquet": "b177865501897984437fcc8c08ee229ff462e0319e032f7642b5077670d375c6",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/rapm/data/possession_cache/matchups_2021.parquet": "0bfd107dad6959b1a45e4c7762fcde2d901e364d64b632299deeb22092749a6a",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/rapm/data/possession_cache/matchups_2022.parquet": "b04388818590ad1bff4fb6b9ca9d27dd4ac9dc6dd744c34160153206bcb32248",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/rapm/data/possession_cache/matchups_2023.parquet": "15f710ba2964bcbc80ca4753038b8c22fb18188bafd0cb62c886ac39840faa15",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/rapm/data/possession_cache/matchups_2024.parquet": "9d13e7bd1f81d35a5ade7434eb4671f496facdf0a6c818bdfd92e4b7f7b7569a"
+      },
+      "priors": "669c6b39a795f0b2ea230d82d7a7ec73d8e10f22ff047fe4a8a580df36029e3d",
+      "source_code": "1a3185232a5f3dcec4b0509b10c0c9d2d719eb922992ec4bd675abd4b3c32d3c"
+    }
+  },
+  "created_at": "2026-08-17T19:47:39.906698+00:00",
+  "estimand": "single_regular_season_lineup_adjusted_points_per_100",
+  "metrics": {
+    "season_quality": [
+      {
+        "aio_intercept_per_possession": 1.0833294021576447,
+        "games": 1230,
+        "lineup_slot_prior_coverage": 1.0,
+        "max_component_identity_error": 4.440892098500626e-16,
+        "normal_intercept_per_possession": 1.0838309317084376,
+        "player_prior_coverage": 1.0,
+        "players": 486,
+        "players_with_prior": 486,
+        "possession_rows": 237381,
+        "season": 2017
+      },
+      {
+        "aio_intercept_per_possession": 1.082114247464809,
+        "games": 1230,
+        "lineup_slot_prior_coverage": 1.0,
+        "max_component_identity_error": 4.440892098500626e-16,
+        "normal_intercept_per_possession": 1.0825165352787993,
+        "player_prior_coverage": 1.0,
+        "players": 540,
+        "players_with_prior": 540,
+        "possession_rows": 239636,
+        "season": 2018
+      },
+      {
+        "aio_intercept_per_possession": 1.098904718457088,
+        "games": 1230,
+        "lineup_slot_prior_coverage": 1.0,
+        "max_component_identity_error": 4.440892098500626e-16,
+        "normal_intercept_per_possession": 1.0992876602273336,
+        "player_prior_coverage": 1.0,
+        "players": 530,
+        "players_with_prior": 530,
+        "possession_rows": 246511,
+        "season": 2019
+      },
+      {
+        "aio_intercept_per_possession": 1.1030244374142895,
+        "games": 1059,
+        "lineup_slot_prior_coverage": 1.0,
+        "max_component_identity_error": 4.440892098500626e-16,
+        "normal_intercept_per_possession": 1.1035349428108545,
+        "player_prior_coverage": 1.0,
+        "players": 529,
+        "players_with_prior": 529,
+        "possession_rows": 212549,
+        "season": 2020
+      },
+      {
+        "aio_intercept_per_possession": 1.1205683792132566,
+        "games": 1079,
+        "lineup_slot_prior_coverage": 1.0,
+        "max_component_identity_error": 4.440892098500626e-16,
+        "normal_intercept_per_possession": 1.1211711681694827,
+        "player_prior_coverage": 1.0,
+        "players": 540,
+        "players_with_prior": 540,
+        "possession_rows": 214053,
+        "season": 2021
+      },
+      {
+        "aio_intercept_per_possession": 1.1154779208557062,
+        "games": 1230,
+        "lineup_slot_prior_coverage": 1.0,
+        "max_component_identity_error": 4.440892098500626e-16,
+        "normal_intercept_per_possession": 1.1159376244256096,
+        "player_prior_coverage": 1.0,
+        "players": 605,
+        "players_with_prior": 605,
+        "possession_rows": 241753,
+        "season": 2022
+      },
+      {
+        "aio_intercept_per_possession": 1.1440257720284777,
+        "games": 1230,
+        "lineup_slot_prior_coverage": 1.0,
+        "max_component_identity_error": 8.881784197001252e-16,
+        "normal_intercept_per_possession": 1.1445465656886071,
+        "player_prior_coverage": 1.0,
+        "players": 539,
+        "players_with_prior": 539,
+        "possession_rows": 244045,
+        "season": 2023
+      },
+      {
+        "aio_intercept_per_possession": 1.1477107907971957,
+        "games": 1229,
+        "lineup_slot_prior_coverage": 1.0,
+        "max_component_identity_error": 4.440892098500626e-16,
+        "normal_intercept_per_possession": 1.1482992537190895,
+        "player_prior_coverage": 1.0,
+        "players": 572,
+        "players_with_prior": 572,
+        "possession_rows": 242471,
+        "season": 2024
+      }
+    ]
+  },
+  "model_family": "annual_spm_centered_normal_rapm",
+  "quality": {
+    "duplicate_keys": 0,
+    "maximum_component_identity_error": 8.881784197001252e-16,
+    "minimum_lineup_slot_prior_coverage": 1.0,
+    "missing_names": 0,
+    "players": 1270,
+    "rows": 4341
+  },
+  "ratings_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/annual_aio_ratings/annual_aio_ratings_v1_b52b5aecd9/ratings.parquet",
+  "run_id": "annual_aio_ratings_v1_b52b5aecd9",
+  "status": "research_leaderboard"
+}

@@ -21,7 +21,7 @@ def test_build_rolling_five_year_features_pools_external_fields(tmp_path) -> Non
         ).to_parquet(sheets / f"{season}.parquet", index=False)
         annual_rows.append(
             {"PLAYER_ID": 1, "Window_End": season, "OffPoss": 100, "DefPoss": 100,
-             "PTS_p100": season - 2000, "zts_pct_points": season - 2010,
+             "PTS_p100": 100 + season - 2014, "zts_pct_points": season - 2010,
              "rim_points_saved_p100": 2 * (season - 2010)}
         )
     annual = pd.DataFrame(annual_rows)
@@ -34,6 +34,7 @@ def test_build_rolling_five_year_features_pools_external_fields(tmp_path) -> Non
         annual, sheets, selected, window_ends=(2018,)
     ).iloc[0]
 
+    assert result["PTS_p100"] == 102
     assert result["zts_pct_points"] == 6
     assert result["rim_points_saved_p100"] == 12
     assert result["Window_End"] == 2018

@@ -1,0 +1,24 @@
+{
+  "annual_features_below_threshold": 75,
+  "five_year_features_below_threshold": 77,
+  "interpretation": "The gate requires every sub-99% feature to have a source-backed reason. It does not relabel absent tracking or zero-opportunity rates as observed.",
+  "panel_run_id": "full_spm_features_2014_2026_v1_21885aaf37",
+  "paths": {
+    "coverage_report": "coverage_report.md",
+    "feature_coverage": "feature_coverage.csv",
+    "feature_coverage_by_season": "feature_coverage_by_season.parquet",
+    "features_below_99pct": "features_below_99pct.csv"
+  },
+  "run_id": "full_feature_coverage_v1_3de4ec8954",
+  "selected_feature_count": 170,
+  "source_hashes": {
+    "dfg": "c60931805d54ccd578dd2928e33cbe54704daf399bd24f2cfe3ca30a7bf17eed",
+    "hustle": "41dcf3b33527d18280a425a8f18bb0beb1b5a97cb7860cf0bb7360a480ef0860",
+    "matchup_defense": "d3aec3591b18e4e96e1758ab8b3c02811dd5b79812b9fca38b75609d2dee730b",
+    "playtype": "cc5024a579dd1056a732148c531514a2d574a4eeee4998b8f7b2c95814c3a69e",
+    "rim_dfg": "4bb5385489c12a6d9fc21a941c164f1c0196308a23c38b65e9cf802b81d5af86"
+  },
+  "status": "complete_with_explained_gaps",
+  "threshold": 0.99,
+  "unexplained_features": 0
+}

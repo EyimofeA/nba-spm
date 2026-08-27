@@ -1,0 +1,96 @@
+{
+  "artifact_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/rapm_uncertainty/normal_rapm_uncertainty_v1_e8278899ae3a",
+  "caveats": [
+    "Bootstrap is the publication uncertainty method; analytic CR0 is diagnostic only.",
+    "Intervals quantify resampled-game variation, not ridge bias, lineup attribution error, or latent ability.",
+    "Rows with missing component draws do not receive a complete joint interval."
+  ],
+  "config": {
+    "data_scope": "legacy_terminal_lineup",
+    "game_types": [
+      "regular"
+    ],
+    "include_home": true,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "lambda_off": 3000.0,
+    "seasons": [
+      2022,
+      2023,
+      2024
+    ],
+    "uncertainty": {
+      "contract_version": "normal_rapm_uncertainty_contract_v1",
+      "draws": 1000,
+      "method": "whole_game_bootstrap_stratified_by_season",
+      "seed": 20260812
+    }
+  },
+  "created_at": "2026-08-12T22:25:33.168916+00:00",
+  "draws_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/rapm_uncertainty/normal_rapm_uncertainty_v1_e8278899ae3a/bootstrap_draws.parquet",
+  "estimand": "retrospective terminal-lineup adjusted points per 100 possessions",
+  "estimand_id": "trailing_observed_lineup_rapm_v1",
+  "metrics": {
+    "median_joint_draw_coverage": 1000.0,
+    "median_net_bootstrap_standard_error": 1.2587483475143495,
+    "players_with_complete_joint_draw_coverage": 704
+  },
+  "model_family": "zero_prior_normal_rapm_game_bootstrap",
+  "quality": {
+    "analytic_bootstrap_agreement": {
+      "defense": {
+        "high_exposure_players": 451,
+        "median_95_interval_width_ratio": 1.0044671538950052
+      },
+      "net": {
+        "high_exposure_players": 451,
+        "median_95_interval_width_ratio": 1.0056097715508745
+      },
+      "offense": {
+        "high_exposure_players": 451,
+        "median_95_interval_width_ratio": 1.0036997651913722
+      }
+    },
+    "analytic_method": "CR0 game-cluster ridge sandwich diagnostic",
+    "bootstrap_method": "whole_game_bootstrap_stratified_by_season",
+    "component_identity_max_error": 4.440892098500626e-16,
+    "draws_complete": 1000,
+    "draws_requested": 1000,
+    "games": 3689,
+    "players": 818,
+    "rows": 728269
+  },
+  "ratings_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/rapm_uncertainty/normal_rapm_uncertainty_v1_e8278899ae3a/ratings_uncertainty.parquet",
+  "run_id": "normal_rapm_uncertainty_v1_e8278899ae3a",
+  "source_hashes": {
+    "frame_hash": "cd6fab1dddf34119a3350cef65dacfdb62c9e470a791cc9548e221cea6b92948",
+    "rapm_config": {
+      "data_scope": "legacy_terminal_lineup",
+      "game_types": [
+        "regular"
+      ],
+      "include_home": true,
+      "lambda_def": 3000.0,
+      "lambda_home": 300.0,
+      "lambda_off": 3000.0,
+      "seasons": [
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "source_code": "bc69ca34ede2493907e6fc75e41fc8e9cc9f701ea5f1011e8f04c4a8c2d6d193",
+    "source_hashes": {
+      "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/rapm/data/possession_cache/matchups_2022.parquet": "b04388818590ad1bff4fb6b9ca9d27dd4ac9dc6dd744c34160153206bcb32248",
+      "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/rapm/data/possession_cache/matchups_2023.parquet": "15f710ba2964bcbc80ca4753038b8c22fb18188bafd0cb62c886ac39840faa15",
+      "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/rapm/data/possession_cache/matchups_2024.parquet": "9d13e7bd1f81d35a5ade7434eb4671f496facdf0a6c818bdfd92e4b7f7b7569a"
+    },
+    "uncertainty_config": {
+      "contract_version": "normal_rapm_uncertainty_contract_v1",
+      "draws": 1000,
+      "method": "whole_game_bootstrap_stratified_by_season",
+      "seed": 20260812
+    }
+  },
+  "status": "research_uncertainty_complete"
+}

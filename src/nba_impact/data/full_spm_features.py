@@ -12,13 +12,15 @@ import numpy as np
 import pandas as pd
 
 from .manifest import sha256_file, write_json_atomic
-from .statistical_features import _aggregate_window, _load_source
-from .statistical_features_v2 import _engineer_window
 
 
 def load_feature_contract(path: str | Path) -> dict[str, tuple[str, ...]]:
     manifest = json.loads(Path(path).read_text())
-    raw = manifest.get("features") or manifest.get("selected_features")
+    raw = (
+        manifest.get("features")
+        or manifest.get("selected_features")
+        or manifest.get("feature_contract")
+    )
     if not isinstance(raw, dict):
         raise ValueError("Feature contract must contain offense and defense lists.")
     selected = {
@@ -55,12 +57,17 @@ def _pool_annual_field(
 
 def build_rolling_five_year_features(
     annual: pd.DataFrame,
-    player_sheet_dir: str | Path,
+    player_sheet_dir: str | Path | None,
     selected: dict[str, tuple[str, ...]],
     *,
     window_ends: tuple[int, ...] = tuple(range(2018, 2027)),
 ) -> pd.DataFrame:
-    """Pool the frozen feature contract over exact five-season windows."""
+    """Possession-pool frozen annual estimates over exact five-season windows.
+
+    ``player_sheet_dir`` remains in the signature for caller compatibility. The
+    rolling panel must not re-engineer rates from pooled raw rows because that
+    would change the annual stabilization target.
+    """
     required_annual = {"PLAYER_ID", "Window_End", "OffPoss", "DefPoss"}
     selected_union = tuple(dict.fromkeys((*selected["offense"], *selected["defense"])))
     if missing := sorted((required_annual | set(selected_union)) - set(annual.columns)):
@@ -68,39 +75,32 @@ def build_rolling_five_year_features(
     if annual.duplicated(["PLAYER_ID", "Window_End"]).any():
         raise ValueError("Annual feature keys are not unique.")
 
-    source = Path(player_sheet_dir)
-    needed_seasons = range(min(window_ends) - 4, max(window_ends) + 1)
-    loaded: dict[int, pd.DataFrame] = {}
-    for season in needed_seasons:
-        csv_path = source / f"{season}.csv"
-        parquet_path = source / f"{season}.parquet"
-        path = csv_path if csv_path.exists() else parquet_path
-        if not path.exists():
-            raise FileNotFoundError(
-                f"No player sheet for season {season}: expected {csv_path} or {parquet_path}."
-            )
-        loaded[season] = _load_source(path, season)[0]
-
     outputs: list[pd.DataFrame] = []
     for end in window_ends:
-        frames = [loaded[season] for season in range(end - 4, end + 1)]
-        temporal = [
-            _aggregate_window([loaded[season]], season)
-            for season in range(end - 2, end + 1)
-        ]
-        pooled = _engineer_window(_aggregate_window(frames, end), frames, temporal)
         window = annual.loc[annual["Window_End"].between(end - 4, end)].copy()
-        missing_fields = [field for field in selected_union if field not in pooled.columns]
-        for field in missing_fields:
+        player_ids = pd.Series(
+            sorted(window["PLAYER_ID"].dropna().unique()), name="PLAYER_ID"
+        )
+        pooled_columns: dict[str, pd.Series | int] = {
+            "PLAYER_ID": player_ids,
+            "Window_End": int(end),
+        }
+        for weight_field in ("OffPoss", "DefPoss"):
+            totals = pd.to_numeric(window[weight_field], errors="coerce").groupby(
+                window["PLAYER_ID"]
+            ).sum(min_count=1)
+            pooled_columns[weight_field] = player_ids.map(totals)
+        for field in selected_union:
             if field in selected["offense"] and field not in selected["defense"]:
                 weight_field = "OffPoss"
             elif field in selected["defense"] and field not in selected["offense"]:
                 weight_field = "DefPoss"
             else:
                 weight_field = "OffPoss"
-            pooled[field] = _pool_annual_field(
-                window, pooled["PLAYER_ID"], field, weight_field
+            pooled_columns[field] = _pool_annual_field(
+                window, player_ids, field, weight_field
             )
+        pooled = pd.DataFrame(pooled_columns)
         keep = ["PLAYER_ID", "Window_End", "OffPoss", "DefPoss", *selected_union]
         outputs.append(pooled[keep])
 
