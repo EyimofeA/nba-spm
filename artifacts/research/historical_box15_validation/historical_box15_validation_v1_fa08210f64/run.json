@@ -1,0 +1,182 @@
+{
+  "contract": {
+    "candidates": {
+      "box15_expanded_history": {
+        "training_window_ends": [
+          2001,
+          2026
+        ]
+      },
+      "box15_original_history": {
+        "training_window_ends": [
+          2018,
+          2026
+        ]
+      }
+    },
+    "estimand_id": "prior_validation_suite_v1",
+    "experiment_id": "historical_box15_validation_v1",
+    "fixed_aio": {
+      "center_scale": 1,
+      "lambda_defense": 3000,
+      "lambda_home": 300,
+      "lambda_offense": 3000,
+      "likelihood_seasons": 1
+    },
+    "forbidden_interpretation": "The scored seasons are reused. Passing the retention gate supports a historical research extension but does not promote a public model or consume Season 2027.",
+    "information_cutoff": {
+      "evaluated_rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "season_2027": "forbidden",
+      "test_seasons": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "training_rule": "window_end strictly before rating_season"
+    },
+    "learner": {
+      "alpha_grid": [
+        10,
+        30,
+        100,
+        300,
+        1000,
+        3000
+      ],
+      "alpha_selection": "leave_one_training_season_out_inside_each_outer_fold",
+      "family": "ridge",
+      "features": "Box15",
+      "sample_weight": "sqrt_min_offensive_and_defensive_possessions"
+    },
+    "question": "Does adding 2001-2017 five-year training windows preserve current-era Box15 AIO accuracy on identical next-season games?",
+    "retention_gate": {
+      "identical_games_required": true,
+      "maximum_equal_season_rmse_increase": 0.05,
+      "maximum_mean_margin_correlation_decline": 0.01
+    },
+    "schema_version": "experiment_preregistration_v1",
+    "status": "frozen_reused_diagnostic"
+  },
+  "created_at": "2026-08-29T22:25:27.762222+00:00",
+  "experiment_id": "historical_box15_validation_v1",
+  "files": {
+    "alpha_selection.parquet": {
+      "path": "alpha_selection.parquet",
+      "rows": 24,
+      "sha256": "5bdc51485e4c96a599b8c939cc98fc214a34873cb7f5300fb9e543e477285d3b"
+    },
+    "bootstrap_model_intervals.parquet": {
+      "path": "bootstrap_model_intervals.parquet",
+      "rows": 5,
+      "sha256": "0e42ce6761700ec455377ae9dfc35ea6c34856fec493934095a08327199c63eb"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "rows": 25,
+      "sha256": "ddda82bf7198823d97689eec54708f6bf5fa46e8fddb083503e3b72efa9420ae"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 30705,
+      "sha256": "369934a34150a4d6fe69077098ca28594ee862a7e1c6f33dccfa438b52f6c139"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 10,
+      "sha256": "d1e93edeb71d6a39fb5929545397149a6d6a24b96e8715f00eb8d14c7a0e74a7"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "rows": 12,
+      "sha256": "a9923eee31ee0010a0ac686ed3587c2de424283f116b50243b0d8d9b4989c218"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "rows": 11822,
+      "sha256": "1196b678254a47c62c7da1ace91bbc7d2de8fe4692c88055414db35d681fd01e"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "rows": 32160,
+      "sha256": "899c05522d1da37e46fd1a44f93e1544d4d6d04b158c789724b808537c0be1d3"
+    },
+    "retention_gate.parquet": {
+      "path": "retention_gate.parquet",
+      "rows": 1,
+      "sha256": "e2e8414fd5389821538dc0b150fff5f2b37eb222c6770d423fc04bfc7ee1884a"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "rows": 5,
+      "sha256": "b5c1fea3b1f9eec4d7cdbd5c65361df0786f0f32f9ed7bbbd17da1b82fe1e4e5"
+    },
+    "target_metrics.parquet": {
+      "path": "target_metrics.parquet",
+      "rows": 36,
+      "sha256": "11b51ac0abaa91e13906675306dec5c814a062ee510423f4a6f4f991fee50035"
+    }
+  },
+  "forbidden_interpretation": "The scored seasons are reused. Passing the retention gate supports a historical research extension but does not promote a public model or consume Season 2027.",
+  "quality": {
+    "expanded_training_window_ends": [
+      2001,
+      2026
+    ],
+    "maximum_component_identity_error": 0.0,
+    "retention_gate_passed": true,
+    "season_2027_loaded": false
+  },
+  "run_id": "historical_box15_validation_v1_fa08210f64",
+  "sources": {
+    "contract": {
+      "path": "research/experiments/historical_box15_validation_v1.yml",
+      "sha256": "3ab6409b2ac34596e3e6e41379e72fdaf3f549e08d0455c8ef33ce193153bf8f"
+    },
+    "historical_features": {
+      "path": "artifacts/research/historical_box15_extension/historical_box15_extension_v1_08ff4c34ff/five_year_box15_features.parquet",
+      "sha256": "18e1d46aa4f778fe4597d2f9516f9c287a3bf60bcbb69288eb711bf3823f493e"
+    },
+    "historical_run": {
+      "path": "artifacts/research/historical_box15_extension/historical_box15_extension_v1_08ff4c34ff/run.json",
+      "sha256": "c7980445174378979116795b0f0e5786da1ccd7658e5aeff6473e842690e65ab"
+    },
+    "historical_targets": {
+      "path": "artifacts/research/historical_box15_extension/historical_box15_extension_v1_08ff4c34ff/five_year_targets.parquet",
+      "sha256": "b6eda2be8dc8116bf2500fbb5a8076b1b2c789c487b706417b9d175282373a97"
+    },
+    "original_features": {
+      "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_8be676bd0f/five_year_features.parquet",
+      "sha256": "6a31110d159667f941f24a8ad00051881aa991a9e3329d1c860a472119de6ad1"
+    },
+    "original_targets": {
+      "path": "artifacts/models/five_year_target_spm/five_year_target_spm_v1_65550acb79/five_year_targets.parquet",
+      "sha256": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+    },
+    "runner": {
+      "path": "research/run_historical_box15_validation.py",
+      "sha256": "1fbe7233cdb8af9487a107e486c2eb39db34eb62fee25a62fb41d1bac6262d4b"
+    }
+  },
+  "status": "reused_diagnostic_complete"
+}

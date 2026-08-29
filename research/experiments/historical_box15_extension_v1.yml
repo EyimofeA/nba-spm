@@ -1,0 +1,56 @@
+schema_version: experiment_preregistration_v1
+experiment_id: historical_box15_extension_v1
+status: active_research
+estimand_id: current_latent_strength_v1
+
+scope:
+  raw_seasons: [1997, 2026]
+  complete_five_year_window_ends: [2001, 2026]
+  historical_legacy_target_window_ends: [2001, 2018]
+  pinned_current_target_window_ends: [2018, 2026]
+  season_2027: forbidden
+
+rapm:
+  window_seasons: 5
+  lineup_policy: terminal
+  prior: zero
+  lambda_offense: 3000
+  lambda_defense: 3000
+  lambda_home: 300
+  season_scoring_environment: subtract_each_season_mean_then_add_window_mean
+
+box15:
+  features:
+    - PTS_p100
+    - AST_p100
+    - TOV_p100
+    - STL_p100
+    - BLK_p100
+    - OREB_p100
+    - DREB_p100
+    - PF_p100
+    - PFD_p100
+    - FTA_p100
+    - FTM_p100
+    - FG2A_p100
+    - FG2M_p100
+    - FG3A_p100
+    - FG3M_p100
+  historical_rate_denominator: >-
+    Use observed OffPoss when present. The 1997-2000 player sheets do not
+    contain OffPoss, so use their observed POSS field. RAPM sample weights and
+    targets always use exact lineup-derived side possessions.
+  two_point_fallback: FGA_minus_FG3A_and_FGM_minus_FG3M
+
+acceptance:
+  - every season from 1997 through 2026 has an annual Box15 feature partition
+  - every five-year window end from 2001 through 2026 has features and targets
+  - the independently rebuilt 2018 rolling target matches the pinned target
+  - offense_plus_defense_equals_net
+  - every source and output has a hash
+  - season_2027_is_not_loaded
+
+forbidden_interpretation: >-
+  The 1997-2000 rate denominator fallback creates a documented source-era
+  boundary. The extension is research-only until chronological accuracy and
+  current-era downstream AIO accuracy pass their frozen comparisons.

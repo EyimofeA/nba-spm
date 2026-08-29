@@ -1,7 +1,7 @@
 # NBA Impact Roadmap
 
 This is the one file to follow remotely. `RESEARCH_LOG.md` contains evidence and
-dead ends. Updated 2026-08-28. See `docs/README.md` for the document index,
+dead ends. Updated 2026-08-29. See `docs/README.md` for the document index,
 `docs/impact/ROADMAP.md` for the detailed RAPM/all-in-one plan, and
 `docs/modeling/PLAYBOOK.md` for the common statistical modeling procedure.
 
@@ -114,6 +114,20 @@ dead ends. Updated 2026-08-28. See `docs/README.md` for the document index,
   RAPM update. Box15 scores `207.421` MSE; the closest cumulative matchup arm
   scores `207.537`. Keep Box15 as the research AIO prior. Do not run another
   feature search before the independent audit or untouched 2027 confirmation.
+- Focused follow-up `box15_top_feature_followup_v1_d9c274ca12` isolates the
+  five strongest audited additions on each side. Offense and combined arms
+  worsen the AIO. The defense-only arm improves MSE by only `0.066`; its paired
+  interval crosses zero. Keep Box15 unchanged.
+- Historical extension `historical_box15_extension_v1_08ff4c34ff` reconstructs
+  annual RAPM from 1997 and complete five-year RAPM targets from 2001. Its
+  independent 2018 overlap matches the pinned target exactly. Expanded-history
+  Box15 AIO RMSE is `14.4019` versus `14.4021` for the original history, so the
+  extension passes the retention gate without changing modern behavior.
+- Research ratings now cover RAPM for 1997--2026 and five-year Box15 SPM/AIO
+  for 2001--2026. Seasons 2001--03 are labeled descriptive backcasts; 2004--26
+  use past-only SPM training. Local site bundle
+  `historical_impact_web_bundle_v1_bfd251d751` has 14,570 named player-seasons
+  and is not deployed.
 - External benchmark `external_impact_benchmark_v1_bab43a4087` matches at least
   98.47% of SPM rows per window to minutes-weighted BPM and xRAPM. Among 2,295
   high-exposure player-windows, net SPM correlates 0.876 with BPM and 0.756 with

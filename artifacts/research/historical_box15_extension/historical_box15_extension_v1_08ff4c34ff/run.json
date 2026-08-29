@@ -1,0 +1,304 @@
+{
+  "contract": {
+    "acceptance": [
+      "every season from 1997 through 2026 has an annual Box15 feature partition",
+      "every five-year window end from 2001 through 2026 has features and targets",
+      "the independently rebuilt 2018 rolling target matches the pinned target",
+      "offense_plus_defense_equals_net",
+      "every source and output has a hash",
+      "season_2027_is_not_loaded"
+    ],
+    "box15": {
+      "features": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100"
+      ],
+      "historical_rate_denominator": "Use observed OffPoss when present. The 1997-2000 player sheets do not contain OffPoss, so use their observed POSS field. RAPM sample weights and targets always use exact lineup-derived side possessions.",
+      "two_point_fallback": "FGA_minus_FG3A_and_FGM_minus_FG3M"
+    },
+    "estimand_id": "current_latent_strength_v1",
+    "experiment_id": "historical_box15_extension_v1",
+    "forbidden_interpretation": "The 1997-2000 rate denominator fallback creates a documented source-era boundary. The extension is research-only until chronological accuracy and current-era downstream AIO accuracy pass their frozen comparisons.",
+    "rapm": {
+      "lambda_defense": 3000,
+      "lambda_home": 300,
+      "lambda_offense": 3000,
+      "lineup_policy": "terminal",
+      "prior": "zero",
+      "season_scoring_environment": "subtract_each_season_mean_then_add_window_mean",
+      "window_seasons": 5
+    },
+    "schema_version": "experiment_preregistration_v1",
+    "scope": {
+      "complete_five_year_window_ends": [
+        2001,
+        2026
+      ],
+      "historical_legacy_target_window_ends": [
+        2001,
+        2018
+      ],
+      "pinned_current_target_window_ends": [
+        2018,
+        2026
+      ],
+      "raw_seasons": [
+        1997,
+        2026
+      ],
+      "season_2027": "forbidden"
+    },
+    "status": "active_research"
+  },
+  "created_at": "2026-08-29T22:22:09.482568+00:00",
+  "experiment_id": "historical_box15_extension_v1",
+  "files": {
+    "annual_box15_features.parquet": {
+      "path": "annual_box15_features.parquet",
+      "rows": 14568,
+      "sha256": "eaee3f93f3699c7ce33ff295f3d77a1d5b0d589597c19fcebee7e6743f5a90eb"
+    },
+    "fit_quality.parquet": {
+      "path": "fit_quality.parquet",
+      "rows": 40,
+      "sha256": "dbb43958587fdf786e39f77ce892ec672a01790980021bc47094247c1504b78e"
+    },
+    "five_year_box15_features.parquet": {
+      "path": "five_year_box15_features.parquet",
+      "rows": 21483,
+      "sha256": "18e1d46aa4f778fe4597d2f9516f9c287a3bf60bcbb69288eb711bf3823f493e"
+    },
+    "five_year_targets.parquet": {
+      "path": "five_year_targets.parquet",
+      "rows": 21485,
+      "sha256": "b6eda2be8dc8116bf2500fbb5a8076b1b2c789c487b706417b9d175282373a97"
+    },
+    "historical_annual_rapm.parquet": {
+      "path": "historical_annual_rapm.parquet",
+      "rows": 10104,
+      "sha256": "af157d6bd34ed28205d12c2f4f06095d919b8b5e9b41fccdc4d90a97e4a92db4"
+    },
+    "historical_rolling_5y_rapm.parquet": {
+      "path": "historical_rolling_5y_rapm.parquet",
+      "rows": 13733,
+      "sha256": "5fe5412d9f13fb99f446df68219ff0f9ec3f8e38cd9b0cede7a227449d4cae23"
+    },
+    "source_coverage.parquet": {
+      "path": "source_coverage.parquet",
+      "rows": 14568,
+      "sha256": "a252be492b10b3218723c5ca69c948bdc4c7e154b9983670981f62fe08101028"
+    },
+    "target_overlap_validation.parquet": {
+      "path": "target_overlap_validation.parquet",
+      "rows": 3,
+      "sha256": "2e130050f6b8d8718541b8c1526a8e75184775fa515620b1d46baf66581e4c92"
+    }
+  },
+  "forbidden_interpretation": "The 1997-2000 rate denominator fallback creates a documented source-era boundary. The extension is research-only until chronological accuracy and current-era downstream AIO accuracy pass their frozen comparisons.",
+  "quality": {
+    "annual_feature_seasons": [
+      1997,
+      2026
+    ],
+    "complete_five_year_window_ends": [
+      2001,
+      2026
+    ],
+    "historical_rate_fallback_seasons": [
+      1997,
+      2000
+    ],
+    "maximum_2018_target_overlap_error": 0.0,
+    "maximum_component_identity_error": 0.0,
+    "season_2027_loaded": false
+  },
+  "run_id": "historical_box15_extension_v1_08ff4c34ff",
+  "sources": {
+    "builder": {
+      "path": "research/build_historical_box15_extension.py",
+      "sha256": "4cff9072698528efbf3ca81476cf74963fd3e224cdc83ef57f83751b9052f872"
+    },
+    "contract": {
+      "path": "research/experiments/historical_box15_extension_v1.yml",
+      "sha256": "284e2dcb0117783fd43630a41450f9952bed6c89e6660fa81c783709ef878af8"
+    },
+    "current_features": {
+      "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_8be676bd0f/annual_features.parquet",
+      "sha256": "0719f1dc397b746485d6cc8c6c22cc5cea43547b215ddc0a8b444feb7e2496e2"
+    },
+    "current_rolling_targets": {
+      "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/rolling_ratings.parquet",
+      "sha256": "a1684dbf5217d1dfdb76c95549cef610e9b9db6ebc8d8302cb1564cad6ad556a"
+    },
+    "historical_player_sheet_1997": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/1997.csv",
+      "sha256": "3d858ae0316047b16c9d65113fb26a7841e2b2ab7911f7c08117081bbde65165"
+    },
+    "historical_player_sheet_1998": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/1998.csv",
+      "sha256": "a7a7fcc134a0e89bcd98a3135197a2acd6fe9d3b7f959f6b8ef12fef332c3bb2"
+    },
+    "historical_player_sheet_1999": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/1999.csv",
+      "sha256": "8f57dee29232a197c46b049bed64fab80a4f11e8ec99e6ac8d8653d814eac8ab"
+    },
+    "historical_player_sheet_2000": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2000.csv",
+      "sha256": "30a248724c6cd39f772e57fbf96ea870e8be73fed38094cc3e3d73dabfc6893e"
+    },
+    "historical_player_sheet_2001": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2001.csv",
+      "sha256": "605d870776d7c504c1094b64a0c6ef2546a6e63ef2d3e7cd6f6685d0f60f1cf1"
+    },
+    "historical_player_sheet_2002": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2002.csv",
+      "sha256": "3b530d3fcbee32b2d19b0ff753ba417347b468f14ef8efc32911d2955a9ac1cf"
+    },
+    "historical_player_sheet_2003": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2003.csv",
+      "sha256": "656f655ad42277bd104016cd831ff301d12ab959fe02960326c62da63b775db8"
+    },
+    "historical_player_sheet_2004": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2004.csv",
+      "sha256": "006e4c7baff11cc5d98220ab7ebd4ada692b899d43daf13fc35ea614ae14f545"
+    },
+    "historical_player_sheet_2005": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2005.csv",
+      "sha256": "5afa9dc2693ac2cc3d2040336c7161b398b05147b4f70c11f16ea55add283441"
+    },
+    "historical_player_sheet_2006": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2006.csv",
+      "sha256": "04b24b13431bfd600edfb1535ae30bcf12c78e90b0dda57ba02cbf58207b9bcf"
+    },
+    "historical_player_sheet_2007": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2007.csv",
+      "sha256": "4aa2029b2f3bcebb403ba19c71413a3af7c20aa6f1cbef142d4ff0530484b96c"
+    },
+    "historical_player_sheet_2008": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2008.csv",
+      "sha256": "d5c5b50f862f1708f64889a5c2b1162bb50413ccf3ed55698ce4765bfde28b07"
+    },
+    "historical_player_sheet_2009": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2009.csv",
+      "sha256": "d22d695c6ec9237c668b05c18e92b97006a273bd4cf2c29db3446138a1842d67"
+    },
+    "historical_player_sheet_2010": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2010.csv",
+      "sha256": "dc27c78cd19d6df85f40ff7b6b5edaa5ff7f2ce53a6fe1d628f6c85931683bfe"
+    },
+    "historical_player_sheet_2011": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2011.csv",
+      "sha256": "f2ea5cacda799449a760e4b5da8d0fe5eca60b72a74be8878cde2fa6906243ae"
+    },
+    "historical_player_sheet_2012": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2012.csv",
+      "sha256": "a9872e8d3f84c839ba142dadb613b847b1ff9fc61d7ec75679bfc0ca2d6ecfc7"
+    },
+    "historical_player_sheet_2013": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2013.csv",
+      "sha256": "96db75e13bf1ccc8a903d52132cdbb0abe2d118e12eb770aab3c22cdce4f35a9"
+    },
+    "possession_cache_1997": {
+      "path": "rapm/data/possession_cache/matchups_1997.parquet",
+      "sha256": "0e8c1595c30a1d992ede193a6a5c49c288d1d27db6384b169ebaf51fd4c9a143"
+    },
+    "possession_cache_1998": {
+      "path": "rapm/data/possession_cache/matchups_1998.parquet",
+      "sha256": "5850ca110f24f01e46fb86178b1610c722e487f563780c49c1a666abd2ebe009"
+    },
+    "possession_cache_1999": {
+      "path": "rapm/data/possession_cache/matchups_1999.parquet",
+      "sha256": "08336b1c5a11c0564f96d84d05a1d534ba49d9526a3f5f842cadeec5e6e28dcd"
+    },
+    "possession_cache_2000": {
+      "path": "rapm/data/possession_cache/matchups_2000.parquet",
+      "sha256": "cafbf4683758f1e784575ca3868b851775d0f9cedfbc13759454664ed4d62fe9"
+    },
+    "possession_cache_2001": {
+      "path": "rapm/data/possession_cache/matchups_2001.parquet",
+      "sha256": "63582303b28ee1026aa58428dec663fee5856fbd0f938ab595c1640739510353"
+    },
+    "possession_cache_2002": {
+      "path": "rapm/data/possession_cache/matchups_2002.parquet",
+      "sha256": "81c1c3ffc42ec61510ac739f53d6b17c5a6b329275d3ad4a99897154e08828a2"
+    },
+    "possession_cache_2003": {
+      "path": "rapm/data/possession_cache/matchups_2003.parquet",
+      "sha256": "50cf444a63a9da1bb136066a9eae1f272739b4da67e0c1f6b028f57e907e777f"
+    },
+    "possession_cache_2004": {
+      "path": "rapm/data/possession_cache/matchups_2004.parquet",
+      "sha256": "110bb46481b0b64d2018587fbfd8fa341afd4d33a243acf3ab7817d8e7ce47fa"
+    },
+    "possession_cache_2005": {
+      "path": "rapm/data/possession_cache/matchups_2005.parquet",
+      "sha256": "4e8eaca4acae5336272a9a980b979a089626ecb7c7d18c56306a974fe10980af"
+    },
+    "possession_cache_2006": {
+      "path": "rapm/data/possession_cache/matchups_2006.parquet",
+      "sha256": "e1c6cd8985622cb04d37e8e0ddb3eb52e494be6bed2727538e40f79f72ab2b88"
+    },
+    "possession_cache_2007": {
+      "path": "rapm/data/possession_cache/matchups_2007.parquet",
+      "sha256": "a563f4d752f0224282200806e4a7b0f66f68eed68d272d0e9c3c6c8dc7b4e140"
+    },
+    "possession_cache_2008": {
+      "path": "rapm/data/possession_cache/matchups_2008.parquet",
+      "sha256": "0875b29f3c75694e3af2a2ae8ddb284b3e335fc823baecaa58b7ca8d84027ab1"
+    },
+    "possession_cache_2009": {
+      "path": "rapm/data/possession_cache/matchups_2009.parquet",
+      "sha256": "8c7913d0d637e67b5ccea8bd6035990c0a9805815da3946c922ec22e824e0e96"
+    },
+    "possession_cache_2010": {
+      "path": "rapm/data/possession_cache/matchups_2010.parquet",
+      "sha256": "7444cc16c6c7421ea7056b200db49d19010151689a6d27f94178f9a83c7c4300"
+    },
+    "possession_cache_2011": {
+      "path": "rapm/data/possession_cache/matchups_2011.parquet",
+      "sha256": "c18f5d9a523839dbb0c8e823b550a3df1dc49a566139ef4a3e95bc03b89597ac"
+    },
+    "possession_cache_2012": {
+      "path": "rapm/data/possession_cache/matchups_2012.parquet",
+      "sha256": "3099aadc5d321a6875f0f48aa3d7f39a14b7210c2de12382225b1e9aa5989979"
+    },
+    "possession_cache_2013": {
+      "path": "rapm/data/possession_cache/matchups_2013.parquet",
+      "sha256": "2f0754bd9076ffd02dffda47a1403a3f9e5c06bc8168e194b4ef72f8fc42127a"
+    },
+    "possession_cache_2014": {
+      "path": "rapm/data/possession_cache/matchups_2014.parquet",
+      "sha256": "fb43d6adac1498dad4ac146d7d8af6302689a0f398fc4ce11a1633c8439a3b7b"
+    },
+    "possession_cache_2015": {
+      "path": "rapm/data/possession_cache/matchups_2015.parquet",
+      "sha256": "7da4d7782cb6f0ee7ea62a2a8cf0c4aad20c278894f383687d453f28dbfb5790"
+    },
+    "possession_cache_2016": {
+      "path": "rapm/data/possession_cache/matchups_2016.parquet",
+      "sha256": "76a2d71a3a99aa59f5b350202074a4aa6593d69b1eadcb970e25580165951c43"
+    },
+    "possession_cache_2017": {
+      "path": "rapm/data/possession_cache/matchups_2017.parquet",
+      "sha256": "a3845ef9eb7c9e777f9785fdf83a5baec992f151822c96c71e340f234af340e5"
+    },
+    "possession_cache_2018": {
+      "path": "rapm/data/possession_cache/matchups_2018.parquet",
+      "sha256": "9795706ae88602450e2e8e51cf18334ca90e838ab60ecabf48c6a2628b007f92"
+    }
+  },
+  "status": "validated_research_input"
+}
