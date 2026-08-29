@@ -1,0 +1,64 @@
+{
+  "config": {
+    "box_features": [
+      "PTS_p100",
+      "AST_p100",
+      "TOV_p100",
+      "STL_p100",
+      "BLK_p100",
+      "OREB_p100",
+      "DREB_p100",
+      "PF_p100",
+      "PFD_p100",
+      "FTA_p100",
+      "FTM_p100",
+      "FG2A_p100",
+      "FG2M_p100",
+      "FG3A_p100",
+      "FG3M_p100"
+    ],
+    "box_source_sha256": "18e1d46aa4f778fe4597d2f9516f9c287a3bf60bcbb69288eb711bf3823f493e",
+    "display_quantiles": [
+      0.01,
+      0.99
+    ],
+    "rich_features": [
+      "zts_pct_points",
+      "box_creation_2017_eb_p100",
+      "offensive_load_2017_eb_p100",
+      "crafted_spacing_stable_v1",
+      "rim_points_saved_p100"
+    ],
+    "rich_source_sha256": "6a31110d159667f941f24a8ad00051881aa991a9e3329d1c860a472119de6ad1",
+    "weight_overlay": "sqrt_min_offposs_defposs",
+    "window": "2022-2026",
+    "window_end": 2026
+  },
+  "created_at": "2026-08-29T23:13:39.382473+00:00",
+  "files": {
+    "box15_inputs_2022_2026.png": {
+      "bytes": 418117,
+      "sha256": "3d96545519fab19bc644a5ae4b626b1675262b7692c71432da306ef95e3039e8"
+    },
+    "feature_summary.parquet": {
+      "bytes": 10511,
+      "sha256": "d435282d20890fd88f84898c5191c792332f7e1ccf2478dec80626ae24861966"
+    },
+    "rich_spm_inputs_2022_2026.png": {
+      "bytes": 193265,
+      "sha256": "f7523996261da193492bc940df7a2f72ae26bd6adbafb3e404c6b37ef6cf37ba"
+    }
+  },
+  "quality": {
+    "blocking_feature_failures": [
+      "zts_pct_points",
+      "rim_points_saved_p100"
+    ],
+    "box_rows": 1029,
+    "duplicate_keys": 0,
+    "rich_rows": 1029,
+    "season_2027_loaded": false
+  },
+  "run_id": "spm_input_distribution_audit_v1_cea792b6f4",
+  "status": "data_quality_audit"
+}
