@@ -17,8 +17,9 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 BOX_SOURCE = ROOT / "artifacts/research/historical_box15_extension/historical_box15_extension_v1_08ff4c34ff/five_year_box15_features.parquet"
-RICH_SOURCE = ROOT / "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_8be676bd0f/five_year_features.parquet"
+RICH_SOURCE = ROOT / "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_4ffd1e34df/five_year_features.parquet"
 WINDOW_END = 2026
+MINIMUM_DISPLAY_EXPOSURE = 500
 
 BOX_FEATURES = {
     "PTS_p100": "Points",
@@ -53,14 +54,16 @@ def sha256(path: Path) -> str:
 
 def summarize(group: str, frame: pd.DataFrame, features: dict[str, str]) -> pd.DataFrame:
     rows = []
+    exposure = frame[["OffPoss", "DefPoss"]].min(axis=1)
     for feature, label in features.items():
         values = pd.to_numeric(frame[feature], errors="coerce")
         finite = values[np.isfinite(values)]
-        low, high = finite.quantile([0.01, 0.99])
+        displayed = values[np.isfinite(values) & exposure.ge(MINIMUM_DISPLAY_EXPOSURE)]
+        low, high = displayed.quantile([0.01, 0.99])
         note = ""
-        if feature == "zts_pct_points" and (finite.abs() > 100).any():
+        if feature == "zts_pct_points" and (displayed.abs() > 100).any():
             note = "BLOCK: impossible fallback values"
-        if feature == "rim_points_saved_p100" and not (finite.gt(0).any() and finite.lt(0).any()):
+        if feature == "rim_points_saved_p100" and not (displayed.gt(0).any() and displayed.lt(0).any()):
             note = "BLOCK: two-sided metric has one sign"
         rows.append(
             {
@@ -69,15 +72,18 @@ def summarize(group: str, frame: pd.DataFrame, features: dict[str, str]) -> pd.D
                 "label": label,
                 "rows": int(len(frame)),
                 "finite_rows": int(len(finite)),
-                "zero_fraction": float(finite.eq(0).mean()),
-                "minimum": float(finite.min()),
+                "display_rows": int(len(displayed)),
+                "zero_fraction": float(displayed.eq(0).mean()),
+                "raw_minimum": float(finite.min()),
+                "minimum": float(displayed.min()),
                 "p01": float(low),
-                "p25": float(finite.quantile(0.25)),
-                "median": float(finite.median()),
-                "p75": float(finite.quantile(0.75)),
+                "p25": float(displayed.quantile(0.25)),
+                "median": float(displayed.median()),
+                "p75": float(displayed.quantile(0.75)),
                 "p99": float(high),
-                "maximum": float(finite.max()),
-                "outside_display_rows": int(((finite < low) | (finite > high)).sum()),
+                "maximum": float(displayed.max()),
+                "raw_maximum": float(finite.max()),
+                "outside_display_rows": int(((displayed < low) | (displayed > high)).sum()),
                 "quality_note": note,
             }
         )
@@ -98,10 +104,15 @@ def plot_panel(
     fig, axes = plt.subplots(rows, columns, figsize=(columns * 5.1, rows * 3.7))
     axes = np.atleast_1d(axes).ravel()
     weights = np.sqrt(frame[["OffPoss", "DefPoss"]].min(axis=1).clip(lower=0))
+    exposure = frame[["OffPoss", "DefPoss"]].min(axis=1)
     for axis, (feature, label) in zip(axes, features.items(), strict=False):
         record = summary.loc[summary["feature"].eq(feature)].iloc[0]
         values = pd.to_numeric(frame[feature], errors="coerce")
-        visible = values.between(record.p01, record.p99) & np.isfinite(values)
+        visible = (
+            values.between(record.p01, record.p99)
+            & np.isfinite(values)
+            & exposure.ge(MINIMUM_DISPLAY_EXPOSURE)
+        )
         bins = np.linspace(record.p01, record.p99, 27)
         axis.hist(values[visible], bins=bins, density=True, color="#8D99AE", alpha=0.42, label="Players")
         axis.hist(
@@ -116,7 +127,7 @@ def plot_panel(
         axis.set_title(label, loc="left", fontsize=13, fontweight="bold", color="#F8FAFC")
         axis.text(
             0.01, 0.96,
-            f"median {record['median']:.2f}  |  raw range {record['minimum']:.2f} to {record['maximum']:.2f}",
+            f"median {record['median']:.2f}  |  500+ poss range {record['minimum']:.2f} to {record['maximum']:.2f}",
             transform=axis.transAxes, va="top", fontsize=8.7,
             color="#CBD5E1" if flagged else "#475569",
         )
@@ -138,7 +149,7 @@ def plot_panel(
     fig.text(0.03, 0.952, subtitle, ha="left", color="#94A3B8", fontsize=11)
     fig.text(
         0.03, 0.012,
-        "The panels display the 1st–99th percentile so low-exposure tails do not flatten the plot. Raw ranges remain printed.",
+        "The panels use players with at least 500 possessions and display their 1st–99th percentile. The audit table retains every raw tail.",
         ha="left", color="#94A3B8", fontsize=9,
     )
     fig.patch.set_facecolor("#0B1120")
@@ -161,7 +172,9 @@ def main() -> Path:
         "box_features": list(BOX_FEATURES),
         "rich_features": list(RICH_FEATURES),
         "display_quantiles": [0.01, 0.99],
+        "minimum_display_exposure": MINIMUM_DISPLAY_EXPOSURE,
         "weight_overlay": "sqrt_min_offposs_defposs",
+        "plot_code_sha256": sha256(Path(__file__)),
     }
     identity = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()[:10]
     output = ROOT / "artifacts/research/spm_input_distribution_audit" / f"spm_input_distribution_audit_v1_{identity}"
@@ -173,13 +186,13 @@ def main() -> Path:
     plot_panel(
         box, BOX_FEATURES, box_summary,
         title="Box15 input distributions",
-        subtitle="2022–26 pooled player windows · 1,029 players · rates per 100 possessions",
+        subtitle="2022–26 pooled window · 1,029 total players · 757 shown with 500+ possessions",
         path=output / "box15_inputs_2022_2026.png", columns=3,
     )
     plot_panel(
         rich, RICH_FEATURES, rich_summary,
         title="Five rich-SPM inputs",
-        subtitle="Stored 2022–26 pooled inputs · red panels fail the new pre-fit data gate",
+        subtitle="Corrected 2022–26 pooled inputs · 757 players shown with 500+ possessions",
         path=output / "rich_spm_inputs_2022_2026.png", columns=2,
     )
     files = {}

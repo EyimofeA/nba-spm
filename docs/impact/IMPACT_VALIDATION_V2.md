@@ -80,13 +80,14 @@ The pipeline stops before fitting when it finds an impossible physical value,
 a unit mismatch, an unexplained one-sign distribution for a two-sided metric,
 future information, or double-counted possession outcomes.
 
-This gate is already material. The first distribution audit found an invalid
-zTS fallback and a unit mismatch in the stored rim-points-saved input. Those
-fields cannot support a new rich-SPM run until repaired from raw data.
+This gate caught two material defects. The first distribution audit found an
+invalid zTS fallback and a unit mismatch in the stored rim-points-saved input.
 
-The zTS fallback accepted player rows with points but incomplete field-goal
-attempt denominators. One stored five-year value reaches `737.44` percentage
-points. The rim-defense source stores `DFG%` on a 0--100 scale and `FG%` on a
-0--1 scale, then subtracts them. That makes nearly every stored `DIFF%`
-positive and every five-year rim-points-saved value nonpositive. Box15 does not
-consume either field.
+The corrected pipeline rejects player TS outside `[0, 1.5]`, fills invalid
+source rows with the same-season median of valid TS, and then computes the
+season-relative fallback. It repaired 107 annual rows. The corrected
+rim-defense builder normalizes `DFG%` and expected `FG%` to percentage points
+before subtraction and aggregates repeated observations with defended-shot
+weights. Run `spm_input_distribution_audit_v1_f54723b16e` reports no blocking
+feature failures. Historical rich-SPM results that consumed the earlier inputs
+remain provisional until refit. Box15 does not consume either field.

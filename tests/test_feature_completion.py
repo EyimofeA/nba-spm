@@ -73,3 +73,30 @@ def test_semantic_completion_uses_zero_eb_and_zts_tiers():
     assert complete[list(expanded["offense"] + expanded["defense"])].isna().sum().sum() == 0
     assert ledger["completed_missing_rows"].sum() == 0
     assert quality["missing_values_after"] == 0
+
+
+def test_semantic_completion_repairs_impossible_true_shooting_before_zts():
+    annual = pd.DataFrame({
+        "PLAYER_ID": [1, 2], "Window_End": [2026, 2026],
+        "OffPoss": [100.0, 100.0], "DefPoss": [100.0, 100.0],
+        "true_shooting_pct": [0.60, 7.95], "zts_pct_points": [1.0, 999.0],
+    })
+    selected = {"offense": ("true_shooting_pct", "zts_pct_points"), "defense": ()}
+    loose = pd.DataFrame({
+        "PLAYER_ID": [1], "Season": [2026], "zts_pct_points": [1.0],
+        "playtype_expected_ts_pct": [59.0], "synergy_possessions": [100.0],
+    })
+    sources = {
+        name: pd.DataFrame({"PLAYER_ID": [], "Season": []})
+        for name in ("hustle", "matchup_defense", "dfg", "rim_dfg")
+    }
+
+    complete, _, _, quality = complete_selected_feature_panel(
+        annual, annual[["PLAYER_ID", "Window_End"]], selected,
+        strict_playtype=loose.rename(columns={"Season": "Window_End"}),
+        loose_playtype=loose, source_keys=sources,
+    )
+
+    assert complete.loc[1, "true_shooting_pct"] == 0.60
+    assert complete.loc[1, "zts_pct_points"] == 1.0
+    assert quality["invalid_true_shooting_rows_repaired"] == 1

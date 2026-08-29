@@ -133,6 +133,11 @@ def _coalesce_numeric(frame: pd.DataFrame, aliases: tuple[str, ...]) -> pd.Serie
     return output
 
 
+def _percentage_points(values: pd.Series) -> pd.Series:
+    numeric = pd.to_numeric(values, errors="coerce")
+    return numeric.where(numeric.abs().gt(1.0), 100.0 * numeric)
+
+
 def compute_defensive_tracking_features(
     box: pd.DataFrame,
     dfg: pd.DataFrame,
@@ -155,10 +160,21 @@ def compute_defensive_tracking_features(
     def defense_shooting(frame: pd.DataFrame, prefix: str, prior: float) -> pd.DataFrame:
         work = frame.copy()
         work["_dfga"] = _coalesce_numeric(work, ("DFGA",))
-        work["_diff"] = _coalesce_numeric(work, ("DIFF%", "Diff%"))
-        work = work.groupby(["PLAYER_ID", "Season"], as_index=False).agg(
-            _dfga=("_dfga", "sum"), _diff=("_diff", "mean")
+        source_diff = _coalesce_numeric(work, ("DIFF%", "Diff%"))
+        actual = _percentage_points(_coalesce_numeric(work, ("DFG%",)))
+        expected = _percentage_points(_coalesce_numeric(work, ("FG%",)))
+        work["_diff"] = (actual - expected).where(
+            actual.notna() & expected.notna(), source_diff
         )
+        work["_weighted_diff"] = work["_diff"] * work["_dfga"]
+        work = work.groupby(["PLAYER_ID", "Season"], as_index=False).agg(
+            _dfga=("_dfga", "sum"), _weighted_diff=("_weighted_diff", "sum")
+        )
+        work["_diff"] = work["_weighted_diff"] / work["_dfga"].where(
+            work["_dfga"].gt(0)
+        )
+        if not work["_diff"].dropna().between(-100.0, 100.0).all():
+            raise ValueError(f"{prefix} shooting difference has mixed or invalid units.")
         work = work.merge(key, on=["PLAYER_ID", "Season"], validate="one_to_one")
         reliability = work["_dfga"].clip(lower=0) / (work["_dfga"].clip(lower=0) + prior)
         work[f"{prefix}_dfga_p100"] = 100.0 * work["_dfga"] / work["DefPoss"].where(work["DefPoss"].gt(0))

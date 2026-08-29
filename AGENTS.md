@@ -109,7 +109,7 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   earlier window ends.
 - The model retains the frozen 127 offense and 68 defense inputs and learners.
 - Canonical complete feature input:
-  `full_spm_features_2014_2026_v1_21885aaf37`. It contains 6,942 annual rows
+  `full_spm_features_2014_2026_v1_60323ba959`. It contains 6,942 annual rows
   for 2014--26 and 8,620 rolling rows for window ends 2018--26.
 - Hustle and matchup-assignment sources start in 2018. The coverage ledger
   marks 2014--17 unavailable. Do not fabricate observed rows for those seasons.
@@ -119,20 +119,22 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   fields before imputation. It assigns an explicit source or opportunity cause
   to every field below 99% observed coverage. Undefined rate fields remain
   missing and receive training-fold median imputation.
-- Completion run `semantically_complete_spm_features_v1_8be676bd0f` converts
+- Completion run `semantically_complete_spm_features_v1_4ffd1e34df` converts
   the same contract into 175 fully finite inputs. Event rates use zero, raw
   ratios use same-season empirical-Bayes estimates, and source-specific values
   use zero with an availability field. Low-sample zTS uses all observed
-  playtype possessions. Rows without playtype data use season-relative TS.
+  playtype possessions. Rows without playtype data use season-relative TS;
+  physically invalid source TS rows use the same-season valid median first.
   The annual and five-year panels have zero missing selected inputs.
-- Distribution audit `spm_input_distribution_audit_v1_cea792b6f4` shows that
-  zero missing values did not imply valid values. Low-source zTS fallback rows
-  can use incomplete field-goal denominators and reach impossible values. The
-  observed rim-defense source mixes 0--100 `DFG%` with 0--1 `FG%`, so its
-  stored `DIFF%` and rim-points-saved values are invalid. Box15 does not use
-  either field. Treat rich-SPM ladder conclusions that consume these inputs as
-  provisional until both fields are rebuilt from raw numerators and
-  denominators and rerun under `impact_validation_v2`.
+- Corrected observed-defense run `observed_defense_dashboards_v1_1a62103de7d7`
+  normalizes both expected and actual field-goal percentages to percentage
+  points before subtraction. Completion repaired 107 invalid source TS rows.
+  Distribution audit `spm_input_distribution_audit_v1_f54723b16e` has no
+  blocking feature failures. It displays players with at least 500 possessions
+  and keeps all low-exposure tails in the audit table.
+- These repairs rebuild feature inputs only. Rich-SPM results fitted from the
+  earlier invalid inputs remain provisional until they are rerun under
+  `impact_validation_v2`. Box15 does not consume zTS or rim points saved.
 - Comparison run `semantic_feature_completion_comparison_v1_235b4dea34` finds
   no AIO gain over the previous missing-data implementation. Removing matchup
   fields makes the standalone SPM worse. Keep matchup fields and their source

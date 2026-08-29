@@ -18,6 +18,12 @@ def _weighted_mean(values: pd.Series, weights: pd.Series) -> float:
     return float(np.average(values.loc[valid], weights=weights.loc[valid])) if valid.any() else float("nan")
 
 
+def _percentage_points(values: pd.Series) -> pd.Series:
+    """Normalize percentages stored as either proportions or percentage points."""
+    numeric = pd.to_numeric(values, errors="coerce")
+    return numeric.where(numeric.abs().gt(1.0), 100.0 * numeric)
+
+
 def _annual_source(frame: pd.DataFrame, season: int, *, rim: bool) -> pd.DataFrame:
     required = {"PLAYER_ID", "PLAYER_NAME"}
     if rim:
@@ -30,6 +36,7 @@ def _annual_source(frame: pd.DataFrame, season: int, *, rim: bool) -> pd.DataFra
     work = frame[["PLAYER_ID", "PLAYER_NAME", made, attempted, baseline]].copy()
     for column in ("PLAYER_ID", made, attempted, baseline):
         work[column] = pd.to_numeric(work[column], errors="coerce")
+    work[baseline] = _percentage_points(work[baseline])
     work = work.dropna(subset=["PLAYER_ID", "PLAYER_NAME", attempted]).loc[lambda x: x[attempted].ge(0)].copy()
     rows = []
     for player_id, group in work.groupby("PLAYER_ID", sort=False):
@@ -92,10 +99,20 @@ def build_observed_defense_dashboards(
     for label, frame in (("dfg", dfg), ("rim_dfg", rim)):
         if frame["DFGA"].lt(0).any():
             raise ValueError(f"{label}: negative attempts")
-    identity = hashlib.sha256(json.dumps({"seasons": list(seasons), "hashes": hashes}, sort_keys=True).encode()).hexdigest()[:12]
+        if not frame["DFG%"].dropna().between(0.0, 100.0).all():
+            raise ValueError(f"{label}: DFG% is not in percentage points")
+        if not frame["FG%"].dropna().between(0.0, 100.0).all():
+            raise ValueError(f"{label}: FG% is not in percentage points")
+        if not frame["DIFF%"].dropna().between(-100.0, 100.0).all():
+            raise ValueError(f"{label}: DIFF% is not in percentage points")
+    identity = hashlib.sha256(json.dumps({
+        "seasons": list(seasons),
+        "hashes": hashes,
+        "builder_sha256": sha256_file(Path(__file__)),
+    }, sort_keys=True).encode()).hexdigest()[:12]
     run_id = f"observed_defense_dashboards_v1_{identity}"
     root = Path(output_dir) / run_id
-    root.mkdir(parents=True, exist_ok=True)
+    root.mkdir(parents=True, exist_ok=False)
     dfg_path, rim_path = root / "dfg.csv", root / "rim_dfg.csv"
     dfg.to_csv(dfg_path, index=False)
     rim.to_csv(rim_path, index=False)

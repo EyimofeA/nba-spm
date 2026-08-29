@@ -28,12 +28,12 @@ ROOT = Path(__file__).resolve().parents[1]
 BASE_RUN = (
     ROOT
     / "artifacts/research/full_feature_2014_2026/panels"
-    / "full_spm_features_2014_2026_v1_21885aaf37"
+    / "full_spm_features_2014_2026_v1_60323ba959"
 )
 V2_RUN = (
     ROOT
     / "artifacts/research/full_feature_2014_2026/features/statistical_impact"
-    / "statistical_features_v2_ba158ba186"
+    / "statistical_features_v2_aee1c289d1"
 )
 FEATURE_ROOT = ROOT / "artifacts/research/full_feature_2014_2026/features"
 SITE_DATA = ROOT / "data/lake/bronze/gabriel_site_data/revision=782ec8b"
@@ -76,12 +76,12 @@ def main() -> None:
         "dfg": (
             FEATURE_ROOT
             / "observed_defense_dashboards"
-            / "observed_defense_dashboards_v1_606bfaa097d7/dfg.csv"
+            / "observed_defense_dashboards_v1_1a62103de7d7/dfg.csv"
         ),
         "rim_dfg": (
             FEATURE_ROOT
             / "observed_defense_dashboards"
-            / "observed_defense_dashboards_v1_606bfaa097d7/rim_dfg.csv"
+            / "observed_defense_dashboards_v1_1a62103de7d7/rim_dfg.csv"
         ),
     }
     source_keys = {
@@ -187,8 +187,9 @@ def main() -> None:
             "level_metrics": "same-season median",
             "missing_centered_source_metrics": "zero plus source-availability field",
             "zts": (
-                "use all available playtype rows; otherwise player TS minus the "
-                "season's possession-weighted mean expected TS"
+                "use all available playtype rows; otherwise physically valid player "
+                "TS minus the season's possession-weighted mean expected TS; replace "
+                "invalid TS with the same-season median first"
             ),
         },
         "source_hashes": source_hashes,

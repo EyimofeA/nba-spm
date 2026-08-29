@@ -97,3 +97,30 @@ def test_defensive_tracking_never_uses_another_seasons_center() -> None:
     assert missing_season["rim_points_saved_p100"] == 0.0
     assert missing_season["deflections_p100"] == 0.0
     assert quality["neutral_fill_policy"] == "same_season_median_then_zero"
+
+
+def test_defensive_tracking_recomputes_difference_across_percentage_units() -> None:
+    box = pd.DataFrame([{
+        "PLAYER_ID": 1, "PLAYER_NAME": "One", "DefPoss": 1000,
+        "Season": 2026, "_name_key": "one", "_name_ambiguous": False,
+    }])
+    dfg = pd.DataFrame([{
+        "PLAYER_ID": 1, "PLAYER": "One", "year": 2026,
+        "DFGA": 200, "DFG%": 45.0, "FG%": 0.47, "DIFF%": 44.53,
+    }])
+    rim = pd.DataFrame([{
+        "PLAYER_ID": 1, "PLAYER": "One", "year": 2026,
+        "DFGA": 100, "DFG%": 60.0, "FG%": 0.62, "DIFF%": 59.38,
+    }])
+    hustle = pd.DataFrame([{
+        "PLAYER_ID": 1, "PLAYER_NAME": "One", "year": 2026,
+        "DEFLECTIONS": 0, "CHARGES_DRAWN": 0, "CONTESTED_SHOTS_2PT": 0,
+        "CONTESTED_SHOTS_3PT": 0, "DEF_LOOSE_BALLS_RECOVERED": 0,
+    }])
+
+    features, _ = compute_defensive_tracking_features(box, dfg, rim, hustle)
+    row = features.iloc[0]
+
+    assert row["dfg_diff_pct_eb"] == pytest.approx(-1.0)
+    assert row["rim_diff_pct_eb"] == pytest.approx(-1.0)
+    assert row["rim_points_saved_p100"] == pytest.approx(0.2)
