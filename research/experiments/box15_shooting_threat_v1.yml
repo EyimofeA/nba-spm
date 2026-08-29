@@ -1,0 +1,51 @@
+schema_version: experiment_preregistration_v1
+experiment_id: box15_shooting_threat_v1
+status: frozen_reused_diagnostic
+estimand_id: prior_validation_suite_v1
+
+question: >-
+  Does one transparent five-year shooting-threat feature improve the Box15
+  prior before and after the fixed one-season RAPM update?
+
+information_cutoff:
+  rating_seasons: [2021, 2022, 2023, 2024, 2025, 2026]
+  evaluated_rating_seasons: [2021, 2022, 2023, 2024, 2025]
+  test_seasons: [2022, 2023, 2024, 2025, 2026]
+  training_rule: window_end strictly before rating_season
+  final_unscored_rating_season: 2026
+  season_2027: forbidden
+
+candidate:
+  control: box_15
+  challenger: box_15_plus_shooting_threat
+  added_offense_feature: shooting_threat_p100
+  defense_changes: none
+
+learner:
+  family: ridge
+  sample_weight: sqrt_min_offensive_and_defensive_possessions
+  alpha_grid: [10, 30, 100, 300, 1000, 3000]
+  alpha_selection: leave_one_training_season_out_inside_each_outer_fold
+
+fixed_aio:
+  likelihood_seasons: 1
+  lambda_offense: 3000
+  lambda_defense: 3000
+  lambda_home: 300
+  center_scale: 1
+
+primary_evaluation:
+  metric: equal_season_mean_next_season_game_margin_mse
+  comparison: identical_games_and_actual_margins
+  uncertainty: 5000_paired_whole_game_bootstrap_draws_within_test_season
+  correlation_guard: no_more_than_0.01_below_box_15_aio
+
+acceptance:
+  - every candidate scores identical games in every test season
+  - offense_plus_defense_equals_net_for_every_rating
+  - model_and_data_hashes_are_saved
+  - season_2027_is_not_loaded
+
+forbidden_interpretation: >-
+  This reused diagnostic cannot promote a public model or consume Season 2027
+  confirmation evidence. The shooting-threat metric is not LASER.

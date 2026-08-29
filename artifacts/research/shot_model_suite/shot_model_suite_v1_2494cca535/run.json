@@ -1,0 +1,83 @@
+{
+  "config": {
+    "builder_sha256": "c107245a0201cb9b6c63c5ec3b6a15397973231a20b0e7d8aeb4035d8e03f647",
+    "evidence_status": "reused_2026_diagnostic",
+    "model_version": "shot_model_suite_v1",
+    "shooting_threat_prior_attempts": 100.0,
+    "shot_split": {
+      "calibration": [
+        2025
+      ],
+      "test": [
+        2026
+      ],
+      "train": [
+        2024
+      ]
+    },
+    "source_hashes": {
+      "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2014.parquet": "30ffc3f5090e76d9ddda98cb41ca72785e296430dae2aa3cad165318025f62dc",
+      "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2015.parquet": "90ddc43dfffcc827e154677ef46f2a0c0b6c31b51784e27832869ea63c49dc20",
+      "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2016.parquet": "62690961d72c732b7b0bcf6e8fb8d7921ce3c3715bb45a52d285171b831697b9",
+      "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2017.parquet": "590d42a93951e43f55413582e65f4539a44b7257a24e531cf721f58ed135098e",
+      "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2018.parquet": "e26f1af99c6ae9a8ba9632d5522079b4b2d38265ac2008ae9f9d8738bab83770",
+      "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2019.parquet": "ebebe7174b1ab529eaa6299d6da73783420424e59bbb125d65925f1155675340",
+      "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2020.parquet": "a8f0e782be214a72bee072781152d5ae637e5b80d508f46ee7efdb919d658065",
+      "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2021.parquet": "7f542206d8a6206b25ff6397ef34d75fc9cb1c6315aab84b9c401c59ba6ca51f",
+      "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2022.parquet": "4e46a94b3c9f85aeb0dfe49abc08340a4c86720e192783b0319ff0e375f0f95b",
+      "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2023.parquet": "6d85fb54ac49f6c73e4d6dedacb216f2b28d5db475153d1bebffa9585ec1268d",
+      "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2024.parquet": "beb5a5aceb7d1d3504529102a4c93eb4898ff525474ea75bd3babeeeb0e38ad3",
+      "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2025.parquet": "8cbeab5559385f7be8226e168e4b2eceac3ce40029360fb770ff40770a7fc4ed",
+      "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2026.parquet": "09a6a34855a3685e89ced2dcb2f79b60ed2ef97b9709b29d30848a3165fe7e2c",
+      "data/lake/bronze/nba_data_archive/cdnnba/season=2023/regular.parquet": "458bc6d97fac0ce0275733df508443154bd537c53fbffd3b81fbf5e7e596360e",
+      "data/lake/bronze/nba_data_archive/cdnnba/season=2024/regular.parquet": "8bed44eca1d0f312f25f98b22afb0c38f16968f932b1ad38648389e0a9c4155c",
+      "data/lake/bronze/nba_data_archive/cdnnba/season=2025/regular.parquet": "0f23437c5b9cdc4d55b52e47880843861d52fcbed4d6cf356134351254e06f3c",
+      "data/lake/silver/possession_lineup_segments.parquet": "68bc998a6ddb4bf02fcd962154a68c37db15f29c33d5bad2a2897926821b4063",
+      "data/lake/silver/possessions.parquet": "5d97a6aec9e544d46adbd970e95f6d2226a15d2c5d9a3832ef1f915170182f75",
+      "data/lake/silver/shot_defense_events.parquet": "7d65d77baccae99f79e80c006368d607f91b116a8c830aa0cdfdb4b752f67ff8"
+    }
+  },
+  "created_at": "2026-08-29T17:20:07.345945+00:00",
+  "files": {
+    "annual_shooting_threat.parquet": {
+      "rows": 6942,
+      "sha256": "eb999b287ecc44913ba7b57d7fb45a64a82a6afd7d7a819e093bd43d01d8b684"
+    },
+    "five_year_shooting_threat.parquet": {
+      "rows": 11081,
+      "sha256": "400fed2014a1d9cfb176317da8f56e733161bd63471df2e9b80c4219906caa7e"
+    },
+    "lineup_spacing.parquet": {
+      "rows": 1723,
+      "sha256": "4d8a31cf28c3e414bd715a8fa2816223fe67adb15d9fa442429ec2500c9e860a"
+    },
+    "player_shot_quality.parquet": {
+      "rows": 1733,
+      "sha256": "d733f1576524337b6f67254e27f6a67835e3bc76ed33050accb123b5b08924d5"
+    },
+    "shot_metrics.parquet": {
+      "rows": 6,
+      "sha256": "d6dddbc2adb1d725151ea8b95ed062408d8436c164c5bdd1f8677ca1241dee46"
+    },
+    "shot_paired_bootstrap.parquet": {
+      "rows": 2,
+      "sha256": "4ea13d137c4db498a3fd7c4f31d8a564b71b01f5e3a91d46471216340d8c38d2"
+    },
+    "shot_predictions.parquet": {
+      "rows": 218722,
+      "sha256": "f62e26ab2948c984658571365d91cdc7593c7c959836de4fa292a7ba971993f4"
+    }
+  },
+  "forbidden_interpretation": "This is not LASER, causal spacing, defender credit, or player impact. The 2026 result is reused diagnostic evidence.",
+  "quality": {
+    "annual_rows": 6942,
+    "five_year_rows": 11081,
+    "possession_timing_coverage": 1.0,
+    "season_2027_loaded": false,
+    "shot_event_context_coverage": 1.0,
+    "shots": 654376,
+    "spacing_rows": 1723
+  },
+  "run_id": "shot_model_suite_v1_2494cca535",
+  "status": "research_diagnostic"
+}

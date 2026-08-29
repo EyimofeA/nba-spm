@@ -35,7 +35,9 @@ FORBIDDEN_FEATURES = {
 }
 
 
-def _feature_frame(panel: pd.DataFrame) -> tuple[np.ndarray, list[str]]:
+def _feature_frame(
+    panel: pd.DataFrame, *, include_possession_context: bool = False
+) -> tuple[np.ndarray, list[str]]:
     """Make a fixed, player-neutral pre-shot design matrix.
 
     Smooth location terms allow expected make probability to vary within the
@@ -86,10 +88,66 @@ def _feature_frame(panel: pd.DataFrame) -> tuple[np.ndarray, list[str]]:
     zone = panel["shot_zone"].astype(str)
     zone_columns = [(zone.eq(value)).astype(float).to_numpy() for value in ZONE_ORDER]
     period_columns = [(period.eq(value)).astype(float).to_numpy() for value in range(1, 6)]
-    return np.column_stack([numeric, *zone_columns, *period_columns]), names + [
+    columns = [numeric, *zone_columns, *period_columns]
+    names += [
         *(f"zone_{value}" for value in ZONE_ORDER),
         *(f"period_{value}" for value in range(1, 6)),
     ]
+    if include_possession_context:
+        context = {
+            "seconds_since_possession_start",
+            "is_transition",
+            "is_putback",
+            "is_second_chance",
+            "is_from_turnover",
+            "shot_finish",
+        }
+        if missing := sorted(context - set(panel.columns)):
+            raise ValueError(f"Shot panel lacks possession context: {missing}.")
+        seconds = np.clip(
+            pd.to_numeric(
+                panel["seconds_since_possession_start"], errors="raise"
+            ).to_numpy(dtype=float),
+            0.0,
+            30.0,
+        ) / 30.0
+        flags = panel[
+            [
+                "is_transition",
+                "is_putback",
+                "is_second_chance",
+                "is_from_turnover",
+            ]
+        ].astype(float).to_numpy()
+        finish = panel["shot_finish"].astype(str)
+        finish_names = (
+            "transition",
+            "putback",
+            "cut",
+            "drive",
+            "pullup",
+            "post",
+            "spotup",
+            "other",
+        )
+        columns.extend(
+            [
+                seconds,
+                flags,
+                *(finish.eq(value).astype(float).to_numpy() for value in finish_names),
+            ]
+        )
+        names.extend(
+            [
+                "seconds_since_possession_start",
+                "is_transition",
+                "is_putback",
+                "is_second_chance",
+                "is_from_turnover",
+                *(f"finish_{value}" for value in finish_names),
+            ]
+        )
+    return np.column_stack(columns), names
 
 
 def _calibration(prediction: np.ndarray, outcome: np.ndarray) -> pd.DataFrame:
@@ -149,6 +207,7 @@ def fit_and_predict_expected_shots(
     *,
     c: float = 0.2,
     max_iter: int = 300,
+    include_possession_context: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Fit the player-neutral model and return base and calibrated predictions.
 
@@ -160,7 +219,9 @@ def fit_and_predict_expected_shots(
     if train.empty or calibration.empty or score.empty:
         raise ValueError("Expected-shot fitting requires nonempty train, calibration, and score frames.")
     combined = pd.concat([train, calibration, score], ignore_index=True)
-    features, feature_names = _feature_frame(combined)
+    features, feature_names = _feature_frame(
+        combined, include_possession_context=include_possession_context
+    )
     if set(feature_names) & FORBIDDEN_FEATURES:
         raise AssertionError("Expected-shot design contains a forbidden identity or outcome feature.")
     train_features = features[: len(train)]
@@ -189,7 +250,7 @@ def run_expected_shot_quality(
     c: float = 0.2,
     max_iter: int = 300,
 ) -> dict:
-    """Fit, calibrate on later development data, then score an untouched year."""
+    """Fit, calibrate on later development data, then score a later year."""
     panel_path = Path(panel_path)
     panel = pd.read_parquet(panel_path)
     required = {"season_end", "shooter_id", "shot_zone", "shot_value", "shot_made"}
@@ -204,7 +265,7 @@ def run_expected_shot_quality(
     ].copy()
     test = panel.loc[panel["season_end"].eq(test_season_end)].copy()
     if train.empty or calibration_frame.empty or test.empty:
-        raise ValueError("Expected-shot split requires nonempty train, calibration, and untouched test seasons.")
+        raise ValueError("Expected-shot split requires nonempty train, calibration, and test seasons.")
     if set(train_season_ends) & set(calibration_season_ends):
         raise ValueError("Expected-shot training and calibration seasons must not overlap.")
 
@@ -251,7 +312,7 @@ def run_expected_shot_quality(
         "run_id": output.name,
         "status": "research_baseline",
         "estimand": "Player-neutral pre-shot expected field-goal points and descriptive shooter residuals.",
-        "evidence_status": "untouched_2026_test",
+        "evidence_status": "reused_2026_diagnostic",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "config": config,
         "training": {"shots": int(len(train)), "season_ends": list(train_season_ends)},
