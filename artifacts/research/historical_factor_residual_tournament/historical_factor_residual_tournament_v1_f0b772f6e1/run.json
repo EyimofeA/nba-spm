@@ -1,0 +1,254 @@
+{
+  "config": {
+    "bootstrap": {
+      "draws": 5000,
+      "seed": 20260829,
+      "unit": "whole game within outcome season"
+    },
+    "candidates": [
+      "box15",
+      "box15_ts",
+      "box15_oreb",
+      "box15_ts_oreb"
+    ],
+    "evaluated_rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "experiment_id": "historical_factor_residual_tournament_v1",
+    "factor_model_families": [
+      "boosted_tree",
+      "elastic_net",
+      "ridge"
+    ],
+    "feature_contract": {
+      "opponent_oreb_prevention_defense": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "player_height_inches",
+        "dreb_chances_p100_specialist",
+        "dreb_contested_share_specialist",
+        "dreb_defer_share_specialist",
+        "average_dreb_distance",
+        "rebound_conversion_above_expected_eb",
+        "offensive_boxouts_p100_specialist",
+        "defensive_boxouts_p100_specialist",
+        "boxout_team_rebound_conversion_eb",
+        "boxout_player_rebound_conversion_eb",
+        "height_x_defensive_boxouts",
+        "height_x_dreb_contested_share",
+        "height_x_offensive_boxouts",
+        "has_boxout_tracking",
+        "dreb_contests_p100",
+        "dreb_chances_p100"
+      ],
+      "opponent_oreb_prevention_offense": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "self_oreb_adjusted_ts",
+        "oreb_chances_p100_specialist",
+        "oreb_contested_share_specialist",
+        "oreb_defer_share_specialist",
+        "average_oreb_distance",
+        "oreb_conversion_above_expected_eb",
+        "height_x_oreb_contested_share"
+      ],
+      "shooting_ts_defense": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "defender_expected_points_conceded_per_shot",
+        "defender_shotmaking_points_saved_p100_eb",
+        "defender_rim_expected_points_conceded_per_shot",
+        "rim_deterrence_vs_scorer_p100_eb",
+        "has_assigned_shot_defense"
+      ],
+      "shooting_ts_offense": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "shot_quality_created_points_per_shot",
+        "shotmaking_above_expected_p100_eb",
+        "rim_attempt_share",
+        "rim_shotmaking_above_expected_p100_eb",
+        "midrange_attempt_share",
+        "three_attempt_share",
+        "assisted_attempt_share",
+        "transition_attempt_share"
+      ]
+    },
+    "rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "season_2027": "forbidden",
+    "source_hashes": {
+      "base_features": "6a31110d159667f941f24a8ad00051881aa991a9e3329d1c860a472119de6ad1",
+      "factor_targets": "0918994b550a5861ffdf816d9d4a60c747b6ef07c8772ce42e828c2bd520bd11",
+      "normal_targets": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707",
+      "runner": "7efa1b860e9a4f1591eecf3762a9d2c83271ad9fd2ec743b0229a07dd4645cf8",
+      "specialist_features": "142ac903725463ae078e430ffb217e768570c9b91039501bc7892367fac6bfb4",
+      "specialist_manifest": "3f0f8d33638ac1319645b7f15bd838fa1ea190f99c6ea2592d82f8eb98bc034a"
+    }
+  },
+  "created_at": "2026-08-29T20:27:25.814012+00:00",
+  "decisions": [
+    {
+      "candidate": "box15_ts_aio",
+      "margin_correlation_delta": 0.004562556713948562,
+      "paired_mse_interval_favors_candidate": false,
+      "passes_primary_gate": false,
+      "rmse_improvement_points_per_game": -0.00598099279109654
+    },
+    {
+      "candidate": "box15_oreb_aio",
+      "margin_correlation_delta": 0.0024520653128914938,
+      "paired_mse_interval_favors_candidate": true,
+      "passes_primary_gate": false,
+      "rmse_improvement_points_per_game": 0.01406061865611008
+    },
+    {
+      "candidate": "box15_ts_oreb_aio",
+      "margin_correlation_delta": 0.005451963965566686,
+      "paired_mse_interval_favors_candidate": false,
+      "passes_primary_gate": false,
+      "rmse_improvement_points_per_game": -0.002219670506100613
+    }
+  ],
+  "files": {
+    "bootstrap_model_intervals.parquet": {
+      "path": "bootstrap_model_intervals.parquet",
+      "rows": 9,
+      "sha256": "bb005a77cf4fced364b93d21e300c682f7561715f24d427341a376aa1dcd1491"
+    },
+    "factor_metrics.parquet": {
+      "path": "factor_metrics.parquet",
+      "rows": 48,
+      "sha256": "45758c40a960b22fe48f7e7b1e195f8cac5b80da2cd95bcbf708ce9ee2ffba14"
+    },
+    "factor_predictions.parquet": {
+      "path": "factor_predictions.parquet",
+      "rows": 47196,
+      "sha256": "a19635c6568349eabde908f2474562a6073d4fd2e7a27e191cc26df0f8fabef2"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "rows": 45,
+      "sha256": "3bb7b00ce98366e4c0fd041625396fa4d1c224c69dc33ee87e960e58ddb42d6d"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 55269,
+      "sha256": "cb711be8422c1b0a75a760fd06951573bf20923579eec764ca7fa4c435283697"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 36,
+      "sha256": "04a2b82d831582761589fd062937c2f34a95039ea97c2ca00d9b02fad09ad1bb"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "rows": 24,
+      "sha256": "483b5fe98bdf8f1abd4975862bfbbfcba61939b2aee5c0e54db61f3ceb0cd47a"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "rows": 23612,
+      "sha256": "e7cb4226e2fc256b397a1a631b1294382e7bc2804ec41bc1f6407a173ee4d251"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "rows": 57888,
+      "sha256": "2201728e312f15ff42e53eb593346de03873be94aa5c82f7d9de01c8cf02172c"
+    },
+    "selection.parquet": {
+      "path": "selection.parquet",
+      "rows": 120,
+      "sha256": "7e06d15ad504a2c395c19b8260f4786eb17d01a5acdd8d9045e5b3626424869e"
+    },
+    "subgroup_metrics.parquet": {
+      "path": "subgroup_metrics.parquet",
+      "rows": 116,
+      "sha256": "c17149d4c079e68f073ae31226a7ab95313472e9f978f7d59b80e25da06d3f9b"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "rows": 9,
+      "sha256": "ad5db3cbfa764e77f9f758d4adf3d60a39e72194d6bf4184d63d1333b23cfc2d"
+    }
+  },
+  "forbidden_interpretation": "Factor fit alone does not establish a better all-in-one. Season 2027 was not loaded and remains the untouched confirmation season.",
+  "quality": {
+    "adversarial_source_drift": {
+      "early_vs_late_auc": 0.9747897479905968,
+      "rows": 5683
+    },
+    "identical_games_within_fold": true,
+    "panel_rows": 8604,
+    "season_2027_loaded": false
+  },
+  "run_id": "historical_factor_residual_tournament_v1_f0b772f6e1",
+  "status": "research_null"
+}

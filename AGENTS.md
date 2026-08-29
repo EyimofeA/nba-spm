@@ -138,6 +138,12 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   disruption/fouls, shooting/scoring, creation/security, and rebounding. Use
   `active_2026_leaderboard.parquet`; the earlier unfiltered table includes
   zero-exposure historical players.
+- Historical factor run `historical_factor_residual_tournament_v1_f0b772f6e1`
+  builds matched shooting-TS and opponent-OREB-prevention targets from 2014--26.
+  Specialists roughly double factor R-squared, but shooting does not improve
+  AIO. The OREB specialist improves AIO RMSE by only `.014`, below the frozen
+  `.05` promotion threshold. Keep Box15 frozen and publish the factor models as
+  research skills only.
 - Run `full_spm_history_ablation_v1_2eb5eb428c` refits the corrected panel and
   removes the 13 hustle and matchup fields that start in 2018 as one fixed
   block. The reduced SPM loses. Keep the full 127/68 contract.

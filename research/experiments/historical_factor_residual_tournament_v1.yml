@@ -1,0 +1,64 @@
+experiment_id: historical_factor_residual_tournament_v1
+status: completed_reused_historical_diagnostic
+
+question: >
+  Do historical shooting-TS or opponent-OREB-prevention specialists improve
+  the frozen Box15 prior after the same one-season RAPM update?
+
+seasons:
+  annual_source: [2014, 2026]
+  five_year_window_ends: [2018, 2026]
+  rating_seasons: [2021, 2026]
+  evaluated_outcome_seasons: [2022, 2026]
+  untouched_confirmation: 2027
+
+targets:
+  - rolling_shooting_ts_factor_v1
+  - rolling_opponent_oreb_prevention_v1
+
+candidates:
+  - box15
+  - box15_ts
+  - box15_oreb
+  - box15_ts_oreb
+
+factor_models:
+  ridge_alpha: 100.0
+  elastic_net:
+    alpha: 0.01
+    l1_ratio: 0.1
+  histogram_boosted_tree:
+    learning_rate: 0.05
+    iterations: 200
+    maximum_leaf_nodes: 15
+    l2_regularization: 10.0
+  selection: chronological_equal_window_mse_inside_past_only_training_panel
+
+residual_model:
+  family: ridge
+  alpha: 10.0
+  inputs: leave_one_window_out_factor_predictions_inside_past_only_training_panel
+
+aio_update:
+  likelihood: same_rating_season_terminal_lineup_possessions
+  penalties:
+    offense: 3000.0
+    defense: 3000.0
+    home: 300.0
+
+primary_gate:
+  minimum_rmse_improvement_points_per_game: 0.05
+  paired_whole_game_95_interval_must_favor_challenger: true
+  maximum_margin_correlation_decline: 0.01
+  identical_games_required: true
+  source_or_exposure_subgroup_failure_forbidden: true
+
+uncertainty:
+  unit: whole_game_within_outcome_season
+  draws: 5000
+  seed: 20260829
+
+result:
+  artifact: historical_factor_residual_tournament_v1_f0b772f6e1
+  decision: keep_box15
+  note: opponent_oreb_prevention_improved_rmse_by_0.014_but_missed_the_0.05_gate

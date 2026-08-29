@@ -58,6 +58,28 @@ estimands:
     intended_use: current player skill display, season trajectories, and skill-model research
     forbidden_interpretation: RAPM, SPM, AIO impact, causal player credit, playing-time forecast, or untouched 2026 confirmation
 
+  - estimand_id: rolling_shooting_ts_factor_v1
+    name: Rolling lineup-adjusted true-shooting impact
+    status: research_skill_metric
+    unit: true_shooting_percentage_points_per_100_weighted_attempts
+    population: NBA regular-season players with valid observed shooting-event lineups
+    window_definition: one season or one matched five-season window from 2014 through 2026
+    information_cutoff_rule: only regular-season events, lineups, and specialist inputs through the named window end; Season 2027 excluded
+    target_definition: weighted lineup ridge on field-goal and free-throw events whose weighted mean equals true shooting percentage
+    intended_use: descriptive shooting-offense and shooting-defense skill research
+    forbidden_interpretation: total player impact, causal primary-defender value, production AIO prior, or untouched confirmation
+
+  - estimand_id: rolling_opponent_oreb_prevention_v1
+    name: Rolling lineup-adjusted opponent offensive-rebound prevention
+    status: research_skill_metric
+    unit: offensive_rebound_probability_points_per_100_resolved_misses
+    population: NBA regular-season players on resolved missed-shot events with valid observed lineups
+    window_definition: one season or one matched five-season window from 2014 through 2026
+    information_cutoff_rule: only regular-season missed shots, rebounds, lineups, and specialist inputs through the named window end; Season 2027 excluded
+    target_definition: lineup ridge on whether the offense recovered each resolved missed field goal, with positive defense meaning prevention
+    intended_use: descriptive rebound-responsibility research and a frozen AIO challenger
+    forbidden_interpretation: generic defensive rebounding, unique event-level box-out responsibility, causal player value, or production promotion
+
   - estimand_id: filtered_time_decayed_normal_rapm_proxy_v1
     name: Filtered time-decayed normal-RAPM trajectory
     status: research_baseline
