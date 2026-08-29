@@ -66,6 +66,9 @@ Start at the repository root:
 - [`impact/FINAL_BOX_FEATURE_LADDER_V1.md`](impact/FINAL_BOX_FEATURE_LADDER_V1.md) —
   final cumulative feature ladder, downstream AIO selection, Box15
   interpretability, and corrected active-player leaderboard;
+- [`impact/HISTORICAL_BOX15_EXTENSION_V1.md`](impact/HISTORICAL_BOX15_EXTENSION_V1.md) —
+  focused Box15 follow-up, 1997--2026 RAPM coverage, 2001--2026 five-year
+  SPM/AIO coverage, modern retention test, and local site-bundle boundary;
 - [`impact/IMPACT_VALIDATION_SUITE_V1.md`](impact/IMPACT_VALIDATION_SUITE_V1.md) —
   ordered same-season, forward, reverse, midseason, and next-season tests for
   the frozen statistical priors, with weighted and equal-weight summaries;

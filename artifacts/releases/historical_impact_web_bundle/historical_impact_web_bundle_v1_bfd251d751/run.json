@@ -1,0 +1,338 @@
+{
+  "coverage": {
+    "aio": [
+      2001,
+      2026
+    ],
+    "rapm": [
+      1997,
+      2026
+    ],
+    "spm": [
+      2001,
+      2026
+    ]
+  },
+  "created_at": "2026-08-29T22:43:14.119485+00:00",
+  "experiment_id": "historical_impact_web_bundle_v1",
+  "files": {
+    "historical_impact_panel.parquet": {
+      "bytes": 1364113,
+      "rows": 14570,
+      "sha256": "69058f0dfcc6419583bd046d558e9b019e545eba235c1bb085e7836cacd71ed5"
+    },
+    "seasons/1997.json": {
+      "bytes": 82781,
+      "rows": 443,
+      "sha256": "8b6dd41012443f97df03ca06b8217b57b7399a3d0037bb0feb303989d0b080ac"
+    },
+    "seasons/1998.json": {
+      "bytes": 82142,
+      "rows": 439,
+      "sha256": "c33d8cc14724f825cf8d4c90af37b5868b508d1da911a9d62fa5fb2562c283e7"
+    },
+    "seasons/1999.json": {
+      "bytes": 82279,
+      "rows": 440,
+      "sha256": "62f8369d1a4c03d980214979ca323f12a0cc89181ffb59cc0564a9226a32e4f3"
+    },
+    "seasons/2000.json": {
+      "bytes": 82228,
+      "rows": 439,
+      "sha256": "388072a89e3cf0f16fb7309e88e216fd9a1ac65fe39f92d3da6d29f7b8b72eb9"
+    },
+    "seasons/2001.json": {
+      "bytes": 200795,
+      "rows": 441,
+      "sha256": "fce8b0d13096fcab5a778d8225712f11707e12b99b0f7bce4c42b0cf490eff2e"
+    },
+    "seasons/2002.json": {
+      "bytes": 200542,
+      "rows": 440,
+      "sha256": "11ead3dfedbe65f082faeb5e8cf65fa33b365a1aa57eee688f4a2b04a9f0a65a"
+    },
+    "seasons/2003.json": {
+      "bytes": 195011,
+      "rows": 428,
+      "sha256": "22348b5b2088d556f9854e7f3f29c9ce30125164c0e68393cef0ef19351586ae"
+    },
+    "seasons/2004.json": {
+      "bytes": 187155,
+      "rows": 442,
+      "sha256": "73674f90686d7693641bbe63632cdd3c22413b3c3bfa5a4740e33c992de72d57"
+    },
+    "seasons/2005.json": {
+      "bytes": 196532,
+      "rows": 464,
+      "sha256": "3a2c0db0b08fac1a250421f9071141f524075cfb5d5aeb0e7f84c410f020c989"
+    },
+    "seasons/2006.json": {
+      "bytes": 193310,
+      "rows": 458,
+      "sha256": "5dd74d3dca30e234c369fee97b7ff0e15eb937bf28a398f4c3c7c5452e6e88b7"
+    },
+    "seasons/2007.json": {
+      "bytes": 194264,
+      "rows": 458,
+      "sha256": "cac3436dfdcedd35495dc121dc768849c470405e13cc13391bf7e494f22329d8"
+    },
+    "seasons/2008.json": {
+      "bytes": 191383,
+      "rows": 451,
+      "sha256": "57db541cd72dc9e6424830b1594f03a58848eb710579d723d5c5b155e7c1304f"
+    },
+    "seasons/2009.json": {
+      "bytes": 188827,
+      "rows": 445,
+      "sha256": "744009342debb0fac949ec05e203107f17f192845d5dd679e84f2b8fdfcdaf9d"
+    },
+    "seasons/2010.json": {
+      "bytes": 187426,
+      "rows": 441,
+      "sha256": "8b50a5cdb8fbdd4991d55d1f77e8817706e438d02fc08d9b1263fa0e3c0c2f2a"
+    },
+    "seasons/2011.json": {
+      "bytes": 192004,
+      "rows": 452,
+      "sha256": "8129de5ccd044142b16bd6a2306a5c54b333f2ee326b9983133a4d9067161e59"
+    },
+    "seasons/2012.json": {
+      "bytes": 203058,
+      "rows": 478,
+      "sha256": "73bc676a3ddfcfe82cec567fbf729a80ba4de4452d8690ab0b7d69fd22c0f28d"
+    },
+    "seasons/2013.json": {
+      "bytes": 199456,
+      "rows": 469,
+      "sha256": "7970081252ed467812894391cbfab6ab11e0af0c91ed5ee10170db1367c89e2c"
+    },
+    "seasons/2014.json": {
+      "bytes": 204953,
+      "rows": 482,
+      "sha256": "6e0e5c4859ff1afc417e8126c7501fa853193d703507342ffdc21cbef84a955d"
+    },
+    "seasons/2015.json": {
+      "bytes": 209385,
+      "rows": 492,
+      "sha256": "343c95546ad88a8e88926b01e46d46ae1597d93e3f382af9a16fe7e1b72f8010"
+    },
+    "seasons/2016.json": {
+      "bytes": 202727,
+      "rows": 476,
+      "sha256": "cf5fec5fa88e1e0dafc63294aff30339f3ca872c08677cfaa900d5164f3a9fb3"
+    },
+    "seasons/2017.json": {
+      "bytes": 207156,
+      "rows": 486,
+      "sha256": "6e7f60462c7ee77a24d42149bc057997a94c22c22d3a04bbf693d188dc1dc675"
+    },
+    "seasons/2018.json": {
+      "bytes": 230152,
+      "rows": 540,
+      "sha256": "34bc15149bc0f59eb2b7dd739f069be1373483315b6b09439bae2c4141545963"
+    },
+    "seasons/2019.json": {
+      "bytes": 226038,
+      "rows": 530,
+      "sha256": "017ed612c48fff9cec5628cf1ca9305b4a2a35b096e7ae00d8533cc96698c257"
+    },
+    "seasons/2020.json": {
+      "bytes": 225687,
+      "rows": 529,
+      "sha256": "88a5cb2fb4ad6866d066b65fe147950003769d3d0918ca33e1bcb21cecc21d78"
+    },
+    "seasons/2021.json": {
+      "bytes": 230403,
+      "rows": 540,
+      "sha256": "7945f7feab52919cb2c9bd0faf1d5d0343774445417ca3551233e8a5c639722a"
+    },
+    "seasons/2022.json": {
+      "bytes": 258070,
+      "rows": 605,
+      "sha256": "c5b4ddd4340aa1a2246825798b0fe0ddbbc53d1d2c577b3755cbd55031bc1ce8"
+    },
+    "seasons/2023.json": {
+      "bytes": 230134,
+      "rows": 539,
+      "sha256": "546b3c5db0a26e4de5df0aa5c54da5ed33671bc14edf00196cd65a2819635ba0"
+    },
+    "seasons/2024.json": {
+      "bytes": 244114,
+      "rows": 572,
+      "sha256": "9976ac09bc06a24f12a71466d5fe9faaf0dc1fef1d883c4fbc1b08618d5a3ddb"
+    },
+    "seasons/2025.json": {
+      "bytes": 242716,
+      "rows": 569,
+      "sha256": "5f4bc026373aabdf02f6259c3232093bc25e911287acd143f16f20f47e90059f"
+    },
+    "seasons/2026.json": {
+      "bytes": 248410,
+      "rows": 582,
+      "sha256": "ca39784037b4e6da1a13f3e1ef6702f3760fd935aecbc6f366819c035cdd8af6"
+    }
+  },
+  "manual_name_aliases": [
+    {
+      "player_id": 471,
+      "player_name": "Lionel Simmons",
+      "season": 1997
+    },
+    {
+      "player_id": 775,
+      "player_name": "Melvin Booker",
+      "season": 1997
+    }
+  ],
+  "publication_boundary": "This bundle is ready for local UI integration. It is not copied into web/public or deployed until the site snapshot contract and copy are updated.",
+  "quality": {
+    "duplicate_player_seasons": 0,
+    "player_name_coverage": 1.0,
+    "rows": 14570,
+    "season_2027_loaded": false
+  },
+  "run_id": "historical_impact_web_bundle_v1_bfd251d751",
+  "sources": {
+    "aio": {
+      "path": "artifacts/research/historical_box15_ratings/historical_box15_ratings_v1_d65c267829/aio_ratings.parquet",
+      "sha256": "26b973b94bbac942f132e75bd13dccf94c2804e9397281c2d1f6fe3e37d31c7d"
+    },
+    "exporter": {
+      "path": "research/export_historical_impact_bundle.py",
+      "sha256": "296f85351b1208a7bbc730b9bff1f9066c0ef83330bb784034bcdafc8bdafa44"
+    },
+    "player_names_1997": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/1997.csv",
+      "sha256": "3d858ae0316047b16c9d65113fb26a7841e2b2ab7911f7c08117081bbde65165"
+    },
+    "player_names_1998": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/1998.csv",
+      "sha256": "a7a7fcc134a0e89bcd98a3135197a2acd6fe9d3b7f959f6b8ef12fef332c3bb2"
+    },
+    "player_names_1999": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/1999.csv",
+      "sha256": "8f57dee29232a197c46b049bed64fab80a4f11e8ec99e6ac8d8653d814eac8ab"
+    },
+    "player_names_2000": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2000.csv",
+      "sha256": "30a248724c6cd39f772e57fbf96ea870e8be73fed38094cc3e3d73dabfc6893e"
+    },
+    "player_names_2001": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2001.csv",
+      "sha256": "605d870776d7c504c1094b64a0c6ef2546a6e63ef2d3e7cd6f6685d0f60f1cf1"
+    },
+    "player_names_2002": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2002.csv",
+      "sha256": "3b530d3fcbee32b2d19b0ff753ba417347b468f14ef8efc32911d2955a9ac1cf"
+    },
+    "player_names_2003": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2003.csv",
+      "sha256": "656f655ad42277bd104016cd831ff301d12ab959fe02960326c62da63b775db8"
+    },
+    "player_names_2004": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2004.csv",
+      "sha256": "006e4c7baff11cc5d98220ab7ebd4ada692b899d43daf13fc35ea614ae14f545"
+    },
+    "player_names_2005": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2005.csv",
+      "sha256": "5afa9dc2693ac2cc3d2040336c7161b398b05147b4f70c11f16ea55add283441"
+    },
+    "player_names_2006": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2006.csv",
+      "sha256": "04b24b13431bfd600edfb1535ae30bcf12c78e90b0dda57ba02cbf58207b9bcf"
+    },
+    "player_names_2007": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2007.csv",
+      "sha256": "4aa2029b2f3bcebb403ba19c71413a3af7c20aa6f1cbef142d4ff0530484b96c"
+    },
+    "player_names_2008": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2008.csv",
+      "sha256": "d5c5b50f862f1708f64889a5c2b1162bb50413ccf3ed55698ce4765bfde28b07"
+    },
+    "player_names_2009": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2009.csv",
+      "sha256": "d22d695c6ec9237c668b05c18e92b97006a273bd4cf2c29db3446138a1842d67"
+    },
+    "player_names_2010": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2010.csv",
+      "sha256": "dc27c78cd19d6df85f40ff7b6b5edaa5ff7f2ce53a6fe1d628f6c85931683bfe"
+    },
+    "player_names_2011": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2011.csv",
+      "sha256": "f2ea5cacda799449a760e4b5da8d0fe5eca60b72a74be8878cde2fa6906243ae"
+    },
+    "player_names_2012": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2012.csv",
+      "sha256": "a9872e8d3f84c839ba142dadb613b847b1ff9fc61d7ec75679bfc0ca2d6ecfc7"
+    },
+    "player_names_2013": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2013.csv",
+      "sha256": "96db75e13bf1ccc8a903d52132cdbb0abe2d118e12eb770aab3c22cdce4f35a9"
+    },
+    "player_names_2014": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2014.parquet",
+      "sha256": "30ffc3f5090e76d9ddda98cb41ca72785e296430dae2aa3cad165318025f62dc"
+    },
+    "player_names_2015": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2015.parquet",
+      "sha256": "90ddc43dfffcc827e154677ef46f2a0c0b6c31b51784e27832869ea63c49dc20"
+    },
+    "player_names_2016": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2016.parquet",
+      "sha256": "62690961d72c732b7b0bcf6e8fb8d7921ce3c3715bb45a52d285171b831697b9"
+    },
+    "player_names_2017": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2017.parquet",
+      "sha256": "590d42a93951e43f55413582e65f4539a44b7257a24e531cf721f58ed135098e"
+    },
+    "player_names_2018": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2018.parquet",
+      "sha256": "e26f1af99c6ae9a8ba9632d5522079b4b2d38265ac2008ae9f9d8738bab83770"
+    },
+    "player_names_2019": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2019.parquet",
+      "sha256": "ebebe7174b1ab529eaa6299d6da73783420424e59bbb125d65925f1155675340"
+    },
+    "player_names_2020": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2020.parquet",
+      "sha256": "a8f0e782be214a72bee072781152d5ae637e5b80d508f46ee7efdb919d658065"
+    },
+    "player_names_2021": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2021.parquet",
+      "sha256": "7f542206d8a6206b25ff6397ef34d75fc9cb1c6315aab84b9c401c59ba6ca51f"
+    },
+    "player_names_2022": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2022.parquet",
+      "sha256": "4e46a94b3c9f85aeb0dfe49abc08340a4c86720e192783b0319ff0e375f0f95b"
+    },
+    "player_names_2023": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2023.parquet",
+      "sha256": "6d85fb54ac49f6c73e4d6dedacb216f2b28d5db475153d1bebffa9585ec1268d"
+    },
+    "player_names_2024": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2024.parquet",
+      "sha256": "beb5a5aceb7d1d3504529102a4c93eb4898ff525474ea75bd3babeeeb0e38ad3"
+    },
+    "player_names_2025": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2025.parquet",
+      "sha256": "8cbeab5559385f7be8226e168e4b2eceac3ce40029360fb770ff40770a7fc4ed"
+    },
+    "player_names_2026": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2026.parquet",
+      "sha256": "09a6a34855a3685e89ced2dcb2f79b60ed2ef97b9709b29d30848a3165fe7e2c"
+    },
+    "rapm": {
+      "path": "artifacts/research/historical_box15_ratings/historical_box15_ratings_v1_d65c267829/rapm_ratings.parquet",
+      "sha256": "8effc0e7017c8d4ccd10730e8afc36ece696a8d8c6e99bb5c97bece0f7705a12"
+    },
+    "ratings_run": {
+      "path": "artifacts/research/historical_box15_ratings/historical_box15_ratings_v1_d65c267829/run.json",
+      "sha256": "435846e4ce97758e4435e7815a791ab404570473ee08fe1aa38ecc59896ba817"
+    },
+    "spm": {
+      "path": "artifacts/research/historical_box15_ratings/historical_box15_ratings_v1_d65c267829/spm_priors.parquet",
+      "sha256": "d68106a4c0f2a57c06c5f696a3b3b01c8dac0baa7d100683746dd265ca745dc0"
+    }
+  },
+  "status": "local_site_candidate"
+}

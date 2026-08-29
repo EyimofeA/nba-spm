@@ -1,0 +1,45 @@
+schema_version: experiment_preregistration_v1
+experiment_id: historical_box15_validation_v1
+status: frozen_reused_diagnostic
+estimand_id: prior_validation_suite_v1
+
+question: >-
+  Does adding 2001-2017 five-year training windows preserve current-era Box15
+  AIO accuracy on identical next-season games?
+
+candidates:
+  box15_original_history:
+    training_window_ends: [2018, 2026]
+  box15_expanded_history:
+    training_window_ends: [2001, 2026]
+
+information_cutoff:
+  rating_seasons: [2021, 2022, 2023, 2024, 2025, 2026]
+  evaluated_rating_seasons: [2021, 2022, 2023, 2024, 2025]
+  test_seasons: [2022, 2023, 2024, 2025, 2026]
+  training_rule: window_end strictly before rating_season
+  season_2027: forbidden
+
+learner:
+  family: ridge
+  features: Box15
+  sample_weight: sqrt_min_offensive_and_defensive_possessions
+  alpha_grid: [10, 30, 100, 300, 1000, 3000]
+  alpha_selection: leave_one_training_season_out_inside_each_outer_fold
+
+fixed_aio:
+  likelihood_seasons: 1
+  lambda_offense: 3000
+  lambda_defense: 3000
+  lambda_home: 300
+  center_scale: 1
+
+retention_gate:
+  maximum_equal_season_rmse_increase: 0.05
+  maximum_mean_margin_correlation_decline: 0.01
+  identical_games_required: true
+
+forbidden_interpretation: >-
+  The scored seasons are reused. Passing the retention gate supports a
+  historical research extension but does not promote a public model or consume
+  Season 2027.

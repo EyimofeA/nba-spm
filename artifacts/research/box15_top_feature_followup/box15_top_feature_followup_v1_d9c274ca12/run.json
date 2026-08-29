@@ -1,0 +1,215 @@
+{
+  "config": {
+    "alpha_grid": [
+      10.0,
+      30.0,
+      100.0,
+      300.0,
+      1000.0,
+      3000.0
+    ],
+    "bootstrap_draws": 5000,
+    "bootstrap_seed": 20260827,
+    "candidate_order": [
+      "box_15",
+      "box_plus_top_offense",
+      "box_plus_top_defense",
+      "box_plus_top_both"
+    ],
+    "contract_sha256": "e0cdcebd5f7269a370fa2cf7a0ffb9f17c3b80bff496eed92d667e95f7a27c27",
+    "model_order": [
+      "box_15",
+      "box_plus_top_offense",
+      "box_plus_top_defense",
+      "box_plus_top_both",
+      "zero_prior_rapm",
+      "box_15_aio",
+      "box_plus_top_offense_aio",
+      "box_plus_top_defense_aio",
+      "box_plus_top_both_aio"
+    ],
+    "sources": {
+      "contract": {
+        "path": "research/experiments/box15_top_feature_followup_v1.yml",
+        "sha256": "e0cdcebd5f7269a370fa2cf7a0ffb9f17c3b80bff496eed92d667e95f7a27c27"
+      },
+      "feature_manifest": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_8be676bd0f/run.json",
+        "sha256": "a5ad9d0a584a13b1877ebe0670508a4e2b1c902aba6c851a05e2e1c5148abe26"
+      },
+      "features": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_8be676bd0f/five_year_features.parquet",
+        "sha256": "6a31110d159667f941f24a8ad00051881aa991a9e3329d1c860a472119de6ad1"
+      },
+      "runner": {
+        "path": "research/run_box15_top_feature_followup.py",
+        "sha256": "f008b1f2b95720154881d0ef7c1ebf0f4fcf0dcb1b1029ef35404ddf4ab1a7d1"
+      },
+      "targets": {
+        "path": "artifacts/models/five_year_target_spm/five_year_target_spm_v1_65550acb79/five_year_targets.parquet",
+        "sha256": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+      }
+    }
+  },
+  "contract": {
+    "candidates": [
+      "box_15",
+      "box_plus_top_offense",
+      "box_plus_top_defense",
+      "box_plus_top_both"
+    ],
+    "decision_rule": "Replace Box15 only if a challenger has lower point MSE, a paired 95 percent interval below zero versus Box15, and passes the correlation guard. This reused diagnostic cannot promote a public model.",
+    "estimand_id": "prior_validation_suite_v1",
+    "experiment_id": "box15_top_feature_followup_v1",
+    "features": {
+      "defense": [
+        "assist_points_created_p100",
+        "touches_p100",
+        "dreb_chances_p100",
+        "recovered_blocks_p100",
+        "paint_touches_p100"
+      ],
+      "offense": [
+        "lost_ball_turnovers_p100",
+        "long_mid_frequency_eb",
+        "drive_fta_per_drive_eb",
+        "short_mid_fga_p100",
+        "drive_turnovers_p100"
+      ]
+    },
+    "fixed_aio": {
+      "center_scale": 1,
+      "lambda_defense": 3000,
+      "lambda_home": 300,
+      "lambda_offense": 3000,
+      "likelihood_seasons": 1
+    },
+    "forbidden_interpretation": "This reused diagnostic cannot establish causal feature value, independent confirmation, or permission to consume Season 2027.",
+    "information_cutoff": {
+      "evaluated_rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "final_unscored_rating_season": 2026,
+      "rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "season_2027": "forbidden",
+      "test_seasons": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "training_rule": "window_end strictly before rating_season"
+    },
+    "learner": {
+      "alpha_grid": [
+        10,
+        30,
+        100,
+        300,
+        1000,
+        3000
+      ],
+      "alpha_selection": "leave_one_training_season_out_inside_each_outer_fold",
+      "family": "ridge",
+      "sample_weight": "sqrt_min_offensive_and_defensive_possessions"
+    },
+    "primary_evaluation": {
+      "comparison": "identical_games_and_actual_margins",
+      "correlation_guard": "no_more_than_0.01_below_box_15_aio",
+      "metric": "equal_season_mean_next_season_game_margin_mse",
+      "readable_metric": "rmse",
+      "uncertainty": "5000_paired_whole_game_bootstrap_draws_within_test_season"
+    },
+    "question": "Do the strongest non-Box15 fields from the frozen chronological full-SPM permutation audit improve the Box15 prior after the same RAPM update?",
+    "schema_version": "experiment_preregistration_v1",
+    "selection_source": {
+      "artifact": "five_year_spm_feature_audit_v1_4172cf5408",
+      "rule": "For each side, exclude Box15. Keep fields with positive weighted-RMSE permutation importance in at least four of five chronological folds, then take the five largest mean increases. Defense happened to be positive in all five folds for every selected field."
+    },
+    "status": "frozen_reused_diagnostic"
+  },
+  "created_at": "2026-08-29T22:09:18.386068+00:00",
+  "experiment_id": "box15_top_feature_followup_v1",
+  "files": {
+    "alpha_selection.parquet": {
+      "path": "alpha_selection.parquet",
+      "rows": 48,
+      "sha256": "bbdfef0cca1614379510dc7170f31657d2d575bf3a460aaaf908df4fefb10ac8"
+    },
+    "bootstrap_model_intervals.parquet": {
+      "path": "bootstrap_model_intervals.parquet",
+      "rows": 9,
+      "sha256": "f4a36d011faa4b83e5893778f2e3580a4e0ead2cda581de86a2ee17fa6a6b14f"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "rows": 45,
+      "sha256": "076f391f19acc5beec9811e6b11f5ba7ee9456212f6aa40d71ab4743e3b3a3f2"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 55269,
+      "sha256": "914315b4afc29f4208b66f5d6c4dcbf2fd6b7a24bc1db55af65129e58b77b509"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 36,
+      "sha256": "fbb86f010e948a13382dd5143118d6e2c64c648c22470c367cecc5fdda262520"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "rows": 24,
+      "sha256": "56277f97d00937d865f3061183a7367797b16776decdc047efd225b35f656126"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "rows": 23644,
+      "sha256": "675a2bbac563b7132a465041b79077834f564d4bb12be321748cef2b594b429f"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "rows": 57888,
+      "sha256": "0f00b0241df1cd311c1898838a04abd584528940d5a5845a03310b8825f9ad0a"
+    },
+    "selection.parquet": {
+      "path": "selection.parquet",
+      "rows": 4,
+      "sha256": "9517bb75a82b829ee6b12ea6cca264865894334236cde60d300362c6c5987748"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "rows": 9,
+      "sha256": "aef1f261ddf3f3f7c46e5ec353259e29dd300b1594f652615c67d844aaffd98f"
+    },
+    "target_metrics.parquet": {
+      "path": "target_metrics.parquet",
+      "rows": 72,
+      "sha256": "5b016dfb584f80ac0b2437732de13397a7a439a44b90f22014a7282f54709d64"
+    }
+  },
+  "quality": {
+    "identical_games_within_fold": true,
+    "maximum_component_identity_error": 0.0,
+    "season_2027_loaded": false
+  },
+  "run_id": "box15_top_feature_followup_v1_d9c274ca12",
+  "selected_aio": "box_15_aio",
+  "status": "reused_diagnostic_complete"
+}
