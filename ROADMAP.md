@@ -75,6 +75,10 @@ dead ends. Updated 2026-08-28. See `docs/README.md` for the document index,
   heads improve over their sparse versions, but shooting-defense R-squared is
   still only `.126` with context. The factor route reaches `.312` reused 2026
   normal-RAPM R-squared, close to `.320` for direct full SPM with context.
+- Historical four-factor run `historical_factor_residual_tournament_v2_c06bdebcd5`
+  adds shot-volume and turnover targets to shooting TS and opponent-OREB
+  prevention. Specialists improve every factor head, but the combined AIO gains
+  only `.006` RMSE versus Box15. Keep Box15 frozen.
 - Five-year context run `five_year_spm_teammate_context_v1_13d270986a` adds a
   chronological residual correction to the exact frozen five-year SPM. It
   improves next-season net RAPM RMSE by `.002` and `.012` on the two reused

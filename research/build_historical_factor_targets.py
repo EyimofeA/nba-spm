@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build annual and rolling five-year TS and opponent-OREB factor targets."""
+"""Build annual and rolling five-year factor targets."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ PLAYER_GAMES = ROOT / "data/lake/silver/player_games.parquet"
 SCHEDULE_ROOT = ROOT / "data/lake/bronze/official_game_schedule_1997_2026"
 CURRENT_GAME_DIM = ROOT / "data/lake/silver/game_dim.parquet"
 OUTPUT_ROOT = ROOT / "artifacts/research/historical_factor_targets"
-LEDGER_CACHE = OUTPUT_ROOT / "ledger_cache_6e077a0f_v1"
+LEDGER_CACHE = OUTPUT_ROOT / "ledger_cache_6e077a0f_v2"
 SEASONS = tuple(range(2014, 2027))
 WINDOW_ENDS = tuple(range(2018, 2027))
 EXPECTED_REVISION = "6e077a0f62153e72db300ba1f0a45b30584fd3d2"
@@ -81,7 +81,7 @@ def main() -> None:
         ),
     }
     config = {
-        "experiment_id": "historical_factor_targets_v1",
+        "experiment_id": "historical_factor_targets_v2",
         "status": "frozen_research_build",
         "seasons": list(SEASONS),
         "five_year_window_ends": list(WINDOW_ENDS),
@@ -90,6 +90,11 @@ def main() -> None:
         "lambda_home": 300.0,
         "gabriel_revision": revision,
         "minimum_valid_lineup_fraction": 0.95,
+        "possession_definition": (
+            "consecutive same-offense field goals, nontechnical free throws, and "
+            "turnovers; made field goals and turnovers close a possession"
+        ),
+        "shot_volume_definition": "FGA + 0.44 * FTA per anchored possession",
         "ledger_cache_contract": str(LEDGER_CACHE.relative_to(ROOT)),
         "source_hashes": source_hashes,
         "game_identity_sources": {
@@ -103,7 +108,7 @@ def main() -> None:
     identity = hashlib.sha256(
         json.dumps(config, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()[:10]
-    output = OUTPUT_ROOT / f"historical_factor_targets_v1_{identity}"
+    output = OUTPUT_ROOT / f"historical_factor_targets_v2_{identity}"
     if (output / "run.json").exists():
         print(output)
         return
@@ -120,14 +125,21 @@ def main() -> None:
         season_root = ledger_root / f"season={season}"
         shooting_path = season_root / "shooting.parquet"
         rebound_path = season_root / "opponent_oreb.parquet"
+        possession_path = season_root / "possessions.parquet"
         quality_path = season_root / "quality.json"
-        if not (shooting_path.exists() and rebound_path.exists() and quality_path.exists()):
+        if not (
+            shooting_path.exists()
+            and rebound_path.exists()
+            and possession_path.exists()
+            and quality_path.exists()
+        ):
             events, source_quality = load_gabriel_events(EVENT_ROOT, season)
             game_dim, game_quality = _game_dim(season, events["game_id"])
             ledger = build_historical_factor_ledger(events, game_dim)
             season_root.mkdir(exist_ok=True)
             ledger.shooting.to_parquet(shooting_path, index=False)
             ledger.opponent_oreb.to_parquet(rebound_path, index=False)
+            ledger.possessions.to_parquet(possession_path, index=False)
             write_json_atomic(
                 {**source_quality, **game_quality, **ledger.quality}, quality_path
             )
@@ -143,7 +155,14 @@ def main() -> None:
     invalid_rebound_rate = quality["invalid_rebound_lineups"] / (
         quality["resolved_misses"] + quality["invalid_rebound_lineups"]
     )
-    if invalid_shot_rate.max() > 0.05 or invalid_rebound_rate.max() > 0.05:
+    invalid_possession_rate = quality["invalid_possession_lineups"] / (
+        quality["anchored_possessions"] + quality["invalid_possession_lineups"]
+    )
+    if (
+        invalid_shot_rate.max() > 0.05
+        or invalid_rebound_rate.max() > 0.05
+        or invalid_possession_rate.max() > 0.05
+    ):
         raise ValueError("A source season fails the 95% valid-lineup gate.")
 
     def load_ledger(season: int):
@@ -153,6 +172,7 @@ def main() -> None:
         return HistoricalFactorLedger(
             pd.read_parquet(season_root / "shooting.parquet"),
             pd.read_parquet(season_root / "opponent_oreb.parquet"),
+            pd.read_parquet(season_root / "possessions.parquet"),
             json.loads((season_root / "quality.json").read_text()),
         )
 
@@ -206,8 +226,14 @@ def main() -> None:
                 ),
                 "maximum_invalid_shooting_lineup_rate": float(invalid_shot_rate.max()),
                 "maximum_invalid_rebound_lineup_rate": float(invalid_rebound_rate.max()),
+                "maximum_invalid_possession_lineup_rate": float(
+                    invalid_possession_rate.max()
+                ),
                 "minimum_valid_shooting_lineup_fraction": float(1.0 - invalid_shot_rate.max()),
                 "minimum_valid_rebound_lineup_fraction": float(1.0 - invalid_rebound_rate.max()),
+                "minimum_valid_possession_lineup_fraction": float(
+                    1.0 - invalid_possession_rate.max()
+                ),
                 "season_2027_loaded": False,
             },
             "paths": {

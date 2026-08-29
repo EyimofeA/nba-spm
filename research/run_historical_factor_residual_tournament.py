@@ -34,11 +34,7 @@ BASE_FEATURES = (
     / "semantically_complete_spm_features_v1_8be676bd0f/five_year_features.parquet"
 )
 SPECIALIST_ROOT = ROOT / "artifacts/research/historical_specialist_features"
-FACTOR_TARGETS = (
-    ROOT
-    / "artifacts/research/historical_factor_targets"
-    / "historical_factor_targets_v1_f4894bf588/five_year_factor_targets.parquet"
-)
+FACTOR_TARGETS = ROOT / "artifacts/research/historical_factor_targets"
 NORMAL_TARGETS = (
     ROOT
     / "artifacts/models/five_year_target_spm"
@@ -55,17 +51,33 @@ PLAYER_SHEETS = ROOT / "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/
 ROLE_ROOT = ROOT / "artifacts/features/side_roles/side_roles_v1_2c228f4b9e"
 RATING_SEASONS = tuple(range(2021, 2027))
 EVALUATED_RATING_SEASONS = RATING_SEASONS[:-1]
-CANDIDATES = ("box15", "box15_ts", "box15_oreb", "box15_ts_oreb")
+CANDIDATE_FACTORS = {
+    "box15_ts": ("shooting_ts",),
+    "box15_oreb": ("opponent_oreb_prevention",),
+    "box15_turnover": ("turnover_avoidance",),
+    "box15_shot_volume": ("shot_volume",),
+    "box15_all_factors": (
+        "shooting_ts",
+        "opponent_oreb_prevention",
+        "turnover_avoidance",
+        "shot_volume",
+    ),
+}
+CANDIDATES = ("box15", *CANDIDATE_FACTORS)
 MODEL_ORDER = (
     "box15",
     "box15_ts",
     "box15_oreb",
-    "box15_ts_oreb",
+    "box15_turnover",
+    "box15_shot_volume",
+    "box15_all_factors",
     "zero_prior_rapm",
     "box15_aio",
     "box15_ts_aio",
     "box15_oreb_aio",
-    "box15_ts_oreb_aio",
+    "box15_turnover_aio",
+    "box15_shot_volume_aio",
+    "box15_all_factors_aio",
 )
 BOOTSTRAP_DRAWS = 5000
 BOOTSTRAP_SEED = 20260829
@@ -87,11 +99,64 @@ FACTOR_SPECS = (
 BOX15_ALPHA_GRID = (10.0, 30.0, 100.0, 300.0, 1000.0, 3000.0)
 RESIDUAL_SPEC = ModelSpec("ridge", 10.0)
 
+TURNOVER_OFFENSE_FEATURES = (
+    "TOV_p100",
+    "drive_turnovers_p100",
+    "live_ball_turnovers_p100",
+    "bad_pass_turnovers_p100",
+    "lost_ball_turnovers_p100",
+    "offensive_fouls_p100",
+    "travels_p100",
+    "drive_turnovers_per_drive_eb",
+    "live_ball_turnover_share_eb",
+    "turnover_to_load_2017_eb",
+)
+TURNOVER_DEFENSE_FEATURES = (
+    "STL_p100",
+    "deflections_p100",
+    "charges_drawn_p100",
+    "def_loose_balls_recovered_p100",
+    "matchup_turnovers_forced_vs_scorer_p100_eb",
+)
+VOLUME_OFFENSE_FEATURES = (
+    "FG2A_p100",
+    "FG3A_p100",
+    "FTA_p100",
+    "usage_events_p100",
+    "offensive_load_2017_eb_p100",
+    "shooting_fouls_drawn_p100",
+    "touches_p100",
+    "drives_p100",
+    "OREB_p100",
+    "rim_attempt_share",
+    "midrange_attempt_share",
+    "three_attempt_share",
+)
+VOLUME_DEFENSE_FEATURES = (
+    "dfg_attempts_p100",
+    "matchup_fga_suppressed_vs_scorer_p100_eb",
+    "matchup_three_pa_suppressed_vs_scorer_p100_eb",
+    "contested_2pt_p100",
+    "contested_3pt_p100",
+    "BLK_p100",
+)
+
 
 def _latest_specialist_run() -> Path:
     runs = [path for path in SPECIALIST_ROOT.glob("historical_specialist_features_v1_*") if (path / "run.json").exists()]
     if not runs:
         raise ValueError("No complete historical specialist feature run exists.")
+    return max(runs, key=lambda path: path.stat().st_mtime)
+
+
+def _latest_factor_target_run() -> Path:
+    runs = [
+        path
+        for path in FACTOR_TARGETS.glob("historical_factor_targets_v2_*")
+        if (path / "run.json").exists()
+    ]
+    if not runs:
+        raise ValueError("No complete historical factor target v2 run exists.")
     return max(runs, key=lambda path: path.stat().st_mtime)
 
 
@@ -184,15 +249,33 @@ def _box15_oof(frame: pd.DataFrame, target: str, alpha: float) -> pd.Series:
 
 
 def _feature_contract(panel: pd.DataFrame) -> dict[tuple[str, str], tuple[str, ...]]:
-    shot_offense = tuple(feature for feature in SHOT_FEATURES if not feature.startswith("defender_") and feature != "rim_deterrence_vs_scorer_p100_eb" and feature != "has_assigned_shot_defense")
+    shot_offense = tuple(feature for feature in SHOT_FEATURES if not feature.startswith("defender_") and feature != "rim_deterrence_vs_scorer_p100_eb" and feature != "has_assigned_shot_defense") + ("zts_pct_points", "self_oreb_adjusted_ts")
     shot_defense = tuple(feature for feature in SHOT_FEATURES if feature.startswith("defender_") or feature in {"rim_deterrence_vs_scorer_p100_eb", "has_assigned_shot_defense"})
-    oreb_offense = tuple(feature for feature in REBOUND_FEATURES if "oreb" in feature and "dreb" not in feature) + ("OREB_p100",)
-    oreb_defense = tuple(feature for feature in REBOUND_FEATURES if "dreb" in feature or "boxout" in feature or feature in {"player_height_inches", "rebound_conversion_above_expected_eb", "has_boxout_tracking"}) + ("DREB_p100", "dreb_contests_p100", "dreb_chances_p100")
+    oreb_offense = (
+        "oreb_chances_p100_specialist", "oreb_contested_share_specialist",
+        "oreb_defer_share_specialist", "average_oreb_distance",
+        "oreb_conversion_above_expected_eb", "offensive_boxouts_p100_specialist",
+        "height_x_offensive_boxouts", "height_x_oreb_contested_share",
+        "has_boxout_tracking", "OREB_p100",
+    )
+    oreb_defense = (
+        "player_height_inches", "dreb_chances_p100_specialist",
+        "dreb_contested_share_specialist", "dreb_defer_share_specialist",
+        "average_dreb_distance", "rebound_conversion_above_expected_eb",
+        "defensive_boxouts_p100_specialist", "boxout_team_rebound_conversion_eb",
+        "boxout_player_rebound_conversion_eb", "height_x_defensive_boxouts",
+        "height_x_dreb_contested_share", "has_boxout_tracking", "DREB_p100",
+        "dreb_contests_p100", "dreb_chances_p100",
+    )
     contract = {
         ("shooting_ts", "offense"): tuple(dict.fromkeys((*BOX_PIPM_STYLE_FEATURES, *shot_offense))),
         ("shooting_ts", "defense"): tuple(dict.fromkeys((*BOX_PIPM_STYLE_FEATURES, *shot_defense))),
         ("opponent_oreb_prevention", "offense"): tuple(dict.fromkeys((*BOX_PIPM_STYLE_FEATURES, *oreb_offense))),
         ("opponent_oreb_prevention", "defense"): tuple(dict.fromkeys((*BOX_PIPM_STYLE_FEATURES, *oreb_defense))),
+        ("turnover_avoidance", "offense"): tuple(dict.fromkeys((*BOX_PIPM_STYLE_FEATURES, *TURNOVER_OFFENSE_FEATURES))),
+        ("turnover_avoidance", "defense"): tuple(dict.fromkeys((*BOX_PIPM_STYLE_FEATURES, *TURNOVER_DEFENSE_FEATURES))),
+        ("shot_volume", "offense"): tuple(dict.fromkeys((*BOX_PIPM_STYLE_FEATURES, *VOLUME_OFFENSE_FEATURES))),
+        ("shot_volume", "defense"): tuple(dict.fromkeys((*BOX_PIPM_STYLE_FEATURES, *VOLUME_DEFENSE_FEATURES))),
     }
     missing = sorted({feature for features in contract.values() for feature in features} - set(panel.columns))
     if missing:
@@ -202,10 +285,11 @@ def _feature_contract(panel: pd.DataFrame) -> dict[tuple[str, str], tuple[str, .
 
 def _load_panel() -> tuple[pd.DataFrame, dict[tuple[str, str], tuple[str, ...]], Path]:
     specialist_run = _latest_specialist_run()
+    factor_target_run = _latest_factor_target_run()
     base_features = pd.read_parquet(BASE_FEATURES)
     specialist = pd.read_parquet(specialist_run / "five_year_features.parquet")
     normal = pd.read_parquet(NORMAL_TARGETS)
-    factors = pd.read_parquet(FACTOR_TARGETS).rename(columns={"player_id": "PLAYER_ID"})
+    factors = pd.read_parquet(factor_target_run / "five_year_factor_targets.parquet").rename(columns={"player_id": "PLAYER_ID"})
     normal_fields = ["PLAYER_ID", "Window_End", "target_offense", "target_defense", "target_net", "Poss_Off", "Poss_Def"]
     panel = (
         base_features.merge(specialist, on=["PLAYER_ID", "Window_End"], how="inner", validate="one_to_one")
@@ -218,6 +302,10 @@ def _load_panel() -> tuple[pd.DataFrame, dict[tuple[str, str], tuple[str, ...]],
     panel["shooting_ts_defense_weight"] = np.sqrt(panel["shooting_ts_def_exposure"].clip(lower=1))
     panel["opponent_oreb_prevention_offense_weight"] = np.sqrt(panel["opponent_oreb_prevention_off_exposure"].clip(lower=1))
     panel["opponent_oreb_prevention_defense_weight"] = np.sqrt(panel["opponent_oreb_prevention_def_exposure"].clip(lower=1))
+    panel["turnover_avoidance_offense_weight"] = np.sqrt(panel["turnover_avoidance_off_exposure"].clip(lower=1))
+    panel["turnover_avoidance_defense_weight"] = np.sqrt(panel["turnover_avoidance_def_exposure"].clip(lower=1))
+    panel["shot_volume_offense_weight"] = np.sqrt(panel["shot_volume_off_exposure"].clip(lower=1))
+    panel["shot_volume_defense_weight"] = np.sqrt(panel["shot_volume_def_exposure"].clip(lower=1))
     if panel["Window_End"].max() >= 2027:
         raise ValueError("Season 2027 entered the factor tournament.")
     return panel, _feature_contract(panel), specialist_run
@@ -249,7 +337,7 @@ def _fit_priors(
                 "selected": True, "rating_season": rating_season,
                 "stage": "box15_normal", "component": side,
             }]))
-        for factor in ("shooting_ts", "opponent_oreb_prevention"):
+        for factor in ("shooting_ts", "opponent_oreb_prevention", "turnover_avoidance", "shot_volume"):
             for side in ("offense", "defense"):
                 target = f"{factor}_{side}"
                 weight = f"{factor}_{side}_weight"
@@ -282,11 +370,7 @@ def _fit_priors(
         outputs = {candidate: test[["PLAYER_ID", "Window_End"]].copy() for candidate in CANDIDATES}
         for side in ("offense", "defense"):
             outputs["box15"][side] = base_test[side]
-            for candidate, factors in {
-                "box15_ts": ("shooting_ts",),
-                "box15_oreb": ("opponent_oreb_prevention",),
-                "box15_ts_oreb": ("shooting_ts", "opponent_oreb_prevention"),
-            }.items():
+            for candidate, factors in CANDIDATE_FACTORS.items():
                 signal_names = [f"signal_{factor}" for factor in factors]
                 residual = train[["Window_End", f"target_{side}", "normal_weight"]].copy()
                 residual["base"] = base_oof[side]
@@ -362,7 +446,17 @@ def _subgroup_metrics(factor_predictions: pd.DataFrame, specialist_run: Path) ->
     frame["role"] = frame["role"].fillna("unavailable").astype(str)
     frame["team_change"] = frame["team_change"].fillna("inactive_current_season")
     frame["exposure"] = pd.cut(frame["weight"].pow(2), [0, 1000, 5000, np.inf], labels=["under_1000", "1000_to_4999", "5000_plus"], include_lowest=True).astype(str)
-    source_fraction = np.where(frame["factor"].eq("shooting_ts"), frame["shot_assignment_exposure_fraction"], frame["boxout_source_exposure_fraction"])
+    source_fraction = np.select(
+        [
+            frame["factor"].eq("shooting_ts"),
+            frame["factor"].eq("opponent_oreb_prevention"),
+        ],
+        [
+            frame["shot_assignment_exposure_fraction"],
+            frame["boxout_source_exposure_fraction"],
+        ],
+        default=1.0,
+    )
     frame["source_coverage"] = pd.cut(source_fraction, [-np.inf, 0, 0.99, np.inf], labels=["unavailable", "partial", "near_complete"]).astype(str)
     rows = []
     for dimension in ("role", "exposure", "team_change", "source_coverage"):
@@ -394,19 +488,19 @@ def main() -> None:
     ratings, games, coverage = base._score_models(priors, annual, MATRIX_ROOT)
     fold_metrics, summary = base._game_metrics_frames(games)
     bootstrap_models, bootstrap_pairs = base.paired_game_bootstrap(games, draws=BOOTSTRAP_DRAWS, seed=BOOTSTRAP_SEED)
-    drift_features = tuple(dict.fromkeys((*SHOT_FEATURES, *REBOUND_FEATURES)))
+    drift_features = tuple(dict.fromkeys((*SHOT_FEATURES, *REBOUND_FEATURES, *TURNOVER_OFFENSE_FEATURES, *TURNOVER_DEFENSE_FEATURES, *VOLUME_OFFENSE_FEATURES, *VOLUME_DEFENSE_FEATURES)))
     drift = _adversarial_source_drift(panel, drift_features)
     subgroup_metrics = _subgroup_metrics(factor_predictions, specialist_run)
     sources = {
         "base_features": BASE_FEATURES,
         "specialist_features": specialist_run / "five_year_features.parquet",
         "specialist_manifest": specialist_run / "run.json",
-        "factor_targets": FACTOR_TARGETS,
+        "factor_targets": _latest_factor_target_run() / "five_year_factor_targets.parquet",
         "normal_targets": NORMAL_TARGETS,
         "runner": Path(__file__),
     }
     config = {
-        "experiment_id": "historical_factor_residual_tournament_v1",
+        "experiment_id": "historical_factor_residual_tournament_v2",
         "rating_seasons": list(RATING_SEASONS),
         "evaluated_rating_seasons": list(EVALUATED_RATING_SEASONS),
         "candidates": list(CANDIDATES),
@@ -417,7 +511,7 @@ def main() -> None:
         "season_2027": "forbidden",
     }
     identity = hashlib.sha256(json.dumps(config, sort_keys=True, separators=(",", ":")).encode()).hexdigest()[:10]
-    output = OUTPUT_ROOT / f"historical_factor_residual_tournament_v1_{identity}"
+    output = OUTPUT_ROOT / f"historical_factor_residual_tournament_v2_{identity}"
     output.mkdir(parents=True, exist_ok=False)
     outputs = {
         "priors.parquet": priors,

@@ -1,4 +1,4 @@
-"""Research-only TS and opponent-OREB factor targets from observed lineups."""
+"""Research-only factor targets from observed lineups."""
 
 from __future__ import annotations
 
@@ -55,6 +55,7 @@ EVENT_KEY = (
 class HistoricalFactorLedger:
     shooting: pd.DataFrame
     opponent_oreb: pd.DataFrame
+    possessions: pd.DataFrame
     quality: dict[str, object]
 
 
@@ -334,11 +335,81 @@ def _lineup_rows(
     return work, invalid, repaired, complement_repairs
 
 
+def _possession_opportunities(
+    events: pd.DataFrame,
+) -> tuple[pd.DataFrame, dict[str, int | float]]:
+    """Group consecutive offensive scoring and turnover events into possessions."""
+    action = events["actionType"].fillna("").astype(str).str.lower()
+    description = events["description"].fillna("").astype(str).str.lower()
+    nontechnical_free_throw = action.eq("freethrow") & ~description.str.contains(
+        "technical", regex=False
+    )
+    anchors = events.loc[
+        (action.isin(("2pt", "3pt", "turnover")) | nontechnical_free_throw)
+        & events["teamId"].notna()
+        & events["teamId"].ne(0)
+    ].copy()
+    anchors["_action"] = anchors["actionType"].astype(str).str.lower()
+    anchors["_result"] = anchors["shotResult"].fillna("").astype(str).str.lower()
+    anchors = anchors.sort_values(
+        ["game_id", "period", "actionNumber"], kind="stable"
+    )
+
+    previous_game = anchors["game_id"].shift()
+    previous_period = anchors["period"].shift()
+    previous_team = anchors["teamId"].shift()
+    previous_action = anchors["_action"].shift()
+    previous_result = anchors["_result"].shift()
+    same_offense = (
+        anchors["game_id"].eq(previous_game)
+        & anchors["period"].eq(previous_period)
+        & anchors["teamId"].eq(previous_team)
+    )
+    possession_start = (
+        ~same_offense
+        | previous_action.eq("turnover")
+        | (
+            previous_action.isin(("2pt", "3pt"))
+            & previous_result.eq("made")
+            & ~anchors["_action"].eq("freethrow")
+        )
+    )
+    anchors["_possession_number"] = possession_start.groupby(
+        anchors["game_id"], sort=False
+    ).cumsum().astype(int)
+    anchors["_fga"] = anchors["_action"].isin(("2pt", "3pt")).astype(float)
+    anchors["_fta"] = anchors["_action"].eq("freethrow").astype(float)
+    anchors["_turnover"] = anchors["_action"].eq("turnover").astype(float)
+    group = ["game_id", "period", "_possession_number"]
+    targets = anchors.groupby(group, as_index=False, sort=False).agg(
+        fga=("_fga", "sum"),
+        fta=("_fta", "sum"),
+        turnover=("_turnover", "max"),
+    )
+    targets["shot_volume"] = targets["fga"] + 0.44 * targets["fta"]
+    terminal = anchors.groupby(group, as_index=False, sort=False).tail(1).copy()
+    terminal = terminal.merge(targets, on=group, how="inner", validate="one_to_one")
+    quality = {
+        "anchored_possessions": int(len(terminal)),
+        "anchored_possessions_per_game": float(
+            len(terminal) / terminal["game_id"].nunique()
+        ),
+        "turnover_possessions": int(terminal["turnover"].sum()),
+        "field_goal_attempts": int(terminal["fga"].sum()),
+        "free_throw_attempts": int(terminal["fta"].sum()),
+        "technical_free_throws_excluded": int(
+            (action.eq("freethrow") & description.str.contains("technical", regex=False)).sum()
+        ),
+        "mean_shot_volume": float(terminal["shot_volume"].mean()),
+    }
+    return terminal, quality
+
+
 def build_historical_factor_ledger(
     events: pd.DataFrame,
     game_dim: pd.DataFrame,
 ) -> HistoricalFactorLedger:
-    """Create event-weighted TS and resolved-miss opponent-OREB rows."""
+    """Create shooting, turnover, shot-volume, and opponent-OREB rows."""
     games = game_dim[["game_id", "home_team_id", "away_team_id"]].copy()
     games["game_id"] = games["game_id"].map(_game_id)
     games = games.drop_duplicates("game_id")
@@ -393,6 +464,11 @@ def build_historical_factor_ledger(
         rebound_source, rebound_source["home_team_id"]
     )
 
+    possession_source, possession_quality = _possession_opportunities(merged)
+    possessions, invalid_possessions, repaired_possessions, complement_possessions = (
+        _lineup_rows(possession_source, possession_source["home_team_id"])
+    )
+
     score_rows = merged.loc[action.isin(("2pt", "3pt", "freethrow")) & result.eq("made")].copy()
     score_rows["event_points"] = np.select(
         [score_rows["actionType"].astype(str).str.lower().eq("3pt")], [3], default=1
@@ -439,10 +515,14 @@ def build_historical_factor_ledger(
         "invalid_rebound_lineups": invalid_rebounds,
         "repaired_rebound_lineups": repaired_rebounds,
         "complement_repaired_rebound_lineups": complement_rebounds,
+        "invalid_possession_lineups": invalid_possessions,
+        "repaired_possession_lineups": repaired_possessions,
+        "complement_repaired_possession_lineups": complement_possessions,
         "offensive_rebound_rate": float(opponent_oreb["offensive_rebound"].mean()),
         "team_game_score_match_rate": score_match_rate,
+        **possession_quality,
     }
-    return HistoricalFactorLedger(shooting, opponent_oreb, quality)
+    return HistoricalFactorLedger(shooting, opponent_oreb, possessions, quality)
 
 
 def fit_historical_factor_ratings(
@@ -453,9 +533,10 @@ def fit_historical_factor_ratings(
     lambda_def: float = 3000.0,
     lambda_home: float = 300.0,
 ) -> pd.DataFrame:
-    """Fit both factors jointly over one supplied season window."""
+    """Fit all factors jointly over one supplied season window."""
     shooting = pd.concat([ledgers[season].shooting for season in seasons], ignore_index=True)
     rebounds = pd.concat([ledgers[season].opponent_oreb for season in seasons], ignore_index=True)
+    possessions = pd.concat([ledgers[season].possessions for season in seasons], ignore_index=True)
     config = RapmConfig(
         seasons=seasons,
         lambda_off=lambda_off,
@@ -477,6 +558,20 @@ def fit_historical_factor_ratings(
         higher_is_good_for_offense=True,
         config=config,
     )
+    turnover = fit_factor_ratings(
+        possessions,
+        "turnover",
+        factor="turnover_avoidance",
+        higher_is_good_for_offense=False,
+        config=config,
+    )
+    shot_volume = fit_factor_ratings(
+        possessions,
+        "shot_volume",
+        factor="shot_volume",
+        higher_is_good_for_offense=True,
+        config=config,
+    )
     fields = [
         "player_id",
         "shooting_ts_offense",
@@ -484,11 +579,30 @@ def fit_historical_factor_ratings(
         "shooting_ts_off_exposure",
         "shooting_ts_def_exposure",
     ]
-    other = [
+    oreb_fields = [
         "player_id",
         "opponent_oreb_prevention_offense",
         "opponent_oreb_prevention_defense",
         "opponent_oreb_prevention_off_exposure",
         "opponent_oreb_prevention_def_exposure",
     ]
-    return ts[fields].merge(oreb[other], on="player_id", how="outer", validate="one_to_one")
+    turnover_fields = [
+        "player_id",
+        "turnover_avoidance_offense",
+        "turnover_avoidance_defense",
+        "turnover_avoidance_off_exposure",
+        "turnover_avoidance_def_exposure",
+    ]
+    volume_fields = [
+        "player_id",
+        "shot_volume_offense",
+        "shot_volume_defense",
+        "shot_volume_off_exposure",
+        "shot_volume_def_exposure",
+    ]
+    return (
+        ts[fields]
+        .merge(oreb[oreb_fields], on="player_id", how="outer", validate="one_to_one")
+        .merge(turnover[turnover_fields], on="player_id", how="outer", validate="one_to_one")
+        .merge(shot_volume[volume_fields], on="player_id", how="outer", validate="one_to_one")
+    )
