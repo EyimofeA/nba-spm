@@ -1,0 +1,366 @@
+{
+  "config": {
+    "bootstrap": {
+      "draws": 5000,
+      "seed": 20260829,
+      "unit": "whole game within outcome season"
+    },
+    "candidates": [
+      "box15",
+      "box15_ts",
+      "box15_oreb",
+      "box15_turnover",
+      "box15_shot_volume",
+      "box15_all_factors"
+    ],
+    "evaluated_rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "experiment_id": "historical_factor_residual_tournament_v2",
+    "factor_model_families": [
+      "boosted_tree",
+      "elastic_net",
+      "ridge"
+    ],
+    "feature_contract": {
+      "opponent_oreb_prevention_defense": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "player_height_inches",
+        "dreb_chances_p100_specialist",
+        "dreb_contested_share_specialist",
+        "dreb_defer_share_specialist",
+        "average_dreb_distance",
+        "rebound_conversion_above_expected_eb",
+        "defensive_boxouts_p100_specialist",
+        "boxout_team_rebound_conversion_eb",
+        "boxout_player_rebound_conversion_eb",
+        "height_x_defensive_boxouts",
+        "height_x_dreb_contested_share",
+        "has_boxout_tracking",
+        "dreb_contests_p100",
+        "dreb_chances_p100"
+      ],
+      "opponent_oreb_prevention_offense": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "oreb_chances_p100_specialist",
+        "oreb_contested_share_specialist",
+        "oreb_defer_share_specialist",
+        "average_oreb_distance",
+        "oreb_conversion_above_expected_eb",
+        "offensive_boxouts_p100_specialist",
+        "height_x_offensive_boxouts",
+        "height_x_oreb_contested_share",
+        "has_boxout_tracking"
+      ],
+      "shooting_ts_defense": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "defender_expected_points_conceded_per_shot",
+        "defender_shotmaking_points_saved_p100_eb",
+        "defender_rim_expected_points_conceded_per_shot",
+        "rim_deterrence_vs_scorer_p100_eb",
+        "has_assigned_shot_defense"
+      ],
+      "shooting_ts_offense": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "shot_quality_created_points_per_shot",
+        "shotmaking_above_expected_p100_eb",
+        "rim_attempt_share",
+        "rim_shotmaking_above_expected_p100_eb",
+        "midrange_attempt_share",
+        "three_attempt_share",
+        "assisted_attempt_share",
+        "transition_attempt_share",
+        "zts_pct_points",
+        "self_oreb_adjusted_ts"
+      ],
+      "shot_volume_defense": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "dfg_attempts_p100",
+        "matchup_fga_suppressed_vs_scorer_p100_eb",
+        "matchup_three_pa_suppressed_vs_scorer_p100_eb",
+        "contested_2pt_p100",
+        "contested_3pt_p100"
+      ],
+      "shot_volume_offense": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "usage_events_p100",
+        "offensive_load_2017_eb_p100",
+        "shooting_fouls_drawn_p100",
+        "touches_p100",
+        "drives_p100",
+        "rim_attempt_share",
+        "midrange_attempt_share",
+        "three_attempt_share"
+      ],
+      "turnover_avoidance_defense": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "deflections_p100",
+        "charges_drawn_p100",
+        "def_loose_balls_recovered_p100",
+        "matchup_turnovers_forced_vs_scorer_p100_eb"
+      ],
+      "turnover_avoidance_offense": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "drive_turnovers_p100",
+        "live_ball_turnovers_p100",
+        "bad_pass_turnovers_p100",
+        "lost_ball_turnovers_p100",
+        "offensive_fouls_p100",
+        "travels_p100",
+        "drive_turnovers_per_drive_eb",
+        "live_ball_turnover_share_eb",
+        "turnover_to_load_2017_eb"
+      ]
+    },
+    "rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "season_2027": "forbidden",
+    "source_hashes": {
+      "base_features": "6a31110d159667f941f24a8ad00051881aa991a9e3329d1c860a472119de6ad1",
+      "factor_targets": "f301001cd81993cdc0cc259b847956cdf3efda9e3eeb7d1b69d17737c0fb6736",
+      "normal_targets": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707",
+      "runner": "a3e67cc07e76b49c6db50c3acdb2141e49eb25f54339f0cc32d97ea7d9fa6921",
+      "specialist_features": "142ac903725463ae078e430ffb217e768570c9b91039501bc7892367fac6bfb4",
+      "specialist_manifest": "3f0f8d33638ac1319645b7f15bd838fa1ea190f99c6ea2592d82f8eb98bc034a"
+    }
+  },
+  "created_at": "2026-08-29T21:30:52.747312+00:00",
+  "decisions": [
+    {
+      "candidate": "box15_ts_aio",
+      "margin_correlation_delta": 0.004836877570377929,
+      "paired_mse_interval_favors_candidate": false,
+      "passes_primary_gate": false,
+      "rmse_improvement_points_per_game": -0.007995428562265872
+    },
+    {
+      "candidate": "box15_oreb_aio",
+      "margin_correlation_delta": 0.002435218145164786,
+      "paired_mse_interval_favors_candidate": true,
+      "passes_primary_gate": false,
+      "rmse_improvement_points_per_game": 0.013603427959242964
+    },
+    {
+      "candidate": "box15_turnover_aio",
+      "margin_correlation_delta": 0.0014735469586124594,
+      "paired_mse_interval_favors_candidate": false,
+      "passes_primary_gate": false,
+      "rmse_improvement_points_per_game": 0.0014448129049426939
+    },
+    {
+      "candidate": "box15_shot_volume_aio",
+      "margin_correlation_delta": 0.002770860237384487,
+      "paired_mse_interval_favors_candidate": true,
+      "passes_primary_gate": false,
+      "rmse_improvement_points_per_game": 0.01336620735087557
+    },
+    {
+      "candidate": "box15_all_factors_aio",
+      "margin_correlation_delta": 0.008141109842161653,
+      "paired_mse_interval_favors_candidate": false,
+      "passes_primary_gate": false,
+      "rmse_improvement_points_per_game": 0.005517842237228621
+    }
+  ],
+  "files": {
+    "bootstrap_model_intervals.parquet": {
+      "path": "bootstrap_model_intervals.parquet",
+      "rows": 13,
+      "sha256": "9c748ca49a6df70a195762cb19f6e88d55e0b4617535937186cbccc6bcd8cdb0"
+    },
+    "factor_metrics.parquet": {
+      "path": "factor_metrics.parquet",
+      "rows": 96,
+      "sha256": "518ee5354984af15ce64e1c052106dbd6770a31a9b2c50a36c79ea689636ee6d"
+    },
+    "factor_predictions.parquet": {
+      "path": "factor_predictions.parquet",
+      "rows": 94420,
+      "sha256": "cdf2b544ca2da42639559c5f63a178455aec4f049b7620d8d8e4b2b20db06a39"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "rows": 65,
+      "sha256": "f26b5f9bbd8d770bec8ac976df9ef889e12607d83c66ef8c2003b09c54a6fca2"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 79833,
+      "sha256": "2889ec34a6fdb8161659d03d9affaf56716856cd8c2298e89967ba688980edd8"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 78,
+      "sha256": "6fd3f06097b5d5f94481c544ab99daef66a96433045e30f125bc8f9fafc2b2bd"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "rows": 36,
+      "sha256": "425eb827ccd8b2ae864ef07e1d108a8e5c91a5fcd162d013c7d44f5c34ac4061"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "rows": 35418,
+      "sha256": "7c0818a43bead02168a1515c4cf1ab2bafd3bbe9770c80ed0116798598c6df99"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "rows": 83616,
+      "sha256": "e919b160fce209f10c71921770bf3a0b83a58d17abaf196aaf1fd93634402924"
+    },
+    "selection.parquet": {
+      "path": "selection.parquet",
+      "rows": 216,
+      "sha256": "290f12f217c6f5020098097785688ef1b2ec65258120f86a0f8e324f7ad74f03"
+    },
+    "subgroup_metrics.parquet": {
+      "path": "subgroup_metrics.parquet",
+      "rows": 224,
+      "sha256": "40fa8197860d55de0df1ccf741523e5bbf5c290a62d10e743c95a9141183ec93"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "rows": 13,
+      "sha256": "d66a1ee996202536dcac493428244a82d92e0a91180d7b0e2533e323f5db39fa"
+    }
+  },
+  "forbidden_interpretation": "Factor fit alone does not establish a better all-in-one. Season 2027 was not loaded and remains the untouched confirmation season.",
+  "quality": {
+    "adversarial_source_drift": {
+      "early_vs_late_auc": 0.9746524314342181,
+      "rows": 5683
+    },
+    "identical_games_within_fold": true,
+    "panel_rows": 8604,
+    "season_2027_loaded": false
+  },
+  "run_id": "historical_factor_residual_tournament_v2_c06bdebcd5",
+  "status": "research_null"
+}

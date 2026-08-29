@@ -46,6 +46,9 @@ Start at the repository root:
 - [`impact/FACTOR_TARGET_SPM.md`](impact/FACTOR_TARGET_SPM.md) — sparse
   statistical models of shooting, turnover, and rebounding RAPM plus the
   leave-one-player-out teammate-context ablation and full-feature ceiling;
+- [`impact/HISTORICAL_FACTOR_SPECIALISTS_V2.md`](impact/HISTORICAL_FACTOR_SPECIALISTS_V2.md) —
+  2014--26 shooting, shot-volume, turnover, and opponent-OREB specialist targets
+  plus the combined Box15 residual test;
 - [`impact/FIVE_YEAR_SPM_CONTEXT.md`](impact/FIVE_YEAR_SPM_CONTEXT.md) —
   chronological teammate-context residual test on the frozen five-year SPM;
 - [`impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md`](impact/AIO_DIAGNOSIS_AND_FEATURE_BLUEPRINT.md) —

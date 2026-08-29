@@ -30,6 +30,7 @@ user explicitly asks. Do not publish raw NBA rows.
 - Python computes numerical results. A language model designs and audits them.
 - Before an expensive run, estimate runtime and value. Start with the smallest decisive pilot. Never start a downloader or full model run during a smoke test.
 - Test observable behavior. Do not claim completion from a successful build alone when a user-facing result also needs inspection.
+- Use `ponytail` for coding changes. Run `ponytail-review` on the tracked diff before a model or feature change is called complete. Treat it as a complexity review, not a statistical review.
 
 Use a visualization only when it materially improves understanding. Do not add decorative diagrams.
 
@@ -144,6 +145,11 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   AIO. The OREB specialist improves AIO RMSE by only `.014`, below the frozen
   `.05` promotion threshold. Keep Box15 frozen and publish the factor models as
   research skills only.
+- Four-factor follow-up `historical_factor_residual_tournament_v2_c06bdebcd5`
+  adds shot volume and turnover, fixes zTS and SelfORB-adjusted TS routing, and
+  combines all four factor predictions. The combined AIO gains only `.006`
+  RMSE. Shot volume and OREB each gain `.013` to `.014`. None reaches the `.05`
+  gate. Keep Box15 frozen.
 - Run `full_spm_history_ablation_v1_2eb5eb428c` refits the corrected panel and
   removes the 13 hustle and matchup fields that start in 2018 as one fixed
   block. The reduced SPM loses. Keep the full 127/68 contract.

@@ -23,6 +23,7 @@ def test_factor_ledger_uses_miss_lineup_and_positive_good_oreb_target():
             {**lineups, "game_id": "0021300001", "period": 1, "actionNumber": 2, "actionType": "rebound", "description": "Offensive rebound", "shotResult": None, "person_id": 2, "teamId": 100, "xLegacy": None, "yLegacy": None},
             {**lineups, "game_id": "0021300001", "period": 1, "actionNumber": 3, "actionType": "3pt", "description": "Made three", "shotResult": "Made", "person_id": 1, "teamId": 100, "xLegacy": 220, "yLegacy": 30, "scoreHome": 3},
             {**lineups, "game_id": "0021300001", "period": 1, "actionNumber": 4, "actionType": "freethrow", "description": "Made free throw", "shotResult": "Made", "person_id": 1, "teamId": 100, "xLegacy": None, "yLegacy": None, "scoreHome": 4},
+            {**lineups, "off_players_on": "6|7|8|9|10", "def_players_on": "1|2|3|4|5", "game_id": "0021300001", "period": 1, "actionNumber": 5, "actionType": "turnover", "description": "Turnover", "shotResult": None, "person_id": 6, "teamId": 200, "xLegacy": None, "yLegacy": None, "scoreHome": 4},
         ]
     )
     games = pd.DataFrame(
@@ -34,6 +35,8 @@ def test_factor_ledger_uses_miss_lineup_and_positive_good_oreb_target():
     assert ledger.opponent_oreb[["h1", "h2", "h3", "h4", "h5"]].iloc[0].tolist() == [1, 2, 3, 4, 5]
     assert ledger.shooting["ts_attempt_weight"].tolist() == [1.0, 1.0, 0.44]
     assert ledger.shooting["ts_value"].tolist() == [0.0, 1.5, 1.0 / 0.88]
+    assert ledger.possessions["turnover"].tolist() == [0.0, 1.0]
+    assert ledger.possessions["shot_volume"].tolist() == [2.44, 0.0]
 
 
 def test_game_dim_is_derived_from_observed_scoring():

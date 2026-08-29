@@ -80,6 +80,28 @@ estimands:
     intended_use: descriptive rebound-responsibility research and a frozen AIO challenger
     forbidden_interpretation: generic defensive rebounding, unique event-level box-out responsibility, causal player value, or production promotion
 
+  - estimand_id: rolling_turnover_avoidance_factor_v1
+    name: Rolling lineup-adjusted turnover avoidance and forcing
+    status: research_skill_metric
+    unit: turnover_probability_points_per_100_anchored_possessions
+    population: NBA regular-season players on possessions anchored by a field goal, nontechnical free throw, or turnover event with valid observed lineups
+    window_definition: one season or one matched five-season window from 2014 through 2026
+    information_cutoff_rule: only regular-season events, lineups, and specialist inputs through the named window end; Season 2027 excluded
+    target_definition: lineup ridge on whether the offense committed a turnover, with positive offense meaning avoidance and positive defense meaning forcing
+    intended_use: descriptive turnover skill research and a frozen AIO challenger
+    forbidden_interpretation: ballhandler-only responsibility, forced-turnover causality, production AIO prior, or untouched confirmation
+
+  - estimand_id: rolling_shot_volume_factor_v1
+    name: Rolling lineup-adjusted shot-attempt volume
+    status: research_skill_metric
+    unit: weighted_shot_attempts_per_100_anchored_possessions
+    population: NBA regular-season players on possessions anchored by a field goal, nontechnical free throw, or turnover event with valid observed lineups
+    window_definition: one season or one matched five-season window from 2014 through 2026
+    information_cutoff_rule: only regular-season events, lineups, and specialist inputs through the named window end; Season 2027 excluded
+    target_definition: lineup ridge on FGA plus 0.44 times FTA per anchored possession, with positive defense meaning shot-volume suppression
+    intended_use: descriptive shot-creation and suppression research and a frozen AIO challenger
+    forbidden_interpretation: shot quality, scoring efficiency, causal creation credit, production AIO prior, or untouched confirmation
+
   - estimand_id: filtered_time_decayed_normal_rapm_proxy_v1
     name: Filtered time-decayed normal-RAPM trajectory
     status: research_baseline
