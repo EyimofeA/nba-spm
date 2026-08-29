@@ -1,0 +1,154 @@
+{
+  "config": {
+    "experiment_id": "laser_breaker_v1",
+    "leaderboard_reporting": {
+      "leaderboard_season": 2026,
+      "minimum_effective_attempts": 50,
+      "require_current_season_row": true
+    },
+    "selected_half_life_seasons": 3.0,
+    "selected_prior_attempts": 50.0,
+    "source_hashes": {
+      "annual_shooting": "eb999b287ecc44913ba7b57d7fb45a64a82a6afd7d7a819e093bd43d01d8b684",
+      "contract": "5ca9947bb28363967240549209f5e5465c897112a9dd8c59647426e31015b762",
+      "laser": "f684f4c1d0795fcf4e595a5bdba6a9c315b6f6d675bde545961cd5752c025d57",
+      "runner": "936df81f28bc00da8df56a378df2a084ba20ee82fce009346d5a0737bf146133",
+      "shot_run": "8f97db48b7f8f3c924a6cd6e615568eef037373355efe3d7e1645ea1e7937176"
+    }
+  },
+  "contract": {
+    "acceptance": [
+      "exact common player-season rows for both metrics",
+      "no future information in candidate features",
+      "all source and output hashes saved",
+      "Season 2027 absent"
+    ],
+    "benchmark": {
+      "calibration": "weighted_linear_mapping_fit_on_origins_before_the_scored_block",
+      "metric": "LASER",
+      "population": "exact_public_laser_player_seasons_with_observed_next_season",
+      "source": "https://datawrapper.dwcdn.net/FUVAa/1/dataset.csv"
+    },
+    "experiment_id": "laser_breaker_v1",
+    "forbidden_interpretation": "This benchmark measures next-season prediction on the public LASER cohort. It does not prove causal gravity, reproduce LASER, or supply untouched model promotion evidence.",
+    "frozen_candidate": {
+      "combination": "equal_weight_mean",
+      "components": [
+        "context_adjusted_three_point_ability",
+        "three_point_attempts_per_100",
+        "tightly_contested_three_point_share"
+      ],
+      "standardization": "within_origin_season_active_player_reference"
+    },
+    "information_cutoff": {
+      "development_origins": [
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020
+      ],
+      "diagnostic_origins": [
+        2023,
+        2024,
+        2025
+      ],
+      "season_2027": "forbidden",
+      "selection_origins": [
+        2021,
+        2022
+      ],
+      "source_seasons": [
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ]
+    },
+    "outcomes": [
+      "next_season_three_point_percentage",
+      "next_season_three_point_attempts_per_100",
+      "next_season_tightly_contested_three_point_share",
+      "equal_weight_standardized_composite"
+    ],
+    "question": "Does a time-decayed CourtSignal shooting-gravity score predict next-season shooting ability, volume, and defensive attention better than public LASER?",
+    "reporting": {
+      "leaderboard_season": 2026,
+      "minimum_effective_attempts": 50,
+      "require_current_season_row": true
+    },
+    "schema_version": "experiment_preregistration_v1",
+    "selection_grid": {
+      "context_prior_attempts": [
+        50,
+        100,
+        200
+      ],
+      "half_life_seasons": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "rule": "lowest_equal_weight_composite_mse_on_selection_origins"
+    },
+    "status": "frozen_reused_diagnostic",
+    "uncertainty": {
+      "comparison": "paired_candidate_minus_laser_weighted_mse",
+      "draws": 5000,
+      "unit": "player_within_outcome_season"
+    }
+  },
+  "court_signal_better_than_laser_gate": true,
+  "created_at": "2026-08-29T17:55:09.375420+00:00",
+  "files": {
+    "benchmark_panel.parquet": {
+      "rows": 2784,
+      "sha256": "e4796b6966864c082fc525df42d972d4fc1ea65081585f8f35bbcf1889c63ae1"
+    },
+    "diagnostic_metrics.parquet": {
+      "rows": 24,
+      "sha256": "0e87edac41a11bdacf7585a24fa5a0d8e8eb11474d9995ad34722182bf99bb0a"
+    },
+    "diagnostic_predictions.parquet": {
+      "rows": 3105,
+      "sha256": "5a84c13c36e844718cfb4d6d789edfe48475dc6f2fddf136d538dc88c5261650"
+    },
+    "gravity_panel.parquet": {
+      "rows": 14102,
+      "sha256": "568b2423da21f88977d468d593d532380056e991bfe59abe0ca5233f11c1f0f8"
+    },
+    "leaderboard_2026.parquet": {
+      "rows": 451,
+      "sha256": "e43753c06703c264ee035073aa135cb3b37ec308feb7d55a8825714e1d7c99c4"
+    },
+    "paired_bootstrap.parquet": {
+      "rows": 4,
+      "sha256": "19936c4c8d72a18a17729d6a912147d76819a4c8daef49bc2eda56f65c5a8cca"
+    },
+    "selection_grid.parquet": {
+      "rows": 12,
+      "sha256": "537cd9a078ce2ae78f9ed0d5f861e96a5a6dfc23eadd6f8f022f5fe8ff46764a"
+    }
+  },
+  "forbidden_interpretation": "This benchmark measures next-season prediction on the public LASER cohort. It does not prove causal gravity, reproduce LASER, or supply untouched model promotion evidence.",
+  "quality": {
+    "common_rows_with_next_season": 2784,
+    "public_laser_rows": 2953,
+    "resolved_laser_name_coverage": 1.0,
+    "season_2027_loaded": false
+  },
+  "run_id": "laser_breaker_v1_75d8ef37c1",
+  "status": "reused_diagnostic_complete"
+}

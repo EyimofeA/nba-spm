@@ -341,6 +341,111 @@ def five_year_shooting_threat(annual: pd.DataFrame, prior_attempts: float = 100.
     return pd.DataFrame(rows)
 
 
+def dynamic_shooting_gravity(
+    annual: pd.DataFrame,
+    *,
+    half_life_seasons: float = 1.0,
+    prior_attempts: float = 100.0,
+) -> pd.DataFrame:
+    """Blend shooting ability, volume, and defensive attention over time."""
+    if half_life_seasons <= 0 or prior_attempts <= 0:
+        raise ValueError("Gravity decay and prior attempts must be positive.")
+    required = {
+        "PLAYER_ID",
+        "PLAYER_NAME",
+        "Season",
+        "FG3A",
+        "FG3M",
+        "OffPoss",
+        "context_expected_3p_pct",
+        "very_tight_FG3A",
+        "tight_FG3A",
+        "open_FG3A",
+        "wide_open_FG3A",
+    }
+    if missing := sorted(required - set(annual.columns)):
+        raise ValueError(f"Annual shooting panel lacks gravity fields: {missing}")
+    source = annual.copy()
+    source["contest_attempts"] = source["very_tight_FG3A"] + source["tight_FG3A"]
+    source["distance_attempts"] = (
+        source["contest_attempts"]
+        + source["open_FG3A"]
+        + source["wide_open_FG3A"]
+    )
+    rows = []
+    for season in sorted(source["Season"].unique()):
+        history = source.loc[source["Season"].le(season)]
+        active_players = set(
+            source.loc[source["Season"].eq(season), "PLAYER_ID"].astype(int)
+        )
+        league_rate = float(
+            source.loc[source["Season"].eq(season), "league_3p_pct"].mean()
+        )
+        season_contest = source.loc[source["Season"].eq(season)]
+        contest_rate = float(
+            season_contest["contest_attempts"].sum()
+            / season_contest["distance_attempts"].sum()
+        )
+        for player_id, frame in history.groupby("PLAYER_ID", sort=False):
+            weights = 2.0 ** (
+                -(season - frame["Season"].to_numpy(dtype=float))
+                / half_life_seasons
+            )
+            attempts = float(np.dot(weights, frame["FG3A"]))
+            makes = float(np.dot(weights, frame["FG3M"]))
+            possessions = float(np.dot(weights, frame["OffPoss"]))
+            expected_makes = float(
+                np.dot(
+                    weights,
+                    frame["context_expected_3p_pct"] * frame["FG3A"],
+                )
+            )
+            distance_attempts = float(np.dot(weights, frame["distance_attempts"]))
+            contests = float(np.dot(weights, frame["contest_attempts"]))
+            expected_rate = expected_makes / attempts if attempts else league_rate
+            rows.append(
+                {
+                    "PLAYER_ID": int(player_id),
+                    "PLAYER_NAME": frame["PLAYER_NAME"].iloc[-1],
+                    "Window_End": int(season),
+                    "active_in_window_end": int(player_id) in active_players,
+                    "gravity_ability_3p_pct": (
+                        makes + prior_attempts * expected_rate
+                    )
+                    / (attempts + prior_attempts),
+                    "gravity_three_pa_p100": (
+                        100.0 * attempts / possessions if possessions else 0.0
+                    ),
+                    "gravity_contested_share": (
+                        contests / distance_attempts
+                        if distance_attempts
+                        else contest_rate
+                    ),
+                    "gravity_effective_attempts": attempts,
+                }
+            )
+    output = pd.DataFrame(rows)
+    component_fields = (
+        "gravity_ability_3p_pct",
+        "gravity_three_pa_p100",
+        "gravity_contested_share",
+    )
+    for field in component_fields:
+        reference = (
+            output.loc[output["active_in_window_end"]]
+            .groupby("Window_End")[field]
+            .agg(["mean", "std"])
+            .rename(columns={"mean": "reference_mean", "std": "reference_std"})
+        )
+        mean = output["Window_End"].map(reference["reference_mean"])
+        scale = output["Window_End"].map(reference["reference_std"]).replace(0, 1)
+        output[f"{field}_z"] = (output[field] - mean) / scale
+    output["court_signal_gravity"] = output[
+        [f"{field}_z" for field in component_fields]
+    ].mean(axis=1)
+    return output
+
+
 def lineup_spacing(
     segments: pd.DataFrame,
     possessions: pd.DataFrame,

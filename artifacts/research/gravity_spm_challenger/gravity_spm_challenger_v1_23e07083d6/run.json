@@ -1,0 +1,235 @@
+{
+  "config": {
+    "bootstrap_draws": 5000,
+    "bootstrap_seed": 20260829,
+    "candidate_order": [
+      "box_15",
+      "box_15_plus_gravity",
+      "full_spm",
+      "full_spm_plus_gravity"
+    ],
+    "experiment_id": "gravity_spm_challenger_v1",
+    "model_order": [
+      "box_15",
+      "box_15_plus_gravity",
+      "full_spm",
+      "full_spm_plus_gravity",
+      "zero_prior_rapm",
+      "box_15_aio",
+      "box_15_plus_gravity_aio",
+      "full_spm_aio",
+      "full_spm_plus_gravity_aio"
+    ],
+    "source_hashes": {
+      "contract": "acb80c3883da97011bc2cd0cbe98d797f11040447522fa2b825ba22ee0903915",
+      "feature_manifest": "a5ad9d0a584a13b1877ebe0670508a4e2b1c902aba6c851a05e2e1c5148abe26",
+      "features": "6a31110d159667f941f24a8ad00051881aa991a9e3329d1c860a472119de6ad1",
+      "gravity_panel": "568b2423da21f88977d468d593d532380056e991bfe59abe0ca5233f11c1f0f8",
+      "gravity_run": "8bea89065c48b56e712be1e5c66c400f6cf32e21a3e9aef0a450a9434bcc62eb",
+      "matrix_2021": "33be4c9bc5b9f324e0c269b364e71aa4dc26117c20eb7e6640cdcc1b76187c8a",
+      "matrix_2022": "5206445af95e91cba94d1350268fe3ca395debb170a61eff0dfd83001fc1ece5",
+      "matrix_2023": "4b7d7fbcae5b24c37e795ab115dea03f20c01e4c0456adbe232fe706feafc91a",
+      "matrix_2024": "fca774fbfa755851d5325eae7ab1c6626ae0108d193d029bfeae537f6edde83d",
+      "matrix_2025": "0fc7d3316833f2984ae365fe492519128e120808061068190484fc614c94de10",
+      "matrix_2026": "be8714d9da8db5465e68f107126eebddadc710dc5947d85f5fd1a023b8a1de75",
+      "possessions_2020": "b177865501897984437fcc8c08ee229ff462e0319e032f7642b5077670d375c6",
+      "possessions_2021": "0bfd107dad6959b1a45e4c7762fcde2d901e364d64b632299deeb22092749a6a",
+      "possessions_2022": "b04388818590ad1bff4fb6b9ca9d27dd4ac9dc6dd744c34160153206bcb32248",
+      "possessions_2023": "15f710ba2964bcbc80ca4753038b8c22fb18188bafd0cb62c886ac39840faa15",
+      "runner": "d87c1ebd558c22be1f10d1cd040fc1a53514dc2dfab16ab829644093dcabf7da",
+      "targets": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+    }
+  },
+  "contract": {
+    "acceptance": [
+      "every candidate scores identical games in every test season",
+      "offense_plus_defense_equals_net_for_every_rating",
+      "model_and_data_hashes_are_saved",
+      "Season 2027 absent"
+    ],
+    "candidates": [
+      "box_15",
+      "box_15_plus_gravity",
+      "full_spm",
+      "full_spm_plus_gravity"
+    ],
+    "experiment_id": "gravity_spm_challenger_v1",
+    "fixed_aio": {
+      "center_scale": 1,
+      "lambda_defense": 3000,
+      "lambda_home": 300,
+      "lambda_offense": 3000,
+      "likelihood_seasons": 1
+    },
+    "forbidden_interpretation": "These seasons are reused diagnostics. A predictive shooting-gravity win does not imply that the feature improves player impact or a public AIO.",
+    "gravity_feature": {
+      "context_prior_attempts": 50,
+      "field": "court_signal_gravity",
+      "half_life_seasons": 3,
+      "side": "offense",
+      "source": "laser_breaker_v1_75d8ef37c1"
+    },
+    "information_cutoff": {
+      "evaluated_rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "final_unscored_rating_season": 2026,
+      "rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "season_2027": "forbidden",
+      "test_seasons": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "training_rule": "window_end strictly before rating_season"
+    },
+    "learner": {
+      "alpha_grid": [
+        10,
+        30,
+        100,
+        300,
+        1000,
+        3000
+      ],
+      "alpha_selection": "leave_one_training_season_out_inside_each_outer_fold",
+      "family": "ridge",
+      "sample_weight": "sqrt_min_offensive_and_defensive_possessions"
+    },
+    "primary_evaluation": {
+      "comparison": "identical_games_and_actual_margins",
+      "metric": "equal_season_mean_next_season_game_margin_mse",
+      "uncertainty": "5000_paired_whole_game_bootstrap_draws_within_test_season"
+    },
+    "question": "Does the selected dynamic CourtSignal gravity score improve Box15 or the full SPM before and after the same one-season RAPM update?",
+    "schema_version": "experiment_preregistration_v1",
+    "status": "frozen_reused_diagnostic"
+  },
+  "created_at": "2026-08-29T18:02:56.980674+00:00",
+  "files": {
+    "alpha_selection.parquet": {
+      "rows": 48,
+      "sha256": "577e902f8d6e082b16afee7e1502cd4e3ea4a2329bd2153d3f132cd04950bb47"
+    },
+    "bootstrap_model_intervals.parquet": {
+      "rows": 9,
+      "sha256": "0072f8bf32aafad88b55bbacd81ec87fe020cc1d04142d2be51b3856cc1cfab6"
+    },
+    "coefficients.parquet": {
+      "rows": 2772,
+      "sha256": "2fd1e6e40461def8ee25b4a20dddda13766db334ca82e049056aa2d29eb6bb60"
+    },
+    "feature_coverage.parquet": {
+      "rows": 9,
+      "sha256": "d7bbd9a84cfee9199201da0e8d45518c38f8a8760ee2fd8c25c35c32a47d6cb0"
+    },
+    "fold_metrics.parquet": {
+      "rows": 45,
+      "sha256": "0f8884535be8b281c81d1926e842ff9cc9af5df2e7933f22978369dcd9a27ba2"
+    },
+    "game_predictions.parquet": {
+      "rows": 55269,
+      "sha256": "4c4d1f98e4d749a0ea3a495d2331e797b97bf236b2d2e4cee9bbe6a24dc6e8aa"
+    },
+    "matrix_reconstruction.parquet": {
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "paired_bootstrap.parquet": {
+      "rows": 36,
+      "sha256": "b7e7d0ed5e2520b83b3f585def4746838369cbf7f09147bfdf90310e45b14b4e"
+    },
+    "prior_coverage.parquet": {
+      "rows": 24,
+      "sha256": "2710c94e2985e0fcd386afc1932f28e8e6fdddbef56444dde681efd2e5d6ede0"
+    },
+    "priors.parquet": {
+      "rows": 23644,
+      "sha256": "ff94f0d5048f6b5269f7beee1675af9f863e2135be5a3d076f54e7e149f73773"
+    },
+    "ratings.parquet": {
+      "rows": 57888,
+      "sha256": "ecd9447ba212ca9abbb4583691b8d99d62c578388d4119f45d73f0949c5ac426"
+    },
+    "summary.parquet": {
+      "rows": 9,
+      "sha256": "2f6e5ca79f775dfe66ec28f76e84c1b3b3a687017d5b33ada78eb07f20d53599"
+    },
+    "target_metrics.parquet": {
+      "rows": 72,
+      "sha256": "304522eeba4642aef9316a0982ea3f71e7c030164825766afb8b815de00c7a26"
+    }
+  },
+  "forbidden_interpretation": "These seasons are reused diagnostics. A predictive shooting-gravity win does not imply that the feature improves player impact or a public AIO.",
+  "primary_comparisons": [
+    {
+      "bootstrap_95_high": -0.04000891478338262,
+      "bootstrap_95_low": -0.6334391820860332,
+      "bootstrap_draws": 5000,
+      "candidate": "box_15",
+      "candidate_fold_wins": 3,
+      "mean_mse_delta": -0.33492140690114525,
+      "primary_comparison": true,
+      "probability_candidate_lower_mse": 0.9852,
+      "reference": "box_15_plus_gravity",
+      "reference_fold_wins": 2
+    },
+    {
+      "bootstrap_95_high": -0.012418607261597004,
+      "bootstrap_95_low": -0.13294167324162842,
+      "bootstrap_draws": 5000,
+      "candidate": "full_spm",
+      "candidate_fold_wins": 3,
+      "mean_mse_delta": -0.07227058281929999,
+      "primary_comparison": true,
+      "probability_candidate_lower_mse": 0.991,
+      "reference": "full_spm_plus_gravity",
+      "reference_fold_wins": 2
+    },
+    {
+      "bootstrap_95_high": -0.10424774027870712,
+      "bootstrap_95_low": -0.40866989336954945,
+      "bootstrap_draws": 5000,
+      "candidate": "box_15_aio",
+      "candidate_fold_wins": 5,
+      "mean_mse_delta": -0.2561216789658829,
+      "primary_comparison": true,
+      "probability_candidate_lower_mse": 0.9998,
+      "reference": "box_15_plus_gravity_aio",
+      "reference_fold_wins": 0
+    },
+    {
+      "bootstrap_95_high": -0.005411308766293401,
+      "bootstrap_95_low": -0.07538169401139569,
+      "bootstrap_draws": 5000,
+      "candidate": "full_spm_aio",
+      "candidate_fold_wins": 4,
+      "mean_mse_delta": -0.03988509007430707,
+      "primary_comparison": true,
+      "probability_candidate_lower_mse": 0.9874,
+      "reference": "full_spm_plus_gravity_aio",
+      "reference_fold_wins": 1
+    }
+  ],
+  "public_model_changed": false,
+  "quality": {
+    "identical_games_within_fold": true,
+    "maximum_component_identity_error": 0.0,
+    "season_2027_loaded": false
+  },
+  "run_id": "gravity_spm_challenger_v1_23e07083d6",
+  "status": "reused_diagnostic_complete"
+}

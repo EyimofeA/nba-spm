@@ -1,0 +1,60 @@
+schema_version: experiment_preregistration_v1
+experiment_id: laser_breaker_v1
+status: frozen_reused_diagnostic
+
+question: >-
+  Does a time-decayed CourtSignal shooting-gravity score predict next-season
+  shooting ability, volume, and defensive attention better than public LASER?
+
+information_cutoff:
+  source_seasons: [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+  development_origins: [2014, 2015, 2016, 2017, 2018, 2019, 2020]
+  selection_origins: [2021, 2022]
+  diagnostic_origins: [2023, 2024, 2025]
+  season_2027: forbidden
+
+selection_grid:
+  half_life_seasons: [1, 2, 3, 4]
+  context_prior_attempts: [50, 100, 200]
+  rule: lowest_equal_weight_composite_mse_on_selection_origins
+
+frozen_candidate:
+  components:
+    - context_adjusted_three_point_ability
+    - three_point_attempts_per_100
+    - tightly_contested_three_point_share
+  standardization: within_origin_season_active_player_reference
+  combination: equal_weight_mean
+
+benchmark:
+  source: https://datawrapper.dwcdn.net/FUVAa/1/dataset.csv
+  metric: LASER
+  population: exact_public_laser_player_seasons_with_observed_next_season
+  calibration: weighted_linear_mapping_fit_on_origins_before_the_scored_block
+
+reporting:
+  leaderboard_season: 2026
+  require_current_season_row: true
+  minimum_effective_attempts: 50
+
+outcomes:
+  - next_season_three_point_percentage
+  - next_season_three_point_attempts_per_100
+  - next_season_tightly_contested_three_point_share
+  - equal_weight_standardized_composite
+
+uncertainty:
+  draws: 5000
+  unit: player_within_outcome_season
+  comparison: paired_candidate_minus_laser_weighted_mse
+
+acceptance:
+  - exact common player-season rows for both metrics
+  - no future information in candidate features
+  - all source and output hashes saved
+  - Season 2027 absent
+
+forbidden_interpretation: >-
+  This benchmark measures next-season prediction on the public LASER cohort.
+  It does not prove causal gravity, reproduce LASER, or supply untouched model
+  promotion evidence.
