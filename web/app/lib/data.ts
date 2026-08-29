@@ -47,6 +47,29 @@ export type SpmLabRating = {
   delta_defense: number;
   delta_net: number;
 };
+export type Box15LeaderboardRow = {
+  PLAYER_ID: number;
+  PLAYER_NAME: string;
+  Season: number;
+  prior_offense: number;
+  prior_defense: number;
+  prior_net: number;
+  posterior_offense: number;
+  posterior_defense: number;
+  posterior_net: number;
+  change_net: number;
+};
+export type Box15Correlation = {
+  component: "offense" | "defense" | "net";
+  metric: string;
+  metric_label: string;
+  prior_rows: number;
+  posterior_rows: number;
+  prior_pearson: number;
+  posterior_pearson: number;
+  prior_spearman: number;
+  posterior_spearman: number;
+};
 export type SpmMetricDefinition = {
   metric: string;
   metric_label: string;
@@ -103,6 +126,14 @@ export type SpmLabPayload = {
     selected_correlation: number;
   }[];
   ratings: SpmLabRating[];
+  box15: {
+    run_id: string;
+    seasons: number[];
+    correlation_seasons: number[];
+    minimum_minutes: number;
+    leaderboard: Box15LeaderboardRow[];
+    correlations: Box15Correlation[];
+  };
   weighting: {
     run_id: string;
     summary: {

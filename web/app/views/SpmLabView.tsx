@@ -6,15 +6,16 @@ import { Component, SpmLabPayload } from "../lib/data";
 import { fmtRating } from "../lib/viz";
 
 type Metric = "spm" | "aio";
-type View = "comparison" | "ratings" | "features";
+type View = "box-aio" | "comparison" | "ratings" | "features";
 type Correlation = "pearson" | "spearman";
 type SortKey = "selected_net" | "selected_offense" | "selected_defense" | "delta_net";
+type BoxSortKey = "prior_offense" | "prior_defense" | "prior_net" | "posterior_offense" | "posterior_defense" | "posterior_net" | "change_net";
 type FeatureSide = "all" | "offense" | "defense";
 
 const pct = (value: number) => `${(100 * value).toFixed(1)}%`;
 
 export function SpmLabView({ lab }: { lab: SpmLabPayload | null }) {
-  const [view, setView] = useState<View>("comparison");
+  const [view, setView] = useState<View>("box-aio");
   const [season, setSeason] = useState(2026);
   const [metric, setMetric] = useState<Metric>("aio");
   const [sort, setSort] = useState<SortKey>("selected_net");
@@ -23,6 +24,8 @@ export function SpmLabView({ lab }: { lab: SpmLabPayload | null }) {
   const [correlation, setCorrelation] = useState<Correlation>("pearson");
   const [featureSide, setFeatureSide] = useState<FeatureSide>("all");
   const [featureSearch, setFeatureSearch] = useState("");
+  const [boxSort, setBoxSort] = useState<BoxSortKey>("posterior_net");
+  const [boxAscending, setBoxAscending] = useState(false);
 
   const rows = useMemo(
     () =>
@@ -51,12 +54,30 @@ export function SpmLabView({ lab }: { lab: SpmLabPayload | null }) {
       return matchesSide && matchesSearch;
     }) ?? [];
   }, [featureSearch, featureSide, lab]);
+  const boxRows = useMemo(
+    () =>
+      (lab?.box15.leaderboard ?? [])
+        .filter((row) => row.Season === season)
+        .sort((a, b) => (a[boxSort] - b[boxSort]) * (boxAscending ? 1 : -1)),
+    [boxAscending, boxSort, lab, season],
+  );
+  const boxCorrelations = useMemo(
+    () => (lab?.box15.correlations ?? []).filter((row) => row.component === component),
+    [component, lab],
+  );
 
   const sortBy = (key: SortKey) => {
     if (sort === key) setAscending((value) => !value);
     else {
       setSort(key);
       setAscending(false);
+    }
+  };
+  const sortBoxBy = (key: BoxSortKey) => {
+    if (boxSort === key) setBoxAscending((value) => !value);
+    else {
+      setBoxSort(key);
+      setBoxAscending(false);
     }
   };
   if (!lab) return <p className="empty">SPM research data unavailable.</p>;
@@ -67,11 +88,45 @@ export function SpmLabView({ lab }: { lab: SpmLabPayload | null }) {
       <div className="page-head">
         <div><p className="kicker">Local research</p><h1>SPM Lab</h1></div>
         <div className="segmented" aria-label="SPM Lab view">
-          {(["comparison", "ratings", "features"] as View[]).map((value) => (
-            <button key={value} type="button" aria-pressed={view === value} onClick={() => setView(value)}>{value[0].toUpperCase() + value.slice(1)}</button>
+          {(["box-aio", "comparison", "ratings", "features"] as View[]).map((value) => (
+            <button key={value} type="button" aria-pressed={view === value} onClick={() => setView(value)}>{value === "box-aio" ? "Box AIO" : value[0].toUpperCase() + value.slice(1)}</button>
           ))}
         </div>
       </div>
+
+      {view === "box-aio" && <>
+        <section className="card">
+          <div className="card-head">
+            <div><p className="kicker">Box15 prior + possession update</p><h2>Box AIO leaderboard</h2></div>
+            <label className="field"><span>Season</span><select value={season} onChange={(event) => setSeason(Number(event.target.value))}>{lab.box15.seasons.toReversed().map((value) => <option key={value}>{value}</option>)}</select></label>
+          </div>
+          <div className="table-wrap comparison-table">
+            <table className="data">
+              <thead>
+                <tr><th className="left" rowSpan={2}><button type="button" disabled>Player</button></th><th colSpan={3}>Prior</th><th colSpan={3}>AIO posterior</th><th rowSpan={2}><button type="button" onClick={() => sortBoxBy("change_net")}>Change</button></th></tr>
+                <tr><th><button type="button" onClick={() => sortBoxBy("prior_offense")}>Off</button></th><th><button type="button" onClick={() => sortBoxBy("prior_defense")}>Def</button></th><th><button type="button" onClick={() => sortBoxBy("prior_net")}>Net</button></th><th><button type="button" onClick={() => sortBoxBy("posterior_offense")}>Off</button></th><th><button type="button" onClick={() => sortBoxBy("posterior_defense")}>Def</button></th><th><button type="button" onClick={() => sortBoxBy("posterior_net")}>Net</button></th></tr>
+              </thead>
+              <tbody>{boxRows.map((row) => <tr key={`${row.Season}-${row.PLAYER_ID}`}><td className="left name">{row.PLAYER_NAME}</td><td>{fmtRating(row.prior_offense)}</td><td>{fmtRating(row.prior_defense)}</td><td>{fmtRating(row.prior_net)}</td><td>{fmtRating(row.posterior_offense)}</td><td>{fmtRating(row.posterior_defense)}</td><td className="headline">{fmtRating(row.posterior_net)}</td><td>{fmtRating(row.change_net)}</td></tr>)}</tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="card">
+          <div className="card-head">
+            <div><p className="kicker">Matched 2021–24 player-seasons</p><h2>Agreement with other metrics</h2></div>
+            <div className="filters compact-filters">
+              <div className="segmented">{(["net", "offense", "defense"] as Component[]).map((value) => <button key={value} type="button" aria-pressed={component === value} onClick={() => setComponent(value)}>{value}</button>)}</div>
+              <div className="segmented">{(["pearson", "spearman"] as Correlation[]).map((value) => <button key={value} type="button" aria-pressed={correlation === value} onClick={() => setCorrelation(value)}>{value === "spearman" ? "Rank" : "Pearson"}</button>)}</div>
+            </div>
+          </div>
+          <div className="table-wrap comparison-table">
+            <table className="data">
+              <thead><tr><th className="left"><button type="button" disabled>Metric</button></th><th><button type="button" disabled>Prior</button></th><th><button type="button" disabled>AIO posterior</button></th><th><button type="button" disabled>Players</button></th></tr></thead>
+              <tbody>{boxCorrelations.map((row) => <tr key={`${row.component}-${row.metric}`}><td className="left name">{row.metric_label}</td><td>{row[`prior_${correlation}`].toFixed(3)}</td><td className="headline">{row[`posterior_${correlation}`].toFixed(3)}</td><td>{Math.min(row.prior_rows, row.posterior_rows).toLocaleString()}</td></tr>)}</tbody>
+            </table>
+          </div>
+        </section>
+      </>}
 
       {view === "comparison" && <>
         <section className="card">
