@@ -1,0 +1,165 @@
+{
+  "config": {
+    "bootstrap_draws": 5000,
+    "bootstrap_seed": 20260829,
+    "candidates": [
+      "box_15",
+      "box_15_plus_shooting_threat"
+    ],
+    "experiment_id": "box15_shooting_threat_v1",
+    "model_order": [
+      "box_15",
+      "box_15_plus_shooting_threat",
+      "zero_prior_rapm",
+      "box_15_aio",
+      "box_15_plus_shooting_threat_aio"
+    ],
+    "source_hashes": {
+      "contract": "e9be18ff5cc03fd69c288baee4112e8594399e8065f98cd7508c1acabc905c88",
+      "feature_manifest": "a5ad9d0a584a13b1877ebe0670508a4e2b1c902aba6c851a05e2e1c5148abe26",
+      "features": "6a31110d159667f941f24a8ad00051881aa991a9e3329d1c860a472119de6ad1",
+      "runner": "1a95c0672a7897ecec0a1735f7094b4a4b8401c687fccfca192b4eb5f7e648fa",
+      "shooting_threat": "400fed2014a1d9cfb176317da8f56e733161bd63471df2e9b80c4219906caa7e",
+      "shot_run": "8f97db48b7f8f3c924a6cd6e615568eef037373355efe3d7e1645ea1e7937176",
+      "targets": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+    }
+  },
+  "contract": {
+    "acceptance": [
+      "every candidate scores identical games in every test season",
+      "offense_plus_defense_equals_net_for_every_rating",
+      "model_and_data_hashes_are_saved",
+      "season_2027_is_not_loaded"
+    ],
+    "candidate": {
+      "added_offense_feature": "shooting_threat_p100",
+      "challenger": "box_15_plus_shooting_threat",
+      "control": "box_15",
+      "defense_changes": "none"
+    },
+    "estimand_id": "prior_validation_suite_v1",
+    "experiment_id": "box15_shooting_threat_v1",
+    "fixed_aio": {
+      "center_scale": 1,
+      "lambda_defense": 3000,
+      "lambda_home": 300,
+      "lambda_offense": 3000,
+      "likelihood_seasons": 1
+    },
+    "forbidden_interpretation": "This reused diagnostic cannot promote a public model or consume Season 2027 confirmation evidence. The shooting-threat metric is not LASER.",
+    "information_cutoff": {
+      "evaluated_rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "final_unscored_rating_season": 2026,
+      "rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "season_2027": "forbidden",
+      "test_seasons": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "training_rule": "window_end strictly before rating_season"
+    },
+    "learner": {
+      "alpha_grid": [
+        10,
+        30,
+        100,
+        300,
+        1000,
+        3000
+      ],
+      "alpha_selection": "leave_one_training_season_out_inside_each_outer_fold",
+      "family": "ridge",
+      "sample_weight": "sqrt_min_offensive_and_defensive_possessions"
+    },
+    "primary_evaluation": {
+      "comparison": "identical_games_and_actual_margins",
+      "correlation_guard": "no_more_than_0.01_below_box_15_aio",
+      "metric": "equal_season_mean_next_season_game_margin_mse",
+      "uncertainty": "5000_paired_whole_game_bootstrap_draws_within_test_season"
+    },
+    "question": "Does one transparent five-year shooting-threat feature improve the Box15 prior before and after the fixed one-season RAPM update?",
+    "schema_version": "experiment_preregistration_v1",
+    "status": "frozen_reused_diagnostic"
+  },
+  "created_at": "2026-08-29T17:21:38.116537+00:00",
+  "files": {
+    "alpha_selection.parquet": {
+      "rows": 24,
+      "sha256": "d9e1e857ace7f0e8573d50ce14741660756e47b2b2a288b21505de30bf11e552"
+    },
+    "bootstrap_model_intervals.parquet": {
+      "rows": 5,
+      "sha256": "efaa74412495f2a1b58588c599b71d13c1ff6aeda4f89b621869b513eea19924"
+    },
+    "coefficients.parquet": {
+      "rows": 366,
+      "sha256": "e63088ab21a678b355f6a193a184f0e2d3025b8f94184f9eb9ba6d79f5484868"
+    },
+    "feature_coverage.parquet": {
+      "rows": 9,
+      "sha256": "d7bbd9a84cfee9199201da0e8d45518c38f8a8760ee2fd8c25c35c32a47d6cb0"
+    },
+    "fold_metrics.parquet": {
+      "rows": 25,
+      "sha256": "f048f19c31f05e45bd5a360fd1975cf59e583d4dd429785138f9f8d61d4880f1"
+    },
+    "game_predictions.parquet": {
+      "rows": 30705,
+      "sha256": "2d7ee28535897ad63ef30d286d3e3979f7765ce3cf00a25abc2ab266950059b6"
+    },
+    "matrix_reconstruction.parquet": {
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "paired_bootstrap.parquet": {
+      "rows": 10,
+      "sha256": "dfbfc1818f720ff273c81e474d61b2e8cb98f1b63403fd6734debdecd39ec64c"
+    },
+    "prior_coverage.parquet": {
+      "rows": 12,
+      "sha256": "f687ee5ddd1fb6639a4c91b9996fa535b0ac2904937400528e52f4fe6e4d2437"
+    },
+    "priors.parquet": {
+      "rows": 11822,
+      "sha256": "e61faac9422849662cedd3c0ecf0ca3555602f6850d008e4177cb6a86d26ad76"
+    },
+    "ratings.parquet": {
+      "rows": 32160,
+      "sha256": "56cb61a3f54f7098033ed9794145103ae68806cbbc90f96691afd31d30a76a4f"
+    },
+    "summary.parquet": {
+      "rows": 5,
+      "sha256": "bbca9e90cdaaf3e552838d29026ea460e3a968cc5d74b65ead70dcb404e180d2"
+    },
+    "target_metrics.parquet": {
+      "rows": 36,
+      "sha256": "48cc379748b883ba2ea8a2f992648af44929407714ed2e7877cee7a4a2a024d1"
+    }
+  },
+  "forbidden_interpretation": "This reused diagnostic cannot promote a public model or consume Season 2027 confirmation evidence. The shooting-threat metric is not LASER.",
+  "public_model_changed": false,
+  "quality": {
+    "identical_games_within_fold": true,
+    "maximum_component_identity_error": 0.0,
+    "season_2027_loaded": false
+  },
+  "run_id": "box15_shooting_threat_v1_029abd8c06",
+  "selected_under_reused_gate": "box_15_aio",
+  "status": "reused_diagnostic_complete"
+}
