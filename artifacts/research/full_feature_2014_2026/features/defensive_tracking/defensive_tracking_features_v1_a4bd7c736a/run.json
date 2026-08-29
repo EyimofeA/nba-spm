@@ -1,0 +1,122 @@
+{
+  "artifact_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/research/full_feature_2014_2026/features/defensive_tracking/defensive_tracking_features_v1_a4bd7c736a",
+  "config": {
+    "box_source_overrides": {
+      "2014": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2014.parquet",
+      "2015": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2015.parquet",
+      "2016": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2016.parquet",
+      "2017": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2017.parquet",
+      "2018": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2018.parquet",
+      "2019": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2019.parquet",
+      "2020": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2020.parquet",
+      "2021": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2021.parquet",
+      "2022": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2022.parquet",
+      "2023": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2023.parquet",
+      "2024": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2024.parquet",
+      "2025": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2025.parquet",
+      "2026": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2026.parquet"
+    },
+    "builder_sha256": "21f33abdf52e6edb5e669902a934c9cf8e9911a382d730441cdccbcea5a05579",
+    "dfg_prior_attempts": 200.0,
+    "rim_prior_attempts": 100.0,
+    "seasons": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "source_hashes": {
+      "box": {
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2014.parquet": "30ffc3f5090e76d9ddda98cb41ca72785e296430dae2aa3cad165318025f62dc",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2015.parquet": "90ddc43dfffcc827e154677ef46f2a0c0b6c31b51784e27832869ea63c49dc20",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2016.parquet": "62690961d72c732b7b0bcf6e8fb8d7921ce3c3715bb45a52d285171b831697b9",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2017.parquet": "590d42a93951e43f55413582e65f4539a44b7257a24e531cf721f58ed135098e",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2018.parquet": "e26f1af99c6ae9a8ba9632d5522079b4b2d38265ac2008ae9f9d8738bab83770",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2019.parquet": "ebebe7174b1ab529eaa6299d6da73783420424e59bbb125d65925f1155675340",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2020.parquet": "a8f0e782be214a72bee072781152d5ae637e5b80d508f46ee7efdb919d658065",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2021.parquet": "7f542206d8a6206b25ff6397ef34d75fc9cb1c6315aab84b9c401c59ba6ca51f",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2022.parquet": "4e46a94b3c9f85aeb0dfe49abc08340a4c86720e192783b0319ff0e375f0f95b",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2023.parquet": "6d85fb54ac49f6c73e4d6dedacb216f2b28d5db475153d1bebffa9585ec1268d",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2024.parquet": "beb5a5aceb7d1d3504529102a4c93eb4898ff525474ea75bd3babeeeb0e38ad3",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2025.parquet": "8cbeab5559385f7be8226e168e4b2eceac3ce40029360fb770ff40770a7fc4ed",
+        "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2026.parquet": "09a6a34855a3685e89ced2dcb2f79b60ed2ef97b9709b29d30848a3165fe7e2c"
+      },
+      "dfg": "71bce4571ae47f37f18ff2baf2b2d80cdc9b67123927d5a80d9e5b0e613ddb9d",
+      "hustle": "41dcf3b33527d18280a425a8f18bb0beb1b5a97cb7860cf0bb7360a480ef0860",
+      "rim_dfg": "0d0e7ab27af6e5f0157c62e4bac17ec00727de1daaa2185bbdb262be13393966"
+    }
+  },
+  "created_at": "2026-08-29T23:37:12.647863+00:00",
+  "dataset": "annual_defensive_tracking_features_v1",
+  "feature_names": [
+    "dfg_attempts_p100",
+    "dfg_diff_pct_eb",
+    "dfg_two_point_equivalent_saved_p100",
+    "rim_dfga_p100",
+    "rim_diff_pct_eb",
+    "rim_points_saved_p100_raw",
+    "rim_points_saved_p100",
+    "rim_matchup_attempt_share",
+    "deflections_p100",
+    "charges_drawn_p100",
+    "contested_2pt_p100",
+    "contested_3pt_p100",
+    "contested_3pt_share",
+    "def_loose_balls_recovered_p100"
+  ],
+  "features_path": "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/research/full_feature_2014_2026/features/defensive_tracking/defensive_tracking_features_v1_a4bd7c736a/features.parquet",
+  "quality": {
+    "duplicate_keys": 0,
+    "missing_fraction_before_neutral_fill": {
+      "charges_drawn_p100": 0.35177182368193605,
+      "contested_2pt_p100": 0.35177182368193605,
+      "contested_3pt_p100": 0.35177182368193605,
+      "contested_3pt_share": 0.2889657159320081,
+      "def_loose_balls_recovered_p100": 0.35177182368193605,
+      "deflections_p100": 0.35177182368193605,
+      "dfg_attempts_p100": 0.07418611351195621,
+      "dfg_diff_pct_eb": 0.006626332469029098,
+      "dfg_two_point_equivalent_saved_p100": 0.07418611351195621,
+      "rim_dfga_p100": 0.07706712762892538,
+      "rim_diff_pct_eb": 0.017718236819360415,
+      "rim_matchup_attempt_share": 0.07706712762892538,
+      "rim_points_saved_p100": 0.07706712762892538,
+      "rim_points_saved_p100_raw": 0.07706712762892538
+    },
+    "neutral_fill_policy": "same_season_median_then_zero",
+    "nonfinite_values": 0,
+    "players": 1706,
+    "rows": 6942,
+    "source_join_quality": {
+      "dfg": {
+        "match_rate": 1.0,
+        "matched_rows": 6896,
+        "source_rows": 6896,
+        "unmatched_names": []
+      },
+      "hustle": {
+        "match_rate": 1.0,
+        "matched_rows": 5003,
+        "source_rows": 5003,
+        "unmatched_names": []
+      },
+      "rim_dfg": {
+        "match_rate": 1.0,
+        "matched_rows": 6819,
+        "source_rows": 6819,
+        "unmatched_names": []
+      }
+    }
+  },
+  "run_id": "defensive_tracking_features_v1_a4bd7c736a",
+  "status": "validated"
+}

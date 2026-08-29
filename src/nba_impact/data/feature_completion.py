@@ -223,11 +223,18 @@ def complete_selected_feature_panel(
             include_groups=False,
         )
     )
+    player_ts = pd.to_numeric(output["true_shooting_pct"], errors="coerce")
+    valid_player_ts = player_ts.between(0.0, 1.5)
+    invalid_player_ts = ~valid_player_ts
+    season_ts = player_ts.where(valid_player_ts).groupby(output["Window_End"]).transform(
+        "median"
+    )
+    output["true_shooting_pct"] = player_ts.where(valid_player_ts).fillna(
+        season_ts
+    ).fillna(0.5)
     fallback = ~loose_mask
     fallback_expected = output["Window_End"].map(expected_by_season)
-    fallback_player_ts = 100.0 * pd.to_numeric(
-        output["true_shooting_pct"], errors="coerce"
-    )
+    fallback_player_ts = 100.0 * output["true_shooting_pct"]
     output.loc[fallback, "zts_pct_points"] = (
         fallback_player_ts - fallback_expected
     ).loc[fallback]
@@ -279,6 +286,7 @@ def complete_selected_feature_panel(
         "strict_zts_rows": int(strict_mask.sum()),
         "low_sample_zts_rows": int((loose_mask & ~strict_mask).sum()),
         "fallback_zts_rows": int((~loose_mask).sum()),
+        "invalid_true_shooting_rows_repaired": int(invalid_player_ts.sum()),
         "hustle_source_missing_rows": int(hustle_missing.sum()),
         "matchup_source_missing_rows": int(matchup_missing.sum()),
         "dfg_source_missing_rows": int(dfg_missing.sum()),
