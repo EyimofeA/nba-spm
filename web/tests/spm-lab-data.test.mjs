@@ -41,6 +41,20 @@ test("SPM Lab defaults can render the public metric benchmark", () => {
   assert.ok(!lab.comparison.definitions.some((row) => row.metric === "old_aio"));
 });
 
+test("SPM Lab exposes the frozen Box15 prior, posterior, and comparisons", () => {
+  assert.equal(lab.box15.run_id, "final_box_feature_ladder_v1_8bb26f12e7");
+  assert.deepEqual(lab.box15.seasons, [2021, 2022, 2023, 2024, 2025, 2026]);
+  assert.deepEqual(lab.box15.correlation_seasons, [2021, 2022, 2023, 2024]);
+  assert.equal(lab.box15.minimum_minutes, 250);
+  assert.ok(lab.box15.leaderboard.length > 3_000);
+  assert.ok(lab.box15.leaderboard.every((row) => row.PLAYER_NAME));
+  assert.ok(lab.box15.leaderboard.every((row) => Math.abs(row.prior_offense + row.prior_defense - row.prior_net) < 1e-9));
+  assert.ok(lab.box15.leaderboard.every((row) => Math.abs(row.posterior_offense + row.posterior_defense - row.posterior_net) < 1e-9));
+  assert.equal(lab.box15.correlations.length, 30);
+  assert.ok(lab.box15.correlations.some((row) => row.metric === "site_aio"));
+  assert.ok(lab.box15.correlations.some((row) => row.metric === "full_spm_aio"));
+});
+
 test("SPM Lab exposes the exact feature catalog and weight ablation", () => {
   assert.equal(lab.weighting.quality.rows, 6942);
   assert.equal(lab.weighting.feature_catalog.length, 170);
