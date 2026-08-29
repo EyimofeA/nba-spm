@@ -1,0 +1,101 @@
+{
+  "config": {
+    "experiment_id": "historical_factor_targets_v1",
+    "five_year_window_ends": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "gabriel_revision": "6e077a0f62153e72db300ba1f0a45b30584fd3d2",
+    "game_identity_sources": {
+      "2014": "287b18d86d5d1321c68fd2c98a417bdd0aaaab0cfb3f6e37665809c0e60fbf06",
+      "2015": "1e20c7e9cb8a792baed22aa5cd6810ab37b1526bf0467a146d564a533896f1dd",
+      "2016": "5810e2ef40e4f7b0848fcd8015e5ef995e7c9a2036009c33558ab35484409bab",
+      "2017": "bc7b5c6e399b21bda17acc25ddb0e03af058ef918e1fd9417b102b86dff0ab80",
+      "2018": "7614af743d47ecf104fbb77f1c0ad4aed52555ab6ea13f5b861dd9077e4999fa",
+      "2019": "46e00d71c613eff47ddf8a9d478e6a16d98b55b532105efc1b3634b77fbf4507",
+      "2020": "029952926b44e8d6ddb2761f110f3fbd20490f4980cd6d26aa94c9e509996375",
+      "2021": "b8ba1ebba7e22d3abbe11595d6308e6b58f11835104a3b56e8734dac82eb844d",
+      "2022": "682124506474471cda1284740bc04e89118662579304e69ce9ce344f2d4e21d5",
+      "2023": "f7ee5f37e1e894e07bf6e0f3a26a1d16cc909c56f84659569484695e3de82a05",
+      "2024": "f3680e01623c12ab34c35c717d951c55b42a44cc16c042811e02a332c3f8f4d2",
+      "current_game_dim": "812759c0acd105fc1c61e06b5a25797d08143786c54003859a394575266f98da"
+    },
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "lambda_off": 3000.0,
+    "ledger_cache_contract": "artifacts/research/historical_factor_targets/ledger_cache_6e077a0f_v1",
+    "minimum_valid_lineup_fraction": 0.95,
+    "seasons": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "source_hashes": {
+      "builder": "aa829b8103c684e5c249b82e542a375759ea75db1b67b6155ff5c7648f5d1b6e",
+      "factor_model": "3bf49d82bea64c09d726062dddea9ce1cf1a3bb3eb03373321d3a73ef3ca06d0"
+    },
+    "status": "frozen_research_build"
+  },
+  "created_at": "2026-08-29T19:56:34.346583+00:00",
+  "forbidden_interpretation": "These are research-only lineup-adjusted factor targets. They do not identify a unique shot defender or a unique box-out assignment.",
+  "paths": {
+    "annual_factor_targets": "annual_factor_targets.parquet",
+    "five_year_factor_targets": "five_year_factor_targets.parquet",
+    "source_quality": "source_quality.parquet"
+  },
+  "quality": {
+    "annual_rows": 6934,
+    "annual_seasons": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "five_year_rows": 8618,
+    "five_year_window_ends": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "maximum_invalid_rebound_lineup_rate": 0.0417642539956156,
+    "maximum_invalid_shooting_lineup_rate": 0.0412423254727279,
+    "minimum_team_game_score_match_rate": 0.9930894308943089,
+    "minimum_valid_rebound_lineup_fraction": 0.9582357460043844,
+    "minimum_valid_shooting_lineup_fraction": 0.9587576745272721,
+    "season_2027_loaded": false
+  },
+  "run_id": "historical_factor_targets_v1_f4894bf588",
+  "status": "research_targets"
+}

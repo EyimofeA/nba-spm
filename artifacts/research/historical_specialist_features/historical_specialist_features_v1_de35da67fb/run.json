@@ -1,0 +1,102 @@
+{
+  "config": {
+    "boxout_prior_events": 50.0,
+    "experiment_id": "historical_specialist_features_v1",
+    "five_year_window_ends": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "rebound_conversion_prior_chances": 100.0,
+    "rim_deterrence_prior_possessions": 500.0,
+    "seasons": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "shot_assignment_seasons": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "shot_quality_prior_attempts": 100.0,
+    "shotmaking_prior_attempts": 500.0,
+    "source_hashes": {
+      "base_annual": "0719f1dc397b746485d6cc8c6c22cc5cea43547b215ddc0a8b444feb7e2496e2",
+      "builder": "626120e209e2d22db8dbca5e48d2057663114caded62fb0e29a290d6251b6e94",
+      "feature_code": "654259fb1d7366dd1b907269ae0f99be5290f8d43566b34fc919a7508019fdbb",
+      "matchup_config": "d0ebbba590006c7cdcdf432e03f5368c9f085e2dfc2bb836ab10c02fc1f0a877"
+    },
+    "source_revisions": {
+      "matchup_fga": "d539693f4db9a39788873b644c35423673fe6efe",
+      "merged_playbyplay": "6e077a0f62153e72db300ba1f0a45b30584fd3d2"
+    }
+  },
+  "created_at": "2026-08-29T19:59:40.672763+00:00",
+  "limitations": {
+    "boxout_responsibility": "Observed player box-out totals exist, but no event-level unique box-out assignment exists.",
+    "defender_distance": "Unavailable in the pinned assignment source.",
+    "shot_assignment": "NBA video tags can name multiple defenders; each tag receives equal fractional weight.",
+    "shot_clock": "Unavailable in the pinned event source; game clock is not used as a substitute."
+  },
+  "paths": {
+    "annual_features": "annual_features.parquet",
+    "five_year_features": "five_year_features.parquet",
+    "source_quality": "source_quality.parquet"
+  },
+  "quality": {
+    "annual_rows": 6942,
+    "annual_seasons": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "five_year_rows": 8620,
+    "five_year_window_ends": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "season_2027_loaded": false
+  },
+  "run_id": "historical_specialist_features_v1_de35da67fb",
+  "status": "research_features"
+}
