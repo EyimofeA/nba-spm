@@ -1,0 +1,116 @@
+schema_version: validation_contract_v2
+contract_id: impact_validation_v2
+status: frozen_design_before_next_model_run
+created_at: 2026-08-30
+
+common_rules:
+  comparison_unit: identical whole games within each season and fold
+  resampling_unit: whole game, stratified by season
+  uncertainty_draws: 5000
+  season_weighting: equal weight for each scored season
+  primary_loss: mean squared final-game margin error
+  reported_scale: root mean squared final-game margin error
+  secondary_metrics:
+    - game-margin correlation
+    - calibration intercept and slope
+    - possession-points mean squared error
+  promotion_gate:
+    minimum_rmse_improvement_points_per_game: 0.05
+    paired_mse_interval_upper_bound: 0.0
+    maximum_correlation_decline: 0.01
+    maximum_calibration_slope_distance_increase: 0.05
+    segment_rule: no exposure or source-era segment with at least 500 games may worsen RMSE by more than 0.10
+  forbidden:
+    - random player-season cross-validation as final evidence
+    - hyperparameter selection on an outer test season
+    - future-season feature values
+    - actual future minutes in the operational forecast test
+    - reuse of one possession outcome in both a prior input and the RAPM likelihood
+    - Season 2027 before the final frozen confirmation
+
+data_gate:
+  required:
+    - unique declared grain and keys
+    - at least 99 percent identity and source join coverage, with every exception listed
+    - numerator and denominator lineage for every rate
+    - explicit unit for every percentage and per-possession field
+    - physical range checks before imputation
+    - source-availability flags that agree with the raw source
+    - season-by-season missingness, zero rate, quantiles, and source-era drift
+    - a leakage class for every feature
+  leakage_classes:
+    independent: no score outcome shared with the RAPM target or likelihood
+    shared_target_noise: derived from the same outcome used to train the SPM label
+    double_counting: derived from possessions later reused in the AIO likelihood
+    future: unavailable at the rating cutoff
+  blocking_failures:
+    - impossible physical value
+    - unit mismatch
+    - unexplained one-sign collapse for a declared two-sided metric
+    - future or double-counted input
+
+retrospective_impact:
+  estimand: completed-period player impact conditional on observed teammates and opponents
+  rating_scope: one completed regular season
+  latent_player_state: forbidden
+  age_and_minutes:
+    value_features: forbidden
+    exposure_dependent_prior_precision: allowed if trained only on earlier seasons
+  primary_test:
+    name: same-season blocked-game reconstruction
+    folds: 5
+    split_unit: whole game
+    procedure: >-
+      Remove each held-out game from the RAPM likelihood and from every feature
+      derived from that season. Train the SPM mapping and all tuning choices on
+      earlier seasons only. Predict the held-out game with its observed lineups.
+    eligibility: a season-total feature is ineligible unless raw timestamped rows can reconstruct it without held-out games
+  supporting_tests:
+    - first-half rating to second-half games
+    - split-half coefficient stability by exposure
+    - traded-player and changed-lineup portability
+    - player-column, game-order, and checkpoint invariance
+  interpretation: validates reconstruction and reliability, not causal truth
+
+current_strength:
+  estimand: player strength available at a historical cutoff for future basketball
+  latent_player_state: allowed and preferred for noisy rates
+  state_inputs:
+    - previous player posterior
+    - observations available by the cutoff
+    - age transition
+    - time decay
+    - source availability
+  cutoffs: weekly Mondays from November 1 through April 1
+  horizon: next 14 calendar days
+  outer_split: train through season T-1 and score season T
+  inner_split: chronological cutoffs and seasons strictly before outer season T
+  primary_test:
+    name: oracle-lineup player-quality test
+    lineup_rule: observed future lineups may supply exposure but never model inputs or outcomes
+    interpretation: isolates player-quality estimation and is not a deployable forecast
+  operational_test:
+    name: pregame forecast
+    lineup_rule: roster, injury information, and projected minutes available before tipoff
+    metrics:
+      - game-margin MSE and RMSE
+      - win-probability log loss
+      - win-probability Brier score
+      - calibration intercept and slope
+  supporting_tests:
+    - future one-year RAPM on identical returning-player rows
+    - new-player and low-exposure generalization
+    - role, age, exposure, team-change, and source-era residuals
+
+evidence_boundaries:
+  box_history:
+    development: 2004-2017
+    selection: 2018-2021
+    reused_diagnostic: 2022-2026
+    untouched_confirmation: 2027
+  rich_feature_history:
+    development: 2018-2020
+    selection: 2021
+    reused_diagnostic: 2022-2026
+    untouched_confirmation: 2027
+  note: rich-feature independent evidence is thin; reused 2022-2026 results cannot promote a model

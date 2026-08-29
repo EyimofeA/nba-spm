@@ -125,6 +125,14 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   use zero with an availability field. Low-sample zTS uses all observed
   playtype possessions. Rows without playtype data use season-relative TS.
   The annual and five-year panels have zero missing selected inputs.
+- Distribution audit `spm_input_distribution_audit_v1_cea792b6f4` shows that
+  zero missing values did not imply valid values. Low-source zTS fallback rows
+  can use incomplete field-goal denominators and reach impossible values. The
+  observed rim-defense source mixes 0--100 `DFG%` with 0--1 `FG%`, so its
+  stored `DIFF%` and rim-points-saved values are invalid. Box15 does not use
+  either field. Treat rich-SPM ladder conclusions that consume these inputs as
+  provisional until both fields are rebuilt from raw numerators and
+  denominators and rerun under `impact_validation_v2`.
 - Comparison run `semantic_feature_completion_comparison_v1_235b4dea34` finds
   no AIO gain over the previous missing-data implementation. Removing matchup
   fields makes the standalone SPM worse. Keep matchup fields and their source

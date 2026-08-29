@@ -72,6 +72,9 @@ Start at the repository root:
 - [`impact/IMPACT_VALIDATION_SUITE_V1.md`](impact/IMPACT_VALIDATION_SUITE_V1.md) —
   ordered same-season, forward, reverse, midseason, and next-season tests for
   the frozen statistical priors, with weighted and equal-weight summaries;
+- [`impact/IMPACT_VALIDATION_V2.md`](impact/IMPACT_VALIDATION_V2.md) —
+  separate retrospective-impact and current-strength validation contracts,
+  with chronological cutoffs, a pre-fit data gate, and frozen promotion rules;
 - [`impact/PUBLIC_AIO_BENCHMARK_V1.md`](impact/PUBLIC_AIO_BENCHMARK_V1.md) —
   pairwise public-metric agreement and the oracle-minutes team-win test;
 - [`impact/MODEL_REPLICATION_SPEC.md`](impact/MODEL_REPLICATION_SPEC.md) — exact
