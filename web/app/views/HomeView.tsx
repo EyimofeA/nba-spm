@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { ImpactBars, ImpactDatum, impactLegend } from "../charts/bars";
 import { Figure, Legend } from "../charts/frame";
-import { LeaderboardRow, possessions, rating } from "../lib/data";
+import { LeaderboardRow, possessions, rating, resolveModel } from "../lib/data";
 import { fmtRating } from "../lib/viz";
 
 export function HomeView({
@@ -16,6 +16,7 @@ export function HomeView({
   onPlayer: (id: number) => void;
 }) {
   const displayedSeason = rows[0]?.Season;
+  const active = resolveModel(rows, "aio");
 
   const leaders = useMemo<ImpactDatum[]>(
     () =>
@@ -26,14 +27,14 @@ export function HomeView({
           name: row.PLAYER_NAME,
           team: row.TEAM_ABBREVIATION,
           season: row.Season,
-          offense: rating(row, "aio_", "offense") ?? 0,
-          defense: rating(row, "aio_", "defense") ?? 0,
-          net: rating(row, "aio_", "net") ?? 0,
+          offense: rating(row, active.prefix, "offense") ?? 0,
+          defense: rating(row, active.prefix, "defense") ?? 0,
+          net: rating(row, active.prefix, "net") ?? 0,
           poss: possessions(row),
         }))
         .sort((a, b) => b.net - a.net)
         .slice(0, 10),
-    [rows],
+    [active.prefix, rows],
   );
 
   return (
@@ -85,10 +86,10 @@ export function HomeView({
       </section>
 
       <Figure
-        kicker={`AIO · ${displayedSeason ?? ""}`}
+        kicker={`${active.label} · ${displayedSeason ?? ""}`}
         title="This season’s ten most valuable"
         legend={<Legend items={impactLegend} />}
-        note="Players with 1,000 or more possessions on the smaller side, ranked by AIO net. Select a row to open the player page."
+        note={`Players with 1,000 or more possessions on the smaller side, ranked by ${active.label} net. Select a row to open the player page.`}
         table={
           <table className="mini">
             <thead>

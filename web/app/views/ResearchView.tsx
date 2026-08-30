@@ -19,6 +19,13 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
   const [source, setSource] = useState<"rapm" | "aio">("rapm");
   const [view, setView] = useState<"change" | "level">("change");
   const aging = catalog.aging[source];
+  const external = catalog.validation.external_benchmark;
+  const externalRows = external.rows ?? [];
+  const forwardRows = catalog.validation.walk_forward ?? [];
+  const backwardRows = catalog.validation.walk_backward ?? [];
+  const projection = catalog.validation.aging_projection;
+  const projectionRows = projection.selection ?? [];
+  const selectedProjection = projection.selected_method;
 
   // Only the RAPM curve publishes levels; AIO publishes year-over-year change.
   const effectiveView = source === "aio" ? "change" : view;
@@ -50,10 +57,9 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
           <p className="kicker">Research</p>
           <h1>What held up</h1>
         </div>
-        <span className="meta">
-          Frozen runs only ·{" "}
-          {catalog.validation.walk_forward[0]?.seasons ?? "—"}
-        </span>
+        {forwardRows.length > 0 && (
+          <span className="meta">Frozen runs only · {forwardRows[0].seasons}</span>
+        )}
       </div>
 
       <div className="grid">
@@ -73,7 +79,7 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
             <div className="tag-grid">
               <span>Rated season excluded from its own SPM labels</span>
               <span>Ridge penalties fixed at 3000 / 3000 / 300</span>
-              <span>Offense and defense fitted separately, then added</span>
+              <span>Offense and defense estimated jointly; net is their sum</span>
               <span>Identity holds to floating-point precision</span>
             </div>
             <p className="note">{catalog.methods.rapm_update_note}</p>
@@ -134,7 +140,7 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
           </table>
         </section>
 
-        <section className="card prose-grid">
+        {forwardRows.length > 0 && <section className="card prose-grid">
           <div>
             <p className="kicker">Forward test</p>
             <h2>Earlier seasons only</h2>
@@ -158,7 +164,7 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
               </tr>
             </thead>
             <tbody>
-              {catalog.validation.walk_forward.map((row) => (
+              {forwardRows.map((row) => (
                 <tr key={row.component}>
                   <td>{COMPONENT_LABEL[row.component as Component]}</td>
                   <td>{row.seasons}</td>
@@ -170,9 +176,9 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
               ))}
             </tbody>
           </table>
-        </section>
+        </section>}
 
-        <section className="card prose-grid">
+        {backwardRows.length > 0 && <section className="card prose-grid">
           <div>
             <p className="kicker">Direction check</p>
             <h2>Next year and last year</h2>
@@ -195,7 +201,7 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
               </tr>
             </thead>
             <tbody>
-              {catalog.validation.walk_backward.map((row) => (
+              {backwardRows.map((row) => (
                 <tr key={`${row.direction}-${row.component}`}>
                   <td>
                     {row.direction === "forward"
@@ -210,16 +216,14 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
               ))}
             </tbody>
           </table>
-        </section>
+        </section>}
 
-        <section className="card prose-grid">
+        {externalRows.length > 0 && <section className="card prose-grid">
           <div>
             <p className="kicker">External agreement</p>
             <h2>Against public metrics</h2>
-            <p className="note">{catalog.validation.external_benchmark.note}</p>
-            <p className="note">
-              {catalog.validation.external_benchmark.pinned_model_note}
-            </p>
+            <p className="note">{external.note}</p>
+            <p className="note">{external.pinned_model_note}</p>
           </div>
           <table className="mini">
             <thead>
@@ -232,7 +236,7 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
               </tr>
             </thead>
             <tbody>
-              {catalog.validation.external_benchmark.rows.map((row, index) => (
+              {externalRows.map((row, index) => (
                 <tr key={`${row.scope}-${row.component}-${index}`}>
                   <td>
                     {row.scope}
@@ -246,7 +250,7 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
               ))}
             </tbody>
           </table>
-        </section>
+        </section>}
 
         <Figure
           kicker="Aging"
@@ -342,17 +346,14 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
           )}
         </Figure>
 
-        <section className="card prose-grid">
+        {selectedProjection && projectionRows.length > 0 && <section className="card prose-grid">
           <div>
             <p className="kicker">Projection method</p>
             <h2>Age helps a little</h2>
             <p className="note">
               Candidate one-year projection methods were selected on four
               earlier origin seasons and then scored on two later ones.{" "}
-              {catalog.validation.aging_projection.selected_method.replaceAll(
-                "_",
-                " ",
-              )}{" "}
+              {selectedProjection.replaceAll("_", " ")}{" "}
               was selected. Its gain over the plain AR(1) baseline is small.
             </p>
           </div>
@@ -365,12 +366,11 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
               </tr>
             </thead>
             <tbody>
-              {catalog.validation.aging_projection.selection.map((row) => (
+              {projectionRows.map((row) => (
                 <tr
                   key={row.method}
                   className={
-                    row.method ===
-                    catalog.validation.aging_projection.selected_method
+                    row.method === selectedProjection
                       ? "flag"
                       : undefined
                   }
@@ -378,7 +378,7 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
                   <td>{row.method.replaceAll("_", " ")}</td>
                   <td>{row.mean_rmse.toFixed(3)}</td>
                   <td>
-                    {catalog.validation.aging_projection.diagnostic
+                    {(projection.diagnostic ?? [])
                       .find((item) => item.method === row.method)
                       ?.mean_rmse.toFixed(3) ?? "—"}
                   </td>
@@ -386,7 +386,7 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
               ))}
             </tbody>
           </table>
-        </section>
+        </section>}
 
         <section className="card">
           <div className="card-head">
@@ -430,13 +430,6 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
             <li>
               <b>Roles and skill profiles are descriptive.</b>
               <span>They are not impact estimates and not model inputs.</span>
-            </li>
-            <li>
-              <b>Season 2027 is untouched.</b>
-              <span>
-                It is reserved for annual confirmation and is never used to
-                develop or select a model.
-              </span>
             </li>
           </ul>
         </section>

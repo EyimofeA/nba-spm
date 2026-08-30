@@ -13,6 +13,7 @@ import pandas as pd
 
 from nba_impact.api.player_profiles import PROFILE_AXES, build_player_skill_profiles
 from nba_impact.api.ratings import ROLE_LABELS, RatingsApiConfig, RatingsStore
+from nba_impact.data.manifest import sha256_file
 from nba_impact.research.control_plane import validate_release_manifest
 
 
@@ -542,8 +543,18 @@ def build_web_snapshot(
         for key, value in annual.set_index(["PLAYER_ID", "Season"])["TEAM_ABBREVIATION"].to_dict().items()
     }
     profiles = pd.DataFrame(columns=["PLAYER_ID", "Season", *PROFILE_AXES])
+    profile_feature_source: dict[str, str] | None = None
     if features_path and Path(features_path).exists():
-        profiles = build_player_skill_profiles(pd.read_parquet(features_path), historical_seasons)
+        feature_path = Path(features_path)
+        profiles = build_player_skill_profiles(pd.read_parquet(feature_path), seasons)
+        try:
+            relative_path = feature_path.resolve().relative_to(project_root).as_posix()
+        except ValueError:
+            relative_path = feature_path.name
+        profile_feature_source = {
+            "relative_path": relative_path,
+            "sha256": sha256_file(feature_path),
+        }
     profile_lookup = {
         int(player_id): group.drop(columns="PLAYER_ID").round(1).astype(object).where(group.notna(), None).to_dict(orient="records")
         for player_id, group in profiles.groupby("PLAYER_ID", sort=False)
@@ -616,6 +627,10 @@ def build_web_snapshot(
         }
         for model in MODEL_CATALOG
     ]
+    aio_aging_seasons = sorted(
+        int(value)
+        for value in annual.loc[annual["aio_net"].notna(), "Season"].unique()
+    )
     catalog = {
         "schema_version": "nba_impact_web_snapshot_v2",
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -637,6 +652,7 @@ def build_web_snapshot(
             "current_rapm_run_id": config.current_rapm_run_id,
             "current_normal_rapm_run_id": current_run_id,
             "side_roles_run_id": config.side_roles_run_id,
+            "profile_feature_source": profile_feature_source,
         },
         "methods": {
             "aio_equation": "AIO = SPM center + centered RAPM update",
@@ -649,7 +665,12 @@ def build_web_snapshot(
                 "rows": _rapm_aging_rows(Path(aging_curve_path)),
             },
             "aio": {
-                "status": "exploratory_descriptive", "coverage": f"{seasons[0]}–{seasons[-1]}",
+                "status": "exploratory_descriptive",
+                "coverage": (
+                    f"{aio_aging_seasons[0]}–{aio_aging_seasons[-1]}"
+                    if aio_aging_seasons
+                    else "unavailable"
+                ),
                 "rows": _aio_aging_rows(store.annual, team_age),
             },
         },
@@ -759,6 +780,7 @@ def build_web_snapshot(
         }
     ]
     if current_run_id is not None:
+        current_seasons = sorted(int(value) for value in current_rows["Season"].unique())
         release_artifacts.append(
             {
                 "artifact_id": current_run_id,
@@ -766,7 +788,7 @@ def build_web_snapshot(
                     "models/current_single_season_rapm_targets/"
                     f"{current_run_id}"
                 ),
-                "season_scope": "2025-2026",
+                "season_scope": f"{current_seasons[0]}-{current_seasons[-1]}",
                 "evidence_status": "production_reference_method",
                 "run_status": "research_frozen_baseline",
             }
@@ -776,6 +798,7 @@ def build_web_snapshot(
         "created_at": catalog["created_at"],
         "row_set_sha256": row_set_sha256,
         "artifacts": release_artifacts,
+        "profile_feature_source": profile_feature_source,
         "files": {
             name: {"bytes": size, "sha256": digest}
             for name, (size, digest) in sorted(files.items())

@@ -17,7 +17,6 @@ import {
   RoleSide,
   rating,
   resolveModel,
-  missingModelNote,
 } from "../lib/data";
 import {
   COMPONENT_COLOR,
@@ -80,10 +79,11 @@ function PlayerBody({
   onCompare,
 }: PlayerViewProps & { player: Player }) {
   const [compareQuery, setCompareQuery] = useState("");
-  const active = resolveModel(player.annual, model);
   const seasons = player.annual.map((row) => row.Season);
   const current =
     player.annual.find((row) => row.Season === season) ?? player.annual.at(-1);
+  const currentRows = current ? [current] : player.annual;
+  const active = resolveModel(currentRows, model);
   const profile = player.profiles.find((row) => row.Season === season);
   const roles = player.roles.find((row) => row.Season === season);
   const compareMatches = useMemo(() => {
@@ -172,7 +172,7 @@ function PlayerBody({
       </div>
 
       <div className="filters">
-        <ModelField rows={player.annual} value={model} onChange={onModel} />
+        <ModelField rows={currentRows} value={model} onChange={onModel} />
         <label className="field">
           <span>Season</span>
           <select
@@ -240,9 +240,6 @@ function PlayerBody({
             <>
               Select a season on the chart to move the whole page to it. Offense
               and defense add to net.
-              {missingModelNote(player.annual)
-                ? ` ${missingModelNote(player.annual)}`
-                : ""}
             </>
           }
           table={

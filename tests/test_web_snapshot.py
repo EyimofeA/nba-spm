@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 
 import pandas as pd
@@ -15,7 +16,7 @@ from nba_impact.api.web_snapshot import (
 )
 
 
-def _artifacts(tmp_path: Path) -> tuple[Path, Path, Path]:
+def _artifacts(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
     """Write the smallest artifact set the snapshot builder can read."""
     artifact_root = tmp_path / "models"
     annual_dir = artifact_root / "annual_aio_ratings" / "annual_test"
@@ -164,14 +165,22 @@ def _artifacts(tmp_path: Path) -> tuple[Path, Path, Path]:
             "f_def": [-0.4, -0.2, 0.0],
         }
     ).to_csv(aging_path, index=False)
-    return config_path, artifact_root, aging_path
+    features_path = tmp_path / "features.parquet"
+    pd.DataFrame(
+        {
+            "PLAYER_ID": [1, 2, 1, 3, 1, 3],
+            "Season": [2024, 2024, 2025, 2025, 2026, 2026],
+            "true_shooting_pct_relative": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
+        }
+    ).to_parquet(features_path, index=False)
+    return config_path, artifact_root, aging_path, features_path
 
 
 def _build(tmp_path: Path) -> Path:
-    config_path, artifact_root, aging_path = _artifacts(tmp_path)
+    config_path, artifact_root, aging_path, features_path = _artifacts(tmp_path)
     output_dir = tmp_path / "web"
     build_web_snapshot(
-        config_path, artifact_root, aging_path, output_dir, shards=2
+        config_path, artifact_root, aging_path, output_dir, features_path=features_path, shards=2
     )
     return output_dir
 
@@ -210,7 +219,7 @@ def test_snapshot_exports_every_selectable_model(tmp_path: Path) -> None:
 def test_snapshot_extends_only_normal_rapm_from_the_pinned_current_target_run(
     tmp_path: Path,
 ) -> None:
-    config_path, artifact_root, aging_path = _artifacts(tmp_path)
+    config_path, artifact_root, aging_path, features_path = _artifacts(tmp_path)
     current_dir = tmp_path / "current_targets"
     current_dir.mkdir()
     pd.DataFrame(
@@ -255,6 +264,7 @@ def test_snapshot_extends_only_normal_rapm_from_the_pinned_current_target_run(
         aging_path,
         output,
         player_sheets_dir=sheets,
+        features_path=features_path,
         current_normal_rapm_run_path=current_dir,
         shards=2,
     )
@@ -262,7 +272,20 @@ def test_snapshot_extends_only_normal_rapm_from_the_pinned_current_target_run(
     availability = {row["id"]: row["seasons"] for row in catalog["catalog"]["models"]}
     assert catalog["catalog"]["seasons"] == [2024, 2025, 2026]
     assert availability == {"aio": [2024], "rapm": [2024, 2025, 2026], "spm": [2024]}
+    assert catalog["catalog"]["role_seasons"] == {"offense": [2024], "defense": [2024]}
     assert catalog["lineage"]["current_normal_rapm_run_id"] == "current_targets_test"
+    profile_source = catalog["lineage"]["profile_feature_source"]
+    assert profile_source == {
+        "relative_path": "features.parquet",
+        "sha256": hashlib.sha256(features_path.read_bytes()).hexdigest(),
+    }
+    manifest = _read(output, "snapshot-manifest.json")
+    current_artifact = next(
+        row for row in manifest["artifacts"]
+        if row["artifact_id"] == "current_targets_test"
+    )
+    assert current_artifact["season_scope"] == "2024-2026"
+    assert manifest["profile_feature_source"] == profile_source
 
     overlap_leaderboard = _read(output, "leaderboard-2024.json")
     overlap_row = next(row for row in overlap_leaderboard if row["PLAYER_ID"] == 1)
@@ -282,6 +305,7 @@ def test_snapshot_extends_only_normal_rapm_from_the_pinned_current_target_run(
     assert [row["Season"] for row in current_player["annual"]] == [2025, 2026]
     assert all("normal_rapm_net" in row for row in current_player["annual"])
     assert all("aio_net" not in row and "spm_net" not in row for row in current_player["annual"])
+    assert [row["Season"] for row in current_player["profiles"]] == [2025, 2026]
 
     targets = pd.read_parquet(current_dir / "targets.parquet")
     targets.loc[
@@ -350,3 +374,5 @@ def test_snapshot_writes_a_portable_release_manifest(tmp_path: Path) -> None:
     assert manifest["schema_version"] == "nba_impact_release_v1"
     assert len(manifest["row_set_sha256"]) == 64
     assert all(not row["relative_path"].startswith("/") for row in manifest["artifacts"])
+    assert manifest["profile_feature_source"]["relative_path"] == "features.parquet"
+    assert len(manifest["profile_feature_source"]["sha256"]) == 64

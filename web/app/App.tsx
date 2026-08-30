@@ -1,6 +1,14 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FormEvent,
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Catalog,
   Component,
@@ -27,12 +35,25 @@ import {
   loadSeason,
 } from "./lib/data";
 import { HomeView } from "./views/HomeView";
-import { PlayerView } from "./views/PlayerView";
-import { RatingsView } from "./views/RatingsView";
-import { ResearchView } from "./views/ResearchView";
-import { RolesView } from "./views/RolesView";
-import { RapmLabView } from "./views/RapmLabView";
-import { SpmLabView } from "./views/SpmLabView";
+
+const PlayerView = lazy(() =>
+  import("./views/PlayerView").then((module) => ({ default: module.PlayerView })),
+);
+const RatingsView = lazy(() =>
+  import("./views/RatingsView").then((module) => ({ default: module.RatingsView })),
+);
+const ResearchView = lazy(() =>
+  import("./views/ResearchView").then((module) => ({ default: module.ResearchView })),
+);
+const RolesView = lazy(() =>
+  import("./views/RolesView").then((module) => ({ default: module.RolesView })),
+);
+const RapmLabView = lazy(() =>
+  import("./views/RapmLabView").then((module) => ({ default: module.RapmLabView })),
+);
+const SpmLabView = lazy(() =>
+  import("./views/SpmLabView").then((module) => ({ default: module.SpmLabView })),
+);
 
 const ALL_TABS = [
   { id: "home", label: "Overview" },
@@ -135,23 +156,28 @@ export function App() {
 
   useEffect(() => {
     let live = true;
-    Promise.all([loadCatalog(), loadIndex()])
-      .then(([nextCatalog, nextIndex]) => {
+    loadCatalog()
+      .then((nextCatalog) => {
         if (!live) return;
         // Open on the most recent complete rating season. AIO/SPM remain
         // available as historical model selections where their validated
         // public artifacts exist.
         const latest = Math.max(...nextCatalog.catalog.seasons);
         setCatalog(nextCatalog);
-        setIndex(nextIndex);
         setSeason(latest);
         setPlayerSeason(latest);
-        setBusy(false);
       })
       .catch(() => {
         if (!live) return;
         setError("Snapshot unavailable.");
         setBusy(false);
+      });
+    loadIndex()
+      .then((nextIndex) => {
+        if (live) setIndex(nextIndex);
+      })
+      .catch(() => {
+        if (live) setError("Player search unavailable.");
       });
     return () => {
       live = false;
@@ -484,7 +510,7 @@ export function App() {
         {!catalog ? (
           <div className="empty">{error || "Loading snapshot…"}</div>
         ) : (
-          <>
+          <Suspense fallback={<div className="empty">Loading view…</div>}>
             {tab === "home" && (
               <HomeView
                 rows={rows}
@@ -544,7 +570,7 @@ export function App() {
             )}
             {tab === "spm-lab" && <SpmLabView lab={spmLab} />}
             {tab === "research" && <ResearchView catalog={catalog} />}
-          </>
+          </Suspense>
         )}
       </main>
 

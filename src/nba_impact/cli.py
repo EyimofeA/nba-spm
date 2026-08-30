@@ -4480,26 +4480,20 @@ def build_parser() -> argparse.ArgumentParser:
     web_snapshot.add_argument(
         "--walk-forward-run",
         type=Path,
-        default=ARTIFACT_ROOT
-        / "models"
-        / "annual_spm_priors"
-        / "annual_spm_priors_v1_1107680642",
+        default=None,
+        help="Optional pinned walk-forward artifact. Omitted when unavailable.",
     )
     web_snapshot.add_argument(
         "--walk-backward-run",
         type=Path,
-        default=ARTIFACT_ROOT
-        / "models"
-        / "aging_balanced_validation"
-        / "aging_balanced_validation_v1_ec5122d5a3",
+        default=None,
+        help="Optional pinned walk-backward artifact. Omitted when unavailable.",
     )
     web_snapshot.add_argument(
         "--aging-projection-run",
         type=Path,
-        default=ARTIFACT_ROOT
-        / "models"
-        / "aging_projection"
-        / "aging_projection_v1_6a288b493e",
+        default=None,
+        help="Optional complete aging-projection artifact. Omitted from the public snapshot by default.",
     )
     web_snapshot.add_argument(
         "--current-normal-rapm-run",

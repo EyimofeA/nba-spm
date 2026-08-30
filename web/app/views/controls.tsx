@@ -7,6 +7,7 @@ import {
   ModelId,
   RatingRow,
   availableModels,
+  resolveModel,
 } from "../lib/data";
 
 /** Model choice, with any model the snapshot cannot show disabled rather than hidden. */
@@ -20,11 +21,12 @@ export function ModelField({
   onChange: (id: ModelId) => void;
 }) {
   const models = availableModels(rows);
+  const active = resolveModel(rows, value);
   return (
     <label className="field">
       <span>Model</span>
       <select
-        value={value}
+        value={active.id}
         onChange={(event) => onChange(event.target.value as ModelId)}
       >
         {models.map((item) => (
