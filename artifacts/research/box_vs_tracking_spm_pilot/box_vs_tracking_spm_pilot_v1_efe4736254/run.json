@@ -1,0 +1,302 @@
+{
+  "config": {
+    "alpha_grid": [
+      10.0,
+      30.0,
+      100.0,
+      300.0,
+      1000.0,
+      3000.0
+    ],
+    "bootstrap": {
+      "draws": 5000,
+      "seed": 20260830,
+      "unit": "whole game"
+    },
+    "candidate_features": {
+      "box_spm": {
+        "defense": [
+          "PTS_p100",
+          "AST_p100",
+          "TOV_p100",
+          "STL_p100",
+          "BLK_p100",
+          "OREB_p100",
+          "DREB_p100",
+          "PF_p100",
+          "PFD_p100",
+          "FTA_p100",
+          "FTM_p100",
+          "FG2A_p100",
+          "FG2M_p100",
+          "FG3A_p100",
+          "FG3M_p100"
+        ],
+        "offense": [
+          "PTS_p100",
+          "AST_p100",
+          "TOV_p100",
+          "STL_p100",
+          "BLK_p100",
+          "OREB_p100",
+          "DREB_p100",
+          "PF_p100",
+          "PFD_p100",
+          "FTA_p100",
+          "FTM_p100",
+          "FG2A_p100",
+          "FG2M_p100",
+          "FG3A_p100",
+          "FG3M_p100"
+        ]
+      },
+      "tracking_spm": {
+        "defense": [
+          "rebound_contests_p100",
+          "rebound_chances_p100",
+          "dreb_contests_p100",
+          "dreb_chances_p100",
+          "recovered_blocks_p100",
+          "dfg_attempts_p100",
+          "dfg_diff_pct_eb",
+          "rim_dfga_p100",
+          "rim_diff_pct_eb",
+          "rim_points_saved_p100",
+          "deflections_p100",
+          "charges_drawn_p100",
+          "contested_2pt_p100",
+          "contested_3pt_p100",
+          "def_loose_balls_recovered_p100",
+          "matchup_opponent_adjusted_points_saved_p100_eb",
+          "matchup_fga_suppressed_vs_scorer_p100_eb",
+          "matchup_shotmaking_points_saved_vs_scorer_p100_eb",
+          "matchup_three_pa_suppressed_vs_scorer_p100_eb",
+          "matchup_turnovers_forced_vs_scorer_p100_eb",
+          "matchup_assists_suppressed_vs_scorer_p100_eb",
+          "matchup_shooting_fouls_prevented_vs_scorer_p100_eb",
+          "matchup_blocks_p100",
+          "has_hustle_tracking",
+          "has_matchup_tracking",
+          "has_dfg_tracking",
+          "has_rim_defense_tracking"
+        ],
+        "offense": [
+          "drive_turnovers_p100",
+          "catch_shoot_fga_p100",
+          "pull_up_fga_p100",
+          "at_rim_fga_p100",
+          "short_mid_fga_p100",
+          "long_mid_fga_p100",
+          "corner3_fga_p100",
+          "arc3_fga_p100",
+          "open_fga_p100",
+          "wide_open_fga_p100",
+          "tight_fga_p100",
+          "very_tight_fga_p100",
+          "live_ball_turnovers_p100",
+          "bad_pass_turnovers_p100",
+          "lost_ball_turnovers_p100",
+          "travels_p100",
+          "offensive_fouls_p100",
+          "shooting_fouls_drawn_p100",
+          "at_rim_accuracy_eb",
+          "short_mid_accuracy_eb",
+          "long_mid_accuracy_eb",
+          "corner3_accuracy_eb",
+          "arc3_accuracy_eb",
+          "catch_shoot_accuracy_eb",
+          "catch_shoot_3_accuracy_eb",
+          "pull_up_accuracy_eb",
+          "pull_up_3_accuracy_eb",
+          "open_accuracy_eb",
+          "open_3_accuracy_eb",
+          "wide_open_accuracy_eb",
+          "wide_open_3_accuracy_eb",
+          "tight_accuracy_eb",
+          "tight_3_accuracy_eb",
+          "very_tight_accuracy_eb",
+          "very_tight_3_accuracy_eb",
+          "at_rim_frequency_eb",
+          "short_mid_frequency_eb",
+          "long_mid_frequency_eb",
+          "corner3_frequency_eb",
+          "arc3_frequency_eb",
+          "drive_points_per_drive_eb",
+          "drive_assists_per_drive_eb",
+          "drive_turnovers_per_drive_eb",
+          "drive_fta_per_drive_eb",
+          "passes_per_touch_eb",
+          "potential_assists_per_touch_eb",
+          "paint_points_per_touch_eb",
+          "post_points_per_touch_eb",
+          "elbow_points_per_touch_eb",
+          "live_ball_turnover_share_eb",
+          "bad_pass_turnover_share_eb",
+          "lost_ball_turnover_share_eb",
+          "shot_quality_average_relative"
+        ]
+      }
+    },
+    "experiment_id": "box_vs_tracking_spm_pilot_v1",
+    "rating_season": 2025,
+    "sources": {
+      "contract": {
+        "path": "research/experiments/box_vs_tracking_spm_pilot_v1.yml",
+        "sha256": "f41d06ed36f0d93346255745b28a2a78aa2b6cd94cad1cf67a38db4f7f6b0563"
+      },
+      "feature_manifest": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_4ffd1e34df/run.json",
+        "sha256": "8284b9115125486ff48ec5b26f422f4cb5d1505d5ef1b8eb3e9b3482fe880c33"
+      },
+      "features": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_4ffd1e34df/five_year_features.parquet",
+        "sha256": "980537e027210eceb210367c3f1bbf91fbb10f34c53b2078852657a431dcdd28"
+      },
+      "matrix_2024": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2024/manifest.json",
+        "sha256": "fca774fbfa755851d5325eae7ab1c6626ae0108d193d029bfeae537f6edde83d"
+      },
+      "matrix_2025": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2025/manifest.json",
+        "sha256": "0fc7d3316833f2984ae365fe492519128e120808061068190484fc614c94de10"
+      },
+      "possessions_2020": {
+        "path": "rapm/data/possession_cache/matchups_2020.parquet",
+        "sha256": "b177865501897984437fcc8c08ee229ff462e0319e032f7642b5077670d375c6"
+      },
+      "possessions_2021": {
+        "path": "rapm/data/possession_cache/matchups_2021.parquet",
+        "sha256": "0bfd107dad6959b1a45e4c7762fcde2d901e364d64b632299deeb22092749a6a"
+      },
+      "possessions_2022": {
+        "path": "rapm/data/possession_cache/matchups_2022.parquet",
+        "sha256": "b04388818590ad1bff4fb6b9ca9d27dd4ac9dc6dd744c34160153206bcb32248"
+      },
+      "possessions_2023": {
+        "path": "rapm/data/possession_cache/matchups_2023.parquet",
+        "sha256": "15f710ba2964bcbc80ca4753038b8c22fb18188bafd0cb62c886ac39840faa15"
+      },
+      "runner": {
+        "path": "research/run_box_vs_tracking_spm_pilot.py",
+        "sha256": "223c971d6d93fc761cbc863db498afbe9207cf76556a5884f2cd81fac9e5a74a"
+      },
+      "targets": {
+        "path": "artifacts/models/five_year_target_spm/five_year_target_spm_v1_65550acb79/five_year_targets.parquet",
+        "sha256": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+      }
+    },
+    "test_season": 2026
+  },
+  "contract": {
+    "aio": {
+      "center_scale": 1,
+      "lambda_defense": 3000,
+      "lambda_home": 300,
+      "lambda_offense": 3000,
+      "likelihood_seasons": 1
+    },
+    "created_at": "2026-08-30",
+    "decision": "Report this as a one-fold reused diagnostic. Do not promote, tune the feature definition from the result, or consume Season 2027.",
+    "estimand_id": "current_strength_oracle_lineup_diagnostic",
+    "evaluation": {
+      "games": "identical 2026 games with observed future lineups as exposure",
+      "primary": "whole-game final-margin MSE",
+      "reported_scale": "RMSE",
+      "secondary": [
+        "margin correlation",
+        "calibration intercept",
+        "calibration slope"
+      ],
+      "uncertainty": "5000 paired whole-game bootstrap draws"
+    },
+    "experiment_id": "box_vs_tracking_spm_pilot_v1",
+    "information_cutoff": {
+      "rating_season": 2025,
+      "season_2027": "forbidden",
+      "test_season": 2026,
+      "training_rule": "five-year window end strictly before 2025"
+    },
+    "models": {
+      "alpha_grid": [
+        10,
+        30,
+        100,
+        300,
+        1000,
+        3000
+      ],
+      "alpha_selection": "leave one earlier window out inside the training period",
+      "box_spm": "15 traditional per-100 box rates on offense and defense",
+      "learner": "separate ridge regressions for offense and defense",
+      "sample_weight": "square root of the smaller offensive or defensive exposure",
+      "target": "five-year zero-prior terminal-lineup RAPM over the same window",
+      "tracking_spm": "non-Box15 shot-location, drive, touch, passing, contest, rim-defense, hustle, and matchup inputs; same-season empirical-Bayes forms are used when the completed feature contract provides them"
+    },
+    "question": "Does a tracking-only five-year SPM prior outperform the Box15 SPM prior before or after the same one-season RAPM update?",
+    "schema_version": "experiment_preregistration_v1",
+    "status": "frozen_reused_pilot"
+  },
+  "created_at": "2026-08-30T00:13:55.666946+00:00",
+  "files": {
+    "alpha_selection.parquet": {
+      "path": "alpha_selection.parquet",
+      "rows": 4,
+      "sha256": "814a7ff3c524ddfdba89b0a24544b300068ad171b157833f9f0fce55abcf8448"
+    },
+    "bootstrap_model_intervals.parquet": {
+      "path": "bootstrap_model_intervals.parquet",
+      "rows": 5,
+      "sha256": "d01f6b109eb5493c110ed99abb2294f1459f130d9811e54bd70e1816c6fcd2d7"
+    },
+    "candidate_features.parquet": {
+      "path": "candidate_features.parquet",
+      "rows": 110,
+      "sha256": "fc7077d8847a6cedda7ad1931f10e98c1022d0ef8e2ee37e7df26d5a57365e67"
+    },
+    "game_metrics.parquet": {
+      "path": "game_metrics.parquet",
+      "rows": 5,
+      "sha256": "8460e205c32dcef4e857c45f364ed6ccbc7b6f30d7cd52c94ac79cc9f2c52c1f"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 6140,
+      "sha256": "4a9890b18517b5065238d6a88e4e557eb5bc5a7c097813cbead46941ca8dacde"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 2,
+      "sha256": "baeda1a2a6d60b67bd47502405632dd66f793dfbd9fd69f4e78e261c197d3d3b"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 10,
+      "sha256": "39a6f461229d7a8ca09c3358e3fd44677515176511ba3bdd9110b7aff433ede7"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "rows": 2,
+      "sha256": "becf9a2470d8fd25cabe3b09bb006a10c973769e9bba1963dfad6ca36996b9f9"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "rows": 1982,
+      "sha256": "a9c153fc1302380f0090fcd2cc1c08b345d8efea8efe9fab2d19801b7ae07fbf"
+    },
+    "target_metrics.parquet": {
+      "path": "target_metrics.parquet",
+      "rows": 6,
+      "sha256": "3b7d3fb211a0ccf05fd306e587573400665414ef3be8c8ee018942aa682d51cc"
+    }
+  },
+  "forbidden_interpretation": "One reused oracle-lineup fold cannot promote either SPM.",
+  "quality": {
+    "identical_games": true,
+    "input_missing_values": 0,
+    "input_nonfinite_values": 0,
+    "panel_rows": 8620,
+    "season_2027_loaded": false
+  },
+  "run_id": "box_vs_tracking_spm_pilot_v1_efe4736254",
+  "status": "reused_2026_diagnostic"
+}

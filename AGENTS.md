@@ -232,6 +232,12 @@ Canonical code: `src/nba_impact/models/five_year_target_spm.py`.
   folds, but the one-season RAPM update weakens the difference. Raw minus
   stabilized AIO MSE is `+0.1338`, with interval `[-0.2335, +0.5050]`. Retain
   same-season stabilization in SPM research. Do not claim an AIO gain.
+- One-fold pilot `box_vs_tracking_spm_pilot_v1_efe4736254` compares Box15 with
+  a non-Box15 tracking-only ridge on the corrected feature panel. Tracking lowers
+  reused 2026 RMSE by `.423` before the RAPM update and `.095` after it. The
+  paired AIO MSE interval favors tracking, but the test uses one inspected season
+  and observed future lineups. Treat it as a reason to run the frozen historical
+  comparison, not as promotion evidence.
 
 Canonical code: `src/nba_impact/models/five_year_spm_feature_research.py`.
 

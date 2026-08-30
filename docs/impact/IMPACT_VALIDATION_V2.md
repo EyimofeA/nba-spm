@@ -91,3 +91,17 @@ before subtraction and aggregates repeated observations with defended-shot
 weights. Run `spm_input_distribution_audit_v1_f54723b16e` reports no blocking
 feature failures. Historical rich-SPM results that consumed the earlier inputs
 remain provisional until refit. Box15 does not consume either field.
+
+## Implementation status
+
+The contract is frozen, but the full engine is not complete. The repository
+already implements the current-strength oracle-lineup diagnostic with
+chronological season folds, identical games, equal-season MSE, calibration,
+and paired whole-game resampling. It does not yet implement weekly historical
+cutoffs, projected pregame minutes, or same-season blocked-game reconstruction
+for every tracking feature.
+
+The BoxSPM versus TrackingSPM pilot uses one reused oracle-lineup fold. It
+trains on five-year windows ending before 2025, forms a 2025 statistical prior,
+applies the fixed 2025 one-season RAPM update, and scores identical 2026 games.
+This pilot diagnoses the feature banks. It cannot promote either model.

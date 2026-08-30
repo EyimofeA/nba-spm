@@ -1,0 +1,45 @@
+schema_version: experiment_preregistration_v1
+experiment_id: box_vs_tracking_spm_pilot_v1
+status: frozen_reused_pilot
+created_at: 2026-08-30
+estimand_id: current_strength_oracle_lineup_diagnostic
+
+question: >-
+  Does a tracking-only five-year SPM prior outperform the Box15 SPM prior
+  before or after the same one-season RAPM update?
+
+information_cutoff:
+  rating_season: 2025
+  test_season: 2026
+  training_rule: five-year window end strictly before 2025
+  season_2027: forbidden
+
+models:
+  box_spm: 15 traditional per-100 box rates on offense and defense
+  tracking_spm: >-
+    non-Box15 shot-location, drive, touch, passing, contest, rim-defense,
+    hustle, and matchup inputs; same-season empirical-Bayes forms are used
+    when the completed feature contract provides them
+  learner: separate ridge regressions for offense and defense
+  alpha_grid: [10, 30, 100, 300, 1000, 3000]
+  alpha_selection: leave one earlier window out inside the training period
+  target: five-year zero-prior terminal-lineup RAPM over the same window
+  sample_weight: square root of the smaller offensive or defensive exposure
+
+aio:
+  likelihood_seasons: 1
+  lambda_offense: 3000
+  lambda_defense: 3000
+  lambda_home: 300
+  center_scale: 1
+
+evaluation:
+  games: identical 2026 games with observed future lineups as exposure
+  primary: whole-game final-margin MSE
+  reported_scale: RMSE
+  secondary: [margin correlation, calibration intercept, calibration slope]
+  uncertainty: 5000 paired whole-game bootstrap draws
+
+decision: >-
+  Report this as a one-fold reused diagnostic. Do not promote, tune the feature
+  definition from the result, or consume Season 2027.
