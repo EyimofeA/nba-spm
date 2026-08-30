@@ -108,6 +108,11 @@ dead ends. Updated 2026-08-29. See `docs/README.md` for the document index,
   four of five future-game folds. Its AIO gain remains uncertain: raw minus
   stabilized MSE is `+0.1338`, with interval `[-0.2335, +0.5050]`. Keep it for
   SPM research, but treat its AIO effect as null.
+- Corrected-input pilot `box_vs_tracking_spm_pilot_v1_efe4736254` trains one
+  non-Box15 tracking-only ridge against Box15. Tracking wins the reused 2026
+  oracle-lineup fold before and after the same RAPM update. The AIO RMSE gain is
+  `.095`, and the paired MSE interval favors tracking. This is one inspected
+  season, not promotion evidence.
 - Final cumulative run `final_box_feature_ladder_v1_8bb26f12e7` compares eight
   frozen feature additions with Box15 and the complete ridge ceiling. No added
   family lowers equal-season next-season game-margin MSE after the identical
@@ -222,6 +227,11 @@ Slow-network policy: each immutable file resumes from `.partial`, retries up to
    freeze factor groups with the selected eight matchup-defense fields for the
    next challenger; use direct offense and defense RAPM targets and no role
    interactions.
+   Before another rich-SPM fit, audit stabilization one metric family at a
+   time. Compare raw and stabilized forms on identical rows. Select the
+   stabilization method from earlier seasons only. Do not stabilize counts or
+   high-exposure rates by default, and do not replace the test with a player
+   exposure filter.
 2. **Role research:** evaluate role-relative skill before any role-fit
    counterfactual. Require support/overlap checks for counterfactual roles.
 3. **Dynamic impact:** retain the 2014--26 state-space filter as the leading
