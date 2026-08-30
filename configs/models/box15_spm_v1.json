@@ -1,0 +1,61 @@
+{
+  "contract_version": "box15_spm_v1",
+  "status": "frozen_research_prior_not_public",
+  "estimand": "rolling_five_season_normal_rapm_offense_defense_and_net_points_per_100",
+  "grain": "player-five-season-window",
+  "features": [
+    "PTS_p100",
+    "AST_p100",
+    "TOV_p100",
+    "STL_p100",
+    "BLK_p100",
+    "OREB_p100",
+    "DREB_p100",
+    "PF_p100",
+    "PFD_p100",
+    "FTA_p100",
+    "FTM_p100",
+    "FG2A_p100",
+    "FG2M_p100",
+    "FG3A_p100",
+    "FG3M_p100"
+  ],
+  "feature_window_seasons": 5,
+  "target_window_seasons": 5,
+  "training_rule": "rating season t trains only on five-year windows ending before t",
+  "learners": {
+    "offense": "ridge",
+    "defense": "ridge",
+    "net": "offense plus defense"
+  },
+  "alpha_grid": [10.0, 30.0, 100.0, 300.0, 1000.0, 3000.0],
+  "sample_weight": "square root of the smaller five-year offensive or defensive possession count",
+  "forbidden_features": [
+    "minutes",
+    "games",
+    "age",
+    "height",
+    "position",
+    "on/off",
+    "plus-minus",
+    "external ratings"
+  ],
+  "aio": {
+    "prior": "Box15 offense and defense predictions in RAPM coefficient units",
+    "likelihood": "the rated season's terminal-lineup regular-season possessions",
+    "lambda_off": 3000.0,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "center_scale": 1.0
+  },
+  "selection_evidence": {
+    "feature_ladder_run_id": "final_box_feature_ladder_v1_8bb26f12e7",
+    "historical_ratings_run_id": "historical_box15_ratings_v1_d65c267829",
+    "strict_blocked_game_run_id": "impact_validation_v2_gate_a_090cb2d323"
+  },
+  "decision": {
+    "research_prior_selected": true,
+    "public_replacement": false,
+    "reason": "No richer frozen feature candidate lowers downstream game-margin MSE after the same RAPM update. The strict blocked-game result also favors Box15, but its score-conserved subset is not representative of a full season."
+  }
+}

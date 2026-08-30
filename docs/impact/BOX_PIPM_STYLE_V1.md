@@ -2,8 +2,10 @@
 
 ## Status
 
-**Research baseline.** This is a transparent box-score comparator. It is not a
-replication of Jacob Goldstein's full PIPM, and it is not an SPM or AIO input.
+**Historical first-run baseline.** This is a transparent box-score comparator,
+not a replication of Jacob Goldstein's full PIPM. Later five-year tests selected
+the same 15 inputs as the frozen research SPM prior. They do not replace the
+public annual SPM or AIO.
 
 ## Why the name is qualified
 
@@ -48,8 +50,10 @@ It is weaker than the current SPM. That is useful: it quantifies the value of
 the SPM's shot, tracking, playtype, and matchup feature families beyond a
 traditional-box baseline.
 
-## Next decision
+## Later decision
 
-Do not blend this into AIO. A full PIPM/LEBRON-style challenger requires a
-separate, audited luck-adjustment contract. That work must define its inputs,
-event-time availability, and relation to the independent RAPM target first.
+Run `final_box_feature_ladder_v1_8bb26f12e7` selected the 15-feature Box model
+as the research prior after richer candidates failed to lower downstream game
+margin error following the same RAPM update. The active contract is
+`configs/models/box15_spm_v1.json`. This does not turn the model into a full
+PIPM reproduction; no luck-adjusted on/off component enters the prior.

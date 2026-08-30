@@ -17,7 +17,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 BOX_SOURCE = ROOT / "artifacts/research/historical_box15_extension/historical_box15_extension_v1_08ff4c34ff/five_year_box15_features.parquet"
-RICH_SOURCE = ROOT / "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_4ffd1e34df/five_year_features.parquet"
+RICH_SOURCE = ROOT / "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_40e72f25d2/five_year_features.parquet"
 WINDOW_END = 2026
 MINIMUM_DISPLAY_EXPOSURE = 500
 

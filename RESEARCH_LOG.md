@@ -4755,6 +4755,337 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Keep Box15 as the research AIO prior. End the current feature
   search. Reserve Season 2027 for untouched confirmation. Full report:
   `docs/impact/FINAL_BOX_FEATURE_LADDER_V1.md`.
+
+## 2026-08-29 - Box15 versus full-bank factor failure audit
+
+- **Question:** Which of the six factor RAPM heads explain the difference
+  between the selected Box15 prior and the full SPM feature bank?
+- **Design:** Hold the ridge learner, 2024 development season, 2025 penalty
+  selection, 2026 reused diagnostic, 1,000-possession eligibility rule, and
+  factor-exposure weights fixed. Compare 15 box features with 127 offense and
+  60 available defense features. Season 2027 remains untouched.
+- **Result:** Box15 has lower 2026 RMSE on five of six heads. It decisively
+  beats the full bank for shooting offense and offensive-rebound defense. The
+  full bank only improves turnover offense, with an interval that crosses
+  zero. Residual correlations range from `.932` to `.982`.
+- **Failure:** Both candidates explain about 12% of shooting-defense and
+  defensive offensive-rebound variation. Full-bank factor reconstruction also
+  trails Box15 on 2026 net RAPM, `1.764` versus `1.751` RMSE.
+- **Decision:** Do not fit another broad residual model from the same feature
+  bank. Keep Box15. Require new assignment-level defense or box-out evidence
+  before reopening feature expansion. Full report:
+  `docs/impact/SPM_FACTOR_FAILURE_AUDIT_V1.md`.
+# 2026-08-29 — Height and partial CARUSO defense feature audit
+
+- Tested Box15, Box15 plus height, Box15 plus an observable CARUSO-style
+  defense pack, and Box15 plus both against 2026 annual factor RAPM.
+- Held the ridge learner, 387-player diagnostic population, targets, weights,
+  and 2024/2025/2026 chronological split fixed.
+- Height changed defensive factor R² by `+.0025` for shooting, `-.0044` for
+  turnovers, and `+.0120` for offensive rebounding.
+- The partial CARUSO pack changed R² by `-.0157`, `+.0167`, and `-.0067`.
+- Every paired 5,000-draw player-bootstrap MSE interval crossed zero.
+- The source lacks CARUSO's true on/off rim-attempt deterrence component. This
+  audit does not reproduce CARUSO.
+- Decision: retain Box15. Treat height as a future pooling or interaction
+  variable. Reopen the defense pack only with new assignment, deterrence, or
+  lineup rebound information.
+- Artifact: `caruso_factor_feature_audit_v1_c6942f1fd8`.
+## 2026-08-29 — Analytic precision label weights fail decisively
+
+**Question:** Does a bounded inverse-variance label weight improve the frozen
+Box15 five-year SPM prior and its one-season RAPM update?
+
+**Method:** Derived homoskedastic analytic ridge covariance from the stored
+2018--26 five-year RAPM sufficient statistics. Recentered offense and defense
+variance into published coordinates. Compared the existing square-root
+possession weight with side-specific inverse-variance weights clipped at the
+5th and 95th training-fold percentiles. Both arms used Box15, identical
+chronological rows, the same ridge alpha grid, the same one-season
+3000/3000/300 RAPM update, identical 2023--26 games, and 5,000 paired
+whole-game bootstrap draws. Season 2027 was not loaded.
+
+**Result:** `spm_precision_label_weight_v1_d24fdd8304` is a decisive null. The
+precision-weighted AIO has equal-season mean RMSE 14.6485 versus 14.3904 for
+the square-root exposure control. Its MSE difference is +7.6528 with paired
+95% interval [+6.0569, +9.2055]. The standalone precision prior has negative
+mean game-margin correlation. Analytic ridge variance increases with exposure
+(correlation about +0.26) because the penalty makes low-information
+coefficients appear mechanically stable near zero. Inverting that diagnostic
+therefore upweights the most heavily shrunk rows instead of the best-measured
+labels.
+
+**Decision:** Reject naive inverse analytic-ridge variance as an SPM label
+weight. Do not spend time rebuilding exact game-cluster covariance until a
+bias-aware label-error contract separates shrinkage stability from target
+accuracy. Keep square-root possession weights as the frozen control.
+## 2026-08-29 — Residual Box15 isolates a weak defense-only signal
+
+**Question:** Do the completed non-Box15 features add transferable signal after
+Box15 rather than replacing it?
+
+**Method:** `residual_box15_spm_v1_427c5f2c25` trained side-specific ridge
+models on cross-fitted `five-year RAPM - Box15` labels. The residual models used
+the completed side features excluding Box15. All feature, label, and residual
+fits used earlier windows only. A first pass selected residual scale on RAPM
+label fit. A frozen follow-up,
+`residual_box15_downstream_gamma_v1_bed85c7656`, selected separate offense and
+defense scales from strictly earlier next-season game folds. The AIO update and
+5,000 paired whole-game bootstrap were unchanged. Season 2027 was not loaded.
+
+**Result:** Selecting residual scale on label fit chose 1.0 on both sides and
+worsened AIO MSE by +1.4429, paired 95% interval [+0.3541, +2.5368]. Earlier-game
+selection chose offense scale 0.0 in every fold and defense scale 0.5--1.0. The
+tuned challenger improved equal-season MSE by -0.4476, but its paired 95%
+interval [-1.0066, +0.1336] crosses zero. Mean RMSE moved from 14.3904 to
+14.3757 and mean correlation from 0.3641 to 0.3692.
+
+**Decision:** Keep Box15 as the frozen prior. Retain a defense-only residual as
+a research clue. Do not add the offense residual and do not promote the tuned
+defense residual without untouched confirmation.
+## 2026-08-29 — Feature registry and falsification controls pass
+
+**Question:** Is the completed SPM feature path auditable, and do its apparent
+RAPM-label gains transfer downstream rather than reflect pipeline leakage?
+
+**Method:** `spm_feature_registry_controls_v1_2a1aafcff0` versions all 200
+side-feature entries with units, source family, completion policy, observed
+coverage, ladder entry point, and publication status. Twenty deterministic
+Gaussian negative controls were added one at a time to Box15 while holding each
+fold's selected ridge alpha fixed. A label-sharing audit compared candidate
+gains on five-year RAPM labels with the same candidates' next-season AIO game
+gains. It also selected the best downstream candidate independently in each
+fold. Season 2027 was not loaded.
+
+**Result:** Random noise worsened held-out target MSE on average by +0.00049 on
+offense and +0.00034 on defense. Four of 20 offense seeds and five of 20
+defense seeds produced small chance improvements. Across the eight feature
+ladder candidates, target-RMSE gain versus Box15 has Pearson correlation 0.234
+and Spearman correlation 0.071 with downstream game-MSE gain. Five different
+AIO candidates win the five reused folds.
+
+**Decision:** The basic feature-fit path passes its negative control. Treat
+same-window RAPM-label improvement as a diagnostic, not a model-selection
+metric. Keep next-season paired game MSE primary and retain the versioned
+feature registry for future experiments.
+## 2026-08-29 — RAPM publication diagnostics expose a low-exposure interval trap
+
+**Question:** Are five-year RAPM scale, lineup separation, and uncertainty
+metadata ready for public interpretation?
+
+**Method:** `rapm_publication_diagnostics_v1_f0c9c3f65b` joined all nine
+fixed-window analytic interval panels to the stored five-year design matrices.
+It excluded evaluation-only zero-exposure players, built active-player lineup
+graphs, measured maximum teammate-column cosine and distinct teammates, and
+audited CourtSignal against exact Ryan Davis annual and five-year RAPM rows by
+component, season, and exposure quartile. Existing 1,000-draw bootstrap pilots
+were retained; no RAPM was refit and Season 2027 was not loaded.
+
+**Result:** Every active 2018--26 graph has one connected component. Only John
+Wall and Marcin Gortat in the 2018 window exceed teammate cosine 0.80. Annual
+net correlation with Ryan Davis is 0.967 with slope 1.391; exact five-year net
+correlation is 0.957 with slope 1.350. The slope is exposure-dependent: annual
+net slope falls from about 1.73 in the lowest quartile to 1.30 in the highest;
+five-year net slope falls from about 2.19 to 1.22. Analytic net standard errors
+are smaller for low-exposure players because ridge shrinkage makes the fitted
+coefficient stable near zero.
+
+**Decision:** Do not rescale CourtSignal from one external regression. Publish
+exposure and connectivity metadata. Keep analytic intervals labeled as
+fixed-estimator sampling diagnostics and block true-impact error bars or exact
+rank claims until a bias-aware coverage study passes.
+## 2026-08-29 — Bivariate state space finds a shared impact-evolution factor
+
+**Question:** Does joint offense-defense evolution improve the causal annual
+state-space filter over independent side filters?
+
+**Method:** `bivariate_annual_state_space_v1_c87f6bdbe8` rebuilt annual
+2019--26 homoskedastic ridge observation covariance from existing possession
+and rolling-matrix sufficient statistics. It held the prior selected `phi=0.90`
+and process SD 0.25 fixed. The only selected parameter was process correlation
+over `[-.50, -.25, 0, .25, .50, .75, .90]` using 2022--23 origins. The model
+used a proper one-year state forecast. It compared identical at-least-1,000
+possession-per-side player rows and used 5,000 paired player bootstrap draws
+within target season. Diagnostics used 2024--25 origins. Season 2027 was not
+loaded.
+
+**Result:** Selection chooses process correlation +0.90. Net RMSE improves from
+1.7167 to 1.7022 in selection and from 1.7616 to 1.7422 in diagnostics. Paired
+MSE differences are -0.0497 with interval [-0.0972, -0.0026] and -0.0687 with
+interval [-0.1254, -0.0138]. Analytic offense-defense observation correlation
+is near zero, and observation covariance alone has negligible effect. The gain
+comes from positively correlated evolution shocks. Side-specific offense and
+defense RMSE do not both improve.
+
+**Decision:** Retain the bivariate filter as a research challenger. Interpret
+the boundary correlation as evidence for a shared latent impact factor, not a
+precise covariance estimate. Keep independent annual filters as the production
+reference until untouched Season 2027 confirmation.
+
+## 2026-08-29 — Pooled playoff deviations do not transfer
+
+**Question:** Does a heavily shrunk player-specific playoff deviation improve
+future postseason game margins beyond a regular-season RAPM base?
+
+**Method:** `pooled_playoff_deviation_v1_9f92aa9106` uses complete cached
+terminal-lineup possessions from 2019–23. For each target postseason, it fits a
+regular-season player RAPM using data available before the playoffs. It then
+fits offense and defense deviations to residuals from earlier postseasons. The
+2022 postseason selects a common player-deviation penalty from
+`[3000, 10000, 30000, 100000, 300000]`. The 2023 postseason is reused
+diagnostic evidence. Baseline and challenger score identical games. Season
+2027 was not loaded.
+
+**Result:** Penalty 10,000 improves 2022 selection margin RMSE from 30.0370 to
+29.8504. It then worsens 2023 diagnostic RMSE from 26.9026 to 27.0842 and
+correlation from 0.2185 to 0.2172. Challenger-minus-baseline game MSE is +9.80
+with a 5,000-draw paired interval of [-27.88, 46.32].
+
+**Decision:** Classify the pooled playoff deviation as a research null. Use the
+regular-season rating as the playoff reference. Do not publish a standalone
+playoff or clutch leaderboard from this sample.
+
+## 2026-08-29 — Frontier program closed and local release bundle validated
+
+**Question:** Which later factor, synergy, role, playoff, and credit expansions
+remain scientifically open after the measurement-core experiments?
+
+**Audit:** Reconciled the completed factor reconstruction, conserved points
+channels, low-rank bilinear challenger, residual and standalone combination
+models, role-context research, WP-RAPM, the new playoff pilot, and current
+source coverage. Built and validated local release
+`nba_impact_local_v2_92a7d6f221b2`. Its row-set hash is
+`f552fc548105fe47a938ff1cd42ab748d705ed2691c1529a07d6ac8295c06ecd`.
+The bundle contains derived ratings, schemas, model cards, checksums, and a
+synthetic fixture. It excludes raw NBA rows.
+
+**Decision:** Close factor reconstruction, exact combination RAPM, role
+experts, pooled playoff deviations, and leverage credit as completed research
+lanes with no production promotion. Keep the bivariate state model as the only
+new challenger. Block shot-level defender attribution and true on/off rim
+deterrence until a valid source exists. Preserve Season 2027 for one frozen
+confirmation of RAPM, Box15 AIO, and independent versus bivariate latent state.
+Full decisions are in
+`docs/impact/FRONTIER_RESEARCH_CLOSEOUT_2026-08-29.md`.
+
+## 2026-08-29 - Four-factor Box15 residual test remains null
+
+- Built 2014--26 annual and five-year shooting-TS, shot-volume, turnover, and
+  opponent-OREB factor targets from the same Gabriel event archive.
+- Fixed the specialist contract so stabilized zTS and SelfORB-adjusted TS enter
+  shooting offense instead of the rebound block.
+- Every specialist improves its factor R-squared. The combined four-factor AIO
+  lowers RMSE by only `.006` points per game versus Box15. Its paired MSE
+  interval crosses zero.
+- Shot volume and OREB each lower RMSE by `.013` to `.014`, below the frozen
+  `.05` promotion threshold. Turnover improves RMSE by `.001`.
+- Decision: keep Box15 as the research AIO prior. Retain the factor models as
+  research skill metrics. Season 2027 remains untouched.
+- Artifacts: `historical_factor_targets_v2_6cd7e959eb` and
+  `historical_factor_residual_tournament_v2_c06bdebcd5`.
+
+## 2026-08-29 — Possession context improves shot quality; shooting threat does not improve Box15
+
+**Question:** Can public event context and tracking splits improve expected shot
+quality and the frozen Box15 AIO prior?
+
+**Method:** Restored the pinned 2024–26 event, possession, lineup, and shot
+inputs. A player-neutral logistic model added possession age, transition,
+putback, second-chance, post-turnover, and observable finish labels to the
+existing location model. It trained on 2024, calibrated on 2025, and scored
+2026. A separate 2014–26 shooting-threat metric combined same-season
+leave-one-player-out catch/pull-up, defender-distance, and corner/arc rates,
+then applied context-matched empirical-Bayes smoothing. One preregistered
+challenger added that field to Box15 offense. Both AIOs used identical games
+and the same one-season RAPM update. Season 2027 was not loaded.
+
+**Result:** Possession context lowered 2026 Brier loss from 0.230752 to 0.228662
+and log loss from 0.654134 to 0.648918. Whole-game 5,000-draw intervals for the
+loss differences were [-0.002325, -0.001831] and [-0.005671, -0.004401]. The
+Box15 plus shooting-threat AIO worsened equal-season MSE from 207.421 to
+208.088. Box15 minus the challenger was -0.667 with interval
+[-1.101, -0.226].
+
+**Decision:** Keep the richer expected-shot model and lineup-spacing field as
+research skill outputs. Reject shooting threat as a Box15/AIO input. Do not
+call the transparent metric LASER or the lineup average BOOST. The exact
+methods and source boundary are in `docs/impact/SHOT_MODEL_SUITE_V1.md`.
+
+## 2026-08-29 — CourtSignal Gravity beats public LASER but fails as an impact input
+
+**Question:** Can a time-decayed shooting-threat metric beat published LASER
+on common next-season outcomes, then improve Box15 or the completed full SPM?
+
+**Method:** Run `laser_breaker_v1_75d8ef37c1` selects a half-life and shooting
+prior on 2021–22 after 2014–20 development. It scores 2023–25 origins against
+2024–26 outcomes on 2,784 exact public-LASER rows. Run
+`gravity_spm_challenger_v1_23e07083d6` adds the selected offense-only feature
+to Box15 and the full SPM. It tests each statistical model and its one-season
+RAPM-updated AIO on identical 2022–26 games. Season 2027 remains untouched.
+
+**Result:** Gravity lowers standardized next-season MSE versus LASER for 3P%,
+3PA per 100, contested share, and the equal-weight composite. All four paired
+5,000-draw intervals exclude zero. The impact test reverses the result. Base
+minus plus-Gravity MSE is -0.335 for Box15, -0.072 for full SPM, -0.256 for
+Box15 AIO, and -0.040 for full SPM AIO. All four intervals favor the base.
+
+**Decision:** Publish Gravity only as a descriptive and predictive shooting
+skill. Do not add it to Box15, the full SPM, or either AIO. Keep the existing
+impact candidates frozen for Season 2027. Full methods and limits appear in
+`docs/impact/COURTSIGNAL_GRAVITY_V1.md`.
+
+## 2026-08-29 — Historical factor specialists improve skills but not the AIO enough
+
+**Question:** Do historical shooting-TS and opponent-OREB-prevention targets,
+shot-level defender context, rim deterrence, and rebound-responsibility fields
+improve the frozen Box15 AIO prior?
+
+**Method:** Runs `historical_factor_targets_v1_f4894bf588` and
+`historical_specialist_features_v1_de35da67fb` build annual 2014--26 and matched
+five-year 2018--26 targets and inputs. Tournament
+`historical_factor_residual_tournament_v1_f0b772f6e1` compares Box15, shooting,
+OREB-prevention, and combined priors. Ridge, elastic net, and one boosted tree
+compete inside past-only folds. Every prior receives the same one-season RAPM
+update. Five reused 2022--26 outcomes use identical games and 5,000 whole-game
+bootstrap draws. Season 2027 was not loaded.
+
+**Result:** The specialist raises mean shooting-defense R-squared from `.119`
+to `.419` and OREB-prevention defense R-squared from `.293` to `.585`. The
+OREB AIO lowers RMSE from `14.374` to `14.360`. Box15-minus-OREB MSE is `+0.405`
+with interval `[+0.200, +0.602]`, but the RMSE gain is only `.014`. Shooting
+and combined AIOs are worse. Early-versus-late source AUC is `.975`.
+
+**Decision:** Keep Box15 as the research AIO prior. Keep the OREB challenger as
+a research clue. Publish the shooting and rebound specialists only as skill
+metrics. Preserve Season 2027 for the frozen confirmation. Full methods appear
+in `docs/impact/HISTORICAL_FACTOR_SPECIALISTS_V1.md`.
+
+## 2026-08-29 — Box15 stays fixed and historical coverage expands
+
+**Question:** Do the strongest remaining full-SPM fields improve Box15, and can
+the unchanged prior extend historically without degrading current accuracy?
+
+**Method:** Focused run `box15_top_feature_followup_v1_d9c274ca12` tests
+offense-only, defense-only, and combined additions chosen by a fixed
+chronological permutation rule. Historical build
+`historical_box15_extension_v1_08ff4c34ff` reconstructs zero-prior RAPM from
+1997 and complete five-year targets from 2001. Validation run
+`historical_box15_validation_v1_fa08210f64` compares original and expanded
+training history on identical 2022--26 games. Every AIO uses the same
+single-season `3000 / 3000 / 300` RAPM update. Season 2027 is excluded.
+
+**Result:** Defense-only lowers MSE from `207.421` to `207.355`, but the paired
+interval crosses zero at `[-0.160, +0.317]`. Offense and combined additions are
+worse. Expanded-history AIO RMSE is `14.4019` versus `14.4021` for the original,
+with correlation `0.3632` versus `0.3616`. The independent 2018 rolling-target
+overlap and 2014--18 annual RAPM overlap are exact.
+
+**Decision:** Keep Box15 unchanged. Use the expanded history for research.
+RAPM now covers 1997--2026; complete five-year SPM and AIO cover 2001--2026.
+Label 2001--03 as descriptive backcasts. Keep the 14,570-row site bundle local
+until the web catalog and release contract are updated together. Full details
+appear in `docs/impact/HISTORICAL_BOX15_EXTENSION_V1.md`.
+
 ## 2026-08-30 — One-cutoff walk-forward SPM pilot
 
 **Question:** Does the completed Full SPM or BoxSPM predict later game margins
@@ -4776,3 +5107,90 @@ those players lack a 2024 rating.
 **Decision:** The chronological scorer works. The standalone result favors
 Full SPM in this reused fold. The posterior result remains unresolved. Freeze
 both definitions and park the full validation contract for independent review.
+
+## 2026-08-30 — Current RAPM score-ledger sensitivity is queued
+
+**Question:** Does the 2024--26 terminal-lineup RAPM response contain points
+that do not belong to a normal possession outcome?
+
+**Method:** `research/rapm_lab/run_scorer_owned_current_rapm.py` keeps the
+canonical one-row-per-possession design matrix exactly unchanged. It uses raw
+scoreboard increments only to rebuild the response. It removes technical free
+throws because they do not consume a possession. It also removes nontechnical
+scores that belong to the other team inside a listed possession. A game ledger
+must reconcile official score into retained own-possession, technical,
+cross-owner nontechnical, and unmapped components. Games with source mapping
+gaps are excluded symmetrically from both fits. The fixed `3000 / 3000 / 300`
+comparison trains on 2024--25 and scores identical eligible 2026 games with a
+paired whole-game bootstrap. The canonical loader and public artifacts remain
+unchanged.
+
+**Smoke result:** The 2024 action ledger reconciled all 1,230 regular-season
+final scores. It identified 1,214 technical-FT points, no mapped cross-owner
+nontechnical points, and 633 nontechnical points in three source-coverage-gap
+games. The three coverage-gap games are excluded from both full fits.
+
+**Decision:** The earlier action-run pseudo-possession idea was invalid because
+it changed possession likelihood mass. Do not use it. Treat the replacement as
+a data-integrity sensitivity, not a tuning result or production candidate.
+
+**Full sensitivity result:** The exact-X run retained 3,679 of 3,690 games and
+scored 1,227 identical 2026 games after training on 2024--25. The canonical
+response reached RMSE `15.4609` and correlation `.3323` against the adjusted
+nontechnical margin. The corrected response reached RMSE `15.4706` and
+correlation `.3309`. Baseline-minus-corrected MSE was `-0.300`; its 5,000-draw
+whole-game interval was `[-0.580, -0.009]`.
+
+**Final decision:** Reject score exclusion as a production RAPM change. Keep
+the scorer-owned ledger as a QA artifact and repair the source-mapping gaps
+before testing a different technical-foul treatment. The result does not make
+the original ownership error acceptable; it shows that this exclusion rule
+does not improve the frozen prediction test.
+
+## 2026-08-31 — Strict Gate A advances Box15 for further research
+
+**Question:** Does the frozen Box15 prior improve same-season held-game margin
+reconstruction after the same one-season RAPM update?
+
+**Method:** Run `impact_validation_v2_gate_a_090cb2d323` trains the Box15
+offense and defense mappings on five-year windows ending from 2001 through
+2020. It selects ridge penalties with earlier-window rolling-origin folds.
+The game gate keeps 466 regulation games whose cached possession points match
+the official home and away final scores. Five date-sorted round-robin
+whole-game folds remove each held game from both current-season Box15 inputs
+and the RAPM likelihood. Both candidates score the same games with observed
+lineups. The comparison retains 5,000 paired whole-game bootstrap draws.
+
+**Result:** Box15 AIO lowers RMSE from `14.7605` to `14.5157`, raises
+correlation from `.4190` to `.4477`, and lowers paired MSE by `7.1691`. The 95%
+interval is `[-12.3020, -2.1471]`; 99.78% of draws favor Box15. Calibration
+slope improves from `1.1325` to `1.0023`. All four scored gates pass.
+
+An earlier 1,079-game run scored the legacy cache's internal target. The source
+audit found truncated overtime and 556 complete regulation games whose cached
+side points did not match the official final score. That run remains a cache
+diagnostic and does not support an official game-margin claim.
+
+**Decision:** Advance Box15 as a strong research prior. Keep zero-prior
+`3000 / 3000 / 300` RAPM as the public reference because the source-era
+segment gate remains unscored and Gate A cannot promote production by itself.
+The strict filter retains 466 of 1,079 games. Retained games have a larger mean
+absolute final margin than excluded games, 13.24 versus 11.40 points, and
+eligibility changes through the season. Treat the result as conditional on the
+score-conserved regulation subset, not as a representative full-season test.
+
+## 2026-08-31 — Complete 175-input feature contract is content-addressed
+
+**Question:** Does the completed rich-SPM panel preserve a declared state for
+every selected value and every source-availability field?
+
+**Result:** Run `semantically_complete_spm_features_v1_40e72f25d2` contains
+6,942 unique annual rows and 8,620 unique five-year rows. All 175 unique inputs
+are finite. The 176-line completion ledger includes one header plus every
+input, including the five availability fields. All four derived artifact
+hashes verify. Hustle and matchup availability remain zero before their 2018
+source start; the flags preserve that source-era shift.
+
+**Decision:** Use this exact artifact for new rich-SPM research. Do not infer
+that a finite fallback was directly observed. Keep historical experiment runs
+pinned to their original feature artifacts.
