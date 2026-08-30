@@ -1,0 +1,50 @@
+schema_version: experiment_preregistration_v1
+experiment_id: walk_forward_spm_pilot_v1
+status: frozen_reused_pilot
+created_at: 2026-08-30
+estimand_id: prior_validation_suite_v1
+
+question: >-
+  At the 2024 cutoff, does the full five-year SPM or BoxSPM predict 2025
+  game margins better before and after the same one-season RAPM update?
+
+information_cutoff:
+  rating_season: 2024
+  test_season: 2025
+  spm_training_rule: five-year window end strictly before 2024
+  spm_rating_inputs: five-year player statistics through 2024
+  aio_likelihood: 2024 regular-season possessions only
+  scored_outcomes: 2025 regular-season games
+
+models:
+  full_spm:
+    offense: frozen histogram gradient boosting
+    defense: frozen ridge
+    features: complete selected feature contract
+  box_spm:
+    offense: ridge
+    defense: ridge
+    features: fixed BoxPIPM-style box rates
+  sample_weight: square root of the smaller five-year offensive or defensive exposure
+
+aio:
+  lambda_offense: 3000
+  lambda_defense: 3000
+  lambda_home: 300
+  center_scale: 1
+  lineup_policy: terminal
+
+evaluation:
+  primary: paired whole-game final-margin MSE
+  reported_scale: RMSE in final-margin points
+  secondary: [margin correlation, calibration slope]
+  exposure: observed 2025 lineups
+  identical_games: required
+  uncertainty:
+    draws: 1000
+    unit: whole game
+    seed: 20260830
+
+decision: >-
+  Treat this as a one-fold implementation check. Do not select features,
+  retune either model, or promote a model from this reused season.

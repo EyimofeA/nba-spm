@@ -4755,3 +4755,24 @@ matchup-outcome test. Details: `docs/impact/MATCHUP_ELO_V1.md`.
 - **Decision:** Keep Box15 as the research AIO prior. End the current feature
   search. Reserve Season 2027 for untouched confirmation. Full report:
   `docs/impact/FINAL_BOX_FEATURE_LADDER_V1.md`.
+## 2026-08-30 — One-cutoff walk-forward SPM pilot
+
+**Question:** Does the completed Full SPM or BoxSPM predict later game margins
+better before and after the same one-season RAPM update?
+
+**Method:** Run `walk_forward_spm_pilot_v1_afcc388e8d` trains each SPM mapping
+on five-year windows ending before 2024, builds ratings with player inputs
+through 2024, and scores 1,226 identical 2025 games. Each AIO uses only 2024
+possessions for its `3000 / 3000 / 300` RAPM update. The comparison uses 1,000
+paired whole-game bootstrap draws.
+
+**Result:** Full SPM lowers standalone RMSE from `15.263` to `15.103`; its MSE
+difference against BoxSPM is `-4.856` with interval `[-9.543, -0.160]`. After
+the RAPM update, Full SPM records RMSE `14.894` versus `14.864` for BoxSPM. The
+posterior MSE difference is `+0.884` with interval `[-0.897, +2.724]`. The
+future design assigns zero impact to 9.80% of player-possession slots because
+those players lack a 2024 rating.
+
+**Decision:** The chronological scorer works. The standalone result favors
+Full SPM in this reused fold. The posterior result remains unresolved. Freeze
+both definitions and park the full validation contract for independent review.
