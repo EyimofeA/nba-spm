@@ -7,7 +7,8 @@ separate model-ready panel. Each fill rule follows the feature's unit:
 * undefined raw rates use their same-season empirical-Bayes estimate;
 * missing level metrics use the same-season median;
 * centered source-specific residuals use zero when their source is absent;
-* zTS uses every available playtype row, then a season-neutral shot-mix fallback.
+* true shooting is stabilized within season with a 100-attempt prior;
+* zTS subtracts the best available expected shot mix from stabilized true shooting.
 """
 
 from __future__ import annotations
@@ -41,6 +42,8 @@ AVAILABILITY_FEATURES = {
         "has_rim_defense_tracking",
     ),
 }
+
+TRUE_SHOOTING_PRIOR_ATTEMPTS = 100.0
 
 
 def _membership(panel: pd.DataFrame, keys: pd.DataFrame) -> pd.Series:
@@ -202,13 +205,18 @@ def complete_selected_feature_panel(
     loose_keys = normalize_source_keys(loose)
     strict_mask = _membership(output, strict)
     loose_mask = _membership(output, loose_keys)
-    loose_zts = output[key].merge(
-        loose[["PLAYER_ID", "Window_End", "zts_pct_points"]],
+    loose_values = output[key].merge(
+        loose[
+            [
+                "PLAYER_ID",
+                "Window_End",
+                "playtype_expected_ts_pct",
+            ]
+        ],
         on=key,
         how="left",
         validate="one_to_one",
-    )["zts_pct_points"]
-    output.loc[loose_mask, "zts_pct_points"] = loose_zts.loc[loose_mask]
+    )
 
     expected_by_season = (
         loose.assign(
@@ -223,21 +231,65 @@ def complete_selected_feature_panel(
             include_groups=False,
         )
     )
-    player_ts = pd.to_numeric(output["true_shooting_pct"], errors="coerce")
-    valid_player_ts = player_ts.between(0.0, 1.5)
+    player_ts = pd.to_numeric(annual["true_shooting_pct"], errors="coerce")
+    scoring_columns = {
+        "PTS_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "FTA_p100",
+        "FTM_p100",
+    }
+    scoring_inconsistent = pd.Series(False, index=output.index)
+    if scoring_columns <= set(annual):
+        scoring = annual[list(scoring_columns)].apply(pd.to_numeric, errors="coerce")
+        maximum_points = (
+            2.0
+            * scoring["FG2M_p100"].fillna(scoring["FG2A_p100"])
+            + 3.0
+            * scoring["FG3M_p100"].fillna(scoring["FG3A_p100"])
+            + scoring["FTM_p100"].fillna(scoring["FTA_p100"])
+        )
+        scoring_inconsistent = scoring["PTS_p100"].gt(maximum_points + 1e-9)
+    missing_player_ts = player_ts.isna()
+    range_invalid_ts = player_ts.notna() & ~player_ts.between(0.0, 1.5)
+    valid_player_ts = ~(
+        missing_player_ts | range_invalid_ts | scoring_inconsistent
+    )
     invalid_player_ts = ~valid_player_ts
     season_ts = player_ts.where(valid_player_ts).groupby(output["Window_End"]).transform(
         "median"
     )
-    output["true_shooting_pct"] = player_ts.where(valid_player_ts).fillna(
-        season_ts
-    ).fillna(0.5)
-    fallback = ~loose_mask
+    repaired_ts = player_ts.where(valid_player_ts).fillna(season_ts).fillna(0.5)
+    attempt_columns = {"FG2A_p100", "FG3A_p100", "FTA_p100", "OffPoss"}
+    if attempt_columns <= set(annual):
+        attempts = (
+            pd.to_numeric(annual["FG2A_p100"], errors="coerce").fillna(0.0)
+            + pd.to_numeric(annual["FG3A_p100"], errors="coerce").fillna(0.0)
+            + 0.44 * pd.to_numeric(annual["FTA_p100"], errors="coerce").fillna(0.0)
+        ) * pd.to_numeric(annual["OffPoss"], errors="coerce").fillna(0.0) / 100.0
+        attempts = attempts.clip(lower=0.0)
+        prior_eligible = valid_player_ts & attempts.gt(0.0)
+        weighted_ts = (player_ts * attempts).where(prior_eligible)
+        prior_numerator = weighted_ts.groupby(output["Window_End"]).transform("sum")
+        prior_denominator = attempts.where(prior_eligible).groupby(
+            output["Window_End"]
+        ).transform("sum")
+        season_prior = (prior_numerator / prior_denominator).fillna(season_ts).fillna(0.5)
+        reliability = attempts / (attempts + TRUE_SHOOTING_PRIOR_ATTEMPTS)
+        output["true_shooting_pct"] = (
+            reliability * repaired_ts + (1.0 - reliability) * season_prior
+        )
+    else:
+        attempts = pd.Series(0.0, index=output.index)
+        output["true_shooting_pct"] = repaired_ts
+    invalid_source_ts = loose_mask & invalid_player_ts
     fallback_expected = output["Window_End"].map(expected_by_season)
-    fallback_player_ts = 100.0 * output["true_shooting_pct"]
-    output.loc[fallback, "zts_pct_points"] = (
-        fallback_player_ts - fallback_expected
-    ).loc[fallback]
+    expected_ts = loose_values["playtype_expected_ts_pct"].where(
+        loose_mask, fallback_expected
+    )
+    output["zts_pct_points"] = 100.0 * output["true_shooting_pct"] - expected_ts
     availability = pd.DataFrame(
         {
             "zts_source_tier": np.select(
@@ -251,13 +303,43 @@ def complete_selected_feature_panel(
         index=output.index,
     )
     output = pd.concat([output, availability], axis=1)
+    availability_ledger = (
+        ("zts_source_tier", "playtype", availability["zts_source_tier"].eq(0)),
+        ("has_hustle_tracking", "hustle", hustle_missing),
+        ("has_matchup_tracking", "matchup_defense", matchup_missing),
+        ("has_dfg_tracking", "dfg", dfg_missing),
+        ("has_rim_defense_tracking", "rim_dfg", rim_missing),
+    )
+    for feature, family, source_missing in availability_ledger:
+        ledger_rows.append(
+            {
+                "feature": feature,
+                "source_family": family,
+                "raw_missing_rows": 0,
+                "source_missing_rows": int(source_missing.sum()),
+                "completion_method": (
+                    "derived_source_availability_tier"
+                    if feature == "zts_source_tier"
+                    else "derived_source_availability_flag"
+                ),
+            }
+        )
+    ledger_rows.append(
+        {
+            "feature": "true_shooting_pct",
+            "source_family": "player_sheet",
+            "raw_missing_rows": int(original["true_shooting_pct"].isna().sum()),
+            "source_missing_rows": 0,
+            "completion_method": "same_season_eb_100_true_shot_attempts",
+        }
+    )
     ledger_rows.append(
         {
             "feature": "zts_pct_points",
             "source_family": "playtype",
             "raw_missing_rows": int(original["zts_pct_points"].isna().sum()),
             "source_missing_rows": int((~strict_mask).sum()),
-            "completion_method": "all_rows_then_season_neutral_shot_mix_fallback",
+            "completion_method": "eb_true_shooting_minus_best_available_expected_mix",
         }
     )
 
@@ -277,6 +359,13 @@ def complete_selected_feature_panel(
     ledger["completed_missing_rows"] = [
         int(output[feature].isna().sum()) for feature in ledger["feature"]
     ]
+    if set(ledger["feature"]) != set(expanded_union):
+        missing = sorted(set(expanded_union) - set(ledger["feature"]))
+        extra = sorted(set(ledger["feature"]) - set(expanded_union))
+        raise ValueError(
+            f"Completion ledger does not match the expanded feature contract; "
+            f"missing={missing}, extra={extra}."
+        )
     quality = {
         "rows": int(len(output)),
         "selected_features_before": len(selected_union),
@@ -287,6 +376,16 @@ def complete_selected_feature_panel(
         "low_sample_zts_rows": int((loose_mask & ~strict_mask).sum()),
         "fallback_zts_rows": int((~loose_mask).sum()),
         "invalid_true_shooting_rows_repaired": int(invalid_player_ts.sum()),
+        "missing_true_shooting_rows_repaired": int(missing_player_ts.sum()),
+        "range_invalid_true_shooting_rows_repaired": int(range_invalid_ts.sum()),
+        "scoring_inconsistent_true_shooting_rows_repaired": int(
+            scoring_inconsistent.sum()
+        ),
+        "true_shooting_eb_prior_attempts": TRUE_SHOOTING_PRIOR_ATTEMPTS,
+        "true_shooting_eb_rows_with_attempts": int(attempts.gt(0.0).sum()),
+        "invalid_playtype_true_shooting_rows_repaired": int(
+            invalid_source_ts.sum()
+        ),
         "hustle_source_missing_rows": int(hustle_missing.sum()),
         "matchup_source_missing_rows": int(matchup_missing.sum()),
         "dfg_source_missing_rows": int(dfg_missing.sum()),

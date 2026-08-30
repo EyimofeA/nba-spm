@@ -26,6 +26,8 @@ user explicitly asks. Do not publish raw NBA rows.
 - Preserve the user's goal and unrelated dirty files.
 - Ask only when a decision is materially ambiguous, risky, or needs approval.
 - Use subagents only for independent work that materially improves speed or verification. Never exceed four concurrent tasks. Verify their output.
+- Give every parallel editing task its own Git worktree. Read-only audits may share a checkout. Never let two agents edit the same files.
+- Use Handoff to move a finished worktree chat back to the local checkout for review. Do not copy whole worktrees into the active branch.
 - Use Terra high for normal repository work. Use Sol xhigh only for a frozen statistical review or promotion decision.
 - Python computes numerical results. A language model designs and audits them.
 - Before an expensive run, estimate runtime and value. Start with the smallest decisive pilot. Never start a downloader or full model run during a smoke test.
@@ -70,6 +72,14 @@ production imports, or model claims without a held-out promotion gate.
   `3000 / 3000 / 300` RAPM is the stable multi-year reference. A tuned
   actual-age, time-decayed challenger improved 2025 but worsened reused 2026;
   do not promote it.
+- The regularization audit evaluated 196 configurations across eight held-out
+  folds. No offense/defense split penalty cleared the prediction and
+  uncertainty gates. Keep `3000 / 3000 / 300`; do not infer that offense and
+  defense require equal shrinkage in every future estimand.
+- Standard RAPM keeps technical free-throw points so game scores reconcile.
+  An exact-design sensitivity removed 2,987 technical points from 2024--26 and
+  worsened held-out 2026 margin MSE. Keep the score-conserving response and the
+  scorer-owned ledger as QA evidence.
 - A direct joint actual-clock rubber-band fit keeps possession points unchanged
   and adds eight signed-margin columns beside home. It slightly improved reused
   2026 correlation but worsened margin RMSE; keep it local and unpromoted.
@@ -101,7 +111,7 @@ Canonical code: `src/nba_impact/models/rapm.py` and
 Canonical code: `src/nba_impact/models/single_season_spm.py` and
 `src/nba_impact/models/annual_spm_priors.py`.
 
-### Five-year SPM research default
+### Five-year full-feature SPM challenger
 
 - One row pools five seasons of player statistics; its label is RAPM over the
   identical five seasons.
@@ -115,16 +125,17 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   marks 2014--17 unavailable. Do not fabricate observed rows for those seasons.
 - This feature refresh closes the 2025--26 input gap. It does not refit or
   promote the five-year SPM or AIO.
-- Coverage run `full_feature_coverage_v1_3de4ec8954` audits all 170 selected
+- Coverage run `full_feature_coverage_v1_766f7f1123` audits all 170 selected
   fields before imputation. It assigns an explicit source or opportunity cause
   to every field below 99% observed coverage. Undefined rate fields remain
   missing and receive training-fold median imputation.
-- Completion run `semantically_complete_spm_features_v1_4ffd1e34df` converts
+- Completion run `semantically_complete_spm_features_v1_40e72f25d2` converts
   the same contract into 175 fully finite inputs. Event rates use zero, raw
   ratios use same-season empirical-Bayes estimates, and source-specific values
-  use zero with an availability field. Low-sample zTS uses all observed
-  playtype possessions. Rows without playtype data use season-relative TS;
-  physically invalid source TS rows use the same-season valid median first.
+  use zero with an availability field. True shooting uses a same-season
+  100-attempt empirical-Bayes prior. zTS subtracts the best available expected
+  shot mix from stabilized true shooting. Rows without playtype data use the
+  season's possession-weighted expected shot mix.
   The annual and five-year panels have zero missing selected inputs.
 - Corrected observed-defense run `observed_defense_dashboards_v1_1a62103de7d7`
   normalizes both expected and actual field-goal percentages to percentage
@@ -149,6 +160,15 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   disruption/fouls, shooting/scoring, creation/security, and rebounding. Use
   `active_2026_leaderboard.parquet`; the earlier unfiltered table includes
   zero-exposure historical players.
+- Strict blocked-game run `impact_validation_v2_gate_a_090cb2d323` uses the
+  466 regulation games whose cached possession points match the official home
+  and away final scores. It removes each held game from both Box15 inputs and
+  the one-season RAPM likelihood. Box15 AIO improves RMSE by `.2449` points per
+  game; its paired MSE interval is `[-12.3020, -2.1471]`. It passes the four
+  scored Gate A conditions for further research. The filter retains only
+  43.2% of cache games and overrepresents larger margins, so the result is
+  conditional on that subset. The source-era segment gate remains unscored,
+  so production promotion remains false.
 - Historical factor run `historical_factor_residual_tournament_v1_f0b772f6e1`
   builds matched shooting-TS and opponent-OREB-prevention targets from 2014--26.
   Specialists roughly double factor R-squared, but shooting does not improve
@@ -241,6 +261,20 @@ Canonical code: `src/nba_impact/models/five_year_target_spm.py`.
 
 Canonical code: `src/nba_impact/models/five_year_spm_feature_research.py`.
 
+### Box15 research SPM prior
+
+- Box15 is the selected research prior. It uses the 15 transparent per-100 box
+  rates listed in `configs/models/box15_spm_v1.json`.
+- Offense and defense use separate ridge fits. Each rating season trains only
+  on earlier five-year windows. Possession exposure supplies sample weights,
+  not input features.
+- No richer frozen feature set improved downstream game-margin MSE after the
+  same one-season RAPM update. The strict blocked-game result also favors
+  Box15, but it covers a nonrepresentative score-conserved subset.
+- Box15 does not replace the public 2017--24 annual SPM or AIO.
+
+Canonical code: `src/nba_impact/models/box_pipm_style.py`.
+
 ### Annual AIO
 
 - SPM supplies the coefficient prior mean.
@@ -270,6 +304,15 @@ Canonical code: `src/nba_impact/models/annual_aio_ratings.py` and
 The public reference remains zero-prior RAPM. Annual SPM, AIO, roles, matchup
 factors, trajectories, peaks, expected-possession residuals, and WP credit are
 research unless their pinned contract explicitly says otherwise.
+
+## Code review rules
+
+- Treat temporal leakage, mismatched scoring rows, invalid identities, missing hashes, and research-to-production exposure as correctness defects.
+- Require the same estimand, games, lineups, and exposure policy for every scored comparison.
+- Keep raw NBA events and machine-specific absolute paths out of release bundles.
+- Require focused tests for changed behavior. Do not require a full fit when a deterministic fixture proves the contract.
+- For UI changes, require the client tests, lint, and browser inspection. Report a pre-existing blocker instead of weakening a gate.
+- Preserve unrelated dirty files. Review and stage only the intended diff.
 
 ## Parked questions
 

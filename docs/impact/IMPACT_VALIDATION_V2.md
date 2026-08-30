@@ -83,9 +83,10 @@ future information, or double-counted possession outcomes.
 This gate caught two material defects. The first distribution audit found an
 invalid zTS fallback and a unit mismatch in the stored rim-points-saved input.
 
-The corrected pipeline rejects player TS outside `[0, 1.5]`, fills invalid
-source rows with the same-season median of valid TS, and then computes the
-season-relative fallback. It repaired 107 annual rows. The corrected
+The corrected pipeline rejects player TS outside `[0, 1.5]`, repairs invalid
+source rows with the same-season valid median, and applies a same-season
+100-attempt empirical-Bayes prior. zTS subtracts the best available expected
+shot mix from that stabilized TS. The corrected
 rim-defense builder normalizes `DFG%` and expected `FG%` to percentage points
 before subtraction and aggregates repeated observations with defended-shot
 weights. Run `spm_input_distribution_audit_v1_f54723b16e` reports no blocking
@@ -94,12 +95,36 @@ remain provisional until refit. Box15 does not consume either field.
 
 ## Implementation status
 
-The contract is frozen, but the full engine is not complete. The repository
-already implements the current-strength oracle-lineup diagnostic with
+Gate A implements same-season blocked-game reconstruction for Box15. Run
+`impact_validation_v2_gate_a_090cb2d323` uses the 466 regulation games whose
+cached possession points match the official home and away final scores. It
+removes each held game from the current-season Box15 ledger and RAPM
+likelihood. Box15 AIO improves RMSE by `.2449` points per game. Its paired MSE
+interval is `[-12.3020, -2.1471]`, and calibration slope improves from `1.1325`
+to `1.0023`.
+
+The run passes the four scored Gate A conditions for further research. The
+source-era segment gate remains unscored, so production promotion remains
+false. An earlier 1,079-game run scored the legacy cache's internal target. It
+included truncated overtime games and 556 regulation games with side-specific
+score mismatches, so it is not official game-margin evidence.
+
+The strict gate retains 466 of 1,079 cache games, or 43.2%. The retained games
+have a larger mean absolute final margin than the excluded games, 13.24 versus
+11.40 points, and eligibility changes over the season. The result therefore
+applies only to the score-conserved regulation subset. It is not a
+representative full-season estimate. A stronger gate requires a rebuilt
+score-conserving possession source or replication across additional seasons.
+
+The five held-game folds are date-sorted round-robin folds. They cover the
+whole season and are not forward chronological folds. A future run should save
+the full inner alpha-selection table in addition to the selected penalties.
+
+The repository implements a current-strength oracle-lineup diagnostic with
 chronological season folds, identical games, equal-season MSE, calibration,
 and paired whole-game resampling. It does not yet implement weekly historical
-cutoffs, projected pregame minutes, or same-season blocked-game reconstruction
-for every tracking feature.
+cutoffs or projected pregame minutes. Raw timestamped tracking inputs still
+limit blocked-game reconstruction for the full feature bank.
 
 The BoxSPM versus TrackingSPM pilot uses one reused oracle-lineup fold. It
 trains on five-year windows ending before 2025, forms a 2025 statistical prior,

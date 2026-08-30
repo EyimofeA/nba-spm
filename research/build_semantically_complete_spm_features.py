@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 
 from nba_impact.data.feature_completion import complete_selected_feature_panel
+from nba_impact.data.feature_coverage import validate_coverage_lineage
 from nba_impact.data.full_spm_features import (
     _atomic_parquet,
     build_rolling_five_year_features,
@@ -44,12 +45,13 @@ PLAYER_SHEETS = (
 OBSERVED_COVERAGE_RUN = (
     ROOT
     / "artifacts/research/full_feature_coverage"
-    / "full_feature_coverage_v1_3de4ec8954"
+    / "full_feature_coverage_v1_766f7f1123"
 )
 
 
 def main() -> None:
     annual = pd.read_parquet(BASE_RUN / "annual_features.parquet")
+    base_manifest = json.loads((BASE_RUN / "run.json").read_text())
     enriched = pd.read_parquet(V2_RUN / "features.parquet")
     selected = load_feature_contract(BASE_RUN / "run.json")
     strict_playtype_path = (
@@ -92,6 +94,15 @@ def main() -> None:
         )
         for family, path in source_paths.items()
     }
+    coverage_manifest = json.loads((OBSERVED_COVERAGE_RUN / "run.json").read_text())
+    validate_coverage_lineage(
+        coverage_manifest,
+        panel_run_id=base_manifest["run_id"],
+        source_hashes={
+            "playtype": sha256_file(strict_playtype_path),
+            **{family: sha256_file(path) for family, path in source_paths.items()},
+        },
+    )
     complete, expanded, ledger, quality = complete_selected_feature_panel(
         annual,
         enriched,
@@ -161,6 +172,14 @@ def main() -> None:
     _atomic_parquet(five_year, output / "five_year_features.parquet")
     ledger.to_csv(output / "completion_ledger.csv", index=False)
     completion_map.to_csv(output / "features_below_99pct_completion.csv", index=False)
+    artifact_paths = {
+        "annual_features": output / "annual_features.parquet",
+        "five_year_features": output / "five_year_features.parquet",
+        "completion_ledger": output / "completion_ledger.csv",
+        "features_below_99pct_completion": (
+            output / "features_below_99pct_completion.csv"
+        ),
+    }
     run = {
         "run_id": run_id,
         "status": "complete_research_input",
@@ -185,20 +204,21 @@ def main() -> None:
             "event_rates": "zero when lineup exposure exists",
             "raw_ratios": "same-season empirical-Bayes estimate",
             "level_metrics": "same-season median",
+            "true_shooting": (
+                "same-season empirical-Bayes estimate with a 100 true-shot-attempt "
+                "prior; invalid raw TS is replaced before stabilization"
+            ),
             "missing_centered_source_metrics": "zero plus source-availability field",
             "zts": (
-                "use all available playtype rows; otherwise physically valid player "
-                "TS minus the season's possession-weighted mean expected TS; replace "
-                "invalid TS with the same-season median first"
+                "empirical-Bayes player TS minus the row's playtype expected TS when "
+                "available, otherwise the season's possession-weighted mean expected TS"
             ),
         },
         "source_hashes": source_hashes,
-        "paths": {
-            "annual_features": "annual_features.parquet",
-            "five_year_features": "five_year_features.parquet",
-            "completion_ledger": "completion_ledger.csv",
-            "features_below_99pct_completion": "features_below_99pct_completion.csv",
+        "artifact_hashes": {
+            name: sha256_file(path) for name, path in artifact_paths.items()
         },
+        "paths": {name: path.name for name, path in artifact_paths.items()},
         "forbidden_interpretation": (
             "Finite model input does not mean every value was directly observed. "
             "The completion ledger preserves that distinction."

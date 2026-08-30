@@ -7,7 +7,7 @@ fits. It does not turn a research artifact into a production claim.
 
 ## 1. Model map
 
-There are three different objects that have been called “SPM” or “AIO” in the
+Several different objects have been called “SPM” or “AIO” in the
 repository. They must not be conflated.
 
 | Object | Code path | Output | Status |
@@ -15,12 +15,13 @@ repository. They must not be conflated.
 | Normal RAPM | `src/nba_impact/models/rapm.py` | lineup-adjusted offense, defense, net points per 100 | production reference for current 2024–26 scope; descriptive |
 | Annual SPM | `src/nba_impact/models/single_season_spm.py` | box/tracking prediction of annual RAPM offense and defense | public reference through 2024; 2025–26 refresh is research null |
 | Annual AIO | `src/nba_impact/models/annual_aio_ratings.py` plus `prior_informed_rapm.py` | SPM-centered RAPM posterior | research leaderboard, 2017–24 only |
+| Box15 SPM prior | `src/nba_impact/models/box_pipm_style.py` | ridge prediction of five-year RAPM offense and defense from 15 per-100 box rates | selected research prior; not public |
 | Rolling statistical AIO | `statistical_feature_v2` plus `statistical_aio` artifacts | three-season feature model predicting RAPM components | research challenger; not the annual centered-RAPM posterior |
 
 The pinned annual AIO artifact is
 `annual_aio_ratings_v1_b52b5aecd9`. It covers 2017–24 and uses
 leave-one-season-out SPM priors. The validated public annual SPM lineage is
-`single_season_spm_v1_18496f5af4`. The later
+`single_season_spm_v1_18496a1348`. The later
 `single_season_spm_v1_47b3bd9b17` refresh extends through 2026. It is a blocked
 research result and must not silently replace the public lineage.
 

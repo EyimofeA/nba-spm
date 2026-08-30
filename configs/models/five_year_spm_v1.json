@@ -1,6 +1,7 @@
 {
   "contract_version": "five_year_spm_v1",
-  "status": "research_default_not_public",
+  "status": "research_challenger_not_selected",
+  "selected_research_successor": "configs/models/box15_spm_v1.json",
   "estimand": "rolling_five_season_normal_rapm_offense_defense_and_net_points_per_100",
   "grain": "player-five-season-window",
   "selected_run_id": "five_year_target_spm_v1_65550acb79",
@@ -24,8 +25,8 @@
     "center_scale": 1.0
   },
   "decision": {
-    "research_replacement": true,
+    "research_replacement": false,
     "public_replacement": false,
-    "reason": "The AIO won the frozen 2022-24 development comparison and reused 2025 and 2026 diagnostics. Season 2027 remains untouched confirmation."
+    "reason": "The full feature model improves standalone RAPM-label fit, but it does not beat Box15 after the same single-season RAPM update on the frozen downstream game test."
   }
 }

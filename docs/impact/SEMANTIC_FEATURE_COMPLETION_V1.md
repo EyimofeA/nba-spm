@@ -18,9 +18,10 @@ The public model remains unchanged.
 | Accuracy, frequency, or share | Same-season empirical-Bayes estimate | Zero would mean observed failure, not no opportunity. |
 | Weighted level metric | Same-season median | The field has no natural zero. |
 | Hustle, matchup, closest-defender, and rim-defense value | Zero plus a source-availability field | Zero is the neutral fallback. The flag tells the model that the source was absent. |
-| zTS with 250 minutes and 50 playtype possessions | Strict playtype estimate | This is the original qualified estimate. |
-| zTS with some playtype data below either threshold | Estimate from every observed playtype possession | The estimate remains noisy but observed. |
-| zTS without a playtype row | Player TS minus the season's possession-weighted mean expected TS | This reduces the fallback to season-relative shooting efficiency. |
+| True shooting | Same-season empirical-Bayes estimate with a 100 true-shot-attempt prior | The prior reduces low-attempt noise without using another season. |
+| zTS with 250 minutes and 50 playtype possessions | Stabilized player TS minus the strict expected shot mix | This uses the qualified playtype estimate. |
+| zTS with some playtype data below either threshold | Stabilized player TS minus the expected mix from every observed playtype possession | The expected mix remains noisy but observed. |
+| zTS without a playtype row | Stabilized player TS minus the season's possession-weighted mean expected TS | This reduces the fallback to season-relative shooting efficiency. |
 
 The final contract adds `zts_source_tier`, `has_hustle_tracking`,
 `has_matchup_tracking`, `has_dfg_tracking`, and
@@ -30,7 +31,7 @@ The final contract adds `zts_source_tier`, `has_hustle_tracking`,
 
 The original observed-data audit found 75 selected annual fields below 99%
 coverage. Every field now has a reason and a completion method in
-`artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_8be676bd0f/features_below_99pct_completion.csv`.
+`artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_40e72f25d2/features_below_99pct_completion.csv`.
 No listed field has an unexplained cause, a missing method, or a remaining
 missing model value.
 
