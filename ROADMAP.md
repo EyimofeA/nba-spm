@@ -192,6 +192,14 @@ dead ends. Updated 2026-08-29. See `docs/README.md` for the document index,
 
 ## Active next task
 
+Park the full SPM validation design until an independent review compares two
+evidence packets. The repo-aware packet includes code, manifests, and outputs.
+The repo-blind packet includes the estimand, available data, candidate formulas,
+and evaluation question without repository conclusions. Reviewers should use
+OMP Codex Sol high, OpenRouter Ox Alpha max, and Pi/Cursor with Opus 5 high,
+Kimi K3 high, and Grok 4.6. Pool their proposed splits, leakage controls,
+scoring rules, and disagreements before changing the validation contract.
+
 Hand the final Box15 ladder, semantic-completion artifacts, and corrected
 active-player leaderboard to the independent audit. The audit should check the
 estimand, chronological splits, oracle-lineup limitation, cumulative-order

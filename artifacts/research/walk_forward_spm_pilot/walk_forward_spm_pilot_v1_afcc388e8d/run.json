@@ -1,0 +1,180 @@
+{
+  "config": {
+    "experiment_id": "walk_forward_spm_pilot_v1",
+    "feature_counts": {
+      "defense": 72,
+      "offense": 128
+    },
+    "models": [
+      "full_spm",
+      "box_pipm",
+      "zero_prior_rapm",
+      "full_spm_aio",
+      "box_pipm_aio"
+    ],
+    "rating_season": 2024,
+    "sources": {
+      "contract": {
+        "path": "research/experiments/walk_forward_spm_pilot_v1.yml",
+        "sha256": "b088cb5b6e0a761a7d262200fd453919cff4dea760368cb1bef07146d16f9399"
+      },
+      "feature_manifest": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_4ffd1e34df/run.json",
+        "sha256": "8284b9115125486ff48ec5b26f422f4cb5d1505d5ef1b8eb3e9b3482fe880c33"
+      },
+      "features": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_4ffd1e34df/five_year_features.parquet",
+        "sha256": "980537e027210eceb210367c3f1bbf91fbb10f34c53b2078852657a431dcdd28"
+      },
+      "matrix": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2024/manifest.json",
+        "sha256": "fca774fbfa755851d5325eae7ab1c6626ae0108d193d029bfeae537f6edde83d"
+      },
+      "possessions_2020": {
+        "path": "rapm/data/possession_cache/matchups_2020.parquet",
+        "sha256": "b177865501897984437fcc8c08ee229ff462e0319e032f7642b5077670d375c6"
+      },
+      "possessions_2021": {
+        "path": "rapm/data/possession_cache/matchups_2021.parquet",
+        "sha256": "0bfd107dad6959b1a45e4c7762fcde2d901e364d64b632299deeb22092749a6a"
+      },
+      "possessions_2022": {
+        "path": "rapm/data/possession_cache/matchups_2022.parquet",
+        "sha256": "b04388818590ad1bff4fb6b9ca9d27dd4ac9dc6dd744c34160153206bcb32248"
+      },
+      "possessions_2023": {
+        "path": "rapm/data/possession_cache/matchups_2023.parquet",
+        "sha256": "15f710ba2964bcbc80ca4753038b8c22fb18188bafd0cb62c886ac39840faa15"
+      },
+      "runner": {
+        "path": "research/run_walk_forward_spm_pilot.py",
+        "sha256": "ad1e3a738c6c16be4dc0e0cd9a9a2c9149c40030ebe136d61e30cd15bc8c8aba"
+      },
+      "targets": {
+        "path": "artifacts/models/five_year_target_spm/five_year_target_spm_v1_65550acb79/five_year_targets.parquet",
+        "sha256": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+      }
+    },
+    "test_season": 2025
+  },
+  "contract": {
+    "aio": {
+      "center_scale": 1,
+      "lambda_defense": 3000,
+      "lambda_home": 300,
+      "lambda_offense": 3000,
+      "lineup_policy": "terminal"
+    },
+    "created_at": "2026-08-30",
+    "decision": "Treat this as a one-fold implementation check. Do not select features, retune either model, or promote a model from this reused season.",
+    "estimand_id": "prior_validation_suite_v1",
+    "evaluation": {
+      "exposure": "observed 2025 lineups",
+      "identical_games": "required",
+      "primary": "paired whole-game final-margin MSE",
+      "reported_scale": "RMSE in final-margin points",
+      "secondary": [
+        "margin correlation",
+        "calibration slope"
+      ],
+      "uncertainty": {
+        "draws": 1000,
+        "seed": 20260830,
+        "unit": "whole game"
+      }
+    },
+    "experiment_id": "walk_forward_spm_pilot_v1",
+    "information_cutoff": {
+      "aio_likelihood": "2024 regular-season possessions only",
+      "rating_season": 2024,
+      "scored_outcomes": "2025 regular-season games",
+      "spm_rating_inputs": "five-year player statistics through 2024",
+      "spm_training_rule": "five-year window end strictly before 2024",
+      "test_season": 2025
+    },
+    "models": {
+      "box_spm": {
+        "defense": "ridge",
+        "features": "fixed BoxPIPM-style box rates",
+        "offense": "ridge"
+      },
+      "full_spm": {
+        "defense": "frozen ridge",
+        "features": "complete selected feature contract",
+        "offense": "frozen histogram gradient boosting"
+      },
+      "sample_weight": "square root of the smaller five-year offensive or defensive exposure"
+    },
+    "question": "At the 2024 cutoff, does the full five-year SPM or BoxSPM predict 2025 game margins better before and after the same one-season RAPM update?",
+    "schema_version": "experiment_preregistration_v1",
+    "status": "frozen_reused_pilot"
+  },
+  "created_at": "2026-08-30T00:55:52.974709+00:00",
+  "experiment_id": "walk_forward_spm_pilot_v1",
+  "files": {
+    "bootstrap_model_intervals.parquet": {
+      "path": "bootstrap_model_intervals.parquet",
+      "rows": 5,
+      "sha256": "65c08ff12569c00b9f4d1361ba8bb9c622eca705640582b67cbfc459d1e77aec"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "rows": 5,
+      "sha256": "45b33f2bc63686977d2b2ee4321337c0a72b4dcbd474c54bf8723b7d5352a9e2"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 6130,
+      "sha256": "01caed64d78baf3fe08d36ae7857290fb37bc2525056ec1bad66fb1fd198ad45"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 1,
+      "sha256": "03a0fc0a6f6a8cd948974b21177efd4ab70e8afa2ff745ee775f46da83a0f5cd"
+    },
+    "model_selection.parquet": {
+      "path": "model_selection.parquet",
+      "rows": 4,
+      "sha256": "2a08cce5283da448037209c094d83760b3467e53bdbb706f97387e52e879492b"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 10,
+      "sha256": "e6a194e3383637804f4758222760e063b5ddd09a1e4015c75dbdce18384127cf"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "rows": 2,
+      "sha256": "1a7af133aaa76767926ed7953aecc9e9a6de5b74ed4220718d347e3e2c3a05c4"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "rows": 1926,
+      "sha256": "8334e8738b3b2bb564396c1bba0a3bed8ac87580b18483e4bee9c0693771d130"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "rows": 5340,
+      "sha256": "9850d924ddb172f1a3c8d93169b239a618f31add7dc1be54d1446d3edd2d1b10"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "rows": 5,
+      "sha256": "0ddbcffeac562d6c7065f23e3c2d4cfdfbcf25cb1cd184e4a7b704cdefd9a99e"
+    },
+    "target_metrics.parquet": {
+      "path": "target_metrics.parquet",
+      "rows": 6,
+      "sha256": "33bd807e391ca7682913dd1f5af31fef108b9df909a2e9c347665dc6616a1d0a"
+    }
+  },
+  "forbidden_interpretation": "One reused chronological fold cannot select or promote either model.",
+  "quality": {
+    "identical_games": true,
+    "maximum_component_identity_error": 0.0,
+    "maximum_loaded_feature_window": 2024,
+    "scored_games": 1226
+  },
+  "run_id": "walk_forward_spm_pilot_v1_afcc388e8d",
+  "status": "reused_one_fold_pilot_complete"
+}
