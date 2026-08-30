@@ -39,7 +39,22 @@ const worker = {
       }, allowedWidths);
     }
 
-    return handler.fetch(request, env, ctx);
+    const response = await handler.fetch(request, env, ctx);
+    if (!response.ok) return response;
+
+    const headers = new Headers(response.headers);
+    if (url.pathname.startsWith("/_next/static/")) {
+      headers.set("Cache-Control", "public, max-age=31536000, immutable");
+    } else if (url.pathname.startsWith("/data/") && url.pathname.endsWith(".json")) {
+      headers.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
+    } else {
+      return response;
+    }
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
   },
 };
 

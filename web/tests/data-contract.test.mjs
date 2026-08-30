@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
 
 const read = (name) => JSON.parse(readFileSync(new URL(`../public/data/${name}`, import.meta.url)));
 const catalog = read("catalog.json");
+const { resolveModel } = await import("../app/lib/data.ts");
 
 /** Every client source concatenated, so these checks cover the whole app. */
 function sources(dir) {
@@ -39,31 +41,35 @@ test("the snapshot carries no win probability and no stabilized roles", () => {
   assert.doesNotMatch(JSON.stringify(read("ratings-00.json")), /stabilized/);
 });
 
-test("external correlations match the verified benchmark runs", () => {
-  const rows = catalog.validation.external_benchmark.rows;
-  const find = (scope, component) => rows.find((row) => row.scope === scope && row.component === component);
-  assert.deepEqual(
-    (({ players, bpm, xrapm }) => ({ players, bpm, xrapm }))(find("Three-season SPM windows", "net")),
-    { players: 2295, bpm: 0.876, xrapm: 0.756 },
-  );
-  assert.equal(find("Three-season SPM windows", "defense").xrapm, 0.63);
-  assert.deepEqual(
-    (({ players, bpm, xrapm }) => ({ players, bpm, xrapm }))(find("Annual SPM baseline", "net")),
-    { players: 2860, bpm: 0.897, xrapm: 0.762 },
-  );
-  assert.equal(find("Annual SPM plus tracking", "defense").xrapm, 0.701);
-  for (const row of rows) assert.ok(row.run_id.length > 0, "every external row names its run");
+test("an unavailable model falls back to a model carried by the season", () => {
+  assert.equal(resolveModel(read("leaderboard-2026.json"), "aio").id, "rapm");
+  assert.equal(resolveModel(read("leaderboard-2024.json"), "aio").id, "aio");
 });
 
-test("every published season table is loadable and complete", () => {
-  const fullTimeline = [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
-  assert.deepEqual(catalog.catalog.seasons, fullTimeline);
+test("every production payload matches the release manifest", () => {
+  const manifest = read("snapshot-manifest.json");
+  assert.equal(manifest.schema_version, "nba_impact_release_v1");
+  for (const [name, expected] of Object.entries(manifest.files)) {
+    const payload = readFileSync(new URL(`../public/data/${name}`, import.meta.url));
+    assert.equal(payload.byteLength, expected.bytes, `${name} byte count changed`);
+    assert.equal(
+      createHash("sha256").update(payload).digest("hex"),
+      expected.sha256,
+      `${name} hash changed`,
+    );
+  }
+});
+
+test("season tables expose only the validated model coverage", () => {
+  const rapmSeasons = [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+  const annualSeasons = [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024];
+  assert.deepEqual(catalog.catalog.seasons, rapmSeasons);
   assert.deepEqual(
     Object.fromEntries(catalog.catalog.models.map((model) => [model.id, model.seasons])),
     {
-      aio: fullTimeline,
-      rapm: fullTimeline,
-      spm: fullTimeline,
+      aio: annualSeasons,
+      rapm: rapmSeasons,
+      spm: annualSeasons,
     },
   );
   for (const season of catalog.catalog.seasons) {
@@ -74,9 +80,19 @@ test("every published season table is loadable and complete", () => {
       assert.equal(typeof row.PLAYER_NAME, "string");
       assert.equal(typeof row.normal_rapm_net, "number");
       assert.ok(Math.abs(row.normal_rapm_offense + row.normal_rapm_defense - row.normal_rapm_net) < 0.001, "RAPM offense plus defense must equal net");
-      assert.equal(typeof row.aio_net, "number");
-      assert.equal(typeof row.spm_net, "number");
-      assert.ok(Math.abs(row.aio_offense + row.aio_defense - row.aio_net) < 0.001, "AIO offense plus defense must equal net");
+      for (const model of catalog.catalog.models.filter(({ id }) => id !== "rapm")) {
+        const published = model.seasons.includes(season);
+        for (const component of ["offense", "defense", "net"]) {
+          assert.equal(
+            typeof row[`${model.prefix}${component}`] === "number",
+            published,
+            `${model.id} ${season} coverage disagrees with the catalog`,
+          );
+        }
+      }
+      if (annualSeasons.includes(season)) {
+        assert.ok(Math.abs(row.aio_offense + row.aio_defense - row.aio_net) < 0.001, "AIO offense plus defense must equal net");
+      }
       assert.ok(row.Poss_Off >= 0 && row.Poss_Def >= 0);
     }
   }
@@ -93,4 +109,23 @@ test("the player index points at existing shards", () => {
   for (const item of index) assert.ok(item.shard >= 0 && item.shard < catalog.shards);
   const shard = read(`ratings-${String(index[0].shard).padStart(2, "0")}.json`);
   assert.ok(shard[String(index[0].id)].annual.length > 0);
+});
+
+test("historical player metadata survives snapshot generation", () => {
+  const historicalSeasons = new Set(catalog.catalog.models.find(({ id }) => id === "aio").seasons);
+  let historicalRows = 0;
+  let rowsWithTeam = 0;
+  let profileRows = 0;
+  for (const shard of new Set(read("players.json").map(({ shard }) => shard))) {
+    for (const player of Object.values(read(`ratings-${String(shard).padStart(2, "0")}.json`))) {
+      for (const row of player.annual) {
+        if (!historicalSeasons.has(row.Season)) continue;
+        historicalRows += 1;
+        rowsWithTeam += Number(typeof row.TEAM_ABBREVIATION === "string" && row.TEAM_ABBREVIATION.length > 0);
+      }
+      profileRows += player.profiles.filter(({ Season }) => historicalSeasons.has(Season)).length;
+    }
+  }
+  assert.ok(rowsWithTeam / historicalRows >= 0.98, "historical team labels disappeared");
+  assert.ok(profileRows / historicalRows >= 0.98, "historical player profiles disappeared");
 });

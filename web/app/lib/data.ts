@@ -655,21 +655,12 @@ export function availableModels(rows: RatingRow[]) {
 }
 
 export function resolveModel(rows: RatingRow[], wanted: ModelId) {
+  const models = availableModels(rows);
   return (
-    availableModels(rows).find(
-      (item) => item.id === wanted && item.available,
-    ) ?? MODELS[0]
+    models.find((item) => item.id === wanted && item.available) ??
+    models.find((item) => item.available) ??
+    models[0]
   );
-}
-
-/** One honest sentence about models the loaded snapshot cannot show. */
-export function missingModelNote(rows: RatingRow[]) {
-  const missing = availableModels(rows)
-    .filter((item) => !item.available)
-    .map((item) => item.label);
-  return missing.length
-    ? `${missing.join(" and ")} need a rebuilt data snapshot from the pinned runs.`
-    : "";
 }
 
 /* ------------------------------------------------------------------ load -- */
