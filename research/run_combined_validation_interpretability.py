@@ -14,6 +14,7 @@ import pandas as pd
 import yaml
 
 from nba_impact.data.manifest import sha256_file, write_json_atomic
+from nba_impact.models.box_pipm_style import BOX_PIPM_STYLE_FEATURES
 from nba_impact.models.combined_validation_interpretability import (
     align_game_predictions,
     align_prior_predictions,
@@ -56,40 +57,6 @@ TARGETS = ROOT / (
     "artifacts/models/five_year_target_spm/"
     "five_year_target_spm_v1_65550acb79/five_year_targets.parquet"
 )
-BOX_FEATURES = (
-    "PTS_p100",
-    "AST_p100",
-    "TOV_p100",
-    "STL_p100",
-    "BLK_p100",
-    "OREB_p100",
-    "DREB_p100",
-    "PF_p100",
-    "PFD_p100",
-    "FTA_p100",
-    "FTM_p100",
-    "FG2A_p100",
-    "FG2M_p100",
-    "FG3A_p100",
-    "FG3M_p100",
-)
-GROUPS = {
-    "shooting_scoring": (
-        "PTS_p100",
-        "FTA_p100",
-        "FTM_p100",
-        "FG2A_p100",
-        "FG2M_p100",
-        "FG3A_p100",
-        "FG3M_p100",
-    ),
-    "creation": ("AST_p100",),
-    "turnover": ("TOV_p100",),
-    "rebounding": ("OREB_p100", "DREB_p100"),
-    "disruption_fouls": ("STL_p100", "BLK_p100", "PF_p100", "PFD_p100"),
-}
-
-
 def _load_contract() -> dict:
     contract = yaml.safe_load(CONTRACT.read_text())
     expected = {
@@ -121,6 +88,10 @@ def main() -> None:
     contract = _load_contract()
     draws = int(contract["runtime_contract"]["bootstrap_draws"])
     seed = int(contract["runtime_contract"]["bootstrap_seed"])
+    groups = {
+        name: tuple(features)
+        for name, features in contract["interpretability"]["exact_groups"].items()
+    }
 
     priors = pd.read_parquet(FULL_RUN / "priors.parquet")
     targets = pd.read_parquet(TARGETS)
@@ -172,7 +143,9 @@ def main() -> None:
             raise AssertionError(f"Strict source parity failed for {metric}.")
     strict_bootstrap = pd.read_parquet(STRICT_RUN / "paired_bootstrap.parquet")
 
-    feature_panel = pd.read_parquet(FEATURES, columns=["PLAYER_ID", "Window_End", *BOX_FEATURES])
+    feature_panel = pd.read_parquet(
+        FEATURES, columns=["PLAYER_ID", "Window_End", *BOX_PIPM_STYLE_FEATURES]
+    )
     box_priors = pd.read_parquet(BOX_RUN / "priors.parquet")
     leaderboard = pd.read_parquet(INTERPRET_RUN / "active_2026_leaderboard.parquet")
     models = {
@@ -184,8 +157,8 @@ def main() -> None:
         raw_priors=box_priors,
         active_leaderboard=leaderboard,
         models=models,
-        feature_names=BOX_FEATURES,
-        groups=GROUPS,
+        feature_names=BOX_PIPM_STYLE_FEATURES,
+        groups=groups,
     )
     factor_predictions = pd.read_parquet(FACTOR_RUN / "factor_predictions.parquet")
     factor_skills = build_factor_skill_panel(
@@ -276,14 +249,32 @@ def main() -> None:
     source_paths = {
         "contract": CONTRACT,
         "full_run_manifest": FULL_RUN / "run.json",
+        "full_priors": FULL_RUN / "priors.parquet",
+        "full_game_predictions": FULL_RUN / "game_predictions.parquet",
         "strict_run_manifest": STRICT_RUN / "run.json",
+        "strict_game_predictions": STRICT_RUN / "game_predictions.parquet",
+        "strict_pooled_metrics": STRICT_RUN / "pooled_metrics.parquet",
+        "strict_paired_bootstrap": STRICT_RUN / "paired_bootstrap.parquet",
         "box_run_manifest": BOX_RUN / "run.json",
+        "box_priors": BOX_RUN / "priors.parquet",
+        "box_ratings": BOX_RUN / "ratings.parquet",
+        "box_offense_model": BOX_RUN / "models/2026_box_15_offense.joblib",
+        "box_defense_model": BOX_RUN / "models/2026_box_15_defense.joblib",
         "interpret_run_manifest": INTERPRET_RUN / "run.json",
+        "active_leaderboard": INTERPRET_RUN / "active_2026_leaderboard.parquet",
+        "global_model_dependence": INTERPRET_RUN / "group_permutation_summary.parquet",
         "factor_run_manifest": FACTOR_RUN / "run.json",
+        "factor_predictions": FACTOR_RUN / "factor_predictions.parquet",
+        "factor_metrics": FACTOR_RUN / "factor_metrics.parquet",
+        "factor_summary": FACTOR_RUN / "summary.parquet",
         "features": FEATURES,
         "targets": TARGETS,
         "implementation": ROOT
         / "src/nba_impact/models/combined_validation_interpretability.py",
+        "box_pipm_style_implementation": ROOT
+        / "src/nba_impact/models/box_pipm_style.py",
+        "validation_math_implementation": ROOT
+        / "src/nba_impact/models/impact_validation_suite.py",
         "runner": Path(__file__),
     }
     config = {

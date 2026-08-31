@@ -28,7 +28,7 @@ test("server-renders the compact ratings product shell", async () => {
   }
   assert.doesNotMatch(html, /href="#home"/i);
   assert.match(html, /NBA IMPACT/i);
-  assert.match(html, /Methodology/i);
+  assert.match(html, /Evidence/i);
   assert.doesNotMatch(html, /href="#matchups"/i);
   assert.match(html, /points per 100 possessions/i);
   assert.doesNotMatch(html, /win probability|brier|stable role/i);

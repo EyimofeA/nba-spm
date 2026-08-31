@@ -5201,7 +5201,7 @@ pinned to their original feature artifacts.
 defense, why does Box15 beat Full SPM after the RAPM update, and can the current
 AIO be decomposed without inventing causal components?
 
-**Method:** Run `combined_validation_interpretability_v1_0f84dac95b` is a
+**Method:** Run `combined_validation_interpretability_v1_274aa17c26` is a
 report-only join across pinned artifacts. It refits no model. It intersects
 5,911 player-window rows per prior before scoring five-year targets, requires
 6,141 identical next-season games for Box15 AIO, Full SPM AIO, and zero-prior
@@ -5219,7 +5219,7 @@ equal-season MSE `207.5483` versus `208.2290` for Full SPM AIO. Full-minus-Box
 paired MSE is `+0.6806`, with interval `[-0.2604, +1.6136]`; Full SPM does not
 establish an improvement. Full SPM has slightly higher correlation, `.3660`
 versus `.3610`, but a worse calibration slope, `.7551` versus `.8044`. The
-runner completed in `3.212` seconds. The 582-player additive ledger reconstructs
+runner completed in `3.200` seconds. The 582-player additive ledger reconstructs
 offense, defense, and net AIO with maximum error `1.78e-15`. Specialist factor
 models fit their intended targets, but TS, turnover, rebound, and their combined
 AIO arms all miss the frozen `.05`-RMSE promotion threshold.

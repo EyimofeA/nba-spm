@@ -3,13 +3,14 @@
 ## Decision
 
 Keep Box15 as the research AIO prior. The richer Full SPM is materially better
-at reproducing its five-year RAPM training target, but that advantage does not
+on its chronological, past-only five-year RAPM target test, but that advantage
+does not
 survive the fixed one-season RAPM update on next-season games. This is a
 calibration and prior-likelihood interaction result, not evidence that rich
 features contain no signal.
 
 The exact report-only run is
-`combined_validation_interpretability_v1_0f84dac95b`. It completed in `3.212`
+`combined_validation_interpretability_v1_274aa17c26`. It completed in `3.200`
 seconds, refit no model, used no Season 2027 data, and generated row-aligned
 validation, 2026 player component ledgers, factor-skill scores, and 2021--26
 player trajectories.
@@ -175,14 +176,15 @@ two layers:
 
 Across the five evaluated factor folds, the specialist models have mean R-squared
 of `0.601` offense / `0.424` defense for true shooting, `0.645` / `0.664` for
-turnovers, and `0.620` / `0.584` for rebounding. That confirms the specialist
-scores are interpretable descriptions of the intended factors.
+turnovers, and `0.620` / `0.584` for rebounding. The specialists therefore
+predict their declared factor targets well; R-squared does not establish causal
+responsibility or prove that each label captures the full basketball skill.
 
 It does not confirm that adding them improves AIO. Within the matched factor
 tournament, TS worsened mean RMSE by `0.0080` points/game; turnover improved it
 by `0.0014`; rebounding improved it by `0.0136`; and all factors together
 improved it by `0.0055`. Every result misses the frozen minimum improvement of
-`0.05`, and no factor candidate passes the full promotion gate.
+`0.05`, and no factor candidate passes the frozen primary gate.
 
 ## Future correct AIO
 
@@ -248,7 +250,7 @@ PYTHONPATH=src .venv/bin/python research/run_combined_validation_interpretabilit
 ```
 
 The content-addressed artifact directory is
-`artifacts/research/combined_validation_interpretability/combined_validation_interpretability_v1_0f84dac95b/`.
+`artifacts/research/combined_validation_interpretability/combined_validation_interpretability_v1_274aa17c26/`.
 Its principal outputs are:
 
 - `next_season_game_summary.parquet` and

@@ -23,7 +23,7 @@ export const GROUP_LABEL: Record<SkillGroup, string> = {
   shared: "Both ends",
 };
 
-/** Every skill the snapshot publishes, grouped and ordered around the ring. */
+/** Every skill the snapshot publishes, grouped in the fingerprint. */
 export const SKILLS: { key: string; label: string; group: SkillGroup }[] = [
   { key: "shooting", label: "Shooting", group: "offense" },
   { key: "spacing", label: "Spacing", group: "offense" },
@@ -57,25 +57,18 @@ const polar = (cx: number, cy: number, radius: number, degrees: number) => {
   };
 };
 
-function wedgePath(
-  cx: number,
-  cy: number,
-  radius: number,
-  from: number,
-  to: number,
-) {
-  const start = polar(cx, cy, radius, from);
-  const end = polar(cx, cy, radius, to);
-  const large = to - from > 180 ? 1 : 0;
-  return `M${cx},${cy} L${start.x},${start.y} A${radius},${radius} 0 ${large} 1 ${end.x},${end.y} Z`;
-}
+const labelLines = (label: string) => {
+  const words = label.split(" ");
+  return words.length > 1
+    ? [words.slice(0, -1).join(" "), words.at(-1) ?? ""]
+    : [label];
+};
 
 /**
- * Season-relative percentile as a wedge ring. Radius carries the value and hue
- * carries the skill group. Only the strongest and weakest wedges are
- * direct-labelled — a number on every wedge goes unread — and the table view
- * carries the rest, which is also the relief for the light-mode slots that sit
- * under 3:1 on the surface.
+ * A basketball scouting-card fingerprint. Each vertical lane is a
+ * season-relative percentile: offense at one end of the court, shared skills
+ * at centre court, and defense at the other. Direct labels keep every value
+ * readable without a hover; the focusable lane adds the fuller tooltip.
  */
 export function Pizza({
   slices,
@@ -88,85 +81,118 @@ export function Pizza({
   if (slices.length < 3)
     return <div className="empty">No skill profile for this season.</div>;
 
-  // Category labels need horizontal room on both sides but only a line of it
-  // above and below, so the frame is wider than it is tall.
-  const boxW = size + 156;
-  const boxH = size + 76;
-  const cx = boxW / 2;
-  const cy = boxH / 2;
-  const radius = size / 2;
-  const step = 360 / slices.length;
-  const gap = 0.9; // the surface showing between wedges does the separating
-
-  const ranked = [...slices].sort((a, b) => b.value - a.value);
-  const flagged = new Set(
-    [...ranked.slice(0, 2), ...ranked.slice(-2)].map((slice) => slice.key),
-  );
+  const boxW = Math.max(size + 80, 360);
+  const boxH = Math.max(size + 64, 360);
+  const inset = 28;
+  const top = 30;
+  const bandH = (boxH - top - 28) / 3;
+  const centerX = boxW / 2;
+  const courtMid = top + bandH * 1.5;
+  const groups: SkillGroup[] = ["offense", "shared", "defense"];
 
   return (
     <ChartBody bodyRef={bodyRef}>
       <svg
         viewBox={`0 0 ${boxW} ${boxH}`}
         role="img"
-        aria-label="Skill percentile profile"
+        aria-label="Basketball skill percentile fingerprint"
       >
-        {[25, 50, 75, 100].map((ring) => (
-          <circle
-            key={ring}
-            className="grid-line"
-            cx={cx}
-            cy={cy}
-            r={(radius * ring) / 100}
-            fill="none"
-          />
-        ))}
+        <rect
+          x={inset / 2}
+          y={12}
+          width={boxW - inset}
+          height={boxH - 24}
+          rx={10}
+          fill="var(--surface-2)"
+          stroke="var(--border)"
+        />
+        <line className="grid-line" x1={inset} x2={boxW - inset} y1={courtMid} y2={courtMid} />
+        <circle className="grid-line" cx={centerX} cy={courtMid} r={20} fill="none" />
+        <path
+          d={`M${centerX - 42},${courtMid - 20}a42,42 0 0,0 84,0M${centerX - 42},${courtMid + 20}a42,42 0 0,1 84,0`}
+          fill="none"
+          stroke="var(--grid)"
+          strokeWidth="1"
+        />
+        <text className="axis-title" x={inset} y={24}>SKILL FINGERPRINT · SEASON PERCENTILES</text>
 
-        {slices.map((slice, index) => {
-          const from = index * step + gap;
-          const to = (index + 1) * step - gap;
-          const value = Math.max(0, Math.min(100, slice.value));
-          const mid = (from + to) / 2;
-          const labelPoint = polar(cx, cy, radius + 22, mid);
-          const valuePoint = polar(cx, cy, (radius * value) / 100 + 15, mid);
-          const anchor =
-            Math.abs(labelPoint.x - cx) < 14
-              ? "middle"
-              : labelPoint.x > cx
-                ? "start"
-                : "end";
+        {groups.map((group, groupIndex) => {
+          const skills = slices.filter((slice) => slice.group === group);
+          if (!skills.length) return null;
+          const y = top + groupIndex * bandH;
+          const meterTop = y + 43;
+          const meterH = Math.max(24, bandH - 82);
+          const laneW = Math.min(86, (boxW - inset * 2) / skills.length);
+          const startX = centerX - (laneW * skills.length) / 2;
           return (
-            <g key={slice.key}>
-              <path
-                d={wedgePath(cx, cy, (radius * value) / 100, from, to)}
-                fill={GROUP_COLOR[slice.group]}
-                opacity={tip && tip.datum.key !== slice.key ? 0.55 : 0.9}
+            <g key={group}>
+              <line
+                x1={inset}
+                x2={boxW - inset}
+                y1={y + 30}
+                y2={y + 30}
+                stroke={GROUP_COLOR[group]}
+                strokeOpacity="0.35"
               />
               <text
-                className="cat-label"
-                x={labelPoint.x}
-                y={labelPoint.y + 4}
-                textAnchor={anchor}
+                x={inset}
+                y={y + 20}
+                fill={GROUP_COLOR[group]}
+                fontFamily="var(--mono)"
+                fontSize="10"
+                fontWeight="600"
+                letterSpacing="1.4"
               >
-                {slice.label}
+                {GROUP_LABEL[group].toUpperCase()}
               </text>
-              {flagged.has(slice.key) && (
-                <text
-                  className="mark-value"
-                  x={valuePoint.x}
-                  y={valuePoint.y + 4}
-                  textAnchor="middle"
-                >
-                  {Math.round(slice.value)}
-                </text>
-              )}
-              {/* The wedge's own sector is the hit target, out to the full radius. */}
-              <path
-                className="hit"
-                d={wedgePath(cx, cy, radius + 14, from - gap, to + gap)}
-                tabIndex={0}
-                aria-label={`${slice.label}: ${ordinalSuffix(slice.value)} percentile`}
-                {...bind(slice)}
-              />
+              {skills.map((slice, index) => {
+                const value = Math.max(0, Math.min(100, slice.value));
+                const x = startX + laneW * index + laneW / 2;
+                const fillH = value === 0 ? 0 : Math.max(2, (meterH * value) / 100);
+                const fillY = meterTop + meterH - fillH;
+                const faded = Boolean(tip && tip.datum.key !== slice.key);
+                return (
+                  <g key={slice.key} opacity={faded ? 0.48 : 1}>
+                    <rect
+                      x={x - 12}
+                      y={meterTop}
+                      width={24}
+                      height={meterH}
+                      rx={12}
+                      fill="var(--page)"
+                      stroke="var(--grid)"
+                    />
+                    <rect
+                      x={x - 9}
+                      y={fillY}
+                      width={18}
+                      height={fillH}
+                      rx={9}
+                      fill={GROUP_COLOR[group]}
+                    />
+                    <circle cx={x} cy={fillY} r={5} fill="var(--surface-1)" stroke={GROUP_COLOR[group]} strokeWidth="2" />
+                    <text className="mark-value" x={x} y={meterTop - 8} textAnchor="middle">
+                      {Math.round(value)}
+                    </text>
+                    <text className="cat-label" x={x} y={meterTop + meterH + 17} textAnchor="middle">
+                      {labelLines(slice.label).map((line, lineIndex) => (
+                        <tspan key={lineIndex} x={x} dy={lineIndex ? 11 : 0}>{line}</tspan>
+                      ))}
+                    </text>
+                    <rect
+                      className="hit"
+                      x={x - laneW / 2}
+                      y={y + 31}
+                      width={laneW}
+                      height={bandH - 31}
+                      rx={5}
+                      tabIndex={0}
+                      aria-label={`${slice.label}: ${ordinalSuffix(slice.value)} percentile`}
+                      {...bind(slice)}
+                    />
+                  </g>
+                );
+              })}
             </g>
           );
         })}
