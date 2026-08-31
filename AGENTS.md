@@ -153,9 +153,12 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
 - Corrected observed-defense run `observed_defense_dashboards_v1_1a62103de7d7`
   normalizes both expected and actual field-goal percentages to percentage
   points before subtraction. Completion repaired 107 invalid source TS rows.
-  Distribution audit `spm_input_distribution_audit_v1_f54723b16e` has no
-  blocking feature failures. It displays players with at least 500 possessions
-  and keeps all low-exposure tails in the audit table.
+  The five-feature display audit missed stale `true_shooting_pct_relative`
+  values derived before TS repair. Feature run
+  `semantically_complete_spm_features_v1_fdee01ec4e` rebuilds that field after
+  stabilization. Full audit `spm_full_range_audit_v1_7ba92eb718` covers all 175
+  inputs, finds no remaining stable-domain failure, and records 45 within-side
+  feature pairs with absolute correlation at least `.95`.
 - These repairs rebuild feature inputs only. Rich-SPM results fitted from the
   earlier invalid inputs remain provisional until they are rerun under
   `impact_validation_v2`. Box15 does not consume zTS or rim points saved.

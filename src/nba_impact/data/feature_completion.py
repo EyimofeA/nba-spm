@@ -284,6 +284,15 @@ def complete_selected_feature_panel(
     else:
         attempts = pd.Series(0.0, index=output.index)
         output["true_shooting_pct"] = repaired_ts
+    if "true_shooting_pct_relative" in selected_union:
+        weights = pd.to_numeric(output["OffPoss"], errors="coerce").clip(lower=0.0)
+        weighted_ts = output["true_shooting_pct"] * weights
+        season_weighted_ts = weighted_ts.groupby(output["Window_End"]).transform("sum")
+        season_weight = weights.groupby(output["Window_End"]).transform("sum")
+        season_center = season_weighted_ts / season_weight.replace(0.0, np.nan)
+        output["true_shooting_pct_relative"] = (
+            output["true_shooting_pct"] - season_center
+        ).fillna(0.0)
     invalid_source_ts = loose_mask & invalid_player_ts
     fallback_expected = output["Window_End"].map(expected_by_season)
     expected_ts = loose_values["playtype_expected_ts_pct"].where(
