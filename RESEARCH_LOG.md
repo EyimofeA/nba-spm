@@ -5487,3 +5487,32 @@ slope is also worse at `1.2412`.
 challenger. Do not replace Box15 as the AIO prior. The standalone target result
 does not resolve the known downstream reversal. Retain ridge for Box15. Compare
 both priors next under the same precision-aware RAPM update and identical games.
+
+## 2026-08-31 — Rich annual SPM wins alone but loses after RAPM
+
+**Question:** Does the frozen rich annual SPM beat the canonical five-year
+Box15 prior on next-season games, alone and after the same precision-aware
+one-season RAPM update?
+
+**Method:** Run `annual_rich_forward_aio_v1_0f766b0ee4` scores rating seasons
+2022--25 on 4,911 identical next-season games from 2023--26. The rich learner
+and feature arm remain frozen from the 2018--21 screen. Each AIO selects offense
+and defense penalties from `1500, 3000, 4500, 6000` using only earlier game
+folds. The paired interval uses 5,000 whole-game draws within season.
+
+**Result:** Rich annual SPM beats five-year Box15 alone: equal-season MSE
+`214.413` versus `218.853`, a rich-minus-Box15 difference of `-4.440` with 95%
+interval `[-6.694, -2.246]`. The order reverses after the possession update.
+Rich AIO MSE is `210.151`; Box15 AIO MSE is `207.296`. Rich-minus-Box15 AIO is
+`+2.855`, with interval `[1.553, 4.185]`. Both comparisons have the same winner
+in all four folds.
+
+The RAPM update gains `4.262` MSE points for rich SPM and `11.557` for Box15.
+Rich prior forecasts correlate `.507` with their RAPM update versus `.322` for
+Box15. The update correlates `.149` with the rich prior residual versus `.229`
+for Box15.
+
+**Decision:** Keep the rich annual SPM as the stronger standalone statistical
+rating. Keep five-year Box15 as the research AIO prior. The rich model appears
+to duplicate more of the one-season possession signal, so better RAPM target
+fit does not create a more complementary prior.

@@ -1,0 +1,57 @@
+schema_version: experiment_preregistration_v1
+experiment_id: annual_rich_forward_aio_v1
+status: frozen_reused_diagnostic
+estimand_id: prior_validation_suite_v1
+
+question: >-
+  Does the frozen rich annual SPM beat the canonical five-year Box15 prior,
+  alone and after the same precision-aware one-season RAPM update?
+
+information_cutoff:
+  calibration_rating_season: 2021
+  scored_rating_seasons: [2022, 2023, 2024, 2025]
+  test_seasons: [2023, 2024, 2025, 2026]
+  training_rule: annual rich SPM trains only on seasons before its rating season
+
+priors:
+  annual_rich_spm:
+    target: one-season zero-prior terminal-lineup RAPM
+    offense_learner: frozen elastic net
+    defense_learner: frozen ridge
+    feature_arm: audited_all
+  five_year_box15:
+    target: five-year zero-prior terminal-lineup RAPM
+    learner: ridge
+    features: canonical Box15
+
+aio_update:
+  likelihood_seasons: 1
+  offense_penalty_grid: [1500, 3000, 4500, 6000]
+  defense_penalty_grid: [1500, 3000, 4500, 6000]
+  home_penalty: 300
+  selection: lowest equal-season whole-game MSE on earlier rating seasons only
+  center_scale: 1
+  lineup_policy: terminal
+
+evaluation:
+  primary: equal-season mean next-season whole-game margin MSE
+  secondary:
+    - equal-season RMSE
+    - next-season game-margin correlation
+    - calibration slope
+    - paired whole-game MSE interval
+  identical_games: required within every test season
+  uncertainty:
+    draws: 5000
+    unit: whole game within test season
+    seed: 20260831
+
+stopping_rules:
+  - Do not retune either SPM learner or feature set.
+  - Do not change the Box15 feature contract.
+  - Do not search another RAPM penalty grid after seeing results.
+  - Treat all scored seasons as reused diagnostic evidence.
+
+forbidden_interpretation: >-
+  This reused comparison cannot promote a production model or establish that
+  one prior estimates true player impact better.

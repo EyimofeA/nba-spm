@@ -330,6 +330,12 @@ Canonical code: `src/nba_impact/models/annual_aio_ratings.py` and
 `src/nba_impact/models/rapm.py`.
 
 - Validation run `impact_validation_suite_v1_4f2ad7cdd8` keeps BoxPIPM-style as the research AIO prior. Four-way run `pipm_four_way_comparison_v1_0f1473b838` also beats a third-party PIPM reference after the same RAPM update, but the attached original file is partial and 2027 remains required.
+- Forward run `annual_rich_forward_aio_v1_0f766b0ee4` confirms the split: the
+  frozen rich annual SPM beats five-year Box15 alone, but Box15 wins after both
+  receive chronologically selected precision-aware one-season RAPM updates.
+  Keep rich annual SPM as a standalone challenger and Box15 as the research AIO
+  prior.
+
 ## Evidence rules
 
 - Season 2027 is reserved as untouched annual confirmation. Do not use it for

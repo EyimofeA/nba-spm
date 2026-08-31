@@ -1,0 +1,236 @@
+{
+  "config": {
+    "experiment_id": "annual_rich_forward_aio_v1",
+    "model_order": [
+      "annual_rich_spm",
+      "five_year_box15",
+      "annual_rich_spm_aio",
+      "five_year_box15_aio"
+    ],
+    "penalty_grid": [
+      1500.0,
+      3000.0,
+      4500.0,
+      6000.0
+    ],
+    "rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "scored_rating_seasons": [
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "sources": {
+      "annual_manifest": {
+        "path": "artifacts/research/annual_spm_learner_screen/annual_spm_learner_screen_v1_74808a8ae2/run.json",
+        "sha256": "31b320d895553ccb60a59cbccdcf5c4a012bfe92a60ec6b161754e7c994c76e1"
+      },
+      "annual_possessions_2020": {
+        "path": "rapm/data/possession_cache/matchups_2020.parquet",
+        "sha256": "b177865501897984437fcc8c08ee229ff462e0319e032f7642b5077670d375c6"
+      },
+      "annual_possessions_2021": {
+        "path": "rapm/data/possession_cache/matchups_2021.parquet",
+        "sha256": "0bfd107dad6959b1a45e4c7762fcde2d901e364d64b632299deeb22092749a6a"
+      },
+      "annual_possessions_2022": {
+        "path": "rapm/data/possession_cache/matchups_2022.parquet",
+        "sha256": "b04388818590ad1bff4fb6b9ca9d27dd4ac9dc6dd744c34160153206bcb32248"
+      },
+      "annual_possessions_2023": {
+        "path": "rapm/data/possession_cache/matchups_2023.parquet",
+        "sha256": "15f710ba2964bcbc80ca4753038b8c22fb18188bafd0cb62c886ac39840faa15"
+      },
+      "annual_predictions": {
+        "path": "artifacts/research/annual_spm_learner_screen/annual_spm_learner_screen_v1_74808a8ae2/predictions.parquet",
+        "sha256": "2389ccd011d481e5647c43399ce6bb15694c97906e0623242303faa5e48e1fe2"
+      },
+      "box_manifest": {
+        "path": "artifacts/research/compact_spm_comparison/compact_spm_comparison_v1_2a0f8a6f31/run.json",
+        "sha256": "7070baf30da7a964ef45631b84216128edd221746ec97edb7edbf4f4716a66fa"
+      },
+      "box_priors": {
+        "path": "artifacts/research/compact_spm_comparison/compact_spm_comparison_v1_2a0f8a6f31/priors.parquet",
+        "sha256": "3f55b70d9ad2ce411ff21a279744606a85ee392713e9727e357cb54684672f08"
+      },
+      "contract": {
+        "path": "research/experiments/annual_rich_forward_aio_v1.yml",
+        "sha256": "2e19c56110e45bc47b2e2759c74172a2799ccc9061af193138ff8e967cf024bc"
+      },
+      "matrix_manifest_2021": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2021/manifest.json",
+        "sha256": "33be4c9bc5b9f324e0c269b364e71aa4dc26117c20eb7e6640cdcc1b76187c8a"
+      },
+      "matrix_manifest_2022": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2022/manifest.json",
+        "sha256": "5206445af95e91cba94d1350268fe3ca395debb170a61eff0dfd83001fc1ece5"
+      },
+      "matrix_manifest_2023": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2023/manifest.json",
+        "sha256": "4b7d7fbcae5b24c37e795ab115dea03f20c01e4c0456adbe232fe706feafc91a"
+      },
+      "matrix_manifest_2024": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2024/manifest.json",
+        "sha256": "fca774fbfa755851d5325eae7ab1c6626ae0108d193d029bfeae537f6edde83d"
+      },
+      "matrix_manifest_2025": {
+        "path": "research/rapm_lab/outputs/rolling_5y_2014_2026/rolling_5y_rapm_2014_2026_a7754bfb77/lambda_matrices/5y_end_2025/manifest.json",
+        "sha256": "0fc7d3316833f2984ae365fe492519128e120808061068190484fc614c94de10"
+      },
+      "runner": {
+        "path": "research/run_annual_rich_forward_aio.py",
+        "sha256": "7f79e3a4019ce1a19fbec8ffd4d1b0a30196f64813476c255371546c4e02c84f"
+      }
+    }
+  },
+  "contract": {
+    "aio_update": {
+      "center_scale": 1,
+      "defense_penalty_grid": [
+        1500,
+        3000,
+        4500,
+        6000
+      ],
+      "home_penalty": 300,
+      "likelihood_seasons": 1,
+      "lineup_policy": "terminal",
+      "offense_penalty_grid": [
+        1500,
+        3000,
+        4500,
+        6000
+      ],
+      "selection": "lowest equal-season whole-game MSE on earlier rating seasons only"
+    },
+    "estimand_id": "prior_validation_suite_v1",
+    "evaluation": {
+      "identical_games": "required within every test season",
+      "primary": "equal-season mean next-season whole-game margin MSE",
+      "secondary": [
+        "equal-season RMSE",
+        "next-season game-margin correlation",
+        "calibration slope",
+        "paired whole-game MSE interval"
+      ],
+      "uncertainty": {
+        "draws": 5000,
+        "seed": 20260831,
+        "unit": "whole game within test season"
+      }
+    },
+    "experiment_id": "annual_rich_forward_aio_v1",
+    "forbidden_interpretation": "This reused comparison cannot promote a production model or establish that one prior estimates true player impact better.",
+    "information_cutoff": {
+      "calibration_rating_season": 2021,
+      "scored_rating_seasons": [
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "test_seasons": [
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "training_rule": "annual rich SPM trains only on seasons before its rating season"
+    },
+    "priors": {
+      "annual_rich_spm": {
+        "defense_learner": "frozen ridge",
+        "feature_arm": "audited_all",
+        "offense_learner": "frozen elastic net",
+        "target": "one-season zero-prior terminal-lineup RAPM"
+      },
+      "five_year_box15": {
+        "features": "canonical Box15",
+        "learner": "ridge",
+        "target": "five-year zero-prior terminal-lineup RAPM"
+      }
+    },
+    "question": "Does the frozen rich annual SPM beat the canonical five-year Box15 prior, alone and after the same precision-aware one-season RAPM update?",
+    "schema_version": "experiment_preregistration_v1",
+    "status": "frozen_reused_diagnostic",
+    "stopping_rules": [
+      "Do not retune either SPM learner or feature set.",
+      "Do not change the Box15 feature contract.",
+      "Do not search another RAPM penalty grid after seeing results.",
+      "Treat all scored seasons as reused diagnostic evidence."
+    ]
+  },
+  "created_at": "2026-08-31T22:52:06.605256+00:00",
+  "experiment_id": "annual_rich_forward_aio_v1",
+  "files": {
+    "bootstrap_model_intervals.parquet": {
+      "path": "bootstrap_model_intervals.parquet",
+      "rows": 4,
+      "sha256": "02352fe0d6188262dd747d391aeb4c044c167a7dd47f24bf2372a48c6bbbf24c"
+    },
+    "complementarity_diagnostics.parquet": {
+      "path": "complementarity_diagnostics.parquet",
+      "rows": 8,
+      "sha256": "8bf44d14c68fa179ba1614d52a83e3740a8cc74f5c81c67e4a7c0cab0c9536dc"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "rows": 16,
+      "sha256": "70bc79a6c2d29aeecfeedb3902923c7d1501b6724dbf1ffe2d30240045e0c69b"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 19644,
+      "sha256": "ef429cfee8844bf494c9c47bef1126b0bf0eb5d74c5dec22e11163c1e7090c56"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 6,
+      "sha256": "11fa4ed119de7af85358ef01eb06541ae8ea95b9f3c183f7536466821d6cb492"
+    },
+    "precision_selections.parquet": {
+      "path": "precision_selections.parquet",
+      "rows": 8,
+      "sha256": "0e1e905a4ae0efb62c4657c4927091607d74c48329eab6621c215753d8304b13"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "rows": 10,
+      "sha256": "0763ce3314720dad922b3a88e67a8e74e3ee197b999a471915ea289d698e5f80"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "rows": 7707,
+      "sha256": "f29027c4ca498186146bbd41437878e803aae410f1c71182cd0df2c11b8c1577"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "rows": 17276,
+      "sha256": "03b50e3134fe59ab96f140ff700dbf293bb512e1dd4e6e42b4dd4364f033a10a"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "rows": 4,
+      "sha256": "a7a4f4ddd7a65d2b86c1bad14ccc0dee99c6b51e95b469da0b1e37224a9e955e"
+    }
+  },
+  "forbidden_interpretation": "This reused comparison cannot promote a production model or establish that one prior estimates true player impact better.",
+  "quality": {
+    "identical_games_within_fold": true,
+    "maximum_component_identity_error": 0.0,
+    "maximum_loaded_season": 2026
+  },
+  "run_id": "annual_rich_forward_aio_v1_0f766b0ee4",
+  "status": "reused_diagnostic_complete"
+}
