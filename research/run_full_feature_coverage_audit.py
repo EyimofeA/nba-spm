@@ -60,7 +60,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--panel-run",
-        default="full_spm_features_2014_2026_v1_21885aaf37",
+        default="full_spm_features_2014_2026_v1_60323ba959",
     )
     args = parser.parse_args()
     panel = PANEL_ROOT / args.panel_run
@@ -68,8 +68,8 @@ def main() -> None:
     selected = load_feature_contract(panel / "run.json")
     source_paths = {
         "playtype": FEATURE_ROOT / "playtype_impact/playtype_features_v1_182fb7e27a/features.parquet",
-        "dfg": FEATURE_ROOT / "observed_defense_dashboards/observed_defense_dashboards_v1_606bfaa097d7/dfg.csv",
-        "rim_dfg": FEATURE_ROOT / "observed_defense_dashboards/observed_defense_dashboards_v1_606bfaa097d7/rim_dfg.csv",
+        "dfg": FEATURE_ROOT / "observed_defense_dashboards/observed_defense_dashboards_v1_1a62103de7d7/dfg.csv",
+        "rim_dfg": FEATURE_ROOT / "observed_defense_dashboards/observed_defense_dashboards_v1_1a62103de7d7/rim_dfg.csv",
         "hustle": ROOT / "data/lake/bronze/gabriel_site_data/revision=782ec8b/hustle.csv",
         "matchup_defense": FEATURE_ROOT / "matchup_defense/matchup_defense_features_v1_72fcc2f921/features.parquet",
     }

@@ -1,0 +1,35 @@
+schema_version: experiment_preregistration_v1
+experiment_id: weekly_current_aio_oracle_pilot_v1
+status: preregistered_mechanical_reused_diagnostic
+created_at: 2026-08-30
+validation_contract: impact_validation_v2
+estimand_id: current_latent_strength_v1
+
+source_run:
+  run_id: predictive_current_aio_2026_v1_c18e2472ec
+  arm: selected_decay_spm_prior_aio
+  half_life_years: 2
+  test_seasons: [2024, 2025, 2026]
+  snapshot_policy: preseason_rating_frozen_within_season
+  same_season_update: none_in_mechanical_pilot
+
+evaluation:
+  cutoffs: weekly Mondays from November 1 through April 1
+  cutoff_time: start_of_day
+  horizon_days: 14
+  lineup_rule: observed future lineups supply exposure only
+  game_policy: retain every source-run game in each horizon
+  comparison: none
+
+rating_population:
+  active_definition: played in at least one regular-season game in the target season
+  evidence_rule: positive history exposure on both sides or a predictive SPM prior
+  expected_2026_excluded_no_evidence: 104
+  scope: local research display only
+
+stopping_rules:
+  - Do not refit, tune, or alter the saved current-AIO ratings.
+  - Do not use or regenerate retrospective SPM.
+  - Do not load Season 2027.
+  - Do not write public or web outputs.
+  - Do not interpret overlapping weekly windows as independent games.

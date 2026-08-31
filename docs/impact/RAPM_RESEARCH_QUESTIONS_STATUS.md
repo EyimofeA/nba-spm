@@ -4,6 +4,12 @@ Updated 2026-08-25. This reconciles the GPT Pro critique and the research-team
 brainstorm with the current CourtSignal repository. It is a decision ledger,
 not a claim that every historical run is production evidence.
 
+Execution update, 2026-08-29: the target-horizon, precision-weighting,
+feature-registry, label-sharing, publication-diagnostic, bivariate-state, and
+pooled-playoff tests are complete. See
+`docs/impact/FRONTIER_RESEARCH_CLOSEOUT_2026-08-29.md` for the final decisions.
+The tables below preserve the earlier question inventory.
+
 ## Short answers
 
 ### What makes a good target?

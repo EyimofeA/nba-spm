@@ -143,13 +143,11 @@ function PlayerBody({
     <>
       <div className="player-hero">
         <div className="player-identity">
-          <PlayerHeadshot id={player.PLAYER_ID} name={player.PLAYER_NAME} />
           <div>
           <p className="kicker">{active.label} · points per 100 possessions</p>
           <h1>{player.PLAYER_NAME}</h1>
           <div className="id-line">
             <span className="chip">{current?.TEAM_ABBREVIATION ?? "—"}</span>
-            <TeamLogo team={current?.TEAM_ABBREVIATION} />
             <span className="chip">
               {season - 1}–{String(season).slice(2)}
             </span>
@@ -188,43 +186,6 @@ function PlayerBody({
         </label>
         <ComponentToggle value={component} onChange={onComponent} />
       </div>
-
-      <section className="card compare-card">
-        <div className="card-head">
-          <div>
-            <p className="kicker">Comparison</p>
-            <h2>Put two players side by side</h2>
-          </div>
-        </div>
-        <div className="compare-search">
-          <input
-            aria-label="Find a player to compare"
-            placeholder="Find a player to compare"
-            value={compareQuery}
-            onChange={(event) => setCompareQuery(event.target.value)}
-          />
-          {compareMatches.length > 0 && (
-            <div className="compare-results">
-              {compareMatches.map((item) => (
-                <button type="button" key={item.id} onClick={() => { onCompare(item.id); setCompareQuery(""); }}>
-                  {item.name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        {comparePlayer ? (
-          <>
-            <ComparisonTable left={player} right={comparePlayer} model={model} />
-            <div className="grid two comparison-roles">
-              <RoleComparisonPlayer name={player.PLAYER_NAME} roles={roles} catalog={catalog} />
-              <RoleComparisonPlayer name={comparePlayer.PLAYER_NAME} roles={comparePlayer.roles.find((row) => row.Season === season)} catalog={catalog} />
-            </div>
-          </>
-        ) : (
-          <p className="note">Choose a second player to compare offense, defense, and net.</p>
-        )}
-      </section>
 
       <div className="grid">
         <Figure
@@ -278,6 +239,43 @@ function PlayerBody({
             onSelectX={onSeason}
           />
         </Figure>
+
+        <section className="card compare-card">
+          <div className="card-head">
+            <div>
+              <p className="kicker">Comparison</p>
+              <h2>Compare players</h2>
+            </div>
+          </div>
+          <div className="compare-search">
+            <input
+              aria-label="Find a player to compare"
+              placeholder="Find a player to compare"
+              value={compareQuery}
+              onChange={(event) => setCompareQuery(event.target.value)}
+            />
+            {compareMatches.length > 0 && (
+              <div className="compare-results">
+                {compareMatches.map((item) => (
+                  <button type="button" key={item.id} onClick={() => { onCompare(item.id); setCompareQuery(""); }}>
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {comparePlayer ? (
+            <>
+              <ComparisonTable left={player} right={comparePlayer} model={model} />
+              <div className="grid two comparison-roles">
+                <RoleComparisonPlayer name={player.PLAYER_NAME} roles={roles} catalog={catalog} />
+                <RoleComparisonPlayer name={comparePlayer.PLAYER_NAME} roles={comparePlayer.roles.find((row) => row.Season === season)} catalog={catalog} />
+              </div>
+            </>
+          ) : (
+            <p className="note">Choose a second player to compare offense, defense, and net.</p>
+          )}
+        </section>
 
         {hasLocalSkills && localSkillIndex && localSkills && (
           <PlayerSkills
@@ -383,18 +381,6 @@ function PlayerHeadshot({ id, name }: { id: number; name: string }) {
         <img src={`https://cdn.nba.com/headshots/nba/latest/260x190/${id}.png`} alt="" onError={() => setFailed(true)} />
       )}
     </div>
-  );
-}
-
-function TeamLogo({ team }: { team?: string | null }) {
-  const [failed, setFailed] = useState(false);
-  if (!team || failed) return <span className="team-logo fallback" aria-label={team ?? "Team unavailable"}>{team ?? "—"}</span>;
-  return (
-    <span className="team-logo" aria-label={`${team} logo`}>
-      {/* ESPN's public team-logo CDN is a presentation asset; fall back to the abbreviation offline. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`https://a.espncdn.com/i/teamlogos/nba/500/${team.toLowerCase()}.png`} alt="" onError={() => setFailed(true)} />
-    </span>
   );
 }
 

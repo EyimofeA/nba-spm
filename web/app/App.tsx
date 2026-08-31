@@ -34,8 +34,6 @@ import {
   loadPlayer,
   loadSeason,
 } from "./lib/data";
-import { HomeView } from "./views/HomeView";
-
 const PlayerView = lazy(() =>
   import("./views/PlayerView").then((module) => ({ default: module.PlayerView })),
 );
@@ -56,13 +54,18 @@ const SpmLabView = lazy(() =>
 );
 
 const ALL_TABS = [
-  { id: "home", label: "Overview" },
   { id: "ratings", label: "Ratings" },
   { id: "player", label: "Player" },
   { id: "roles", label: "Roles" },
   { id: "rapm-lab", label: "RAPM Lab" },
   { id: "spm-lab", label: "SPM Lab" },
   { id: "research", label: "Research" },
+] as const;
+
+const NAV_TABS = [
+  { id: "ratings", label: "Ratings" },
+  { id: "roles", label: "Roles" },
+  { id: "research", label: "Methodology" },
 ] as const;
 
 type Tab = (typeof ALL_TABS)[number]["id"];
@@ -99,24 +102,17 @@ const readHash = (showResearchLab: boolean): Route => {
         ? "ratings"
         : isTab(routed, showResearchLab)
           ? routed
-          : "home",
+          : "ratings",
     playerId: Number.isFinite(parsed) && parsed > 0 ? parsed : undefined,
   };
 };
 
 export function App() {
   const [hasLocalResearch, setHasLocalResearch] = useState(false);
-  const TABS = useMemo(
-    () =>
-      hasLocalResearch
-        ? ALL_TABS
-        : ALL_TABS.filter((tab) => !tab.id.endsWith("-lab")),
-    [hasLocalResearch],
-  );
 
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [index, setIndex] = useState<PlayerIndex[]>([]);
-  const [route, setRoute] = useState<Route>({ tab: "home" });
+  const [route, setRoute] = useState<Route>({ tab: "ratings" });
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
 
@@ -410,7 +406,6 @@ export function App() {
 
   const seasons = catalog?.catalog.seasons ?? [];
   const { tab } = route;
-  const playerLinkId = player?.PLAYER_ID;
 
   /* -------------------------------------------------------------- view --- */
 
@@ -419,12 +414,15 @@ export function App() {
       <header className="masthead">
         <a
           className="wordmark"
-          href="#home"
-          aria-label="CourtSignal, overview"
+          href="#ratings"
+          aria-label="CourtSignal ratings"
         >
-          <b>Court</b>
-          <span>Signal</span>
+          <b>COURTSIGNAL</b>
+          <span>NBA IMPACT</span>
         </a>
+        <span className="snapshot-status" aria-label={`NBA season ${season - 1} to ${season}`}>
+          NBA&nbsp;&nbsp;{season - 1}–{String(season).slice(2)}
+        </span>
         <div className="masthead-spacer" />
         <div className="search" ref={searchRef}>
           <form onSubmit={submitSearch} role="search">
@@ -490,14 +488,10 @@ export function App() {
       </header>
 
       <nav className="tabs" aria-label="Sections">
-        {TABS.map((item) => (
+        {NAV_TABS.map((item) => (
           <a
             key={item.id}
-            href={
-              item.id === "player" && playerLinkId
-                ? `#player/${playerLinkId}`
-                : `#${item.id}`
-            }
+            href={`#${item.id}`}
             className={tab === item.id ? "active" : ""}
             aria-current={tab === item.id ? "page" : undefined}
           >
@@ -511,13 +505,6 @@ export function App() {
           <div className="empty">{error || "Loading snapshot…"}</div>
         ) : (
           <Suspense fallback={<div className="empty">Loading view…</div>}>
-            {tab === "home" && (
-              <HomeView
-                rows={rows}
-                onGo={(next) => navigate(next)}
-                onPlayer={openPlayer}
-              />
-            )}
             {tab === "ratings" && rows.length > 0 && (
               <RatingsView
                 catalog={catalog}
@@ -575,7 +562,7 @@ export function App() {
       </main>
 
       <footer className="site-footer">
-        <p>Retrospective NBA impact research · points per 100 possessions.</p>
+        <p>NBA impact, measured in points per 100 possessions.</p>
       </footer>
 
       {error && (

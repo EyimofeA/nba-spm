@@ -56,7 +56,7 @@ def main() -> None:
         ),
         defensive_tracking_features_path=(
             FEATURE_ROOT
-            / "defensive_tracking/defensive_tracking_features_v1_42c93b2aa6/features.parquet"
+            / "defensive_tracking/defensive_tracking_features_v1_a4bd7c736a/features.parquet"
         ),
         matchup_defense_features_path=(
             FEATURE_ROOT
@@ -73,8 +73,8 @@ def main() -> None:
         player_sheet_dir=PLAYER_SHEETS,
         coverage_paths={
             "playtype": FEATURE_ROOT / "playtype_impact/playtype_features_v1_182fb7e27a/features.parquet",
-            "dfg": FEATURE_ROOT / "observed_defense_dashboards/observed_defense_dashboards_v1_606bfaa097d7/dfg.csv",
-            "rim_dfg": FEATURE_ROOT / "observed_defense_dashboards/observed_defense_dashboards_v1_606bfaa097d7/rim_dfg.csv",
+            "dfg": FEATURE_ROOT / "observed_defense_dashboards/observed_defense_dashboards_v1_1a62103de7d7/dfg.csv",
+            "rim_dfg": FEATURE_ROOT / "observed_defense_dashboards/observed_defense_dashboards_v1_1a62103de7d7/rim_dfg.csv",
             "hustle": ROOT / "data/lake/bronze/gabriel_site_data/revision=782ec8b/hustle.csv",
             "matchup_defense": FEATURE_ROOT / "matchup_defense/matchup_defense_features_v1_72fcc2f921/features.parquet",
         },

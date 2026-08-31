@@ -1,0 +1,31 @@
+{
+  "description": "Small CourtSignal state and completion guards.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/courtsignal_guard.py\"",
+            "timeout": 5,
+            "statusMessage": "Loading CourtSignal state",
+            "additionalContextLimit": 1200
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/courtsignal_guard.py\"",
+            "timeout": 90,
+            "statusMessage": "Checking CourtSignal completion gates"
+          }
+        ]
+      }
+    ]
+  }
+}

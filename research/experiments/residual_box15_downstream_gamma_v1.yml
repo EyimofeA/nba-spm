@@ -1,0 +1,29 @@
+schema_version: experiment_preregistration_v1
+experiment_id: residual_box15_downstream_gamma_v1
+status: frozen_reused_diagnostic
+
+question: >-
+  Can earlier next-season game results select bounded offense and defense
+  residual scales that improve the Box15 AIO?
+
+information_cutoff:
+  rating_seasons: [2022, 2023, 2024, 2025, 2026]
+  evaluated_rating_seasons: [2022, 2023, 2024, 2025]
+  tuning_rule: use only evaluated rating seasons strictly before the rated season
+  season_2027: forbidden
+
+fixed_inputs:
+  residual_run: residual_box15_spm_v1_427c5f2c25
+  gamma_grid_offense: [0, 0.25, 0.5, 0.75, 1]
+  gamma_grid_defense: [0, 0.25, 0.5, 0.75, 1]
+  first_rating_season_fallback: [0, 0]
+  aio_update: one_season_rapm_3000_3000_300_center_scale_1
+
+primary_evaluation:
+  metric: equal_season_mean_next_season_game_margin_mse
+  uncertainty: 5000_paired_whole_game_bootstrap_draws_within_test_season
+  correlation_guard: challenger_no_more_than_0.01_below_control
+
+forbidden_interpretation: >-
+  This uses only earlier folds for scale selection, but all final scored seasons
+  remain reused evidence. It cannot promote a public model or use Season 2027.

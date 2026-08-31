@@ -1,0 +1,25 @@
+schema_version: experiment_preregistration_v1
+experiment_id: rapm_publication_diagnostics_v1
+status: frozen_reused_diagnostic
+
+inputs:
+  rolling_rapm: rolling_5y_rapm_2014_2026_a7754bfb77
+  fixed_window_intervals: production_5y_rapm_intervals_v1_e86fb09750
+  external_benchmark: external_reproduction_benchmark_v1_0a95702214
+  external_reference: Ryan_Davis_normal_RAPM
+  season_2027: forbidden
+
+outputs:
+  - player_window_lineup_separation_metadata
+  - strongest_teammate_collinearity_pairs
+  - graph_connectivity_summary
+  - annual_and_five_year_scale_audit_by_component_season_and_exposure
+
+rules:
+  - do_not_rescale_ratings_from_an_external_regression
+  - analytic_intervals_are_fixed_window_diagnostics_not_bias_aware_uncertainty
+  - connectivity_flags_describe_design_geometry_not_player_quality
+
+forbidden_interpretation: >-
+  External agreement is a reproduction check, not truth. Analytic intervals do
+  not cover ridge bias. Connectivity does not identify causal player value.

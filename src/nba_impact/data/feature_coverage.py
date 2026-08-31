@@ -147,6 +147,20 @@ def normalize_source_keys(frame: pd.DataFrame) -> pd.DataFrame:
     return keys.dropna().drop_duplicates().astype(int)
 
 
+def validate_coverage_lineage(
+    coverage_manifest: Mapping[str, object],
+    *,
+    panel_run_id: str,
+    source_hashes: Mapping[str, str],
+) -> None:
+    """Reject a coverage ledger built from another panel or source revision."""
+    if coverage_manifest.get("panel_run_id") != panel_run_id:
+        raise ValueError("Observed coverage does not describe the selected feature panel.")
+    recorded = coverage_manifest.get("source_hashes")
+    if not isinstance(recorded, dict) or recorded != dict(source_hashes):
+        raise ValueError("Observed coverage does not describe the selected source revisions.")
+
+
 def _source_membership(
     panel: pd.DataFrame,
     source_keys: pd.DataFrame,

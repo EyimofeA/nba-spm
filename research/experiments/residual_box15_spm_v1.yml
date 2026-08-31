@@ -1,0 +1,53 @@
+schema_version: experiment_preregistration_v1
+experiment_id: residual_box15_spm_v1
+status: frozen_reused_diagnostic
+estimand_id: five_year_normal_rapm_prior_validation_v1
+
+question: >-
+  Do completed non-Box15 features add transferable residual signal after the
+  frozen Box15 prior, before and after the same one-season RAPM update?
+
+information_cutoff:
+  available_windows: [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+  rating_seasons: [2022, 2023, 2024, 2025, 2026]
+  evaluated_rating_seasons: [2022, 2023, 2024, 2025]
+  test_seasons: [2023, 2024, 2025, 2026]
+  training_rule: window_end strictly before rating_season
+  season_2027: forbidden
+
+control:
+  model: Box15 ridge
+  target: five_year_zero_prior_rapm_3000_3000_300
+  sample_weight: sqrt_min_offensive_and_defensive_possessions
+  alpha_grid: [10, 30, 100, 300, 1000, 3000]
+
+challenger:
+  equation: Box15 plus gamma times cross_fitted_residual_ridge
+  residual_target: five_year_rapm_minus_cross_fitted_Box15
+  residual_features: completed_side_features_excluding_Box15
+  residual_alpha_grid: [10, 30, 100, 300, 1000, 3000]
+  gamma_grid: [0, 0.25, 0.5, 0.75, 1]
+  selection: leave_one_training_window_out
+
+fixed_aio:
+  likelihood_seasons: 1
+  lambda_offense: 3000
+  lambda_defense: 3000
+  lambda_home: 300
+  center_scale: 1
+
+primary_evaluation:
+  metric: equal_season_mean_next_season_game_margin_mse
+  uncertainty: 5000_paired_whole_game_bootstrap_draws_within_test_season
+  correlation_guard: challenger_no_more_than_0.01_below_control
+
+acceptance:
+  - residual labels are cross_fitted within every outer training fold
+  - both variants score identical player rows and games
+  - offense_plus_defense_equals_net
+  - season_2027_is_not_loaded
+
+forbidden_interpretation: >-
+  All scored seasons are reused evidence. This run may reject the residual
+  architecture or retain it as a challenger, but it cannot promote a public
+  model or consume Season 2027 confirmation.

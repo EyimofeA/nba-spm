@@ -5194,3 +5194,41 @@ source start; the flags preserve that source-era shift.
 **Decision:** Use this exact artifact for new rich-SPM research. Do not infer
 that a finite fallback was directly observed. Keep historical experiment runs
 pinned to their original feature artifacts.
+
+## 2026-08-31 — Combined validation and exact Box15 interpretation
+
+**Question:** Why does offense select a different rich-SPM learner from
+defense, why does Box15 beat Full SPM after the RAPM update, and can the current
+AIO be decomposed without inventing causal components?
+
+**Method:** Run `combined_validation_interpretability_v1_0f84dac95b` is a
+report-only join across pinned artifacts. It refits no model. It intersects
+5,911 player-window rows per prior before scoring five-year targets, requires
+6,141 identical next-season games for Box15 AIO, Full SPM AIO, and zero-prior
+RAPM, and carries forward the 466-game strict same-season Gate A diagnostic as
+a separate panel. A 5,000-draw paired whole-game bootstrap resamples within
+test season. Season 2027 is forbidden. For 2026, the runner decomposes each
+frozen Box15 ridge prediction into centered intercept, shooting/scoring,
+creation, turnover, rebounding, and disruption/foul contributions, then adds
+the saved RAPM update. Literal TS, turnover-avoidance, and rebound-specialist
+scores remain a separate non-additive layer.
+
+**Result:** Full SPM has lower six-season net target RMSE than Box15, `1.4875`
+versus `1.8465`. After the identical one-season RAPM update, Box15 AIO has
+equal-season MSE `207.5483` versus `208.2290` for Full SPM AIO. Full-minus-Box
+paired MSE is `+0.6806`, with interval `[-0.2604, +1.6136]`; Full SPM does not
+establish an improvement. Full SPM has slightly higher correlation, `.3660`
+versus `.3610`, but a worse calibration slope, `.7551` versus `.8044`. The
+runner completed in `3.212` seconds. The 582-player additive ledger reconstructs
+offense, defense, and net AIO with maximum error `1.78e-15`. Specialist factor
+models fit their intended targets, but TS, turnover, rebound, and their combined
+AIO arms all miss the frozen `.05`-RMSE promotion threshold.
+
+**Decision:** Keep Box15 as the research prior. The offense histogram-GBM and
+defense ridge choices reflect different held-out results under the same
+standard; they do not justify asymmetric RAPM penalties. Treat exact feature
+contributions as model accounting, not causal impact, and never add raw factor
+scores to AIO. The next candidate should be a bivariate dynamic current-strength
+state with learned prior precision, explicit factor-to-points bridges, weekly
+cutoffs, and separate oracle-lineup and projected-minutes tests. Keep Season
+2027 untouched.
