@@ -1,0 +1,43 @@
+{
+  "config": {
+    "correlation_threshold": 0.95,
+    "minimum_exposure": 500,
+    "quantiles": [
+      0.01,
+      0.5,
+      0.99
+    ],
+    "source_run_id": "semantically_complete_spm_features_v1_fdee01ec4e"
+  },
+  "created_at": "2026-08-31T16:23:14.775807+00:00",
+  "files": {
+    "feature_ranges.csv": {
+      "bytes": 74542,
+      "sha256": "b6cd4d3e67e490b4794ca25cc2cbe13475ef99b2f0ee7276ecc35fa5ee22dc49"
+    },
+    "high_correlation_pairs.csv": {
+      "bytes": 3667,
+      "sha256": "c2235d9ba676f31e3cbdda821a8171cc17530b48ae0d003dce39ab272a9714c0"
+    },
+    "range_violations.csv": {
+      "bytes": 22,
+      "sha256": "925a6585bcbb5b1493355643002999b20c0c23ce1efef5cf2646f821601175c4"
+    }
+  },
+  "notes": {
+    "raw_range": "all player-seasons, including tiny exposure",
+    "robust_range": "1st to 99th percentile among rows with at least 500 side-appropriate possessions"
+  },
+  "quality": {
+    "annual_rows": 6942,
+    "correlated_pairs_ge_0_95": 45,
+    "correlated_pairs_ge_0_99": 8,
+    "domain_violations": 0,
+    "features": 175,
+    "five_year_rows": 8620,
+    "nonfinite_values": 0,
+    "season_weighted_relative_ts_center_max_abs": 6.851647731606421e-17
+  },
+  "run_id": "spm_full_range_audit_v1_7ba92eb718",
+  "status": "data_quality_audit"
+}

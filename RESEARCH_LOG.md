@@ -5298,3 +5298,34 @@ buckets to one-season player RAPM. Use actual-age terms only for predictive
 lineup-strength research. Keep retrospective RAPM age-neutral. The three-season
 aligned horizon result is reused evidence; retain the broader seven-fold
 five-year result as the current neutral predictive target choice.
+
+## 2026-08-31 — Full SPM range audit found stale relative true shooting
+
+**Question:** Did the semantic-completion audit validate every model input's
+range, and which input problems can plausibly damage the rich SPM?
+
+**Result:** The earlier distribution plot checked Box15 plus five selected rich
+features. It did not inspect all 175 completed inputs. The full audit found that
+`true_shooting_pct` had been repaired and stabilized, but
+`true_shooting_pct_relative` still contained values derived from the invalid
+pre-repair source. Its maximum was `14.1835`, while corrected true shooting
+stayed between `.4283` and `.7209`. The completion step now rebuilds relative
+true shooting from corrected same-season values. New feature run
+`semantically_complete_spm_features_v1_fdee01ec4e` has 6,942 annual rows and
+8,620 five-year rows. All 175 inputs are finite. The new range audit
+`spm_full_range_audit_v1_7ba92eb718` reports zero stable-domain violations and
+checks all raw tails plus the 1st--99th percentile among players with at least
+500 side-appropriate possessions.
+
+The same audit found 45 within-side feature pairs with absolute correlation at
+least `.95` and eight at least `.99`. The strongest duplicates include raw and
+season-relative FTA, TOV, AST, PTS, and at-rim frequency. The source-availability
+flags for hustle and matchup data also correlate at `.9998` because those
+sources share almost the same season coverage.
+
+**Decision:** The old rich-SPM fit is not clean enough to interpret or promote.
+Do not label every extra feature harmful from correlated permutation scores.
+Freeze an age-adjusted retrospective RAPM target first. Then refit the corrected
+panel and run chronological leave-one-family-out and compact-representation
+ablations through the same AIO update. Treat the stale relative-TS field as a
+confirmed data defect and high correlations as pruning candidates.

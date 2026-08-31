@@ -183,3 +183,45 @@ def test_semantic_completion_stabilizes_true_shooting_within_season():
     assert complete.loc[1, "zts_pct_points"] == pytest.approx(100.0 * expected_tail - 50.0)
     assert complete.loc[2, "true_shooting_pct"] == 1.0
     assert quality["true_shooting_eb_prior_attempts"] == 100.0
+
+
+def test_semantic_completion_rebuilds_relative_true_shooting():
+    annual = pd.DataFrame({
+        "PLAYER_ID": [1, 2], "Window_End": [2026, 2026],
+        "OffPoss": [100.0, 100.0], "DefPoss": [100.0, 100.0],
+        "PTS_p100": [100.0, 50.0],
+        "FG2A_p100": [100.0, 100.0], "FG2M_p100": [50.0, 25.0],
+        "FG3A_p100": [0.0, 0.0], "FG3M_p100": [0.0, 0.0],
+        "FTA_p100": [0.0, 0.0], "FTM_p100": [0.0, 0.0],
+        "true_shooting_pct": [0.50, 0.25],
+        "true_shooting_pct_relative": [20.0, -20.0],
+        "zts_pct_points": [0.0, -25.0],
+    })
+    selected = {
+        "offense": (
+            "true_shooting_pct",
+            "true_shooting_pct_relative",
+            "zts_pct_points",
+        ),
+        "defense": (),
+    }
+    loose = pd.DataFrame({
+        "PLAYER_ID": [1, 2], "Season": [2026, 2026],
+        "zts_pct_points": [0.0, -25.0],
+        "playtype_expected_ts_pct": [50.0, 50.0],
+        "synergy_possessions": [100.0, 100.0],
+    })
+    sources = {
+        name: pd.DataFrame({"PLAYER_ID": [], "Season": []})
+        for name in ("hustle", "matchup_defense", "dfg", "rim_dfg")
+    }
+
+    complete, _, _, _ = complete_selected_feature_panel(
+        annual, annual[["PLAYER_ID", "Window_End"]], selected,
+        strict_playtype=pd.DataFrame({"PLAYER_ID": [], "Season": []}),
+        loose_playtype=loose, source_keys=sources,
+    )
+
+    assert complete["true_shooting_pct_relative"].tolist() == pytest.approx(
+        [0.0625, -0.0625]
+    )
