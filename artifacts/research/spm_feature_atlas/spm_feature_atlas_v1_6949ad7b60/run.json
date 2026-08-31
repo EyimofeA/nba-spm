@@ -1,0 +1,131 @@
+{
+  "config": {
+    "experiment_id": "spm_feature_atlas_v1",
+    "features": 178,
+    "seasons": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "sources": {
+      "builder": {
+        "path": "research/build_spm_feature_atlas.py",
+        "sha256": "cef4c330077697e0130b39d156caef892b7ebe17d88c9ed55b46e975f26190e0"
+      },
+      "contract": {
+        "path": "research/experiments/spm_feature_atlas_v1.yml",
+        "sha256": "96a5aec3189cb6ae388b7b90444594486d80a7821363b4951e7bca4f78eed971"
+      },
+      "feature_panel": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_fdee01ec4e/five_year_features.parquet",
+        "sha256": "5e3f5b3697be365203dd906c2162647eab4ec7e282e95e80ef5bbe0123ef9b84"
+      },
+      "mechanism_panel": {
+        "path": "artifacts/research/mechanism_feature_panel/mechanism_feature_panel_v1_9224606a01/five_year_features.parquet",
+        "sha256": "da8618bdd0331b84be41b5460dc80435a83734aac8ed9759cda5c11adc1faab6"
+      },
+      "registry": {
+        "path": "artifacts/research/exhaustive_spm_feature_registry/exhaustive_spm_feature_registry_v1_1ea059390e/feature_registry.parquet",
+        "sha256": "efd1a5cda32b282ebe100b06505f5d913cbd2670af84cdb0541c58e643865dba"
+      }
+    },
+    "thresholds": {
+      "source_shift_absolute_smd": 1.0,
+      "source_shift_auc": 0.7,
+      "stable_redundancy_absolute_correlation": 0.95
+    }
+  },
+  "contract": {
+    "checks": [
+      "finite coverage and empirical range",
+      "adjacent-season player stability",
+      "early-versus-late standardized mean difference",
+      "early-versus-late univariate AUC",
+      "within-era pairwise redundancy"
+    ],
+    "eras": {
+      "early": [
+        2018,
+        2019,
+        2020,
+        2021
+      ],
+      "late": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ]
+    },
+    "experiment_id": "spm_feature_atlas_v1",
+    "forbidden_inputs": [
+      "RAPM targets",
+      "future outcomes",
+      "player IDs as predictors"
+    ],
+    "forbidden_interpretation": "Measurement stability and redundancy do not establish player value or downstream AIO improvement.",
+    "inputs": {
+      "completed_panel": "semantically_complete_spm_features_v1_fdee01ec4e",
+      "mechanism_panel": "mechanism_feature_panel_v1_9224606a01",
+      "registry": "exhaustive_spm_feature_registry_v1_1ea059390e",
+      "seasons": [
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ]
+    },
+    "question": "Which completed SPM fields are measured consistently enough to enter a supervised chronological feature screen?",
+    "schema_version": "experiment_preregistration_v1",
+    "status": "target_free_measurement_audit",
+    "thresholds": {
+      "source_shift_absolute_smd": 1.0,
+      "source_shift_auc": 0.7,
+      "stable_redundancy_absolute_correlation": 0.95
+    }
+  },
+  "created_at": "2026-08-31T20:47:15.038027+00:00",
+  "experiment_id": "spm_feature_atlas_v1",
+  "files": {
+    "feature_atlas.csv": {
+      "path": "feature_atlas.csv",
+      "rows": 178,
+      "sha256": "c7b82ed461d853d3dc1e18af50adec96d8a45ff6f00dbbcd0c0a162c2e8e8e68"
+    },
+    "feature_atlas.parquet": {
+      "path": "feature_atlas.parquet",
+      "rows": 178,
+      "sha256": "c555ef7310ecd0e1c85f2cbd89d39bb62e34976cc252efd4119d10bacf3d625b"
+    },
+    "redundancy_pairs.parquet": {
+      "path": "redundancy_pairs.parquet",
+      "rows": 17,
+      "sha256": "07c52b5b9d6dcaa089f5b0e7dd2fef56e00333eee7085da911b400333d3fb130"
+    }
+  },
+  "forbidden_interpretation": "Measurement stability and redundancy do not establish player value or downstream AIO improvement.",
+  "quality": {
+    "missing_values": 0,
+    "season_2027_loaded": false
+  },
+  "results": {
+    "eligible_features": 138,
+    "features": 178,
+    "source_shift_flags": 14,
+    "stable_redundancy_pairs": 13
+  },
+  "run_id": "spm_feature_atlas_v1_6949ad7b60",
+  "status": "target_free_measurement_audit_complete"
+}

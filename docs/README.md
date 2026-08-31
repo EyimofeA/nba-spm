@@ -79,6 +79,9 @@ Start at the repository root:
   exact row-aligned validation, the Full SPM versus Box15 diagnosis, additive
   2026 AIO accounting, factor skills, trajectories, and the future dynamic-AIO
   design;
+- [`impact/AIO_PRIOR_CALIBRATION_AND_FEATURE_ATLAS_V1.md`](impact/AIO_PRIOR_CALIBRATION_AND_FEATURE_ATLAS_V1.md) —
+  frozen prior mean-versus-precision diagnosis, target-free feature stability
+  atlas, and the clean learner-screen feasibility boundary;
 - [`impact/WALK_FORWARD_SPM_PILOT_V1.md`](impact/WALK_FORWARD_SPM_PILOT_V1.md) —
   one-cutoff Full SPM versus BoxSPM future-game implementation check;
 - [`impact/BOX_VS_TRACKING_SPM_PILOT_V1.md`](impact/BOX_VS_TRACKING_SPM_PILOT_V1.md) —

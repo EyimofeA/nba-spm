@@ -1,0 +1,28 @@
+schema_version: experiment_preregistration_v1
+experiment_id: spm_feature_atlas_v1
+status: target_free_measurement_audit
+question: >-
+  Which completed SPM fields are measured consistently enough to enter a
+  supervised chronological feature screen?
+inputs:
+  completed_panel: semantically_complete_spm_features_v1_fdee01ec4e
+  mechanism_panel: mechanism_feature_panel_v1_9224606a01
+  registry: exhaustive_spm_feature_registry_v1_1ea059390e
+  seasons: [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+eras:
+  early: [2018, 2019, 2020, 2021]
+  late: [2022, 2023, 2024, 2025, 2026]
+checks:
+  - finite coverage and empirical range
+  - adjacent-season player stability
+  - early-versus-late standardized mean difference
+  - early-versus-late univariate AUC
+  - within-era pairwise redundancy
+thresholds:
+  source_shift_auc: 0.70
+  source_shift_absolute_smd: 1.00
+  stable_redundancy_absolute_correlation: 0.95
+forbidden_inputs: [RAPM targets, future outcomes, player IDs as predictors]
+forbidden_interpretation: >-
+  Measurement stability and redundancy do not establish player value or
+  downstream AIO improvement.
