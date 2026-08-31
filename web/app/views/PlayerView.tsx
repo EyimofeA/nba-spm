@@ -137,39 +137,43 @@ function PlayerBody({
 
   // Left unmemoized on purpose: the compiler handles it, and a hand-written dep
   // list on `active.prefix` is something it cannot verify.
-  const heroValue = rating(current, active.prefix, component);
+  const currentSeason = current?.Season ?? season;
+  const currentRatings = (['net', 'offense', 'defense'] as Component[]).map(
+    (key) => ({ key, value: rating(current, active.prefix, key) }),
+  );
+  const selectedValue = rating(current, active.prefix, component);
 
   return (
-    <>
-      <div className="player-hero">
+    <section aria-labelledby="player-heading">
+      <header className="player-hero">
         <div className="player-identity">
           <div>
-          <p className="kicker">{active.label} · points per 100 possessions</p>
-          <h1>{player.PLAYER_NAME}</h1>
-          <div className="id-line">
-            <span className="chip">{current?.TEAM_ABBREVIATION ?? "—"}</span>
-            <span className="chip">
-              {season - 1}–{String(season).slice(2)}
-            </span>
-            {roles?.offense && (
-              <span className="chip">{roles.offense.primary_role}</span>
-            )}
-          </div>
+            <p className="kicker">Player report · {active.label}</p>
+            <h1 id="player-heading">{player.PLAYER_NAME}</h1>
+            <div className="id-line">
+              <span className="chip">{current?.TEAM_ABBREVIATION ?? "—"}</span>
+              <span className="chip">
+                {currentSeason - 1}–{String(currentSeason).slice(2)}
+              </span>
+              {roles?.offense && (
+                <span className="chip">{roles.offense.primary_role}</span>
+              )}
+            </div>
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
           <div
-            className={`hero-figure ${heroValue !== undefined && heroValue < 0 ? "neg" : "pos"}`}
+            className={`hero-figure ${selectedValue !== undefined && selectedValue < 0 ? "neg" : "pos"}`}
           >
-            {fmtRating(heroValue)}
+            {fmtRating(selectedValue)}
           </div>
           <div className="hero-caption">
-            {COMPONENT_LABEL[component]} impact · {season}
+            {COMPONENT_LABEL[component]} · {active.label}
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="filters">
+      <div className="filters" aria-label="Player report controls">
         <ModelField rows={currentRows} value={model} onChange={onModel} />
         <label className="field">
           <span>Season</span>
@@ -187,7 +191,33 @@ function PlayerBody({
         <ComponentToggle value={component} onChange={onComponent} />
       </div>
 
-      <div className="grid">
+      <section aria-labelledby="current-impact-heading">
+        <div className="section-head" style={{ marginTop: 18 }}>
+          <div>
+            <p className="kicker">Current impact</p>
+            <h2 id="current-impact-heading">
+              {currentSeason - 1}–{String(currentSeason).slice(2)} ratings
+            </h2>
+          </div>
+          <span className="meta">{active.label} · per 100 possessions</span>
+        </div>
+        <div className="kpi-row">
+          {currentRatings.map(({ key, value }) => (
+            <article className="tile" key={key}>
+              <div className="tile-label">{COMPONENT_LABEL[key]}</div>
+              <div
+                className="tile-value"
+                style={{ color: value !== undefined && value < 0 ? "var(--neg)" : "var(--pos)" }}
+              >
+                {fmtRating(value)}
+              </div>
+              <div className="tile-sub">{active.label}</div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <div className="grid" style={{ marginTop: 14 }}>
         <Figure
           kicker="Career"
           title="Season by season"
@@ -220,7 +250,17 @@ function PlayerBody({
                     key={row.Season}
                     className={row.Season === season ? "flag" : undefined}
                   >
-                    <td>{row.Season}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="text-button"
+                        aria-current={row.Season === season ? "true" : undefined}
+                        aria-label={`Show ${row.Season - 1}–${String(row.Season).slice(2)} ratings`}
+                        onClick={() => onSeason(row.Season)}
+                      >
+                        {row.Season - 1}–{String(row.Season).slice(2)}
+                      </button>
+                    </td>
                     <td>{row.TEAM_ABBREVIATION ?? "—"}</td>
                     <td>{fmtRating(rating(row, active.prefix, "offense"))}</td>
                     <td>{fmtRating(rating(row, active.prefix, "defense"))}</td>
@@ -239,43 +279,6 @@ function PlayerBody({
             onSelectX={onSeason}
           />
         </Figure>
-
-        <section className="card compare-card">
-          <div className="card-head">
-            <div>
-              <p className="kicker">Comparison</p>
-              <h2>Compare players</h2>
-            </div>
-          </div>
-          <div className="compare-search">
-            <input
-              aria-label="Find a player to compare"
-              placeholder="Find a player to compare"
-              value={compareQuery}
-              onChange={(event) => setCompareQuery(event.target.value)}
-            />
-            {compareMatches.length > 0 && (
-              <div className="compare-results">
-                {compareMatches.map((item) => (
-                  <button type="button" key={item.id} onClick={() => { onCompare(item.id); setCompareQuery(""); }}>
-                    {item.name}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          {comparePlayer ? (
-            <>
-              <ComparisonTable left={player} right={comparePlayer} model={model} />
-              <div className="grid two comparison-roles">
-                <RoleComparisonPlayer name={player.PLAYER_NAME} roles={roles} catalog={catalog} />
-                <RoleComparisonPlayer name={comparePlayer.PLAYER_NAME} roles={comparePlayer.roles.find((row) => row.Season === season)} catalog={catalog} />
-              </div>
-            </>
-          ) : (
-            <p className="note">Choose a second player to compare offense, defense, and net.</p>
-          )}
-        </section>
 
         {hasLocalSkills && localSkillIndex && localSkills && (
           <PlayerSkills
@@ -322,33 +325,47 @@ function PlayerBody({
             <Pizza slices={slices} />
           </Figure>}
 
-          <section className="card">
+          <section className="card compare-card" aria-labelledby="comparison-heading">
             <div className="card-head">
               <div>
-                <p className="kicker">Role mix · {season}</p>
-                <h2>How he was used</h2>
+                <p className="kicker">Peer comparison</p>
+                <h2 id="comparison-heading">Same-season comparison</h2>
               </div>
             </div>
-            <div style={{ display: "grid", gap: 18, marginTop: 16 }}>
-              <RoleMix
-                title="Offense"
-                role={roles?.offense}
-                side="offense"
-                catalog={catalog}
+            <div className="compare-search">
+              <label className="visually-hidden" htmlFor="player-comparison-search">
+                Find a player to compare
+              </label>
+              <input
+                id="player-comparison-search"
+                placeholder="Find a player to compare"
+                value={compareQuery}
+                onChange={(event) => setCompareQuery(event.target.value)}
               />
-              <RoleMix
-                title="Defense"
-                role={roles?.defense}
-                side="defense"
-                catalog={catalog}
-              />
+              {compareMatches.length > 0 && (
+                <div className="compare-results">
+                  {compareMatches.map((item) => (
+                    <button
+                      type="button"
+                      key={item.id}
+                      onClick={() => {
+                        onCompare(item.id);
+                        setCompareQuery("");
+                      }}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <p className="note">
-              Clusters come from behaviour only, one season at a time. Height
-              and listed position are excluded. Roles describe usage, not
-              impact.
-            </p>
+            {comparePlayer ? (
+              <ComparisonTable left={player} right={comparePlayer} model={model} />
+            ) : (
+              <p className="note">Compare offense, defense, and net against a player from the same season.</p>
+            )}
           </section>
+
         </div>
 
         {!hasLocalSkills && comparePlayer && slices.length >= 3 && comparisonSlices.length >= 3 && (
@@ -366,21 +383,24 @@ function PlayerBody({
           </Figure>
         )}
 
+        <section className="grid two" aria-label="Role detail">
+          <RoleComparisonPlayer name={player.PLAYER_NAME} roles={roles} catalog={catalog} />
+          {comparePlayer ? (
+            <RoleComparisonPlayer
+              name={comparePlayer.PLAYER_NAME}
+              roles={comparePlayer.roles.find((row) => row.Season === season)}
+              catalog={catalog}
+            />
+          ) : (
+            <aside className="card">
+              <p className="kicker">Role context</p>
+              <h2>Usage is not impact</h2>
+              <p className="note">Role labels describe a player’s behaviour in this season. They do not change the rating above.</p>
+            </aside>
+          )}
+        </section>
       </div>
-    </>
-  );
-}
-
-function PlayerHeadshot({ id, name }: { id: number; name: string }) {
-  const [failed, setFailed] = useState(false);
-  const initials = name.split(/\s+/).map((part) => part[0]).filter(Boolean).slice(0, 2).join("");
-  return (
-    <div className="player-headshot" aria-label={`${name} headshot`}>
-      {failed ? initials : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={`https://cdn.nba.com/headshots/nba/latest/260x190/${id}.png`} alt="" onError={() => setFailed(true)} />
-      )}
-    </div>
+    </section>
   );
 }
 
@@ -392,10 +412,12 @@ function ComparisonTable({ left, right, model }: { left: Player; right: Player; 
     .filter((row) => rightBySeason.has(row.Season))
     .map((row) => row.Season)
     .sort((a, b) => b - a);
-  return <div className="comparison-grid">
-    <div className="comparison-player"><PlayerHeadshot id={left.PLAYER_ID} name={left.PLAYER_NAME} /><b>{left.PLAYER_NAME}</b></div>
-    <table className="mini comparison-table"><thead><tr><th scope="col">Season</th><th scope="col">{left.PLAYER_NAME}<br />Off / Def / Net</th><th scope="col">{right.PLAYER_NAME}<br />Off / Def / Net</th></tr></thead><tbody>{seasons.map((season) => { const leftRow = left.annual.find((row) => row.Season === season); const rightRow = rightBySeason.get(season); return <tr key={season}><td>{season - 1}–{String(season).slice(2)}</td><td>{["offense", "defense", "net"].map((key) => fmtRating(rating(leftRow, leftActive.prefix, key as Component))).join(" / ")}</td><td>{["offense", "defense", "net"].map((key) => fmtRating(rating(rightRow, rightActive.prefix, key as Component))).join(" / ")}</td></tr>; })}</tbody></table>
-    <div className="comparison-player"><PlayerHeadshot id={right.PLAYER_ID} name={right.PLAYER_NAME} /><b>{right.PLAYER_NAME}</b></div>
+  return <div className="table-wrap" style={{ marginTop: 16 }}>
+    <table className="mini comparison-table">
+      <caption className="visually-hidden">{left.PLAYER_NAME} and {right.PLAYER_NAME} comparison</caption>
+      <thead><tr><th scope="col">Season</th><th scope="col">{left.PLAYER_NAME}<br />Off / Def / Net</th><th scope="col">{right.PLAYER_NAME}<br />Off / Def / Net</th></tr></thead>
+      <tbody>{seasons.map((season) => { const leftRow = left.annual.find((row) => row.Season === season); const rightRow = rightBySeason.get(season); return <tr key={season}><th scope="row">{season - 1}–{String(season).slice(2)}</th><td>{["offense", "defense", "net"].map((key) => fmtRating(rating(leftRow, leftActive.prefix, key as Component))).join(" / ")}</td><td>{["offense", "defense", "net"].map((key) => fmtRating(rating(rightRow, rightActive.prefix, key as Component))).join(" / ")}</td></tr>; })}</tbody>
+    </table>
   </div>;
 }
 
@@ -405,7 +427,7 @@ function SkillComparisonTable({ left, right, leftName, rightName }: { left: Slic
 }
 
 function RoleComparisonPlayer({ name, roles, catalog }: { name: string; roles?: Player["roles"][number]; catalog: Catalog }) {
-  return <div className="role-comparison-player"><h3>{name} · role mix</h3><RoleMix title="Offense" role={roles?.offense} side="offense" catalog={catalog} /><RoleMix title="Defense" role={roles?.defense} side="defense" catalog={catalog} /></div>;
+  return <section className="role-comparison-player"><h2>{name} · role mix</h2><RoleMix title="Offense" role={roles?.offense} side="offense" catalog={catalog} /><RoleMix title="Defense" role={roles?.defense} side="defense" catalog={catalog} /></section>;
 }
 
 /**

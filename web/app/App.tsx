@@ -64,8 +64,8 @@ const ALL_TABS = [
 
 const NAV_TABS = [
   { id: "ratings", label: "Ratings" },
-  { id: "roles", label: "Roles" },
-  { id: "research", label: "Methodology" },
+  { id: "roles", label: "Role map" },
+  { id: "research", label: "Evidence" },
 ] as const;
 
 type Tab = (typeof ALL_TABS)[number]["id"];
@@ -406,6 +406,9 @@ export function App() {
 
   const seasons = catalog?.catalog.seasons ?? [];
   const { tab } = route;
+  // Player pages are drilled into from the ratings board, so retain that
+  // context in the primary navigation instead of making a dead-end tab.
+  const activeNavTab = tab === "player" ? "ratings" : tab;
 
   /* -------------------------------------------------------------- view --- */
 
@@ -418,10 +421,10 @@ export function App() {
           aria-label="CourtSignal ratings"
         >
           <b>COURTSIGNAL</b>
-          <span>NBA IMPACT</span>
+          <span>PLAYER IMPACT</span>
         </a>
         <span className="snapshot-status" aria-label={`NBA season ${season - 1} to ${season}`}>
-          NBA&nbsp;&nbsp;{season - 1}–{String(season).slice(2)}
+          SEASON&nbsp;&nbsp;{season - 1}–{String(season).slice(2)}
         </span>
         <div className="masthead-spacer" />
         <div className="search" ref={searchRef}>
@@ -487,13 +490,13 @@ export function App() {
         </button>
       </header>
 
-      <nav className="tabs" aria-label="Sections">
+      <nav className="tabs" aria-label="Primary analysis">
         {NAV_TABS.map((item) => (
           <a
             key={item.id}
             href={`#${item.id}`}
-            className={tab === item.id ? "active" : ""}
-            aria-current={tab === item.id ? "page" : undefined}
+            className={activeNavTab === item.id ? "active" : ""}
+            aria-current={activeNavTab === item.id ? "page" : undefined}
           >
             {item.label}
           </a>

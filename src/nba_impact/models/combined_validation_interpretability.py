@@ -10,9 +10,33 @@ import pandas as pd
 from nba_impact.models.impact_validation_suite import COMPONENTS, weighted_correlation
 
 
+FACTOR_UNITS = {
+    "shooting_ts": "true_shooting_percentage_points_per_100_weighted_attempts",
+    "turnover_avoidance": "turnover_probability_points_per_100_anchored_possessions",
+    "opponent_oreb_prevention": (
+        "offensive_rebound_probability_points_per_100_resolved_misses"
+    ),
+}
+FACTOR_SIGN_CONVENTIONS = {
+    "shooting_ts": "positive offense raises TS; positive defense suppresses opponent TS",
+    "turnover_avoidance": (
+        "positive offense avoids turnovers; positive defense forces turnovers"
+    ),
+    "opponent_oreb_prevention": (
+        "positive offense recovers offensive rebounds; positive defense prevents them"
+    ),
+}
+
+
 def _require_columns(frame: pd.DataFrame, required: set[str], label: str) -> None:
     if missing := sorted(required - set(frame.columns)):
         raise ValueError(f"{label} is missing {missing}.")
+
+
+def _require_finite(frame: pd.DataFrame, columns: Sequence[str], label: str) -> None:
+    values = frame.loc[:, list(columns)].to_numpy(dtype=float)
+    if not np.isfinite(values).all():
+        raise ValueError(f"{label} contains non-finite values.")
 
 
 def reject_season_2027(frame: pd.DataFrame, season_columns: Sequence[str]) -> None:
@@ -84,6 +108,21 @@ def align_prior_predictions(
     expected = len(common) * len(candidates)
     if len(aligned) != expected:
         raise ValueError("One or more common prior rows lack a target.")
+    _require_finite(
+        aligned,
+        (
+            "prior_offense_per_100",
+            "prior_defense_per_100",
+            "prior_net_per_100",
+            "target_offense",
+            "target_defense",
+            "target_net",
+            "sample_weight",
+        ),
+        "Aligned prior validation panel",
+    )
+    if aligned["sample_weight"].le(0).any():
+        raise ValueError("Aligned prior validation weights must be positive.")
     counts = aligned.groupby("candidate").size()
     if not counts.eq(len(common)).all():
         raise AssertionError("Prior candidates were not scored on identical rows.")
@@ -180,6 +219,11 @@ def align_game_predictions(
     outcome_counts = aligned.groupby(list(key_columns))["actual_margin"].nunique()
     if not outcome_counts.eq(1).all():
         raise ValueError("Candidates do not share identical actual game margins.")
+    _require_finite(
+        aligned,
+        ("actual_margin", "predicted_margin"),
+        "Aligned game prediction panel",
+    )
     counts = aligned.groupby("candidate").size()
     if not counts.eq(len(common)).all():
         raise AssertionError("Game candidates were not scored on identical rows.")
@@ -523,9 +567,11 @@ def build_factor_skill_panel(
     selected = selected.merge(
         identities, on="PLAYER_ID", how="inner", validate="many_to_one"
     )
+    _require_finite(selected, ("prediction",), "Selected factor skill panel")
     selected["skill"] = selected["factor"].map(wanted)
     selected["score"] = selected["prediction"]
-    selected["units"] = "factor_target_units"
+    selected["units"] = selected["factor"].map(FACTOR_UNITS)
+    selected["sign_convention"] = selected["factor"].map(FACTOR_SIGN_CONVENTIONS)
     selected["additive_to_aio"] = False
     return selected[
         [
@@ -537,6 +583,7 @@ def build_factor_skill_panel(
             "component",
             "score",
             "units",
+            "sign_convention",
             "additive_to_aio",
         ]
     ].sort_values(["skill", "component", "score"], ascending=[True, True, False])

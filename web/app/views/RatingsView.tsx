@@ -154,16 +154,19 @@ export function RatingsView({
     { key: "net", label: "Net" },
     { key: "poss", label: "Poss" },
   ];
+  const leader = sorted[0];
 
   return (
     <>
       <div className="page-head">
         <div>
-          <p className="kicker">{season - 1}–{String(season).slice(2)} · {active.label}</p>
-          <h1>NBA player ratings</h1>
+          <p className="kicker">NBA impact ratings</p>
+          <h1>Ratings</h1>
         </div>
         <div className="view-actions">
-          <span className="result-count" aria-live="polite">{sorted.length} players</span>
+          <span className="meta" aria-live="polite">
+            {season - 1}–{String(season).slice(2)} · {active.label} · {sorted.length} players
+          </span>
           <div className="segmented" aria-label="Ratings view">
             <button type="button" aria-pressed={view === "table"} onClick={() => setView("table")}>Table</button>
             <button type="button" aria-pressed={view === "chart"} onClick={() => setView("chart")}>Map</button>
@@ -201,11 +204,17 @@ export function RatingsView({
           <div className="section-head" style={{ marginTop: 8 }}>
             <div>
               <p className="kicker">Leaderboard</p>
-              <h2>{active.label} · points per 100</h2>
+              <h2>{active.label} per 100 possessions</h2>
             </div>
-            <span className="meta">
-              Select a column to sort
-            </span>
+            {leader ? (
+              <p className="note" style={{ margin: 0 }}>
+                Highest net rating: {" "}
+                <a className="player-link" href={`#player/${leader.id}`}>
+                  {leader.name}
+                </a>{" "}
+                <b>{fmtRating(leader.net)}</b>
+              </p>
+            ) : <span className="meta">No players match these filters</span>}
           </div>
           <p className="scroll-hint">Swipe for impact columns →</p>
           <div className="table-wrap">
@@ -214,11 +223,6 @@ export function RatingsView({
                 {active.label} ratings for {season}, points per 100 possessions
               </caption>
               <thead>
-                <tr className="column-groups">
-                  <th scope="colgroup" colSpan={3} className="left">Player</th>
-                  <th scope="colgroup" colSpan={3}>Impact</th>
-                  <th scope="colgroup">Context</th>
-                </tr>
                 <tr>
                   <th scope="col" className="left">
                     <button
@@ -280,6 +284,11 @@ export function RatingsView({
                     <td>{fmtInt(row.poss)}</td>
                   </tr>
                 ))}
+                {!sorted.length && (
+                  <tr>
+                    <td colSpan={7} className="empty">No players match these filters.</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

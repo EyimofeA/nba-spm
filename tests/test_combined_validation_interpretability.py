@@ -72,6 +72,13 @@ def test_prior_metrics_use_candidate_intersection_before_scoring() -> None:
     assert set(folds["players"]) == {2}
 
 
+def test_prior_validation_rejects_nonfinite_values() -> None:
+    priors, targets = _prior_rows()
+    targets.loc[0, "target_offense"] = np.nan
+    with pytest.raises(ValueError, match="non-finite"):
+        align_prior_predictions(priors, targets, candidates=("simple", "rich"))
+
+
 def _game_rows() -> pd.DataFrame:
     rows = []
     for season in (2024, 2025):
@@ -139,6 +146,14 @@ def test_game_validation_rejects_outcome_mismatch_and_forbidden_season() -> None
     with pytest.raises(ValueError, match="forbidden Season 2027"):
         align_game_predictions(
             future,
+            candidates=("simple", "rich"),
+            key_columns=("rating_season", "test_season", "game_id"),
+        )
+    nonfinite = _game_rows()
+    nonfinite.loc[0, "predicted_margin"] = np.inf
+    with pytest.raises(ValueError, match="non-finite"):
+        align_game_predictions(
+            nonfinite,
             candidates=("simple", "rich"),
             key_columns=("rating_season", "test_season", "game_id"),
         )
@@ -251,3 +266,5 @@ def test_factor_skills_are_explicitly_non_additive() -> None:
         "turnover_avoidance_skill",
         "rebounding_skill",
     }
+    assert output["units"].nunique() == 3
+    assert output["sign_convention"].notna().all()
