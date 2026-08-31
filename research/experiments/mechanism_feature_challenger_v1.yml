@@ -1,0 +1,47 @@
+schema_version: experiment_preregistration_v1
+experiment_id: mechanism_feature_challenger_v1
+status: frozen_reused_diagnostic
+estimand_id: prior_validation_suite_v1
+
+question: >-
+  Do eight same-season mechanism features improve a Box15 five-year SPM before
+  or after the same one-season RAPM update?
+
+information_cutoff:
+  rating_seasons: [2021, 2022, 2023, 2024, 2025, 2026]
+  evaluated_rating_seasons: [2021, 2022, 2023, 2024, 2025]
+  test_seasons: [2022, 2023, 2024, 2025, 2026]
+  training_rule: window_end strictly before rating_season
+  final_unscored_rating_season: 2026
+
+candidates:
+  - box_15
+  - box_plus_offense_mechanisms
+  - box_plus_defense_mechanisms
+  - box_plus_all_mechanisms
+
+learner:
+  family: ridge
+  alpha_grid: [10, 30, 100, 300, 1000, 3000]
+  selection: rolling_origin_inside_each_outer_training_fold
+  sample_weight: square_root_minimum_offensive_or_defensive_possessions
+
+fixed_aio:
+  likelihood_seasons: 1
+  lambda_offense: 3000
+  lambda_defense: 3000
+  lambda_home: 300
+  center_scale: 1
+
+evaluation:
+  primary: equal_season_mean_next_season_game_margin_mse
+  readable: rmse
+  games: identical_within_fold
+  uncertainty:
+    method: paired_whole_game_bootstrap_within_test_season
+    draws: 5000
+    seed: 20260831
+
+forbidden_interpretation: >-
+  All scored seasons contain reused evidence. This experiment can reject or
+  retain research features, but it cannot promote a public model.

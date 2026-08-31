@@ -1,0 +1,357 @@
+{
+  "config": {
+    "bootstrap_draws": 5000,
+    "candidate_features": {
+      "box_15": {
+        "defense": [
+          "PTS_p100",
+          "AST_p100",
+          "TOV_p100",
+          "STL_p100",
+          "BLK_p100",
+          "OREB_p100",
+          "DREB_p100",
+          "PF_p100",
+          "PFD_p100",
+          "FTA_p100",
+          "FTM_p100",
+          "FG2A_p100",
+          "FG2M_p100",
+          "FG3A_p100",
+          "FG3M_p100"
+        ],
+        "offense": [
+          "PTS_p100",
+          "AST_p100",
+          "TOV_p100",
+          "STL_p100",
+          "BLK_p100",
+          "OREB_p100",
+          "DREB_p100",
+          "PF_p100",
+          "PFD_p100",
+          "FTA_p100",
+          "FTM_p100",
+          "FG2A_p100",
+          "FG2M_p100",
+          "FG3A_p100",
+          "FG3M_p100"
+        ]
+      },
+      "box_plus_all_mechanisms": {
+        "defense": [
+          "PTS_p100",
+          "AST_p100",
+          "TOV_p100",
+          "STL_p100",
+          "BLK_p100",
+          "OREB_p100",
+          "DREB_p100",
+          "PF_p100",
+          "PFD_p100",
+          "FTA_p100",
+          "FTM_p100",
+          "FG2A_p100",
+          "FG2M_p100",
+          "FG3A_p100",
+          "FG3M_p100",
+          "dreb_conversion_above_expected_eb",
+          "foul_adjusted_activity_residual",
+          "workload_adjusted_shot_suppression_residual",
+          "rim_protection_workload_value"
+        ],
+        "offense": [
+          "PTS_p100",
+          "AST_p100",
+          "TOV_p100",
+          "STL_p100",
+          "BLK_p100",
+          "OREB_p100",
+          "DREB_p100",
+          "PF_p100",
+          "PFD_p100",
+          "FTA_p100",
+          "FTM_p100",
+          "FG2A_p100",
+          "FG2M_p100",
+          "FG3A_p100",
+          "FG3M_p100",
+          "pass_value_per_potential_assist_eb",
+          "load_adjusted_shot_quality_residual",
+          "load_adjusted_creation_residual",
+          "spacing_creation_interaction"
+        ]
+      },
+      "box_plus_defense_mechanisms": {
+        "defense": [
+          "PTS_p100",
+          "AST_p100",
+          "TOV_p100",
+          "STL_p100",
+          "BLK_p100",
+          "OREB_p100",
+          "DREB_p100",
+          "PF_p100",
+          "PFD_p100",
+          "FTA_p100",
+          "FTM_p100",
+          "FG2A_p100",
+          "FG2M_p100",
+          "FG3A_p100",
+          "FG3M_p100",
+          "dreb_conversion_above_expected_eb",
+          "foul_adjusted_activity_residual",
+          "workload_adjusted_shot_suppression_residual",
+          "rim_protection_workload_value"
+        ],
+        "offense": [
+          "PTS_p100",
+          "AST_p100",
+          "TOV_p100",
+          "STL_p100",
+          "BLK_p100",
+          "OREB_p100",
+          "DREB_p100",
+          "PF_p100",
+          "PFD_p100",
+          "FTA_p100",
+          "FTM_p100",
+          "FG2A_p100",
+          "FG2M_p100",
+          "FG3A_p100",
+          "FG3M_p100"
+        ]
+      },
+      "box_plus_offense_mechanisms": {
+        "defense": [
+          "PTS_p100",
+          "AST_p100",
+          "TOV_p100",
+          "STL_p100",
+          "BLK_p100",
+          "OREB_p100",
+          "DREB_p100",
+          "PF_p100",
+          "PFD_p100",
+          "FTA_p100",
+          "FTM_p100",
+          "FG2A_p100",
+          "FG2M_p100",
+          "FG3A_p100",
+          "FG3M_p100"
+        ],
+        "offense": [
+          "PTS_p100",
+          "AST_p100",
+          "TOV_p100",
+          "STL_p100",
+          "BLK_p100",
+          "OREB_p100",
+          "DREB_p100",
+          "PF_p100",
+          "PFD_p100",
+          "FTA_p100",
+          "FTM_p100",
+          "FG2A_p100",
+          "FG2M_p100",
+          "FG3A_p100",
+          "FG3M_p100",
+          "pass_value_per_potential_assist_eb",
+          "load_adjusted_shot_quality_residual",
+          "load_adjusted_creation_residual",
+          "spacing_creation_interaction"
+        ]
+      }
+    },
+    "candidates": [
+      "box_15",
+      "box_plus_offense_mechanisms",
+      "box_plus_defense_mechanisms",
+      "box_plus_all_mechanisms"
+    ],
+    "evaluated_rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "experiment_id": "mechanism_feature_challenger_v1",
+    "rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "sources": {
+      "base_features": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_fdee01ec4e/five_year_features.parquet",
+        "sha256": "5e3f5b3697be365203dd906c2162647eab4ec7e282e95e80ef5bbe0123ef9b84"
+      },
+      "base_manifest": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_fdee01ec4e/run.json",
+        "sha256": "4dac9222fdbd8da8296f557c6f9cc20e2eab2614789f442ba027c63d41f00b5b"
+      },
+      "contract": {
+        "path": "research/experiments/mechanism_feature_challenger_v1.yml",
+        "sha256": "d65f996e7a4c0a62488484bd437afa02fc021ee4fc479f57207adf8279636a21"
+      },
+      "mechanism_features": {
+        "path": "artifacts/research/mechanism_feature_panel/mechanism_feature_panel_v1_9224606a01/five_year_features.parquet",
+        "sha256": "da8618bdd0331b84be41b5460dc80435a83734aac8ed9759cda5c11adc1faab6"
+      },
+      "mechanism_manifest": {
+        "path": "artifacts/research/mechanism_feature_panel/mechanism_feature_panel_v1_9224606a01/run.json",
+        "sha256": "a88c0ec897e50aa41a27539d69a220570290dbf104b7022b509ad084857fe4ae"
+      },
+      "runner": {
+        "path": "research/run_mechanism_feature_challenger.py",
+        "sha256": "15bbf9ee45fe5f87c382e4294bf6ce50913d5309e6d1f5b7c65b2d3f2914de29"
+      },
+      "targets": {
+        "path": "artifacts/models/five_year_target_spm/five_year_target_spm_v1_65550acb79/five_year_targets.parquet",
+        "sha256": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+      }
+    }
+  },
+  "contract": {
+    "candidates": [
+      "box_15",
+      "box_plus_offense_mechanisms",
+      "box_plus_defense_mechanisms",
+      "box_plus_all_mechanisms"
+    ],
+    "estimand_id": "prior_validation_suite_v1",
+    "evaluation": {
+      "games": "identical_within_fold",
+      "primary": "equal_season_mean_next_season_game_margin_mse",
+      "readable": "rmse",
+      "uncertainty": {
+        "draws": 5000,
+        "method": "paired_whole_game_bootstrap_within_test_season",
+        "seed": 20260831
+      }
+    },
+    "experiment_id": "mechanism_feature_challenger_v1",
+    "fixed_aio": {
+      "center_scale": 1,
+      "lambda_defense": 3000,
+      "lambda_home": 300,
+      "lambda_offense": 3000,
+      "likelihood_seasons": 1
+    },
+    "forbidden_interpretation": "All scored seasons contain reused evidence. This experiment can reject or retain research features, but it cannot promote a public model.",
+    "information_cutoff": {
+      "evaluated_rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "final_unscored_rating_season": 2026,
+      "rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "test_seasons": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "training_rule": "window_end strictly before rating_season"
+    },
+    "learner": {
+      "alpha_grid": [
+        10,
+        30,
+        100,
+        300,
+        1000,
+        3000
+      ],
+      "family": "ridge",
+      "sample_weight": "square_root_minimum_offensive_or_defensive_possessions",
+      "selection": "rolling_origin_inside_each_outer_training_fold"
+    },
+    "question": "Do eight same-season mechanism features improve a Box15 five-year SPM before or after the same one-season RAPM update?",
+    "schema_version": "experiment_preregistration_v1",
+    "status": "frozen_reused_diagnostic"
+  },
+  "created_at": "2026-08-31T19:09:49.242106+00:00",
+  "experiment_id": "mechanism_feature_challenger_v1",
+  "files": {
+    "bootstrap_model_intervals.parquet": {
+      "path": "bootstrap_model_intervals.parquet",
+      "rows": 9,
+      "sha256": "0426b8fe448d48fbda73c5dacb0b43d4698dc86df923e6d5386ee553543c87c4"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "rows": 45,
+      "sha256": "224eb8116e1383eb05ee74d6e477c986191312e9cbff4c17a3ca61fa797efc46"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 55269,
+      "sha256": "3b2b1ae517bd9d9368c572c448a9c1999622fddd0fb937b7873a48fc38641c5d"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "model_selection.parquet": {
+      "path": "model_selection.parquet",
+      "rows": 48,
+      "sha256": "bb170c46ff8bfd3045c966d13a977d05279c90b674d4f99a125039d36ff3816b"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 36,
+      "sha256": "047f395c4afc1253be5b1d07913fa18f99260846dd1e37ee677ae2dd3e61fe4c"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "rows": 24,
+      "sha256": "754ebe09ff62b6d42938ef613259471ffad6c4e77b2362694b5f7fdc1411138f"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "rows": 23644,
+      "sha256": "7fa64c7abfa58aba0b809be4db41f76e052dfe283e0c51fe7f3413a2fa65caa6"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "rows": 57888,
+      "sha256": "22745091aef267d11361ae39eef66a4022ab4d9ba7c642e23f7e63f0b4b6e707"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "rows": 9,
+      "sha256": "da438492ff8cd8ccfed7e17ec0b1b149b3aeaebc0effec77f8369242ef608ba5"
+    },
+    "target_metrics.parquet": {
+      "path": "target_metrics.parquet",
+      "rows": 72,
+      "sha256": "bc072b4c181f85ddfe8d2f5f99e6c61b3f3c14652c4daa6aeb08c366e10848e0"
+    }
+  },
+  "forbidden_interpretation": "All scored seasons contain reused evidence. This experiment can reject or retain research features, but it cannot promote a public model.",
+  "quality": {
+    "identical_games_within_fold": true,
+    "maximum_component_identity_error": 0.0,
+    "missing_selected_values": 0,
+    "panel_rows": 8620
+  },
+  "run_id": "mechanism_feature_challenger_v1_5f3e0bad98",
+  "status": "reused_diagnostic_complete"
+}

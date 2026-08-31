@@ -74,3 +74,66 @@ The existing full SPM remains immutable. Run
 `compact_spm_comparison_v1_2a0f8a6f31` fits the compact contract. Compact SPM
 improves standalone next-season MSE, but its RAPM posterior does not improve on
 Full SPM. Keep it as a research and interpretation arm.
+
+## Exhaustive registry and mechanism screen
+
+Registry `exhaustive_spm_feature_registry_v1_1ea059390e` inventories 337 unique
+fields: the 295-field research panel, 34 predictive-skill definitions, and eight
+new mechanism features. It assigns every field to a modeling lane before target
+selection. The clean retrospective lane excludes `OnOffRtg` and `OnDefRtg` as
+lineup-derived circular inputs. It also keeps 91 trajectory and predictive-skill
+fields outside the retrospective model.
+
+Panel `mechanism_feature_panel_v1_9224606a01` adds these same-season features:
+
+| Side | Feature | Definition |
+| --- | --- | --- |
+| Offense | pass value | Empirical-Bayes assist points created per potential assist |
+| Offense | load-adjusted shot quality | Leave-one-player-out shot-quality residual after load and shot-location mix |
+| Offense | load-adjusted creation | Leave-one-player-out Box Creation residual after load, touches, and potential assists |
+| Offense | spacing-creation interaction | Stabilized spacing multiplied by stabilized Box Creation |
+| Defense | rebound conversion above expected | Exposure-shrunk defensive-rebound conversion residual after chance volume and contest share |
+| Defense | foul-adjusted activity | Exposure-shrunk contest, deflection, and recovered-block activity residual after fouls |
+| Defense | workload-adjusted suppression | Exposure-shrunk matchup points-saved residual after defended-shot workload |
+| Defense | rim workload value | Stabilized rim points saved multiplied by the square root of rim attempts defended |
+
+The residual features use analytic weighted leave-one-player-out regression
+within each season. They do not use RAPM, future seasons, player identity, or an
+external impact metric. Five-year values possession-weight the already frozen
+annual values.
+
+Run `mechanism_feature_challenger_v1_5f3e0bad98` rejects the offensive block.
+Its AIO RMSE is `14.4266`, compared with `14.3792` for Box15. The defensive
+block lowers AIO RMSE to `14.3516`, improves four of five folds, and has a paired
+Box15-minus-challenger MSE interval of `[0.2557, 1.3193]`.
+
+Run `defense_mechanism_screen_v1_181a68516f` isolates the defensive inputs.
+Every feature improves the AIO point estimate. Workload-adjusted suppression
+and rim workload value produce the largest individual gains. The four-feature
+block performs best. Its RMSE gain is `.0275` points per game. That result falls
+below the frozen `.05` practical threshold and loses narrowly in the reused
+2026 fold. Keep the block as a research challenger. Do not replace Box15.
+
+## Independent model audit
+
+An isolated external audit used Pi `0.84.2`, Cursor, and
+`cursor/fable-5@1m` at high reasoning. The model had no repository context or
+tools during its independent design pass.
+
+The audit recommends these learner roles:
+
+- Keep ridge as the permanent baseline and default defense learner.
+- Use histogram gradient boosting as the primary nonlinear offense challenger.
+- Use elastic net for fold-internal stability selection, not as the presumed
+  production model.
+- Use a low-degree GAM as the first interpretable nonlinear diagnostic after
+  pruning.
+- Use ExtraTrees only as a bounded robustness and importance check.
+- Fit one nonnegative out-of-fold blend only after two base learners pass on
+  their own.
+
+The audit also recommends three controls that the next selection run should
+add: source-era panels, repeated noise and target-permutation controls, and a
+consensus feature rule learned only inside each chronological training fold.
+Numeric reliability or correlation thresholds remain hypotheses until this
+dataset calibrates them.

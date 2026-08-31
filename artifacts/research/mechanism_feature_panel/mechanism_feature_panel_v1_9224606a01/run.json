@@ -1,0 +1,87 @@
+{
+  "config": {
+    "annual_seasons": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "defense_features": [
+      "dreb_conversion_above_expected_eb",
+      "foul_adjusted_activity_residual",
+      "workload_adjusted_shot_suppression_residual",
+      "rim_protection_workload_value"
+    ],
+    "experiment_id": "mechanism_feature_panel_v1",
+    "five_year_window_ends": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "offense_features": [
+      "pass_value_per_potential_assist_eb",
+      "load_adjusted_shot_quality_residual",
+      "load_adjusted_creation_residual",
+      "spacing_creation_interaction"
+    ],
+    "source_hashes": {
+      "annual_features": "d44b622b8416af51199886103bbaf88911d6605b688c87d287989789aaf77d3a",
+      "builder": "305a311c12ebbbc06fb77845bacc6c5611c31cfec20b91cea781ce7b338cf233",
+      "feature_code": "2131e4de764a1732e9379820bbabf353b387de54726d0c6c401e22da5650611b",
+      "five_year_features": "5e3f5b3697be365203dd906c2162647eab4ec7e282e95e80ef5bbe0123ef9b84",
+      "source_manifest": "4dac9222fdbd8da8296f557c6f9cc20e2eab2614789f442ba027c63d41f00b5b"
+    },
+    "source_run_id": "semantically_complete_spm_features_v1_fdee01ec4e"
+  },
+  "created_at": "2026-08-31T18:56:24.435208+00:00",
+  "experiment_id": "mechanism_feature_panel_v1",
+  "files": {
+    "annual_features.parquet": {
+      "path": "annual_features.parquet",
+      "rows": 6942,
+      "sha256": "99045a0a606d8b147c2cd607a238c9430425af18de5e7bc24843e82c6cbb72f9"
+    },
+    "feature_registry.parquet": {
+      "path": "feature_registry.parquet",
+      "rows": 8,
+      "sha256": "0c37ff19aa63906afe30608bca9f93f23c6e7eea0e986f57d8086ea55c2eebf5"
+    },
+    "five_year_features.parquet": {
+      "path": "five_year_features.parquet",
+      "rows": 8620,
+      "sha256": "da8618bdd0331b84be41b5460dc80435a83734aac8ed9759cda5c11adc1faab6"
+    },
+    "range_audit.parquet": {
+      "path": "range_audit.parquet",
+      "rows": 16,
+      "sha256": "f8b083da85306b17d8dd44eebd5df36b017bd2d6df47a5f09726511f87ccf6e0"
+    }
+  },
+  "forbidden_interpretation": "These engineered features are research candidates, not player impact, causal credit, or evidence of model improvement.",
+  "quality": {
+    "annual_missing_values": 0,
+    "annual_rows": 6942,
+    "duplicate_annual_keys": 0,
+    "duplicate_five_year_keys": 0,
+    "five_year_missing_values": 0,
+    "five_year_rows": 8620,
+    "rapm_target_used": false
+  },
+  "run_id": "mechanism_feature_panel_v1_9224606a01",
+  "status": "research_features_complete"
+}
