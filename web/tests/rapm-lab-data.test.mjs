@@ -18,6 +18,19 @@ test("local RAPM Lab pairs every result with its test and decision", () => {
   }
 });
 
+test("aligned horizon and single-season sweeps are exposed", () => {
+  const single = lab.experiments.find(
+    (row) => row.id === "single-season-rapm-sweep",
+  );
+  const horizons = lab.experiments.find(
+    (row) => row.id === "rapm-horizon-age-sweep",
+  );
+  assert.match(single.result, /3000\/6000/);
+  assert.match(single.decision, /3000\/4500\/300/);
+  assert.match(horizons.result, /4 years/);
+  assert.match(horizons.result, /7 years/);
+});
+
 test("rubber-band payload carries the frozen actual-clock estimate", () => {
   assert.equal(lab.rubberband.selected_spec, "six_minute_clip15");
   assert.equal(lab.rubberband.coefficients.length, 8);

@@ -5259,3 +5259,42 @@ targets. Keep `3000 / 3000 / 300` for five-season RAPM. Rebuild and validate
 dependent SPM and prior-centered AIO artifacts before changing public outputs.
 Test candidate-specific, side-specific prior precision before adding more rich
 features.
+
+## 2026-08-31 — One-to-ten-year age context and single-season penalty sweep
+
+**Question:** Do longer RAPM windows improve next-season game margins, does
+known lineup age explain their stale information, and should one-season RAPM
+use still stronger offense or defense shrinkage or score-margin buckets?
+
+**Method:** Run `rapm_horizon_age_sweep_v1_dcda703202` scores every plain
+one- through ten-year window on the same 2024--26 games. It also adds separate
+offense and defense categorical lineup-age terms to the five- through ten-year
+fits. The age penalty is fixed at 100 from the earlier age experiment. Run
+`single_season_rapm_sweep_v1_6c4d7e99f9` selects 20 offense/defense penalty
+pairs and five score-state choices on 2015--22, then diagnoses the frozen
+choice on 2023--26. Whole games are the comparison and bootstrap unit.
+
+**Result:** Plain RAPM is best at four years on the aligned three-fold slice:
+RMSE `14.9038`, correlation `.3685`, and predicted-margin SD `7.1421`. The
+best age-conditional model uses seven years: RMSE `14.7100`, correlation
+`.4026`, and predicted-margin SD `8.0608`. Every age-conditional five- through
+ten-year fit beats its plain counterpart. The paired normal-minus-age MSE
+interval for seven years is `[5.394, 10.118]`. This prediction uses each test
+lineup's observed age and is not a neutral-age player rating.
+
+The single-season selection slice chose `3000 / 6000 / 300`, but that candidate
+worsened equal-season MSE on 2023--26 (`214.291` versus `214.218`) and reduced
+correlation. `3000 / 4500 / 300` ranked second during selection and first in
+the later diagnostics (`214.048` MSE). Across all 12 folds it remains the best
+grid point. Every five-point score-state variant worsened selection MSE, so the
+selected score control is none. Historical linear calibration reduced the
+selected 6000-defense model's predicted-margin SD from `5.476` to `5.232` and
+improved later MSE by `0.251`, with a paired interval `[0.051, 0.453]`; this is
+game-prediction calibration, not a different player rating.
+
+**Decision:** Keep `3000 / 4500 / 300` as the robust one-season research
+setting. Do not increase defense shrinkage to 6000 and do not add rubber-band
+buckets to one-season player RAPM. Use actual-age terms only for predictive
+lineup-strength research. Keep retrospective RAPM age-neutral. The three-season
+aligned horizon result is reused evidence; retain the broader seven-fold
+five-year result as the current neutral predictive target choice.
