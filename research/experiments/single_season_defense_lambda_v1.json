@@ -1,0 +1,12 @@
+{
+  "experiment_id": "single_season_defense_lambda_v1",
+  "status": "frozen_research_contract",
+  "seasons": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "evaluation_seasons": [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "candidates": [
+    {"label": "reference", "lambda_off": 3000, "lambda_def": 3000, "lambda_home": 300},
+    {"label": "defense_4500", "lambda_off": 3000, "lambda_def": 4500, "lambda_home": 300}
+  ],
+  "bootstrap_draws": 2000,
+  "bootstrap_seed": 20260831
+}

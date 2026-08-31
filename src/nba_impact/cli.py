@@ -3940,7 +3940,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--cache-dir", type=Path, default=LEGACY_POSSESSION_CACHE
     )
     annual_rapm_targets.add_argument("--lambda-off", type=float, default=3000.0)
-    annual_rapm_targets.add_argument("--lambda-def", type=float, default=3000.0)
+    annual_rapm_targets.add_argument("--lambda-def", type=float, default=4500.0)
     annual_rapm_targets.add_argument("--lambda-home", type=float, default=300.0)
     annual_rapm_targets.add_argument(
         "--artifact-root", type=Path, default=ARTIFACT_ROOT
@@ -3968,7 +3968,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     current_annual_rapm_targets.add_argument("--names", type=Path, default=PLAYER_NAMES)
     current_annual_rapm_targets.add_argument("--lambda-off", type=float, default=3000.0)
-    current_annual_rapm_targets.add_argument("--lambda-def", type=float, default=3000.0)
+    current_annual_rapm_targets.add_argument("--lambda-def", type=float, default=4500.0)
     current_annual_rapm_targets.add_argument("--lambda-home", type=float, default=300.0)
     current_annual_rapm_targets.add_argument(
         "--artifact-root", type=Path, default=ARTIFACT_ROOT

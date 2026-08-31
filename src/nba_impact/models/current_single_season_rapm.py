@@ -35,7 +35,7 @@ def build_current_single_season_rapm_targets(
     artifact_root: str | Path,
     seasons: tuple[int, ...] = (2024, 2025, 2026),
     lambda_off: float = 3000.0,
-    lambda_def: float = 3000.0,
+    lambda_def: float = 4500.0,
     lambda_home: float = 300.0,
 ) -> dict:
     """Fit one canonical current normal RAPM target table per season.

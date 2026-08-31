@@ -5232,3 +5232,30 @@ scores to AIO. The next candidate should be a bivariate dynamic current-strength
 state with learned prior precision, explicit factor-to-points bridges, weekly
 cutoffs, and separate oracle-lineup and projected-minutes tests. Keep Season
 2027 untouched.
+
+## 2026-08-31 — Box15 mechanism audit and single-season defense penalty
+
+**Question:** Why does Box15 outperform the complete rich prior after the same
+one-season RAPM update, and does stronger defensive shrinkage help?
+
+**Result:** The aligned comparison found no difference in target rows, games,
+lineups, weights, or prior coverage. The rich prior predicts five-year RAPM
+better, but it creates more variable game predictions after the update. Its
+extra prediction variance costs `8.203` MSE points, while its additional
+covariance with the outcome recovers `7.356`; bias contributes `-0.009`. The
+remaining net cost is `0.837` MSE points. The rich prior also correlates more
+strongly with same-season zero-prior RAPM (`.735` versus `.656`) and carries
+less stable, source-era-dependent feature families. Box15 is therefore more
+complementary to the possession likelihood under the fixed prior precision.
+
+A separate one-season penalty test scored 12 next-season folds from 2015
+through 2026. Raising the defensive penalty from `3000` to `4500` lowered mean
+RMSE from `13.6949` to `13.6800`. Paired reference-minus-candidate MSE was
+`0.4053`, with a 2,000-draw whole-game interval of `[0.1847, 0.6362]`. The same
+split penalty did not improve the stored five-season diagnostic panel.
+
+**Decision:** Use `3000 / 4500 / 300` for new single-season RAPM research
+targets. Keep `3000 / 3000 / 300` for five-season RAPM. Rebuild and validate
+dependent SPM and prior-centered AIO artifacts before changing public outputs.
+Test candidate-specific, side-specific prior precision before adding more rich
+features.
