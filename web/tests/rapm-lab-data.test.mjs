@@ -86,6 +86,23 @@ test("saved RAPM tests expose real leaderboards", () => {
   }
 });
 
+test("replication lab distinguishes exact outputs, proxies, and references", () => {
+  assert.deepEqual(
+    lab.replications.map((row) => row.metric),
+    ["DARKO WOWY", "RAPTOR table", "RAPTOR on/off", "PIPM", "BPM 2.0"],
+  );
+  assert.equal(lab.replications[0].status, "exact_public_output");
+  assert.equal(lab.replications[1].maximum_absolute_error, 0);
+  assert.equal(lab.replications[2].status, "proxy");
+  assert.equal(lab.replications[3].status, "partial_reference");
+  assert.equal(lab.replications[4].status, "reference_only");
+  assert.deepEqual(
+    lab.replication_leaderboards.map((row) => row.season),
+    [2026, 2024, 2022, 2023],
+  );
+  assert.ok(lab.replication_leaderboards.every((row) => row.rows.length > 0));
+});
+
 test("large unit leaderboards carry both tails", () => {
   for (const id of ["unit-2", "unit-3", "unit-4", "unit-5"]) {
     const board = lab.leaderboards.find((candidate) => candidate.id === id);

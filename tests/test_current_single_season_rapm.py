@@ -105,3 +105,20 @@ def test_current_single_season_targets_reject_unavailable_season(tmp_path: Path)
             artifact_root=tmp_path,
             seasons=(2026,),
         )
+
+
+def test_current_single_season_default_uses_stronger_defense_penalty(
+    tmp_path: Path,
+) -> None:
+    possessions, segments, names, player_games = _write_current_inputs(tmp_path)
+    run = build_current_single_season_rapm_targets(
+        possessions,
+        segments,
+        names,
+        player_games,
+        artifact_root=tmp_path,
+        seasons=(2024,),
+    )
+    assert run["config"]["lambda_off"] == 3000.0
+    assert run["config"]["lambda_def"] == 4500.0
+    assert run["config"]["lambda_home"] == 300.0

@@ -38,7 +38,7 @@ def build_single_season_rapm_targets(
     artifact_root: str | Path,
     seasons: tuple[int, ...] = tuple(range(2014, 2025)),
     lambda_off: float = 3000.0,
-    lambda_def: float = 3000.0,
+    lambda_def: float = 4500.0,
     lambda_home: float = 300.0,
 ) -> dict:
     """Fit one zero-prior normal RAPM per season as noisy SPM training labels."""

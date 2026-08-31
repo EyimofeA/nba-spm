@@ -8,7 +8,7 @@ import { MatchupRow, RapmLabPayload, ShotQualityRow } from "../lib/data";
 import { fmtInt, fmtRating } from "../lib/viz";
 import { MatchupsView } from "./MatchupsView";
 
-type Project = "tests" | "rubberband" | "age" | "matchups";
+type Project = "tests" | "replications" | "rubberband" | "age" | "matchups";
 type RubberbandBasis = "actual_clock" | "possession_progress";
 type RubberbandModel = "normal" | "clock" | "possession";
 
@@ -47,6 +47,7 @@ export function RapmLabView({
   onSeason: (season: number) => void;
 }) {
   const [project, setProject] = useState<Project>("tests");
+  const [replicationBoardId, setReplicationBoardId] = useState("darko-wowy-2026");
   const [timeBucket, setTimeBucket] = useState(7);
   const [rubberbandBasis, setRubberbandBasis] =
     useState<RubberbandBasis>("actual_clock");
@@ -103,6 +104,9 @@ export function RapmLabView({
   );
   const selectedLeaderboard = lab?.leaderboards.find(
     (row) => row.id === leaderboardId,
+  );
+  const selectedReplicationBoard = lab?.replication_leaderboards.find(
+    (row) => row.id === replicationBoardId,
   );
   const sortedLeaderboardRows = useMemo(() => {
     if (!selectedLeaderboard) return [];
@@ -229,6 +233,7 @@ export function RapmLabView({
           <div className="segmented" role="group" aria-label="RAPM Lab project">
             {([
               ["tests", "Tests"],
+              ["replications", "Replications"],
               ["rubberband", "Rubber band"],
               ["age", "Age"],
               ["matchups", "Matchups"],
@@ -358,6 +363,93 @@ export function RapmLabView({
             </table>
           </div>
         </section>
+      )}
+
+      {project === "replications" && (
+        <div className="grid">
+        <section>
+          <div className="section-head">
+            <div>
+              <p className="kicker">Independent reference checks</p>
+              <h2>Replication status</h2>
+            </div>
+          </div>
+          <div className="table-wrap">
+            <table className="data">
+              <caption className="visually-hidden">
+                Public metric replication and reference status
+              </caption>
+              <thead>
+                <tr>
+                  <th className="left" scope="col"><button type="button" disabled>Metric</button></th>
+                  <th className="left" scope="col"><button type="button" disabled>Build</button></th>
+                  <th className="left" scope="col"><button type="button" disabled>Status</button></th>
+                  <th scope="col"><button type="button" disabled>Matched</button></th>
+                  <th scope="col"><button type="button" disabled>Pearson</button></th>
+                  <th className="left" scope="col"><button type="button" disabled>Decision</button></th>
+                </tr>
+              </thead>
+              <tbody>
+                {lab.replications.map((row) => (
+                  <tr key={`${row.metric}-${row.build}`}>
+                    <td className="left name">{row.metric}</td>
+                    <td className="left lab-copy">{row.build}</td>
+                    <td className="left">{row.status.replaceAll("_", " ")}</td>
+                    <td>{fmtInt(row.matched_rows)}</td>
+                    <td>{row.pearson == null ? "—" : row.pearson.toFixed(3)}</td>
+                    <td className="left lab-copy">{row.decision}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section>
+          <div className="section-head">
+            <div>
+              <p className="kicker">Published ratings</p>
+              <h2>{selectedReplicationBoard?.title ?? "Leaderboard"}</h2>
+            </div>
+            <label className="field compact-field">
+              <span>Metric</span>
+              <select
+                value={replicationBoardId}
+                onChange={(event) => setReplicationBoardId(event.target.value)}
+              >
+                {lab.replication_leaderboards.map((board) => (
+                  <option key={board.id} value={board.id}>{board.title}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {selectedReplicationBoard && (
+            <div className="table-wrap lab-leaderboard">
+              <table className="data">
+                <thead>
+                  <tr>
+                    <th className="left">Player</th>
+                    <th className="left">Team</th>
+                    <th>Offense</th>
+                    <th>Defense</th>
+                    <th>Net</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedReplicationBoard.rows.map((row, index) => (
+                    <tr key={`${row.player}-${index}`}>
+                      <td className="left name">{row.player}</td>
+                      <td className="left">{row.team ?? "—"}</td>
+                      <td>{fmtRating(row.offense)}</td>
+                      <td>{fmtRating(row.defense)}</td>
+                      <td className="headline">{fmtRating(row.net)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+        </div>
       )}
 
       {project === "rubberband" && (

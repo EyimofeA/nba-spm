@@ -64,18 +64,24 @@ production imports, or model claims without a held-out promotion gate.
 - One row is one completed possession.
 - Inputs are five offensive player IDs, five defensive player IDs, and a home
   indicator. IDs for game, season, period, and possession are QA fields.
-- The reference model uses the terminal lineup, zero player prior, and ridge
-  penalties 3000 offense, 3000 defense, and 300 home.
+- The five-year reference uses the terminal lineup, zero player prior, and
+  ridge penalties 3000 offense, 3000 defense, and 300 home.
+- The single-season research successor uses 3000 offense, 4500 defense, and
+  300 home. Twelve next-season folds lowered mean RMSE from 13.6949 to 13.6800;
+  paired reference-minus-candidate MSE was 0.405 with a 95% interval of 0.185
+  to 0.636. Public RAPM and dependent SPM/AIO artifacts remain on 3000/3000
+  until they are rebuilt and reviewed together.
 - Positive defense means points prevented. Offense plus defense equals net.
 - RAPM is available through 2026. The public interface calls it `RAPM`.
 - One-year RAPM is the retrospective season estimand. Unweighted five-year
   `3000 / 3000 / 300` RAPM is the stable multi-year reference. A tuned
   actual-age, time-decayed challenger improved 2025 but worsened reused 2026;
   do not promote it.
-- The regularization audit evaluated 196 configurations across eight held-out
-  folds. No offense/defense split penalty cleared the prediction and
-  uncertainty gates. Keep `3000 / 3000 / 300`; do not infer that offense and
-  defense require equal shrinkage in every future estimand.
+- The five-year regularization audit evaluated 196 configurations across eight
+  held-out folds. No offense/defense split penalty cleared the prediction and
+  uncertainty gates. Keep `3000 / 3000 / 300` for five-year RAPM. The separate
+  one-season audit supports `3000 / 4500 / 300`; penalty choice depends on the
+  amount of possession evidence.
 - Standard RAPM keeps technical free-throw points so game scores reconcile.
   An exact-design sensitivity removed 2,987 technical points from 2024--26 and
   worsened held-out 2026 margin MSE. Keep the score-conserving response and the

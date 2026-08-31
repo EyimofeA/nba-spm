@@ -203,6 +203,28 @@ export type RapmLabLeaderboard = {
   columns: { key: string; label: string }[];
   rows: Record<string, string | number | null>[];
 };
+export type ReplicationRecord = {
+  metric: string;
+  build: string;
+  status: "exact_public_output" | "proxy" | "partial_reference" | "reference_only";
+  matched_rows: number;
+  pearson: number | null;
+  maximum_absolute_error: number | null;
+  decision: string;
+  run_id: string;
+};
+export type ReplicationLeaderboard = {
+  id: string;
+  title: string;
+  season: number;
+  rows: {
+    player: string;
+    team?: string | null;
+    offense: number;
+    defense: number;
+    net: number;
+  }[];
+};
 export type RubberbandCoefficient = {
   fit_seasons: string;
   time_bucket: number;
@@ -266,6 +288,8 @@ export type RapmLabPayload = {
   scope: "localhost_only";
   experiments: RapmLabExperiment[];
   leaderboards: RapmLabLeaderboard[];
+  replications: ReplicationRecord[];
+  replication_leaderboards: ReplicationLeaderboard[];
   age: {
     run_id: string;
     curve: AgeCurveRow[];
