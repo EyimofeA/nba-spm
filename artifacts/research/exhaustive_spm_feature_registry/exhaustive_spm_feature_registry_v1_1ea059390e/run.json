@@ -1,0 +1,40 @@
+{
+  "config": {
+    "experiment_id": "exhaustive_spm_feature_registry_v1",
+    "source_hashes": {
+      "builder": "1fe149b158e7b6f8dde1b19970f73457a11ffe99e892927bd9eb2a4bc930ec95",
+      "complete_manifest": "4dac9222fdbd8da8296f557c6f9cc20e2eab2614789f442ba027c63d41f00b5b",
+      "completion_ledger": "5fd70fba72be192d011b435b05ed7e52a118fa21ed796c6af0f56e0661e10be6",
+      "mechanism_registry": "0c37ff19aa63906afe30608bca9f93f23c6e7eea0e986f57d8086ea55c2eebf5",
+      "skill_definitions": "3e3a954bb2c8b8f10eab27f15b07fe2da7fa3771e5e9fcfbd1ad42be7c902699",
+      "wide_features": "452793dfefafb0a5d678471cd53dd7a86cb352fd0f30de57426dfd35211a0f84",
+      "wide_manifest": "36bc7f5b66275b62cc9bd4d1572bed6e6f12ee7caf06d7ac4c3c9bea971cdb28"
+    }
+  },
+  "created_at": "2026-08-31T19:03:51.268790+00:00",
+  "experiment_id": "exhaustive_spm_feature_registry_v1",
+  "files": {
+    "feature_registry.csv": {
+      "path": "feature_registry.csv",
+      "sha256": "2bada6ab59ce77cd028056374ef8153c51deb442ff6ed17bafc3db3430191710"
+    },
+    "feature_registry.parquet": {
+      "path": "feature_registry.parquet",
+      "sha256": "efd1a5cda32b282ebe100b06505f5d913cbd2670af84cdb0541c58e643865dba"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "sha256": "8f91e5611ab5e5db6a0271761880b11f0890664414fcae2303d82d1caa2a122e"
+    }
+  },
+  "forbidden_interpretation": "Registry membership is not evidence that a feature improves impact prediction.",
+  "quality": {
+    "duplicate_feature_rows": 0,
+    "new_mechanism_features": 8,
+    "predictive_skill_definitions": 34,
+    "unique_features": 337,
+    "wide_panel_features": 295
+  },
+  "run_id": "exhaustive_spm_feature_registry_v1_1ea059390e",
+  "status": "research_registry_complete"
+}

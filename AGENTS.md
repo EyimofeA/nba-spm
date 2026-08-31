@@ -176,6 +176,15 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   disruption/fouls, shooting/scoring, creation/security, and rebounding. Use
   `active_2026_leaderboard.parquet`; the earlier unfiltered table includes
   zero-exposure historical players.
+- Same-season mechanism run `mechanism_feature_challenger_v1_5f3e0bad98`
+  rejects four new offense features but finds a small defensive gain. The
+  four-feature defense block lowers reused next-season AIO RMSE from `14.3792`
+  to `14.3516` and wins four of five folds. Follow-up
+  `defense_mechanism_screen_v1_181a68516f` finds that rim-workload value and
+  workload-adjusted suppression supply the largest individual gains. The full
+  block improves only `.0275` RMSE, below the `.05` practical gate, and loses
+  narrowly in the reused 2026 fold. Keep Box15 frozen and retain these features
+  as research candidates.
 - Strict blocked-game run `impact_validation_v2_gate_a_090cb2d323` uses the
   466 regulation games whose cached possession points match the official home
   and away final scores. It removes each held game from both Box15 inputs and

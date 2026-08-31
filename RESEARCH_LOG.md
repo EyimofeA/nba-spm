@@ -5378,3 +5378,34 @@ interval `[-0.0519, +1.8802]`.
 stability-selection arm. Do not replace Full SPM or the frozen BoxPIPM-style
 research prior. A future supervised selector must use nested chronological
 selection and score the final AIO rather than standalone SPM fit alone.
+
+## 2026-08-31 — Same-season mechanism features
+
+**Question:** Can target-free basketball mechanisms improve Box15 after the
+same one-season RAPM update?
+
+**Method:** Build eight same-season features without RAPM, future seasons,
+player identity, or external impact ratings. Weighted analytic
+leave-one-player-out regressions remove load, shot-mix, foul, and workload
+context. Empirical-Bayes or possession shrinkage limits low-exposure residuals.
+Possession-weight the annual values into five-year windows. Train each rating
+season only on earlier window ends. Score five reused next-season game folds on
+identical games. Apply the same `3000 / 3000 / 300` one-season RAPM update and
+use 5,000 paired whole-game bootstrap draws.
+
+**Result:** Run `mechanism_feature_challenger_v1_5f3e0bad98` rejects the
+offense block. Box15 AIO RMSE is `14.3792`; offense-mechanism AIO is `14.4266`.
+The four-feature defense block reaches `14.3516`, wins four of five folds, and
+has a Box15-minus-defense MSE interval of `[0.2557, 1.3193]`.
+
+Run `defense_mechanism_screen_v1_181a68516f` finds that every defensive feature
+improves the AIO point estimate. Workload-adjusted shot suppression reaches
+`14.3618`; rim workload value reaches `14.3612`; foul-adjusted activity reaches
+`14.3697`; rebound responsibility reaches `14.3761`. The four-feature block is
+best but gains only `.0275` RMSE and loses narrowly in the reused 2026 fold.
+
+**Decision:** Reject the offense features. Keep the defensive block as a
+research challenger. Do not replace Box15 because the gain misses the `.05`
+practical threshold and does not repeat in every fold. Registry
+`exhaustive_spm_feature_registry_v1_1ea059390e` is now the source of truth for
+337 candidate, predictive, circular, and control fields.

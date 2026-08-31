@@ -1,0 +1,36 @@
+schema_version: experiment_preregistration_v1
+experiment_id: defense_mechanism_screen_v1
+status: frozen_reused_diagnostic
+estimand_id: prior_validation_suite_v1
+
+question: >-
+  Which defensive mechanism feature explains the Box15 challenger gain?
+
+candidates:
+  box_15: []
+  box_plus_dreb_responsibility: [dreb_conversion_above_expected_eb]
+  box_plus_foul_adjusted_activity: [foul_adjusted_activity_residual]
+  box_plus_workload_adjusted_suppression: [workload_adjusted_shot_suppression_residual]
+  box_plus_rim_workload_value: [rim_protection_workload_value]
+  box_plus_all_defense_mechanisms:
+    - dreb_conversion_above_expected_eb
+    - foul_adjusted_activity_residual
+    - workload_adjusted_shot_suppression_residual
+    - rim_protection_workload_value
+
+information_cutoff:
+  rating_seasons: [2021, 2022, 2023, 2024, 2025, 2026]
+  evaluated_rating_seasons: [2021, 2022, 2023, 2024, 2025]
+  test_seasons: [2022, 2023, 2024, 2025, 2026]
+  training_rule: window_end strictly before rating_season
+
+evaluation:
+  primary: equal_season_mean_next_season_game_margin_mse
+  uncertainty:
+    method: paired_whole_game_bootstrap_within_test_season
+    draws: 5000
+    seed: 20260831
+
+forbidden_interpretation: >-
+  This follow-up uses the same inspected seasons as the family screen. It can
+  prune features but cannot supply independent promotion evidence.

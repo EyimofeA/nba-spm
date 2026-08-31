@@ -1,0 +1,292 @@
+{
+  "config": {
+    "bootstrap_draws": 5000,
+    "candidate_features": {
+      "box_15": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100"
+      ],
+      "box_plus_all_defense_mechanisms": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "dreb_conversion_above_expected_eb",
+        "foul_adjusted_activity_residual",
+        "workload_adjusted_shot_suppression_residual",
+        "rim_protection_workload_value"
+      ],
+      "box_plus_dreb_responsibility": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "dreb_conversion_above_expected_eb"
+      ],
+      "box_plus_foul_adjusted_activity": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "foul_adjusted_activity_residual"
+      ],
+      "box_plus_rim_workload_value": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "rim_protection_workload_value"
+      ],
+      "box_plus_workload_adjusted_suppression": [
+        "PTS_p100",
+        "AST_p100",
+        "TOV_p100",
+        "STL_p100",
+        "BLK_p100",
+        "OREB_p100",
+        "DREB_p100",
+        "PF_p100",
+        "PFD_p100",
+        "FTA_p100",
+        "FTM_p100",
+        "FG2A_p100",
+        "FG2M_p100",
+        "FG3A_p100",
+        "FG3M_p100",
+        "workload_adjusted_shot_suppression_residual"
+      ]
+    },
+    "evaluated_rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "experiment_id": "defense_mechanism_screen_v1",
+    "rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "sources": {
+      "base_features": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_fdee01ec4e/five_year_features.parquet",
+        "sha256": "5e3f5b3697be365203dd906c2162647eab4ec7e282e95e80ef5bbe0123ef9b84"
+      },
+      "contract": {
+        "path": "research/experiments/defense_mechanism_screen_v1.yml",
+        "sha256": "c6b4aef08341154cef4665ddf7c2f02337ae2f03ae2c636792b2c981ce946e98"
+      },
+      "family_runner": {
+        "path": "research/run_mechanism_feature_challenger.py",
+        "sha256": "15bbf9ee45fe5f87c382e4294bf6ce50913d5309e6d1f5b7c65b2d3f2914de29"
+      },
+      "mechanism_features": {
+        "path": "artifacts/research/mechanism_feature_panel/mechanism_feature_panel_v1_9224606a01/five_year_features.parquet",
+        "sha256": "da8618bdd0331b84be41b5460dc80435a83734aac8ed9759cda5c11adc1faab6"
+      },
+      "mechanism_manifest": {
+        "path": "artifacts/research/mechanism_feature_panel/mechanism_feature_panel_v1_9224606a01/run.json",
+        "sha256": "a88c0ec897e50aa41a27539d69a220570290dbf104b7022b509ad084857fe4ae"
+      },
+      "runner": {
+        "path": "research/run_defense_mechanism_screen.py",
+        "sha256": "70a0e4e1f30c02d7eac8787df538fb09fe52364f1dcb5f65bfe3e1b5f03d5665"
+      },
+      "targets": {
+        "path": "artifacts/models/five_year_target_spm/five_year_target_spm_v1_65550acb79/five_year_targets.parquet",
+        "sha256": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+      }
+    }
+  },
+  "contract": {
+    "candidates": {
+      "box_15": [],
+      "box_plus_all_defense_mechanisms": [
+        "dreb_conversion_above_expected_eb",
+        "foul_adjusted_activity_residual",
+        "workload_adjusted_shot_suppression_residual",
+        "rim_protection_workload_value"
+      ],
+      "box_plus_dreb_responsibility": [
+        "dreb_conversion_above_expected_eb"
+      ],
+      "box_plus_foul_adjusted_activity": [
+        "foul_adjusted_activity_residual"
+      ],
+      "box_plus_rim_workload_value": [
+        "rim_protection_workload_value"
+      ],
+      "box_plus_workload_adjusted_suppression": [
+        "workload_adjusted_shot_suppression_residual"
+      ]
+    },
+    "estimand_id": "prior_validation_suite_v1",
+    "evaluation": {
+      "primary": "equal_season_mean_next_season_game_margin_mse",
+      "uncertainty": {
+        "draws": 5000,
+        "method": "paired_whole_game_bootstrap_within_test_season",
+        "seed": 20260831
+      }
+    },
+    "experiment_id": "defense_mechanism_screen_v1",
+    "forbidden_interpretation": "This follow-up uses the same inspected seasons as the family screen. It can prune features but cannot supply independent promotion evidence.",
+    "information_cutoff": {
+      "evaluated_rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "test_seasons": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "training_rule": "window_end strictly before rating_season"
+    },
+    "question": "Which defensive mechanism feature explains the Box15 challenger gain?",
+    "schema_version": "experiment_preregistration_v1",
+    "status": "frozen_reused_diagnostic"
+  },
+  "created_at": "2026-08-31T19:01:08.438577+00:00",
+  "experiment_id": "defense_mechanism_screen_v1",
+  "files": {
+    "bootstrap_model_intervals.parquet": {
+      "path": "bootstrap_model_intervals.parquet",
+      "rows": 13,
+      "sha256": "e0482d7d345ea91690cbc40fc7b9b16f77bf3a80e3a096056d2806a865e94235"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "rows": 65,
+      "sha256": "8989d16213f7b06992a0410b07c3e4e60f53b7f5b3ff448f723cdb4766df06b6"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 79833,
+      "sha256": "2b1cbcdf621a67affc23c94b942ccb42a7e77e6a77e4f4a8e1f249b49536dc36"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "model_selection.parquet": {
+      "path": "model_selection.parquet",
+      "rows": 72,
+      "sha256": "c7b9116696ec9d80e274b879fcd1d5d6139da80a2f09cf63a3b996bcb987b003"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 78,
+      "sha256": "11cf7b196ebc97c8822094a5e26ca38e40640a63ccef812b440033b2928993ec"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "rows": 36,
+      "sha256": "788906bd1203d8d5e556ddf722ea4c137717a62b6c26e0fc51185c13c747fd7b"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "rows": 35466,
+      "sha256": "c342107f304c1f62067956f17d80f73909f88430c3a6fa76a60e5f73fb74093a"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "rows": 83616,
+      "sha256": "3b5286d10047aa2a2c18cc2366edbafa4ff4d5dafa042e943c52b98f710c7921"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "rows": 13,
+      "sha256": "6845484559e718a4e0cc98b5ef745673aa2423a5e772e2be44508eb198874449"
+    },
+    "target_metrics.parquet": {
+      "path": "target_metrics.parquet",
+      "rows": 108,
+      "sha256": "09b3f8ced5fb5eea39d26943bfb6c4ffa36f0c252017e94f24132fd3660f8a1a"
+    }
+  },
+  "forbidden_interpretation": "This follow-up uses the same inspected seasons as the family screen. It can prune features but cannot supply independent promotion evidence.",
+  "quality": {
+    "identical_games_within_fold": true,
+    "missing_selected_values": 0,
+    "panel_rows": 8620
+  },
+  "run_id": "defense_mechanism_screen_v1_181a68516f",
+  "status": "reused_diagnostic_complete"
+}
