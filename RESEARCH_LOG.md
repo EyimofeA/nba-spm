@@ -5409,3 +5409,52 @@ research challenger. Do not replace Box15 because the gain misses the `.05`
 practical threshold and does not repeat in every fold. Registry
 `exhaustive_spm_feature_registry_v1_1ea059390e` is now the source of truth for
 337 candidate, predictive, circular, and control fields.
+
+## 2026-08-31 — Prior calibration and precision audit
+
+**Question:** Does mean calibration or prior precision explain why Full and
+Compact SPM fit five-year RAPM better but lose to Box15 after the same
+one-season update?
+
+**Method:** Run `aio_prior_calibration_precision_v1_6f9b7ce1e9` holds saved
+priors, games, lineups, and the possession likelihood fixed. Each rating season
+uses strictly earlier game folds to select offense and defense penalties from
+`1500, 3000, 4500, 6000`. A separate player-level affine arm calibrates each
+side against earlier out-of-fold five-year RAPM targets. A game-level affine
+arm diagnoses the finished forecast but cannot define a player rating.
+
+**Result:** Side-specific precision improves all three priors. Box15 RMSE falls
+from `14.4295` to `14.3978`; Full falls from `14.4515` to `14.4095`; Compact
+falls from `14.4578` to `14.4152`. Full's paired MSE gain is `1.2123`, with
+interval `[0.4923, 1.9433]`. Player-level affine calibration worsens all three.
+Game-level affine calibration makes Full best at `14.3296`, which shows useful
+ranking signal plus poor finished-prediction magnitude calibration.
+
+**Decision:** Prior precision explains part, but not all, of the reversal.
+Keep Box15 as the research prior. Retain stronger side-specific precision as a
+research challenger. Do not turn the game-affine forecast into a retrospective
+player rating.
+
+## 2026-08-31 — Target-free SPM feature atlas
+
+**Question:** Which completed fields are measured consistently enough to enter
+a later supervised screen?
+
+**Method:** Run `spm_feature_atlas_v1_6949ad7b60` audits 178 completed five-year
+fields from 2018--26. It uses no RAPM target or future outcome. It records
+ranges, adjacent-season stability, early-versus-late standardized shifts and
+univariate AUC, plus within-era correlation pairs.
+
+**Result:** The atlas clears 138 fields, flags 14 source shifts, and finds 13
+stable correlation pairs above `.95`. The new pass-value feature has source-era
+AUC `.878` and standardized mean shift `1.665`. Rim workload correlates above
+`.98` with rim points saved in both eras. The other three new defensive
+mechanisms pass the source-shift screen.
+
+**Decision:** Exclude pass value pending source reconciliation. Keep one of rim
+workload and rim points saved inside each fold. Do not run the proposed clean
+pre-2022 rich five-year learner screen: the feature panel starts in 2018, and a
+proper five-year label-overlap purge leaves no earlier rich-feature training
+window. Retain histogram boosting for offense, ridge for defense, and elastic
+net as a selector until a longer consistent history or a separate annual
+target supplies valid folds.

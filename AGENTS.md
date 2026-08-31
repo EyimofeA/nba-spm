@@ -296,6 +296,17 @@ Canonical code: `src/nba_impact/models/five_year_spm_feature_research.py`.
 - No richer frozen feature set improved downstream game-margin MSE after the
   same one-season RAPM update. The strict blocked-game result also favors
   Box15, but it covers a nonrepresentative score-conserved subset.
+- Prior audit `aio_prior_calibration_precision_v1_6f9b7ce1e9` finds that
+  side-specific prior precision improves Box15, Full, and Compact AIO. Full
+  retains the best ranking signal, but Box15 remains best when each prior gets
+  the same nested precision treatment. Player-level affine calibration loses.
+- Feature atlas `spm_feature_atlas_v1_6949ad7b60` clears 138 of 178 completed
+  fields for later fold-internal screening, flags 14 source shifts, and finds
+  13 stable near-duplicate pairs. Exclude the new pass-value feature until its
+  source shift is reconciled. Prune rim workload against rim points saved.
+- Do not run a claimed clean pre-2022 rich five-year learner tournament. The
+  panel starts at window end 2018, and purging overlapping five-year labels
+  leaves no earlier rich-feature training window.
 - Box15 does not replace the public 2017--24 annual SPM or AIO.
 
 Canonical code: `src/nba_impact/models/box_pipm_style.py`.

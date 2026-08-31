@@ -1,0 +1,159 @@
+{
+  "config": {
+    "candidates": [
+      "box_pipm",
+      "full_spm",
+      "compact_spm"
+    ],
+    "experiment_id": "aio_prior_calibration_precision_v1",
+    "player_penalty_grid": [
+      1500.0,
+      3000.0,
+      4500.0,
+      6000.0
+    ],
+    "rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "scored_rating_seasons": [
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "sources": {
+      "contract": {
+        "path": "research/experiments/aio_prior_calibration_precision_v1.yml",
+        "sha256": "156a4ec885d8bd56caf0b621d9ab227cb14971d3c72b54a77e6e5568927b506e"
+      },
+      "runner": {
+        "path": "research/run_aio_prior_calibration_precision.py",
+        "sha256": "266c4fa40b0ac847b7be9966a37170108bb248bbb2b4c038fff67d8d6a3ad529"
+      },
+      "source_manifest": {
+        "path": "artifacts/research/compact_spm_comparison/compact_spm_comparison_v1_2a0f8a6f31/run.json",
+        "sha256": "7070baf30da7a964ef45631b84216128edd221746ec97edb7edbf4f4716a66fa"
+      },
+      "source_priors": {
+        "path": "artifacts/research/compact_spm_comparison/compact_spm_comparison_v1_2a0f8a6f31/priors.parquet",
+        "sha256": "3f55b70d9ad2ce411ff21a279744606a85ee392713e9727e357cb54684672f08"
+      },
+      "targets": {
+        "path": "artifacts/models/five_year_target_spm/five_year_target_spm_v1_65550acb79/five_year_targets.parquet",
+        "sha256": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+      }
+    }
+  },
+  "contract": {
+    "calibration": {
+      "arms": [
+        "unit",
+        "prior_affine_calibrated",
+        "precision_calibrated",
+        "prior_affine_and_precision",
+        "game_affine_diagnostic"
+      ],
+      "home_penalty": 300,
+      "player_penalty_grid": [
+        1500,
+        3000,
+        4500,
+        6000
+      ],
+      "prior_affine_rule": "Fit target_side = intercept + slope * prior_side on strictly earlier out-of-fold player windows with square-root possession weights. Recenter the calibrated side before the RAPM update.",
+      "selection_rule": "For each scored rating season, select on strictly earlier next-season game folds with every season weighted equally."
+    },
+    "estimand_id": "prior_validation_suite_v1",
+    "evaluation": {
+      "primary": "equal-season mean next-season whole-game margin MSE",
+      "scored_rating_seasons": [
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "secondary": [
+        "RMSE",
+        "correlation",
+        "calibration slope",
+        "calibration intercept"
+      ],
+      "test_seasons": [
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "uncertainty": {
+        "draws": 5000,
+        "seed": 20260831,
+        "unit": "whole game within test season"
+      }
+    },
+    "experiment_id": "aio_prior_calibration_precision_v1",
+    "inputs": {
+      "candidates": [
+        "box_pipm",
+        "full_spm",
+        "compact_spm"
+      ],
+      "frozen_priors": "required",
+      "refit_spm": false,
+      "source_run": "compact_spm_comparison_v1_2a0f8a6f31"
+    },
+    "question": "Does prior mean calibration or prior precision explain why Full and Compact SPM fit five-year RAPM better than Box15 but predict worse after the same one-season RAPM update?",
+    "schema_version": "experiment_preregistration_v1",
+    "status": "frozen_reused_diagnostic",
+    "stopping_rules": [
+      "Do not change priors, features, learners, games, or lineup likelihood.",
+      "Treat the game-level affine arm as diagnosis, not a player rating.",
+      "Do not promote a model from reused seasons.",
+      "If calibration does not materially close the Box15 gap, move to a bounded feature-family and learner screen."
+    ]
+  },
+  "created_at": "2026-08-31T20:45:12.936901+00:00",
+  "experiment_id": "aio_prior_calibration_precision_v1",
+  "files": {
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "rows": 60,
+      "sha256": "d8135ff84bb611b969e6b86267cf211fe4e5c3873d77b0af27f180266f4b3e84"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 73665,
+      "sha256": "3033251c51715b792a88824ce21bf95390203053bff1f86b0cc72ce783e1aa66"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 12,
+      "sha256": "ac907350dcdf3e49c9f4249603c7ecc7b1ef1d442c19d62cb91603f5ed45a223"
+    },
+    "selections.parquet": {
+      "path": "selections.parquet",
+      "rows": 60,
+      "sha256": "8c57ee97f30822da053c6b5086798df1ccfac34b413580332570f14b8100689d"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "rows": 15,
+      "sha256": "4f76a46a666e1173ee9ba2fb470eac5defe7f0f83fa5726deda885c44a9b6404"
+    }
+  },
+  "forbidden_interpretation": "Reused diagnostic folds cannot promote a public model.",
+  "quality": {
+    "identical_games_within_candidate": true,
+    "season_2027_loaded": false
+  },
+  "run_id": "aio_prior_calibration_precision_v1_6f9b7ce1e9",
+  "status": "reused_diagnostic_complete"
+}

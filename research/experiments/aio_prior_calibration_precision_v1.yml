@@ -1,0 +1,43 @@
+schema_version: experiment_preregistration_v1
+experiment_id: aio_prior_calibration_precision_v1
+status: frozen_reused_diagnostic
+question: >-
+  Does prior mean calibration or prior precision explain why Full and Compact
+  SPM fit five-year RAPM better than Box15 but predict worse after the same
+  one-season RAPM update?
+estimand_id: prior_validation_suite_v1
+inputs:
+  source_run: compact_spm_comparison_v1_2a0f8a6f31
+  candidates: [box_pipm, full_spm, compact_spm]
+  frozen_priors: required
+  refit_spm: false
+calibration:
+  player_penalty_grid: [1500, 3000, 4500, 6000]
+  home_penalty: 300
+  prior_affine_rule: >-
+    Fit target_side = intercept + slope * prior_side on strictly earlier
+    out-of-fold player windows with square-root possession weights. Recenter
+    the calibrated side before the RAPM update.
+  selection_rule: >-
+    For each scored rating season, select on strictly earlier next-season
+    game folds with every season weighted equally.
+  arms:
+    - unit
+    - prior_affine_calibrated
+    - precision_calibrated
+    - prior_affine_and_precision
+    - game_affine_diagnostic
+evaluation:
+  scored_rating_seasons: [2022, 2023, 2024, 2025]
+  test_seasons: [2023, 2024, 2025, 2026]
+  primary: equal-season mean next-season whole-game margin MSE
+  secondary: [RMSE, correlation, calibration slope, calibration intercept]
+  uncertainty:
+    unit: whole game within test season
+    draws: 5000
+    seed: 20260831
+stopping_rules:
+  - Do not change priors, features, learners, games, or lineup likelihood.
+  - Treat the game-level affine arm as diagnosis, not a player rating.
+  - Do not promote a model from reused seasons.
+  - If calibration does not materially close the Box15 gap, move to a bounded feature-family and learner screen.
