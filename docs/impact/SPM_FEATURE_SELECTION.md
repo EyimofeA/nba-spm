@@ -70,5 +70,7 @@ AIO game-margin difference. Promote a feature set only when the downstream AIO
 gain repeats across seasons and does not come from one source era or exposure
 group.
 
-The existing full SPM remains immutable. The compact contract is a new
-research input until that comparison runs.
+The existing full SPM remains immutable. Run
+`compact_spm_comparison_v1_2a0f8a6f31` fits the compact contract. Compact SPM
+improves standalone next-season MSE, but its RAPM posterior does not improve on
+Full SPM. Keep it as a research and interpretation arm.

@@ -1,0 +1,222 @@
+{
+  "config": {
+    "bootstrap": {
+      "draws": 5000,
+      "seed": 20260831,
+      "unit": "whole game within test season"
+    },
+    "center_scale": 1,
+    "evaluated_rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "experiment_id": "compact_spm_comparison_v1",
+    "feature_counts": {
+      "box": 15,
+      "compact_defense": 58,
+      "compact_offense": 105,
+      "full_defense": 72,
+      "full_offense": 128
+    },
+    "model_order": [
+      "full_spm",
+      "compact_spm",
+      "box_pipm",
+      "zero_prior_rapm",
+      "full_spm_aio",
+      "compact_spm_aio",
+      "box_pipm_aio"
+    ],
+    "rapm_penalties": {
+      "defense": 3000,
+      "home": 300,
+      "offense": 3000
+    },
+    "rating_seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "sources": {
+      "base_runner": {
+        "path": "research/run_full_spm_history_ablation.py",
+        "sha256": "8b3f0cbe1b3b23eccea46c6091f851d894f9d899c5f0daf9129e02b9e998af1d"
+      },
+      "compact_config": {
+        "path": "configs/models/compact_spm_correlated_v1.json",
+        "sha256": "ba4c0b1df8a7c0802bc9fed695f2b1e8310dae7f208a1b8732d5101f1de7a63c"
+      },
+      "contract": {
+        "path": "research/experiments/compact_spm_comparison_v1.yml",
+        "sha256": "4ef64930a3e0d7ff3e398201d00e738813c034dd9704d342f6eea034c6d4a1f5"
+      },
+      "feature_manifest": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_fdee01ec4e/run.json",
+        "sha256": "4dac9222fdbd8da8296f557c6f9cc20e2eab2614789f442ba027c63d41f00b5b"
+      },
+      "features": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_fdee01ec4e/five_year_features.parquet",
+        "sha256": "5e3f5b3697be365203dd906c2162647eab4ec7e282e95e80ef5bbe0123ef9b84"
+      },
+      "runner": {
+        "path": "research/run_compact_spm_comparison.py",
+        "sha256": "ee10252fde72a3f5b9963370ad1560cce2f6c4ab7e15ece5804fe80c7f5d7a71"
+      },
+      "targets": {
+        "path": "artifacts/models/five_year_target_spm/five_year_target_spm_v1_65550acb79/five_year_targets.parquet",
+        "sha256": "b29bc201a4a4342b6f90806512afa956e92ddf52fac61c353454672eab1f8707"
+      }
+    }
+  },
+  "contract": {
+    "aio_contract": {
+      "center_scale": 1,
+      "lambda_defense": 3000,
+      "lambda_home": 300,
+      "lambda_offense": 3000,
+      "likelihood_seasons": 1,
+      "lineup_policy": "terminal"
+    },
+    "created_at": "2026-08-31",
+    "decision_rule": "Prefer compact SPM only if its AIO lowers paired next-season MSE against full SPM without a material correlation decline. Treat every result as reused diagnostic evidence.",
+    "estimand_id": "prior_validation_suite_v1",
+    "evaluation": {
+      "identical_games": "required within each test season",
+      "primary": "equal-season mean next-season whole-game margin MSE",
+      "secondary": [
+        "next-season game-margin correlation",
+        "five-year RAPM target RMSE and correlation",
+        "calibration slope",
+        "paired whole-game MSE interval"
+      ],
+      "uncertainty": {
+        "draws": 5000,
+        "seed": 20260831,
+        "unit": "whole game within test season"
+      }
+    },
+    "experiment_id": "compact_spm_comparison_v1",
+    "feature_arms": {
+      "box_pipm": "fixed BoxPIPM-style box rates",
+      "compact_spm": "compact_spm_correlated_v1",
+      "full_spm": "corrected 128-offense and 72-defense contract"
+    },
+    "information_cutoff": {
+      "evaluated_rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "final_current_rating_season": 2026,
+      "rating_seasons": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "test_seasons": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "training_rule": "window_end strictly before rating_season"
+    },
+    "model_contract": {
+      "box_learner": "ridge with rolling-origin alpha selection on earlier window ends",
+      "net_identity": "offense plus defense",
+      "rich_defense_learner": "frozen ridge",
+      "rich_offense_learner": "frozen histogram gradient boosting",
+      "sample_weight": "square root of the smaller five-year offensive or defensive exposure",
+      "target": "zero-prior terminal-lineup RAPM over the same rolling five seasons"
+    },
+    "question": "Does removing audited within-side feature pairs with absolute correlation at least .95 improve the corrected five-year SPM or its one-season RAPM update?",
+    "schema_version": "experiment_preregistration_v1",
+    "status": "frozen_reused_diagnostic",
+    "stopping_rules": [
+      "Do not search subsets after seeing these results.",
+      "Keep learners, sample weights, RAPM penalties, and games fixed.",
+      "Build the current rating but do not score an unavailable future season."
+    ]
+  },
+  "created_at": "2026-08-31T17:58:11.457332+00:00",
+  "estimand": "next-season game margin from prior-season player ratings",
+  "experiment_id": "compact_spm_comparison_v1",
+  "files": {
+    "bootstrap_model_intervals.parquet": {
+      "path": "bootstrap_model_intervals.parquet",
+      "rows": 7,
+      "sha256": "dbff9288f120a1ecdf3f52fadfa71f244510bea6a072f4b978bd99dd9e4f86ec"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "rows": 35,
+      "sha256": "0a7934bf4ab05813a396c903a4dffebedcfb95366d489027c69e108bfd48387a"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "rows": 42987,
+      "sha256": "e231eb01a326745c50b6331460b59fac7457b113ca98b5cba86f0a2de36840a5"
+    },
+    "matrix_reconstruction.parquet": {
+      "path": "matrix_reconstruction.parquet",
+      "rows": 3,
+      "sha256": "8260655d46ff2a15b7bdf75cf4ff4d92e2365bd72de9bcc4ec9691829f1cbad9"
+    },
+    "model_selection.parquet": {
+      "path": "model_selection.parquet",
+      "rows": 36,
+      "sha256": "a980c50e44e6d352ddb23e3e422cd19d48e4ad180367d31add6fe5cddabe52ea"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "rows": 21,
+      "sha256": "2fcfe3ae507fa8413f3d0d8498d19c725a137de1abdab52791f725795f53317f"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "rows": 18,
+      "sha256": "87227c3adadb1f9e6461719918311459e7c7c1f81ec0e77ae1ca44ba91ac6d06"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "rows": 17733,
+      "sha256": "3f55b70d9ad2ce411ff21a279744606a85ee392713e9727e357cb54684672f08"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "rows": 45024,
+      "sha256": "11eb07ec62a9caa4c0b3cb01d8a4a349bd5cb2322f485325f2b14aadccf3cae5"
+    },
+    "summary.parquet": {
+      "path": "summary.parquet",
+      "rows": 7,
+      "sha256": "568a3d451e995ed26222e4f309a84a3737f98ece2566b3c34a8886ef32276dea"
+    },
+    "target_metrics.parquet": {
+      "path": "target_metrics.parquet",
+      "rows": 54,
+      "sha256": "6970ed344fc2b8d2ab497eb962d12ff7d545081f882d7be231a7aa99236c0049"
+    }
+  },
+  "forbidden_interpretation": "The test seasons contain reused evidence and cannot promote a public model.",
+  "quality": {
+    "identical_games_within_fold": true,
+    "maximum_component_identity_error": 0.0,
+    "panel_missing_selected_values": 0,
+    "panel_rows": 8620
+  },
+  "run_id": "compact_spm_comparison_v1_2a0f8a6f31",
+  "status": "reused_diagnostic_complete"
+}
