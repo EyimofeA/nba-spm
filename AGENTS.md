@@ -71,6 +71,9 @@ production imports, or model claims without a held-out promotion gate.
   paired reference-minus-candidate MSE was 0.405 with a 95% interval of 0.185
   to 0.636. Public RAPM and dependent SPM/AIO artifacts remain on 3000/3000
   until they are rebuilt and reviewed together.
+- A 20-candidate one-season penalty grid selected 3000/6000 on 2015--22, but that
+  pair lost on 2023--26. The 3000/4500 setting ranked second early and first
+  later. Five-point score-state controls also lost. Keep 3000/4500/300.
 - Positive defense means points prevented. Offense plus defense equals net.
 - RAPM is available through 2026. The public interface calls it `RAPM`.
 - One-year RAPM is the retrospective season estimand. Unweighted five-year
@@ -94,6 +97,10 @@ production imports, or model claims without a held-out promotion gate.
   adjusted rating worsened reused 2026 RMSE. Keeping known lineup age at
   prediction time changed RMSE by only -0.012 with an interval crossing zero.
   Keep these leaderboards in the local Lab.
+- On identical 2024--26 games, plain RAPM was best at four years. A fixed
+  categorical age control made seven years best and improved every tested
+  five- through ten-year fit. This uses observed lineup ages at prediction
+  time. It is predictive context, not a neutral player rating.
 - Teammate-event and observable shot-finish RAPMs are descriptive local Lab
   views. They are not causal effects or Synergy possession play types.
 

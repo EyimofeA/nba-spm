@@ -175,6 +175,12 @@ def build_payload() -> dict:
     single_lambda, single_lambda_path = latest_run(
         "single_season_defense_lambda", "single_season_defense_lambda_v1_"
     )
+    single_sweep, _ = latest_run(
+        "single_season_rapm_sweep", "single_season_rapm_sweep_v1_"
+    )
+    horizon_age, _ = latest_run(
+        "rapm_horizon_age_sweep", "rapm_horizon_age_sweep_v1_"
+    )
     single_lambda_summary = {
         row["variant"]: row for row in single_lambda["summary"]
     }
@@ -367,6 +373,24 @@ def build_payload() -> dict:
         if row["stage"] == "diagnostic" and row["model"] == "linear_points_rapm"
     )
     experiments = [
+        experiment(
+            "single-season-rapm-sweep",
+            "Single-season penalty and score-control sweep",
+            "Select 20 offense/defense penalty pairs and five score-state choices on 2015 to 2022. Diagnose the frozen choices on the same 2023 to 2026 games.",
+            f"The early folds selected 3000/{single_sweep['selected_lambda']['lambda_def']:.0f}, but that pair lost to 3000/3000 later. The score-state winner was {single_sweep['selected_score_control']}. Historical calibration reduced the selected model's predicted-margin spread and later MSE.",
+            "Keep 3000/4500/300 as the robust single-season research setting. Do not increase defense shrinkage to 6000. Do not add score buckets.",
+            "built",
+            single_sweep["run_id"],
+        ),
+        experiment(
+            "rapm-horizon-age-sweep",
+            "One- to ten-year RAPM and age context",
+            "Score every plain horizon on identical 2024 to 2026 games. Add fixed, jointly estimated lineup-age terms to the five- through ten-year variants.",
+            f"Plain RAPM was best at 4 years ({next(row['mean_margin_rmse'] for row in horizon_age['summary'] if row['model'] == 'normal' and row['horizon'] == '4y'):.3f} RMSE). Age-conditional RAPM was best at 7 years ({next(row['mean_margin_rmse'] for row in horizon_age['summary'] if row['model'] == 'age_conditional' and row['horizon'] == '7y'):.3f}).",
+            "Use age context only for predictive research. Keep neutral retrospective RAPM separate from ratings that know each future lineup's age.",
+            "won",
+            horizon_age["run_id"],
+        ),
         experiment(
             "single-season-defense-lambda",
             "Single-season defense shrinkage",

@@ -1,0 +1,19 @@
+{
+  "experiment_id": "rapm_horizon_age_sweep_v1",
+  "status": "frozen_reused_diagnostic",
+  "seasons": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "rolling_horizons": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  "common_evaluation_seasons": [2024, 2025, 2026],
+  "age_adjusted_horizons": [5, 6, 7, 8, 9, 10],
+  "penalties": {"lambda_off": 3000, "lambda_def": 3000, "lambda_home": 300},
+  "age_penalty": 100,
+  "bootstrap_draws": 2000,
+  "bootstrap_seed": 20260831,
+  "rules": [
+    "Every horizon is scored on the same 2024-2026 games.",
+    "Season scoring environments are removed before player fitting.",
+    "Age conditional predictions use the observed test-lineup ages.",
+    "The age penalty is fixed from the prior age-adjustment diagnostic and is not retuned here.",
+    "All results are reused historical diagnostics and cannot support a promotion claim."
+  ]
+}

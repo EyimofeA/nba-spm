@@ -1,0 +1,21 @@
+{
+  "experiment_id": "single_season_rapm_sweep_v1",
+  "status": "frozen_reused_diagnostic",
+  "seasons": [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "selection_seasons": [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022],
+  "diagnostic_seasons": [2023, 2024, 2025, 2026],
+  "lambda_off_grid": [3000, 4500, 6000, 9000],
+  "lambda_def_grid": [3000, 4500, 6000, 7500, 9000],
+  "lambda_home": 300,
+  "score_bucket": {"minimum": -25, "maximum": 25, "width": 5},
+  "score_state_penalties": [1, 10, 100, 300],
+  "bootstrap_draws": 2000,
+  "bootstrap_seed": 20260831,
+  "rules": [
+    "Every candidate predicts the next season from one training season.",
+    "Lambda and score-state choices use only the declared selection seasons.",
+    "Score-state player ratings are evaluated at average score context.",
+    "Age terms are excluded because player and age effects are not separately identified inside one season.",
+    "The diagnostic seasons are reused evidence and cannot support a production promotion."
+  ]
+}
