@@ -85,6 +85,9 @@ Start at the repository root:
 - [`impact/ANNUAL_SPM_LEARNER_SCREEN_V1.md`](impact/ANNUAL_SPM_LEARNER_SCREEN_V1.md) —
   chronological annual-RAPM learner and feature-family screen, frozen later
   diagnostics, and the boundary before another AIO comparison;
+- [`impact/ANNUAL_RICH_FORWARD_AIO_V1.md`](impact/ANNUAL_RICH_FORWARD_AIO_V1.md) —
+  aligned next-season comparison of the frozen rich annual SPM and five-year
+  Box15, alone and after precision-aware one-season RAPM updates;
 - [`impact/WALK_FORWARD_SPM_PILOT_V1.md`](impact/WALK_FORWARD_SPM_PILOT_V1.md) —
   one-cutoff Full SPM versus BoxSPM future-game implementation check;
 - [`impact/BOX_VS_TRACKING_SPM_PILOT_V1.md`](impact/BOX_VS_TRACKING_SPM_PILOT_V1.md) —
