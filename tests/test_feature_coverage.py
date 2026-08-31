@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import pandas as pd
 
-from nba_impact.data.feature_coverage import audit_feature_coverage
+import pytest
+
+from nba_impact.data.feature_coverage import (
+    audit_feature_coverage,
+    validate_coverage_lineage,
+)
 
 
 def test_coverage_audit_does_not_count_neutral_external_fill_as_observed() -> None:
@@ -55,3 +60,27 @@ def test_external_source_row_does_not_hide_missing_feature_value() -> None:
         {"playtype": playtype},
     )
     assert summary["observed_rows"].eq(0).all()
+
+
+def test_coverage_lineage_must_match_panel_and_sources() -> None:
+    manifest = {
+        "panel_run_id": "panel_current",
+        "source_hashes": {"playtype": "abc", "dfg": "def"},
+    }
+    validate_coverage_lineage(
+        manifest,
+        panel_run_id="panel_current",
+        source_hashes={"playtype": "abc", "dfg": "def"},
+    )
+    with pytest.raises(ValueError, match="selected feature panel"):
+        validate_coverage_lineage(
+            manifest,
+            panel_run_id="panel_stale",
+            source_hashes={"playtype": "abc", "dfg": "def"},
+        )
+    with pytest.raises(ValueError, match="source revisions"):
+        validate_coverage_lineage(
+            manifest,
+            panel_run_id="panel_current",
+            source_hashes={"playtype": "abc", "dfg": "changed"},
+        )

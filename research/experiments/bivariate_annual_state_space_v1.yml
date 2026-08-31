@@ -1,0 +1,35 @@
+schema_version: experiment_preregistration_v1
+experiment_id: bivariate_annual_state_space_v1
+status: frozen_reused_diagnostic
+
+estimand: one_year_ahead_annual_normal_rapm_proxy
+seasons: [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+selection_origins: [2022, 2023]
+diagnostic_origins: [2024, 2025]
+minimum_side_possessions: 1000
+season_2027: forbidden
+
+fixed_process:
+  phi: 0.90
+  process_sd: 0.25
+  source: frozen_univariate_state_space_result
+
+candidates:
+  independent:
+    observation_covariance: diagonal
+    process_correlation: 0
+  observation_covariance_only:
+    observation_covariance: analytic_offense_defense_covariance
+    process_correlation: 0
+  bivariate:
+    observation_covariance: analytic_offense_defense_covariance
+    process_correlation_grid: [-0.50, -0.25, 0, 0.25, 0.50, 0.75, 0.90]
+
+primary_metric: equal_origin_mean_next_year_net_rmse
+secondary_metrics: [offense_rmse, defense_rmse, net_correlation]
+uncertainty: 5000_paired_player_bootstrap_draws_within_target_season
+
+forbidden_interpretation: >-
+  Annual RAPM remains a noisy proxy. Observation covariance is homoskedastic
+  analytic ridge covariance. Selection and diagnostics reuse historical years.
+  This experiment cannot consume Season 2027 or promote a public forecast.

@@ -23,9 +23,12 @@ test("server-renders the compact ratings product shell", async () => {
   assert.match(html, /Loading/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
 
-  for (const section of ["home", "ratings", "player", "roles", "research"]) {
+  for (const section of ["ratings", "roles", "research"]) {
     assert.match(html, new RegExp(`href="#${section}"`), `missing ${section} section link`);
   }
+  assert.doesNotMatch(html, /href="#home"/i);
+  assert.match(html, /NBA IMPACT/i);
+  assert.match(html, /Methodology/i);
   assert.doesNotMatch(html, /href="#matchups"/i);
   assert.match(html, /points per 100 possessions/i);
   assert.doesNotMatch(html, /win probability|brier|stable role/i);

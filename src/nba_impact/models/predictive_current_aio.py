@@ -87,6 +87,82 @@ def _season_weight(season: int, window_end: int, half_life: float | None) -> flo
     return float(2.0 ** ((season - window_end) / half_life))
 
 
+def build_weekly_cutoff_ledger(
+    frame: pd.DataFrame, *, target_season: int
+) -> pd.DataFrame:
+    """List frozen Monday cutoffs and next-14-day oracle game windows.
+
+    The source has day-grain dates, so each cutoff starts Monday at midnight.
+    Monday games belong to the future scoring window, not the observed update.
+    """
+    required = {"season", "date", "gameid"}
+    if missing := sorted(required - set(frame.columns)):
+        raise ValueError(f"Weekly cutoff input is missing {missing}.")
+    games = frame.loc[:, ["season", "date", "gameid"]].copy()
+    games["season"] = pd.to_numeric(games["season"], errors="raise").astype(int)
+    games["game_date"] = (
+        pd.to_datetime(games["date"], errors="raise", utc=True)
+        .dt.tz_convert(None)
+        .dt.normalize()
+    )
+    if games[["gameid", "game_date"]].isna().any().any():
+        raise ValueError("Weekly cutoff input has a missing game ID or date.")
+    games["gameid"] = games["gameid"].astype(str).str.strip()
+    if games["gameid"].eq("").any():
+        raise ValueError("Weekly cutoff input has an empty game ID.")
+    if (
+        games.groupby(["season", "gameid"], sort=False)["game_date"].nunique()
+        > 1
+    ).any():
+        raise ValueError("Each game must have exactly one date.")
+    games = games.groupby(["season", "gameid"], as_index=False, sort=False).agg(
+        game_date=("game_date", "first"), possession_rows=("game_date", "size")
+    )
+    target = games.loc[games["season"].eq(int(target_season))].copy()
+    if target.empty:
+        raise ValueError(f"Weekly cutoff input has no games for {target_season}.")
+
+    cutoffs = pd.date_range(
+        f"{int(target_season) - 1}-11-01",
+        f"{int(target_season)}-04-01",
+        freq="W-MON",
+    )
+    rows: list[dict] = []
+    for cutoff in cutoffs:
+        horizon_end = cutoff + pd.Timedelta(days=14)
+        observed = target.loc[target["game_date"].lt(cutoff)]
+        oracle = target.loc[
+            target["game_date"].ge(cutoff)
+            & target["game_date"].lt(horizon_end)
+        ]
+        rows.append(
+            {
+                "target_season": int(target_season),
+                "cutoff_date": cutoff,
+                "horizon_end_exclusive": horizon_end,
+                "observed_update_games": int(len(observed)),
+                "observed_update_possession_rows": int(
+                    observed["possession_rows"].sum()
+                ),
+                "latest_observed_game_date": (
+                    observed["game_date"].max() if not observed.empty else pd.NaT
+                ),
+                "oracle_games": int(len(oracle)),
+                "oracle_possession_rows": int(oracle["possession_rows"].sum()),
+                "first_oracle_game_date": (
+                    oracle["game_date"].min() if not oracle.empty else pd.NaT
+                ),
+                "last_oracle_game_date": (
+                    oracle["game_date"].max() if not oracle.empty else pd.NaT
+                ),
+                "oracle_game_rowset_hash": hashlib.sha256(
+                    "\n".join(sorted(oracle["gameid"])).encode()
+                ).hexdigest(),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def _penalty_vector(
     n_players: int, *, lambda_off: float, lambda_def: float, lambda_home: float
 ) -> np.ndarray:

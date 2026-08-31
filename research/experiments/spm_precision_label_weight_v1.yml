@@ -1,0 +1,46 @@
+schema_version: experiment_preregistration_v1
+experiment_id: spm_precision_label_weight_v1
+status: frozen_reused_diagnostic
+estimand_id: five_year_normal_rapm_prior_validation_v1
+
+question: >-
+  Does bounded inverse-variance weighting of five-year RAPM labels improve the
+  Box15 prior and its one-season RAPM update over square-root exposure weights?
+
+information_cutoff:
+  variance_and_training_windows: [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+  rating_seasons: [2022, 2023, 2024, 2025, 2026]
+  evaluated_rating_seasons: [2022, 2023, 2024, 2025]
+  test_seasons: [2023, 2024, 2025, 2026]
+  training_rule: window_end strictly before rating_season
+  season_2027: forbidden
+
+fixed_inputs:
+  features: Box15
+  target: five_year_zero_prior_rapm_3000_3000_300
+  learner: ridge
+  alpha_grid: [10, 30, 100, 300, 1000, 3000]
+  aio_update: one_season_rapm_3000_3000_300_center_scale_1
+
+variants:
+  control: sqrt_min_offensive_and_defensive_possessions
+  challenger: side_specific_inverse_analytic_ridge_label_variance
+  challenger_bounds: training_fold_variance_quantiles_0.05_0.95
+  challenger_normalization: mean_one_within_side_and_outer_training_fold
+
+primary_evaluation:
+  metric: equal_season_mean_next_season_game_margin_mse
+  comparison: paired_identical_games
+  uncertainty: 5000_paired_whole_game_bootstrap_draws_within_test_season
+  correlation_guard: challenger_no_more_than_0.01_below_control
+
+acceptance:
+  - both variants use identical player rows and games
+  - every training label has positive finite variance
+  - offense_plus_defense_equals_net
+  - season_2027_is_not_loaded
+
+forbidden_interpretation: >-
+  The covariance is a homoskedastic analytic ridge diagnostic, not
+  game-cluster publication uncertainty. All scored seasons are reused evidence,
+  so this run can reject the weighting idea but cannot promote a public model.

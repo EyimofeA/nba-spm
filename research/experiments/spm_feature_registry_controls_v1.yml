@@ -1,0 +1,21 @@
+schema_version: experiment_preregistration_v1
+experiment_id: spm_feature_registry_controls_v1
+status: frozen_reused_diagnostic
+
+inputs:
+  feature_contract: semantically_complete_spm_features_v1_8be676bd0f
+  model_audit: final_box_feature_ladder_v1_8bb26f12e7
+  negative_control_seeds: 20
+  negative_control: one_deterministic_gaussian_feature_added_to_Box15
+  negative_control_alpha: frozen_Box15_fold_alpha
+  season_2027: forbidden
+
+checks:
+  - version every selected feature with source family and completion policy
+  - measure negative-control false-improvement frequency on held-out RAPM labels
+  - compare within-window RAPM-label gains with downstream AIO game gains
+  - report fold-wise downstream candidate winners
+
+forbidden_interpretation: >-
+  Negative controls test the SPM label-fit path, not causal feature value. The
+  label-sharing audit uses reused downstream evidence and cannot promote a model.

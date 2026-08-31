@@ -75,6 +75,10 @@ Start at the repository root:
 - [`impact/IMPACT_VALIDATION_V2.md`](impact/IMPACT_VALIDATION_V2.md) —
   separate retrospective-impact and current-strength validation contracts,
   with chronological cutoffs, a pre-fit data gate, and frozen promotion rules;
+- [`impact/COMBINED_VALIDATION_AND_INTERPRETABILITY_V1.md`](impact/COMBINED_VALIDATION_AND_INTERPRETABILITY_V1.md) —
+  exact row-aligned validation, the Full SPM versus Box15 diagnosis, additive
+  2026 AIO accounting, factor skills, trajectories, and the future dynamic-AIO
+  design;
 - [`impact/WALK_FORWARD_SPM_PILOT_V1.md`](impact/WALK_FORWARD_SPM_PILOT_V1.md) —
   one-cutoff Full SPM versus BoxSPM future-game implementation check;
 - [`impact/BOX_VS_TRACKING_SPM_PILOT_V1.md`](impact/BOX_VS_TRACKING_SPM_PILOT_V1.md) —

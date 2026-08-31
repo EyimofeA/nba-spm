@@ -16,7 +16,7 @@ def main() -> None:
     run = build_full_spm_feature_panels(
         annual_features_path=(
             FEATURE_ROOT
-            / "statistical_impact/statistical_features_v2_cb03edaf32/features.parquet"
+            / "statistical_impact/statistical_features_v2_aee1c289d1/features.parquet"
         ),
         feature_contract_path=(
             ROOT
@@ -30,8 +30,8 @@ def main() -> None:
         ),
         coverage_paths={
             "playtype": FEATURE_ROOT / "playtype_impact/playtype_features_v1_182fb7e27a/features.parquet",
-            "dfg": FEATURE_ROOT / "observed_defense_dashboards/observed_defense_dashboards_v1_606bfaa097d7/dfg.csv",
-            "rim_dfg": FEATURE_ROOT / "observed_defense_dashboards/observed_defense_dashboards_v1_606bfaa097d7/rim_dfg.csv",
+            "dfg": FEATURE_ROOT / "observed_defense_dashboards/observed_defense_dashboards_v1_1a62103de7d7/dfg.csv",
+            "rim_dfg": FEATURE_ROOT / "observed_defense_dashboards/observed_defense_dashboards_v1_1a62103de7d7/rim_dfg.csv",
             "hustle": (
                 ROOT
                 / "data/lake/bronze/gabriel_site_data"

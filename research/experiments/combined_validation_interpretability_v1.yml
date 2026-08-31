@@ -1,0 +1,62 @@
+schema_version: experiment_preregistration_v1
+experiment_id: combined_validation_interpretability_v1
+status: frozen_report_only
+created_at: 2026-08-31
+
+purpose: >-
+  Combine already-frozen validation evidence and produce an exact additive
+  interpretation of the selected 2026 Box15 AIO without refitting or reopening
+  model selection.
+
+runtime_contract:
+  maximum_minutes: 10
+  refits_allowed: false
+  bootstrap_draws: 5000
+  bootstrap_seed: 20260831
+
+information_cutoff:
+  rating_seasons: [2021, 2022, 2023, 2024, 2025, 2026]
+  evaluated_rating_seasons: [2021, 2022, 2023, 2024, 2025]
+  season_2027: forbidden
+
+panels:
+  prior_target_fit:
+    candidates: [full_spm, box_pipm]
+    row_key: [PLAYER_ID, Window_End]
+    rule: intersect candidate rows before computing any metric
+    metrics: [weighted_rmse, weighted_correlation]
+    season_weighting: equal
+    interpretation: statistical-prior target fit only
+  next_season_game_prediction:
+    candidates: [box_pipm_aio, full_spm_aio, zero_prior_rapm]
+    row_key: [rating_season, test_season, game_id]
+    rule: require identical games and actual margins for every candidate
+    metrics: [mse, rmse, mae, correlation, calibration_intercept, calibration_slope]
+    season_weighting: equal
+    uncertainty: paired whole-game bootstrap within test season
+    interpretation: oracle-lineup rating-quality diagnostic, not a deployable forecast
+  strict_same_season_reconstruction:
+    candidates: [box15_aio, zero_prior_rapm]
+    row_key: [season, fold, game_id]
+    rule: require identical games and actual margins for every candidate
+    interpretation: engineering reconstruction diagnostic on the strict eligible subset
+
+interpretability:
+  additive_identity: >-
+    AIO equals centered Box15 intercept plus exact linear feature contributions
+    plus the RAPM update.
+  exact_groups:
+    shooting_scoring: [PTS_p100, FTA_p100, FTM_p100, FG2A_p100, FG2M_p100, FG3A_p100, FG3M_p100]
+    creation: [AST_p100]
+    turnover: [TOV_p100]
+    rebounding: [OREB_p100, DREB_p100]
+    disruption_fouls: [STL_p100, BLK_p100, PF_p100, PFD_p100]
+  factor_skills: [shooting_ts, turnover_avoidance, opponent_oreb_prevention]
+  factor_skill_rule: factor scores are separate target units and must not be added to AIO
+
+forbidden:
+  - load or score Season 2027
+  - refit or retune a model
+  - create a composite score across unlike panels
+  - describe permutation dependence as causal importance
+  - add factor skill scores to AIO points per 100 possessions

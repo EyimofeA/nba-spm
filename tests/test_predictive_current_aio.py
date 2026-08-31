@@ -6,6 +6,7 @@ import pytest
 from scipy.sparse import csr_matrix
 
 from nba_impact.models.predictive_current_aio import (
+    build_weekly_cutoff_ledger,
     build_season_statistics,
     build_spm_center,
     fit_from_season_statistics,
@@ -116,3 +117,50 @@ def test_spm_prior_lineage_requires_pinned_run_and_past_only_cutoffs(tmp_path) -
         _validate_spm_prior_lineage({"spm_prior_run": run.name}, path, leaked)
     with pytest.raises(ValueError, match="Expected SPM prior run"):
         _validate_spm_prior_lineage({"spm_prior_run": "another_run"}, path, valid)
+
+
+def test_weekly_cutoff_ledger_enforces_the_frozen_14_day_window() -> None:
+    frame = pd.DataFrame(
+        {
+            "season": [2025, *([2026] * 4)],
+            "date": [
+                "2025-03-01",
+                "2025-10-31",
+                "2025-11-03",
+                "2025-11-16",
+                "2025-11-17",
+            ],
+            "gameid": ["prior", "seen", "a", "b", "c"],
+        }
+    )
+    ledger = build_weekly_cutoff_ledger(frame, target_season=2026)
+    shuffled = build_weekly_cutoff_ledger(
+        frame.sample(frac=1.0, random_state=7), target_season=2026
+    )
+
+    first = ledger.iloc[0]
+    assert first["cutoff_date"] == pd.Timestamp("2025-11-03")
+    assert first["horizon_end_exclusive"] == pd.Timestamp("2025-11-17")
+    assert first["observed_update_games"] == 1
+    assert first["latest_observed_game_date"] < first["cutoff_date"]
+    assert first["oracle_games"] == 2
+    assert first["oracle_possession_rows"] == 2
+    assert first["first_oracle_game_date"] >= first["cutoff_date"]
+    assert first["last_oracle_game_date"] < first["horizon_end_exclusive"]
+    assert ledger.iloc[-1]["cutoff_date"] == pd.Timestamp("2026-03-30")
+    assert ledger["cutoff_date"].dt.dayofweek.eq(0).all()
+    assert ledger["oracle_game_rowset_hash"].equals(
+        shuffled["oracle_game_rowset_hash"]
+    )
+
+    conflicting = pd.concat(
+        [
+            frame,
+            pd.DataFrame(
+                {"season": [2025], "date": ["2025-03-02"], "gameid": ["prior"]}
+            ),
+        ],
+        ignore_index=True,
+    )
+    with pytest.raises(ValueError, match="exactly one date"):
+        build_weekly_cutoff_ledger(conflicting, target_season=2026)

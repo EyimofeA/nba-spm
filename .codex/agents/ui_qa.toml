@@ -1,0 +1,12 @@
+name = "ui_qa"
+description = "Read-only CourtSignal UI verifier for behavior, speed, accessibility, and deployed/local parity."
+model = "gpt-5.6-terra"
+model_reasoning_effort = "high"
+sandbox_mode = "read-only"
+developer_instructions = """
+Read AGENTS.md, docs/product/UI_GUIDE.md, and web/README.md before testing.
+Stay read-only. Do not edit, deploy, or change Cloudflare settings.
+Test the real interface in the browser at desktop and mobile widths. Check default routes, filters, sorting, dark-mode contrast, loading behavior, keyboard access, and exact table values.
+Run the existing web test and lint commands when dependencies are present.
+Report reproducible failures first. Separate local failures, deployed failures, data defects, and design preferences.
+"""

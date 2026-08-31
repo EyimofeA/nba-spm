@@ -19,7 +19,6 @@ from nba_impact.data.manifest import sha256_file, write_json_atomic
 from nba_impact.models.box_pipm_style import (
     BOX_PIPM_STYLE_FEATURES,
     _fit as _fit_box,
-    _select_alpha,
 )
 from nba_impact.models.rapm import load_legacy_possessions
 from nba_impact.models.rapm_sufficient_statistics import stored_evaluation_predictions
@@ -37,7 +36,7 @@ from run_aio_prior_canonical_followup import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPERIMENT_ID = "full_spm_history_ablation_v1"
+EXPERIMENT_ID = "full_spm_history_ablation_v2"
 RATING_SEASONS = (2021, 2022, 2023, 2024, 2025, 2026)
 EVALUATED_RATING_SEASONS = RATING_SEASONS[:-1]
 PRIOR_CANDIDATES = ("full_spm", "history_complete_spm", "box_pipm")
@@ -59,6 +58,36 @@ PRIMARY_PAIRS = {
     frozenset(("history_complete_spm_aio", "box_pipm_aio")),
 }
 ALPHA_GRID = (10.0, 30.0, 100.0, 300.0, 1000.0, 3000.0)
+
+
+def _select_box_alpha_rolling_origin(
+    train: pd.DataFrame,
+    features: tuple[str, ...],
+    target: str,
+    alpha_grid: tuple[float, ...],
+) -> float:
+    """Select Box15 ridge alpha without using later rolling windows."""
+    seasons = tuple(sorted(int(value) for value in train["Window_End"].unique()))
+    if len(seasons) < 3:
+        raise ValueError("Rolling-origin alpha selection requires three window ends.")
+    scores: list[tuple[float, float]] = []
+    for alpha in alpha_grid:
+        fold_scores = []
+        for validation_end in seasons[2:]:
+            inner_train = train.loc[train["Window_End"].lt(validation_end)]
+            validation = train.loc[train["Window_End"].eq(validation_end)]
+            prediction = _fit_box(inner_train, features, target, alpha).predict(
+                validation.loc[:, features]
+            )
+            fold_scores.append(
+                _metrics(
+                    validation[target].to_numpy(dtype=float),
+                    prediction,
+                    validation["sample_weight"].to_numpy(dtype=float),
+                )["weighted_rmse"]
+            )
+        scores.append((float(np.mean(fold_scores)), alpha))
+    return min(scores, key=lambda item: (item[0], item[1]))[1]
 
 
 def _load_contract(path: Path) -> dict:
@@ -171,8 +200,8 @@ def _fit_priors(
                 fields = features_by_candidate[candidate][side]
                 target = f"target_{side}"
                 if candidate == "box_pipm":
-                    alpha = _select_alpha(
-                        train.rename(columns={"Window_End": "Season"}),
+                    alpha = _select_box_alpha_rolling_origin(
+                        train,
                         fields,
                         target,
                         ALPHA_GRID,
@@ -443,7 +472,7 @@ def main() -> None:
     parser.add_argument(
         "--contract",
         type=Path,
-        default=ROOT / "research/experiments/full_spm_history_ablation_v1.yml",
+        default=ROOT / "research/experiments/full_spm_history_ablation_v2.yml",
     )
     parser.add_argument(
         "--features",

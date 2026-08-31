@@ -128,15 +128,6 @@ export function RatingsView({
       : row.defense >= 0
         ? "Defense first"
         : "Below average";
-  const quadrantCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const row of points) {
-      const group = quadrant(row);
-      counts.set(group, (counts.get(group) ?? 0) + 1);
-    }
-    return counts;
-  }, [points]);
-
   const bound = symmetricBound(
     shaped.map((row) => row.net),
     3,
@@ -168,14 +159,15 @@ export function RatingsView({
     <>
       <div className="page-head">
         <div>
-          <p className="kicker">Ratings</p>
-          <h1>
-            {season - 1}–{String(season).slice(2)} player impact
-          </h1>
+          <p className="kicker">{season - 1}–{String(season).slice(2)} · {active.label}</p>
+          <h1>NBA player ratings</h1>
         </div>
-        <div className="segmented" aria-label="Ratings view">
-          <button type="button" aria-pressed={view === "table"} onClick={() => setView("table")}>Table</button>
-          <button type="button" aria-pressed={view === "chart"} onClick={() => setView("chart")}>Chart</button>
+        <div className="view-actions">
+          <span className="result-count" aria-live="polite">{sorted.length} players</span>
+          <div className="segmented" aria-label="Ratings view">
+            <button type="button" aria-pressed={view === "table"} onClick={() => setView("table")}>Table</button>
+            <button type="button" aria-pressed={view === "chart"} onClick={() => setView("chart")}>Map</button>
+          </div>
         </div>
       </div>
 
@@ -208,19 +200,25 @@ export function RatingsView({
       {view === "table" ? <section>
           <div className="section-head" style={{ marginTop: 8 }}>
             <div>
-              <p className="kicker">Full board</p>
-              <h2>{active.label}</h2>
+              <p className="kicker">Leaderboard</p>
+              <h2>{active.label} · points per 100</h2>
             </div>
             <span className="meta">
-              Sort any column · select a row for the player page
+              Select a column to sort
             </span>
           </div>
+          <p className="scroll-hint">Swipe for impact columns →</p>
           <div className="table-wrap">
             <table className="data">
               <caption className="visually-hidden">
                 {active.label} ratings for {season}, points per 100 possessions
               </caption>
               <thead>
+                <tr className="column-groups">
+                  <th scope="colgroup" colSpan={3} className="left">Player</th>
+                  <th scope="colgroup" colSpan={3}>Impact</th>
+                  <th scope="colgroup">Context</th>
+                </tr>
                 <tr>
                   <th scope="col" className="left">
                     <button
@@ -254,17 +252,15 @@ export function RatingsView({
                 {sorted.map((row, position) => (
                   <tr
                     key={row.id}
-                    tabIndex={0}
-                    onClick={() => onPlayer(row.id)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        onPlayer(row.id);
-                      }
+                    className="player-row"
+                    onClick={(event) => {
+                      if (!(event.target as HTMLElement).closest("a")) onPlayer(row.id);
                     }}
                   >
                     <td className="rank">{position + 1}</td>
-                    <td className="left name">{row.name}</td>
+                    <th scope="row" className="left name">
+                      <a className="player-link" href={`#player/${row.id}`}>{row.name}</a>
+                    </th>
                     <td className="left team">{row.team ?? "—"}</td>
                     <td>{fmtRating(row.offense)}</td>
                     <td>{fmtRating(row.defense)}</td>
@@ -288,19 +284,7 @@ export function RatingsView({
             </table>
           </div>
       </section> : (
-        <>
-          <div className="kpi-row" style={{ marginBottom: 14 }}>
-            {["Two-way", "Offense first", "Defense first", "Below average"].map((label) => (
-              <div className="tile" key={label}>
-                <div className="tile-label">{label}</div>
-                <div className="tile-value">{quadrantCounts.get(label) ?? 0}</div>
-                <div className="tile-sub">
-                  {points.length ? Math.round(((quadrantCounts.get(label) ?? 0) / points.length) * 100) : 0}% of field
-                </div>
-              </div>
-            ))}
-          </div>
-          <Figure
+        <Figure
             kicker={active.label}
             title="Offense against defense"
             legend={<ScaleLegend caption="Net" low={`−${netBoundFor(points).toFixed(1)}`} high={`+${netBoundFor(points).toFixed(1)}`} />}
@@ -309,8 +293,8 @@ export function RatingsView({
                 <thead><tr><th scope="col">Player</th><th scope="col">Group</th><th scope="col">Off</th><th scope="col">Def</th><th scope="col">Net</th></tr></thead>
                 <tbody>
                   {[...points].sort((a, b) => b.net - a.net).map((row) => (
-                    <tr key={row.id} onClick={() => onPlayer(row.id)}>
-                      <td>{row.name}</td><td>{quadrant(row)}</td><td>{fmtRating(row.offense)}</td><td>{fmtRating(row.defense)}</td><td>{fmtRating(row.net)}</td>
+                    <tr key={row.id}>
+                      <th scope="row"><a className="player-link" href={`#player/${row.id}`}>{row.name}</a></th><td>{quadrant(row)}</td><td>{fmtRating(row.offense)}</td><td>{fmtRating(row.defense)}</td><td>{fmtRating(row.net)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -319,7 +303,6 @@ export function RatingsView({
           >
             <Landscape rows={points} onSelect={(row) => onPlayer(row.id)} />
           </Figure>
-        </>
       )}
     </>
   );

@@ -1,0 +1,24 @@
+experiment_id: pooled_playoff_deviation_v1
+status: frozen_research_contract
+estimand: retrospective_playoff_points_per_100_deviation_from_regular_season_rapm
+data:
+  seasons: [2019, 2020, 2021, 2022, 2023]
+  source: audited_legacy_terminal_cache
+  selection_target: 2022
+  reused_diagnostic_target: 2023
+  untouched_confirmation_season: 2027
+model:
+  regular_window_seasons: 5
+  regular_penalties: {offense: 3000, defense: 3000, home: 300}
+  playoff_deviation_penalties: [3000, 10000, 30000, 100000, 300000]
+  playoff_home_penalty: 1000000000000
+validation:
+  primary: equal_game_playoff_margin_rmse
+  bootstrap_draws: 5000
+  bootstrap_seed: 20260829
+rules:
+  - Fit the regular-season base using regular-season possessions available before the target postseason.
+  - Fit playoff deviations only to residuals from earlier postseasons.
+  - Score the base and challenger on identical target-postseason games.
+  - Treat 2019-23 as a historical pilot because the current silver possessions are absent from this checkout.
+  - Never load Season 2027.
