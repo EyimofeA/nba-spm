@@ -82,6 +82,9 @@ Start at the repository root:
 - [`impact/AIO_PRIOR_CALIBRATION_AND_FEATURE_ATLAS_V1.md`](impact/AIO_PRIOR_CALIBRATION_AND_FEATURE_ATLAS_V1.md) —
   frozen prior mean-versus-precision diagnosis, target-free feature stability
   atlas, and the clean learner-screen feasibility boundary;
+- [`impact/ANNUAL_SPM_LEARNER_SCREEN_V1.md`](impact/ANNUAL_SPM_LEARNER_SCREEN_V1.md) —
+  chronological annual-RAPM learner and feature-family screen, frozen later
+  diagnostics, and the boundary before another AIO comparison;
 - [`impact/WALK_FORWARD_SPM_PILOT_V1.md`](impact/WALK_FORWARD_SPM_PILOT_V1.md) —
   one-cutoff Full SPM versus BoxSPM future-game implementation check;
 - [`impact/BOX_VS_TRACKING_SPM_PILOT_V1.md`](impact/BOX_VS_TRACKING_SPM_PILOT_V1.md) —

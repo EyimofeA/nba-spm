@@ -304,6 +304,11 @@ Canonical code: `src/nba_impact/models/five_year_spm_feature_research.py`.
   fields for later fold-internal screening, flags 14 source shifts, and finds
   13 stable near-duplicate pairs. Exclude the new pass-value feature until its
   source shift is reconciled. Prune rim workload against rim points saved.
+- Annual screen `annual_spm_learner_screen_v1_74808a8ae2` selects elastic net
+  for offense, ridge for defense, and the full audited pool on 2018--21. On
+  later diagnostics, net RMSE is `1.4176` versus `1.6590` for Box15 ridge. This
+  selects an annual SPM challenger, not an AIO prior replacement. Extra Trees
+  wins the Box15 development screen but reverses later; retain Box15 ridge.
 - Do not run a claimed clean pre-2022 rich five-year learner tournament. The
   panel starts at window end 2018, and purging overlapping five-year labels
   leaves no earlier rich-feature training window.
