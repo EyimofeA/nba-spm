@@ -1,0 +1,65 @@
+schema_version: experiment_preregistration_v1
+experiment_id: annual_spm_learner_screen_v1
+status: preregistered_research
+estimand_id: retrospective_single_season_rapm_v1
+
+question: >-
+  Which small tabular learner and audited feature family best reconstructs
+  offense and defense one-season RAPM across unseen seasons?
+
+inputs:
+  annual_features: semantically_complete_spm_features_v1_fdee01ec4e
+  mechanism_features: mechanism_feature_panel_v1_9224606a01
+  feature_atlas: spm_feature_atlas_v1_6949ad7b60
+  targets: canonical_annual_target_panel_v1_2d9ff74ca3
+
+folds:
+  initial_training_seasons: [2014, 2015, 2016, 2017]
+  selection_seasons: [2018, 2019, 2020, 2021]
+  diagnostic_seasons: [2022, 2023, 2024, 2025, 2026]
+  rule: >-
+    Each test season trains on earlier seasons only. The latest training season
+    selects learner hyperparameters. Feature pruning uses predictor values from
+    the applicable training rows and never uses RAPM targets.
+
+feature_screen:
+  correlation_threshold: 0.95
+  always_keep_box15: true
+  exclude_source_shift_flags: true
+  excluded_lanes:
+    - lineup_derived_circular
+    - descriptive_role
+    - predictive_only
+  arms:
+    - box15
+    - box15_plus_each_audited_family
+    - audited_all
+
+learners:
+  - ridge
+  - elastic_net
+  - histogram_gbm
+  - extra_trees
+  - additive_spline_ridge
+
+selection:
+  primary_metric: equal_season_mean_weighted_rmse
+  weight: square_root_of_minimum_offensive_or_defensive_possessions
+  learner_rule: >-
+    Select each side's learner separately for Box15 and audited_all in
+    2018-2021
+  feature_rule: select each side's feature arm with that learner in 2018-2021
+  diagnostic_rule: freeze both choices before scoring 2022-2026
+
+reporting:
+  - weighted_rmse
+  - weighted_correlation
+  - calibration_slope
+  - selected_hyperparameters
+  - selected_features_by_fold
+  - retained_feature_frequency
+
+forbidden_interpretation: >-
+  This screen measures cross-season reconstruction of noisy annual RAPM. It
+  does not establish next-season game prediction, causal skill value, or a
+  production AIO improvement.

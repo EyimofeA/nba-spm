@@ -1,0 +1,221 @@
+{
+  "config": {
+    "correlation_threshold": 0.95,
+    "diagnostic_seasons": [
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "experiment_id": "annual_spm_learner_screen_v1",
+    "learners": [
+      "ridge",
+      "elastic_net",
+      "histogram_gbm",
+      "extra_trees",
+      "additive_spline_ridge"
+    ],
+    "selection_seasons": [
+      2018,
+      2019,
+      2020,
+      2021
+    ],
+    "sources": {
+      "annual_features": {
+        "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_fdee01ec4e/annual_features.parquet",
+        "sha256": "d44b622b8416af51199886103bbaf88911d6605b688c87d287989789aaf77d3a"
+      },
+      "contract": {
+        "path": "research/experiments/annual_spm_learner_screen_v1.yml",
+        "sha256": "246ee15189c78a45bb0bdd9b58b4921546e42f3a79dd9bc8b7d4e3fd9d3663a4"
+      },
+      "feature_atlas": {
+        "path": "artifacts/research/spm_feature_atlas/spm_feature_atlas_v1_6949ad7b60/feature_atlas.parquet",
+        "sha256": "c555ef7310ecd0e1c85f2cbd89d39bb62e34976cc252efd4119d10bacf3d625b"
+      },
+      "mechanism_features": {
+        "path": "artifacts/research/mechanism_feature_panel/mechanism_feature_panel_v1_9224606a01/annual_features.parquet",
+        "sha256": "99045a0a606d8b147c2cd607a238c9430425af18de5e7bc24843e82c6cbb72f9"
+      },
+      "runner": {
+        "path": "research/run_annual_spm_learner_screen.py",
+        "sha256": "71efd450f6e50f7c421f976de2fd4496debb12850aa586d471ba04ea50da6cb9"
+      },
+      "targets": {
+        "path": "artifacts/models/canonical_annual_target_panel/canonical_annual_target_panel_v1_2d9ff74ca3/targets.parquet",
+        "sha256": "8dcd6b03fc01125e6720747e3d2d8a07f726613a6f2a78c5737a970824a4310a"
+      }
+    }
+  },
+  "contract": {
+    "estimand_id": "retrospective_single_season_rapm_v1",
+    "experiment_id": "annual_spm_learner_screen_v1",
+    "feature_screen": {
+      "always_keep_box15": true,
+      "arms": [
+        "box15",
+        "box15_plus_each_audited_family",
+        "audited_all"
+      ],
+      "correlation_threshold": 0.95,
+      "exclude_source_shift_flags": true,
+      "excluded_lanes": [
+        "lineup_derived_circular",
+        "descriptive_role",
+        "predictive_only"
+      ]
+    },
+    "folds": {
+      "diagnostic_seasons": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "initial_training_seasons": [
+        2014,
+        2015,
+        2016,
+        2017
+      ],
+      "rule": "Each test season trains on earlier seasons only. The latest training season selects learner hyperparameters. Feature pruning uses predictor values from the applicable training rows and never uses RAPM targets.",
+      "selection_seasons": [
+        2018,
+        2019,
+        2020,
+        2021
+      ]
+    },
+    "forbidden_interpretation": "This screen measures cross-season reconstruction of noisy annual RAPM. It does not establish next-season game prediction, causal skill value, or a production AIO improvement.",
+    "inputs": {
+      "annual_features": "semantically_complete_spm_features_v1_fdee01ec4e",
+      "feature_atlas": "spm_feature_atlas_v1_6949ad7b60",
+      "mechanism_features": "mechanism_feature_panel_v1_9224606a01",
+      "targets": "canonical_annual_target_panel_v1_2d9ff74ca3"
+    },
+    "learners": [
+      "ridge",
+      "elastic_net",
+      "histogram_gbm",
+      "extra_trees",
+      "additive_spline_ridge"
+    ],
+    "question": "Which small tabular learner and audited feature family best reconstructs offense and defense one-season RAPM across unseen seasons?",
+    "reporting": [
+      "weighted_rmse",
+      "weighted_correlation",
+      "calibration_slope",
+      "selected_hyperparameters",
+      "selected_features_by_fold",
+      "retained_feature_frequency"
+    ],
+    "schema_version": "experiment_preregistration_v1",
+    "selection": {
+      "diagnostic_rule": "freeze both choices before scoring 2022-2026",
+      "feature_rule": "select each side's feature arm with that learner in 2018-2021",
+      "learner_rule": "Select each side's learner separately for Box15 and audited_all in 2018-2021",
+      "primary_metric": "equal_season_mean_weighted_rmse",
+      "weight": "square_root_of_minimum_offensive_or_defensive_possessions"
+    },
+    "status": "preregistered_research"
+  },
+  "created_at": "2026-08-31T22:14:24.917539+00:00",
+  "experiment_id": "annual_spm_learner_screen_v1",
+  "files": {
+    "diagnostic_fold_metrics.parquet": {
+      "path": "diagnostic_fold_metrics.parquet",
+      "rows": 30,
+      "sha256": "f5d715bc4a433854b80ce32060e412ff4e0512db465f1327b469efa2db96b258"
+    },
+    "diagnostic_summary.csv": {
+      "path": "diagnostic_summary.csv",
+      "rows": 6,
+      "sha256": "6d2e354edbfb6df0a49c0c5c8d286062ebcde33f2d2cfc539a683702b0b62f94"
+    },
+    "family_fold_metrics.parquet": {
+      "path": "family_fold_metrics.parquet",
+      "rows": 92,
+      "sha256": "7aa335aef31c7a05288beb8769ae5d39a8952bb8f106eb86e90dcbc4c558a1ed"
+    },
+    "family_summary.csv": {
+      "path": "family_summary.csv",
+      "rows": 23,
+      "sha256": "afe596798d3d7e12b43f34827e7fff3daa95a84b24e660564e2de8b972f1e819"
+    },
+    "feature_frequency.csv": {
+      "path": "feature_frequency.csv",
+      "rows": 1921,
+      "sha256": "6ab44bd7525c34738afc03f3bcf6cb39830da08c3cad68142aa94c6b54482ef2"
+    },
+    "learner_fold_metrics.parquet": {
+      "path": "learner_fold_metrics.parquet",
+      "rows": 80,
+      "sha256": "38818089e815fede8da009baa6e22b100e0461aa93cd05f1fa9fdcd20bfa3090"
+    },
+    "learner_summary.csv": {
+      "path": "learner_summary.csv",
+      "rows": 20,
+      "sha256": "eb44d66b516a1feede1c3296e3faae61f160ecbd982916afcaaba789cc8ec853"
+    },
+    "net_diagnostic_fold_metrics.parquet": {
+      "path": "net_diagnostic_fold_metrics.parquet",
+      "rows": 15,
+      "sha256": "88b7184bf5c644e9a5089731a72369a202bdd317c4048f415c3d5343142caef3"
+    },
+    "net_diagnostic_summary.csv": {
+      "path": "net_diagnostic_summary.csv",
+      "rows": 3,
+      "sha256": "dc1e2509866ebdc99953ebe7df78855da4eb174fa513d9466ce730869d1b30cc"
+    },
+    "predictions.parquet": {
+      "path": "predictions.parquet",
+      "rows": 109179,
+      "sha256": "2389ccd011d481e5647c43399ce6bb15694c97906e0623242303faa5e48e1fe2"
+    },
+    "selected_features.parquet": {
+      "path": "selected_features.parquet",
+      "rows": 7783,
+      "sha256": "1416682e961c5ea8e433e4d27dc1f6e557dfb1fc992ea75244126fbc70bfdea3"
+    }
+  },
+  "forbidden_interpretation": "This screen measures cross-season reconstruction of noisy annual RAPM. It does not establish next-season game prediction, causal skill value, or a production AIO improvement.",
+  "quality": {
+    "duplicate_keys": 0,
+    "panel_rows": 6942,
+    "panel_seasons": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "target_values_loaded_outside_declared_seasons": false
+  },
+  "run_id": "annual_spm_learner_screen_v1_74808a8ae2",
+  "selection": {
+    "box15_learner_by_side": {
+      "defense": "extra_trees",
+      "offense": "extra_trees"
+    },
+    "feature_arm_by_side": {
+      "defense": "audited_all",
+      "offense": "audited_all"
+    },
+    "learner_by_side": {
+      "defense": "ridge",
+      "offense": "elastic_net"
+    }
+  },
+  "status": "research_diagnostic_complete"
+}

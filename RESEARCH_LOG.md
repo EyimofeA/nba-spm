@@ -5458,3 +5458,32 @@ proper five-year label-overlap purge leaves no earlier rich-feature training
 window. Retain histogram boosting for offense, ridge for defense, and elastic
 net as a selector until a longer consistent history or a separate annual
 target supplies valid folds.
+
+## 2026-08-31 — Annual SPM learner and feature-family screen
+
+**Question:** Which learner and audited feature set best reconstructs annual
+offense and defense RAPM across unseen seasons?
+
+**Method:** Run `annual_spm_learner_screen_v1_74808a8ae2` uses expanding
+chronological folds. The 2018--21 folds select the learner and feature arm.
+The 2022--26 folds diagnose the frozen choice. The latest training season
+selects hyperparameters. Predictor-only correlation pruning runs inside each
+training fold. The comparison includes ridge, elastic net, histogram boosting,
+Extra Trees, and an additive spline ridge model. Feature arms include Box15,
+Box15 plus each audited family, and the full audited pool.
+
+**Result:** Elastic net wins offense at `0.9784` selection RMSE. Ridge wins
+defense at `0.9518`. The full audited pool wins both feature screens. On the
+later diagnostics, the frozen rich model posts offense, defense, and net RMSE
+of `1.0314`, `0.9663`, and `1.4176`. Box15 ridge posts `1.1559`, `1.1334`, and
+`1.6590`. The rich model wins net RMSE in every diagnostic season. Its mean net
+correlation is `.6596` and its calibration slope is `1.0219`.
+
+Extra Trees wins the separate Box15 learner screen on both sides, but its later
+net RMSE is `1.6739`, worse than Box15 ridge at `1.6590`. Its later calibration
+slope is also worse at `1.2412`.
+
+**Decision:** Use elastic net offense and ridge defense for the annual rich-SPM
+challenger. Do not replace Box15 as the AIO prior. The standalone target result
+does not resolve the known downstream reversal. Retain ridge for Box15. Compare
+both priors next under the same precision-aware RAPM update and identical games.
