@@ -5350,3 +5350,31 @@ above the threshold remains intact.
 **Decision:** Use this contract as the compact arm in the next chronological
 full-versus-compact comparison. Do not interpret it as a selected model or an
 accuracy gain. Keep the earlier full SPM artifact immutable.
+
+## 2026-08-31 — Compact SPM fit
+
+**Question:** Does the correlation-pruned feature contract improve Full SPM or
+its one-season RAPM posterior?
+
+**Method:** Run `compact_spm_comparison_v1_2a0f8a6f31` fits Full SPM, Compact
+SPM, and BoxPIPM-style on the same corrected 8,620-row five-year panel. Rating
+seasons train only on earlier window ends. Five reused next-season folds score
+identical games. Each prior receives the same `3000 / 3000 / 300` RAPM update.
+The paired interval uses 5,000 whole-game draws and weights seasons equally.
+
+**Result:** Full SPM fits the five-year RAPM net target slightly better, with
+RMSE `1.4811` versus `1.4855`. Compact SPM has slightly higher target
+correlation, `.6614` versus `.6597`. Compact improves standalone next-season
+game MSE. Full minus Compact MSE is `+0.2878`, with interval `[+0.0450,
++0.5400]`. Compact wins three of five folds.
+
+The RAPM update reverses the small advantage. Full AIO minus Compact AIO MSE is
+`-0.1112`, with interval `[-0.2627, +0.0374]`. BoxPIPM-style AIO has the lowest
+mean fold RMSE at `14.3792`, followed by Full AIO at `14.4063` and Compact AIO
+at `14.4096`. Compact AIO minus BoxPIPM-style AIO MSE is `+0.9030`, with
+interval `[-0.0519, +1.8802]`.
+
+**Decision:** Keep Compact SPM as an interpretation and later
+stability-selection arm. Do not replace Full SPM or the frozen BoxPIPM-style
+research prior. A future supervised selector must use nested chronological
+selection and score the final AIO rather than standalone SPM fit alone.
