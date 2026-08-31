@@ -5329,3 +5329,24 @@ Freeze an age-adjusted retrospective RAPM target first. Then refit the corrected
 panel and run chronological leave-one-family-out and compact-representation
 ablations through the same AIO update. Treat the stale relative-TS field as a
 confirmed data defect and high correlations as pruning candidates.
+
+## 2026-08-31 — Compact correlation-pruned SPM contract
+
+**Question:** What is the smallest corrected rich-SPM input contract that
+removes the audited near-duplicate encodings without using a target?
+
+**Method:** Start from feature run
+`semantically_complete_spm_features_v1_fdee01ec4e`. Within offense and defense,
+remove at least one member of every pair whose absolute correlation is at
+least `.95` in audit `spm_full_range_audit_v1_7ba92eb718`. Keep the spacing
+composite as the three-point-volume representative. Keep both defensive
+rebound rate and rebound contests because they measure an outcome and a
+responsibility signal and their direct correlation stays below the threshold.
+
+**Result:** Contract `compact_spm_correlated_v1` retains 105 offense and 58
+defense inputs. It removes 23 offense and 14 defense fields. No recorded pair
+above the threshold remains intact.
+
+**Decision:** Use this contract as the compact arm in the next chronological
+full-versus-compact comparison. Do not interpret it as a selected model or an
+accuracy gain. Keep the earlier full SPM artifact immutable.

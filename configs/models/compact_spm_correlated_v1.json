@@ -1,0 +1,80 @@
+{
+  "contract_version": "compact_spm_correlated_v1",
+  "status": "research_input_only",
+  "source_feature_run_id": "semantically_complete_spm_features_v1_fdee01ec4e",
+  "source_feature_contract_path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_fdee01ec4e/run.json",
+  "correlation_audit_run_id": "spm_full_range_audit_v1_7ba92eb718",
+  "correlation_audit_path": "artifacts/research/spm_full_range_audit/spm_full_range_audit_v1_7ba92eb718/high_correlation_pairs.csv",
+  "absolute_correlation_threshold": 0.95,
+  "selection_rule": "Remove at least one member of every within-side pair at or above the threshold. Keep the more stable or basketball-specific representation. Retain distinct mechanisms when their direct correlation stays below the threshold.",
+  "selected_feature_count": {
+    "offense": 105,
+    "defense": 58
+  },
+  "dropped_features": {
+    "offense": [
+      "AST_p100",
+      "AST_p100_relative",
+      "FG2M_p100",
+      "FG3A_p100",
+      "FG3A_p100_relative",
+      "FG3M_p100",
+      "FTA_p100",
+      "FTM_p100",
+      "PTS_p100",
+      "TOV_p100",
+      "arc3_fga_p100",
+      "arc3_frequency",
+      "arc3_frequency_relative",
+      "at_rim_frequency",
+      "at_rim_frequency_relative",
+      "corner3_frequency",
+      "dreb_chances_p100",
+      "long_mid_frequency",
+      "rebound_chances_p100",
+      "recovered_blocks_p100",
+      "shooting_fouls_drawn_p100",
+      "short_mid_frequency",
+      "shot_quality_average"
+    ],
+    "defense": [
+      "AST_p100",
+      "BLK_p100",
+      "FG2M_p100",
+      "FG3M_p100",
+      "FTM_p100",
+      "assist_points_created_p100",
+      "avg_dribbles_per_touch",
+      "avg_seconds_per_touch",
+      "dreb_chances_p100",
+      "has_hustle_tracking",
+      "passes_made_p100",
+      "passes_received_p100",
+      "potential_assists_p100",
+      "rebound_chances_p100"
+    ]
+  },
+  "representative_choices": {
+    "offense": {
+      "assists": "potential_assists_p100_relative",
+      "blocks": "BLK_p100",
+      "free_throw_volume": "FTA_p100_relative",
+      "rim_frequency": "at_rim_frequency_eb",
+      "season_scoring": "PTS_p100_relative",
+      "shot_quality": "shot_quality_average_relative",
+      "shot_zone_frequencies": "empirical_Bayes_versions",
+      "three_point_volume_and_spacing": "crafted_spacing_stable_v1",
+      "turnovers": "TOV_p100_relative"
+    },
+    "defense": {
+      "blocks": "recovered_blocks_p100",
+      "free_throw_volume": "FTA_p100",
+      "matchup_source_flag": "has_matchup_tracking",
+      "passing_role": "time_of_possession_p100",
+      "rebounding": "DREB_p100_and_rebound_contests_p100",
+      "shot_volume": "FG2A_p100_and_FG3A_p100",
+      "touch_volume": "touches_p100"
+    }
+  },
+  "forbidden_interpretation": "This contract does not show that pruning improves SPM or AIO accuracy. It contains no target-based selection and no fitted model."
+}
