@@ -112,6 +112,15 @@ hold the full experiment history.
 - [`impact/SPM_FINAL_PRIOR_STACK_V1.md`](impact/SPM_FINAL_PRIOR_STACK_V1.md) —
   final combined-prior test, promotion-gate result, and stop decision for broad
   retrospective SPM feature research;
+- [`impact/RETROSPECTIVE_SPM_LEDGER.md`](impact/RETROSPECTIVE_SPM_LEDGER.md) —
+  current retrospective SPM, Box15 prior, validation, feature inventory,
+  negative results, and the locked transition to current-state research;
+- [`impact/CURRENT_SPM_PROPOSAL_V1.md`](impact/CURRENT_SPM_PROPOSAL_V1.md) —
+  independent proposal for a dated, in-season statistical strength model and
+  partial-season RAPM update;
+- [`impact/CURRENT_SPM_REVIEW_SYNTHESIS_V1.md`](impact/CURRENT_SPM_REVIEW_SYNTHESIS_V1.md) —
+  independent and external review synthesis, fixed current-model defects, and
+  the frozen four-arm current-SPM experiment;
 - [`impact/EXTERNAL_ALL_IN_ONE_BENCHMARK_V2.md`](impact/EXTERNAL_ALL_IN_ONE_BENCHMARK_V2.md) —
   complete available-coverage, strict 2017--20, train-through-2023, full DARKO
   history, and dated DARKO timing comparisons against public all-in-one metrics;

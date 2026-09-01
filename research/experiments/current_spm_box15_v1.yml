@@ -1,0 +1,34 @@
+schema_version: experiment_preregistration_v1
+experiment_id: current_spm_box15_v1
+status: preregistered_foundation
+created_at: 2026-09-01
+estimand_id: dated_current_player_strength_v1
+
+input_run: dated_box15_history_v1_65f2fa929c
+target_run: target_window_spm_aio_v1_be05a18f9b
+target:
+  horizon_seasons: 9
+  variant: normal
+
+rating_seasons: [2022, 2023, 2024, 2025, 2026]
+cutoffs:
+  frequency: weekly_monday
+  start_month_day: 11-01
+  end_month_day: 04-01
+  evidence_rule: game_date_strictly_before_cutoff
+
+model:
+  learner: ridge
+  features: box15
+  offense_alpha: 300
+  defense_alpha: 1000
+  box_half_life_days: [365, 730]
+  rate_prior_possessions: 500
+  training_rule: target_window_ends_before_rating_season
+  sample_weight: square_root_minimum_target_window_side_possessions
+
+limitations:
+  - This foundation rates only players with NBA game history before the cutoff.
+  - It does not include a rookie prior, absence variance, availability, or minutes projection.
+  - It does not perform the partial-season RAPM update or downstream game validation.
+  - Seasons before 2022 lack the complete dated Box15 history required by this run.

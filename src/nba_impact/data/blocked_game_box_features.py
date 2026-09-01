@@ -51,6 +51,24 @@ ESPN_RENAMES = {
     "fg3aplyr": "FG3A",
     "fg3mplyr": "FG3M",
 }
+NBA_COLUMNS = (
+    "gameId",
+    "personId",
+    "points",
+    "assists",
+    "turnovers",
+    "steals",
+    "blocks",
+    "reboundsOffensive",
+    "reboundsDefensive",
+    "foulsPersonal",
+    "freeThrowsAttempted",
+    "freeThrowsMade",
+    "fieldGoalsAttempted",
+    "fieldGoalsMade",
+    "threePointersAttempted",
+    "threePointersMade",
+)
 PBP_COLUMNS = (
     "game_id",
     "period",
@@ -125,6 +143,7 @@ def load_espn_player_game_box(
     *,
     season: int,
     game_ids: Iterable[str],
+    require_all_games: bool = True,
 ) -> pd.DataFrame:
     """Load raw player-game box counts for one exact game universe."""
     expected_games = {str(value) for value in game_ids}
@@ -133,7 +152,7 @@ def load_espn_player_game_box(
     frame["game_id"] = frame["game_id"].map(_game_id)
     frame = frame.loc[frame["game_id"].isin(expected_games)].copy()
     observed_games = set(frame["game_id"])
-    if missing := sorted(expected_games - observed_games):
+    if require_all_games and (missing := sorted(expected_games - observed_games)):
         raise ValueError(f"ESPN player box is missing {len(missing)} games: {missing[:10]}.")
     if frame.duplicated(["game_id", "player_id"]).any():
         raise ValueError("ESPN player box has duplicate player-game keys.")
@@ -150,6 +169,46 @@ def load_espn_player_game_box(
     if (frame[["FG2A", "FG2M"]] < 0).any().any():
         raise ValueError("Derived two-point counts cannot be negative.")
     keep = ["game_id", "PLAYER_ID", *(field for field in BOX_COUNTS if field != "PFD")]
+    return frame[keep].sort_values(["game_id", "PLAYER_ID"]).reset_index(drop=True)
+
+
+def load_nba_player_game_box(
+    path: str | Path, *, game_ids: Iterable[str]
+) -> pd.DataFrame:
+    """Load official-style box counts for an exact fallback game universe."""
+    expected_games = {str(value) for value in game_ids}
+    if not expected_games:
+        return pd.DataFrame(
+            columns=["game_id", "PLAYER_ID", *(field for field in BOX_COUNTS if field != "PFD")]
+        )
+    frame = pd.read_parquet(path, columns=list(NBA_COLUMNS))
+    frame["game_id"] = frame["gameId"].map(_game_id)
+    frame = frame.loc[frame["game_id"].isin(expected_games)].copy()
+    if missing := sorted(expected_games - set(frame["game_id"])):
+        raise ValueError(f"NBA player boxes are missing {len(missing)} games: {missing[:10]}.")
+    frame = frame.drop_duplicates()
+    if frame.duplicated(["game_id", "personId"]).any():
+        raise ValueError("NBA player boxes have duplicate player-game keys.")
+    source = [column for column in NBA_COLUMNS if column not in {"gameId", "personId"}]
+    _numeric(frame, source)
+    frame["PLAYER_ID"] = pd.to_numeric(frame["personId"], errors="raise").astype("int64")
+    frame["PTS"] = frame["points"]
+    frame["AST"] = frame["assists"]
+    frame["TOV"] = frame["turnovers"]
+    frame["STL"] = frame["steals"]
+    frame["BLK"] = frame["blocks"]
+    frame["OREB"] = frame["reboundsOffensive"]
+    frame["DREB"] = frame["reboundsDefensive"]
+    frame["PF"] = frame["foulsPersonal"]
+    frame["FTA"] = frame["freeThrowsAttempted"]
+    frame["FTM"] = frame["freeThrowsMade"]
+    frame["FG3A"] = frame["threePointersAttempted"]
+    frame["FG3M"] = frame["threePointersMade"]
+    frame["FG2A"] = frame["fieldGoalsAttempted"] - frame["FG3A"]
+    frame["FG2M"] = frame["fieldGoalsMade"] - frame["FG3M"]
+    keep = ["game_id", "PLAYER_ID", *(field for field in BOX_COUNTS if field != "PFD")]
+    if frame[keep[2:]].lt(0).any().any():
+        raise ValueError("Derived NBA player-game box counts cannot be negative.")
     return frame[keep].sort_values(["game_id", "PLAYER_ID"]).reset_index(drop=True)
 
 
@@ -319,13 +378,23 @@ def build_player_game_box15_ledger(
     espn_player_box_path: str | Path,
     gabriel_pbp_root: str | Path,
     season: int,
+    nba_player_game_box_path: str | Path | None = None,
 ) -> tuple[pd.DataFrame, dict[str, int | float]]:
     """Join exact game-level counts to the canonical RAPM exposure universe."""
     exposure = player_game_exposure(possessions)
     game_ids = tuple(sorted(exposure["game_id"].unique()))
     box = load_espn_player_game_box(
-        espn_player_box_path, season=season, game_ids=game_ids
+        espn_player_box_path,
+        season=season,
+        game_ids=game_ids,
+        require_all_games=nba_player_game_box_path is None,
     )
+    missing_box_games = sorted(set(game_ids) - set(box["game_id"]))
+    if missing_box_games:
+        fallback = load_nba_player_game_box(
+            nba_player_game_box_path, game_ids=missing_box_games
+        )
+        box = pd.concat([box, fallback], ignore_index=True)
     fouls = load_player_game_fouls_drawn(
         gabriel_pbp_root, season=season, game_ids=game_ids
     )
@@ -360,6 +429,7 @@ def build_player_game_box15_ledger(
         "exposure_rows_without_box_events": missing_event_rows,
         "event_rows_outside_validated_lineups": len(unmatched),
         "player_game_source_join_coverage": float(1.0 - missing_event_rows / len(ledger)),
+        "nba_fallback_games": len(missing_box_games),
     }
     return (
         ledger.sort_values(["game_id", "PLAYER_ID"]).reset_index(drop=True),
