@@ -5677,3 +5677,31 @@ defense and full defense-residual weight.
 **Decision:** Keep Box15 as `spm_prior` and full rich SPM as `spm_impact`.
 Preserve the defensive residual as a research challenger. Stop broad
 retrospective SPM feature and combination research. Move to current-state AIO.
+## 2026-09-01 — Nine-year Box15 defensive residual
+
+**Question:** Can high-value defensive fields improve the selected nine-year
+Box15 prior without discarding its longer historical training record?
+
+**Method:** Run `box15_defense_extension_9y_v1_346afdf3a2` keeps the saved
+chronological Box15 offense and defense predictions. A standardized defensive
+ridge predicts nine-year defensive RAPM minus chronological Box15 defense.
+Each rating season trains only on earlier feature seasons. Leave-one-season-out
+weighted MSE selects the ridge alpha. Every candidate uses the same one-season
+`3000 / 4500 / 300` RAPM update and the same 2017--26 games. The run uses 2,000
+paired whole-game bootstrap draws.
+
+**Result:** The four-mechanism family lowers MSE from `190.713` to `190.433`
+and RMSE from `13.8099` to `13.7997`. It wins eight of ten folds. Its
+candidate-minus-Box15 MSE interval is `[-.499, -.065]`. The `.0101` RMSE gain
+misses the `.05` practical threshold.
+
+Post-hoc run `box15_defense_mechanism_followup_9y_v1_57b6011cd8` removes the
+foul-adjusted activity field. The retained rebound-conversion, workload-
+suppression, and rim-workload residual reaches `13.7988` RMSE and wins nine of
+ten folds. It improves defensive target RMSE from `1.3901` to `1.3552`, but it
+worsens the 2026 game fold.
+
+**Decision:** Keep nine-year Box15 as the selected retrospective prior. Retain
+the three defensive mechanisms for current-state research. Do not treat the
+post-hoc isolation as independent evidence. Full methods and fold results are
+in `docs/impact/BOX15_DEFENSE_EXTENSION_9Y_V1.md`.

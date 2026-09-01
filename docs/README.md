@@ -100,6 +100,9 @@ hold the full experiment history.
 - [`impact/TARGET_WINDOW_SPM_AIO_V1.md`](impact/TARGET_WINDOW_SPM_AIO_V1.md) —
   five-, seven-, and nine-season normal versus age-adjusted RAPM targets for
   annual Box15 and rich SPM priors under the same one-season RAPM update;
+- [`impact/BOX15_DEFENSE_EXTENSION_9Y_V1.md`](impact/BOX15_DEFENSE_EXTENSION_9Y_V1.md) —
+  defense-only residual feature screen for the nine-year Box15 prior and the
+  downstream AIO decision;
 - [`impact/AIO_PRIOR_COMPLEMENTARITY_V1.md`](impact/AIO_PRIOR_COMPLEMENTARITY_V1.md) —
   target-overlap, defensive-residual, prior-trust, and player-precision tests
   that retain Box15 as the AIO prior and rich SPM as the standalone impact head;

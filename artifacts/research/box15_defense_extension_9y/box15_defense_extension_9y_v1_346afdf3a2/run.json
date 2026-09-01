@@ -1,0 +1,207 @@
+{
+  "contract": {
+    "aio": {
+      "lambda_def": 4500,
+      "lambda_home": 300,
+      "lambda_off": 3000,
+      "likelihood_seasons": 1,
+      "prior_scale": 1
+    },
+    "candidates": {
+      "box15_9y_normal": [],
+      "box15_plus_all9": [
+        "assist_points_created_p100",
+        "touches_p100",
+        "dreb_chances_p100",
+        "recovered_blocks_p100",
+        "paint_touches_p100",
+        "dreb_conversion_above_expected_eb",
+        "foul_adjusted_activity_residual",
+        "workload_adjusted_shot_suppression_residual",
+        "rim_protection_workload_value"
+      ],
+      "box15_plus_core4": [
+        "dreb_chances_p100",
+        "recovered_blocks_p100",
+        "workload_adjusted_shot_suppression_residual",
+        "rim_protection_workload_value"
+      ],
+      "box15_plus_dreb_chances": [
+        "dreb_chances_p100"
+      ],
+      "box15_plus_mechanism4": [
+        "dreb_conversion_above_expected_eb",
+        "foul_adjusted_activity_residual",
+        "workload_adjusted_shot_suppression_residual",
+        "rim_protection_workload_value"
+      ],
+      "box15_plus_recovered_blocks": [
+        "recovered_blocks_p100"
+      ],
+      "box15_plus_rim_workload": [
+        "rim_protection_workload_value"
+      ],
+      "box15_plus_top5_defense": [
+        "assist_points_created_p100",
+        "touches_p100",
+        "dreb_chances_p100",
+        "recovered_blocks_p100",
+        "paint_touches_p100"
+      ],
+      "box15_plus_workload_suppression": [
+        "workload_adjusted_shot_suppression_residual"
+      ]
+    },
+    "estimand_id": "target_window_spm_to_next_season_games_v1",
+    "evaluation": {
+      "bootstrap_draws": 2000,
+      "bootstrap_seed": 20260901,
+      "identical_games": "required_within_each_test_season",
+      "practical_rmse_gate": 0.05,
+      "primary": "equal_season_mean_next_season_whole_game_margin_mse",
+      "secondary": [
+        "rmse",
+        "correlation",
+        "calibration_slope"
+      ]
+    },
+    "experiment_id": "box15_defense_extension_9y_v1",
+    "forbidden_interpretation": "This diagnostic cannot promote a public model or establish causal defensive value for any input.",
+    "question": "Do a few high-value defensive fields improve the nine-year Box15 prior after the same one-season RAPM update?",
+    "rating_seasons": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "residual_model": {
+      "alpha_grid": [
+        10,
+        30,
+        100,
+        300,
+        1000,
+        3000
+      ],
+      "alpha_selection": "leave_one_training_season_out_weighted_mse",
+      "learner": "standardized_ridge",
+      "residual_scale": 1,
+      "sample_weight": "square_root_minimum_side_possessions",
+      "side": "defense",
+      "target": "nine_year_defensive_rapm_minus_chronological_box15_defense"
+    },
+    "rules": [
+      "The base Box15 prior and every residual label are chronological predictions.",
+      "Each residual fit uses only feature seasons before the rating season.",
+      "Offense remains the unchanged nine-year Box15 prediction.",
+      "Every candidate receives the same players, possessions, games, and RAPM update.",
+      "Results are exploratory because every outcome season has already been inspected."
+    ],
+    "schema_version": "experiment_preregistration_v1",
+    "source_model": {
+      "candidate": "box15_9y_normal",
+      "run_id": "target_window_spm_aio_v1_8e028133cb",
+      "target_horizon": 9,
+      "target_variant": "normal"
+    },
+    "status": "exploratory_reused_diagnostic",
+    "test_seasons": [
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ]
+  },
+  "created_at": "2026-09-01T18:35:32.880384+00:00",
+  "experiment_id": "box15_defense_extension_9y_v1",
+  "files": {
+    "decisions.parquet": {
+      "rows": 8,
+      "sha256": "3915fe8e86ff910439ca0c93a73428c61d2ce5ee165e1440b678d6edf9365faa"
+    },
+    "fold_metrics.parquet": {
+      "rows": 190,
+      "sha256": "e291a0db1b9f775c767501d162cdd717eca541201faebb9a629d7df3776156f7"
+    },
+    "game_predictions.parquet": {
+      "rows": 227411,
+      "sha256": "73cea5ae346ebadf2efccec9c8a157ea124943a6e630da0fe9c62b643b4f644d"
+    },
+    "paired_bootstrap.parquet": {
+      "rows": 8,
+      "sha256": "65282c3265c960fc3b16bd283fed2e095c445620cb71805e27a2944cf5287fba"
+    },
+    "prior_coverage.parquet": {
+      "rows": 90,
+      "sha256": "9615176743f716a4afbd0480617799ea0cd7aab41503624d5a403bced73dcdc2"
+    },
+    "priors.parquet": {
+      "rows": 48474,
+      "sha256": "731cd1b46aebcbe93e2794124b23d71bf91d53caf20d9e89613a126449df1537"
+    },
+    "ratings.parquet": {
+      "rows": 125571,
+      "sha256": "16c2386dc7060f106d9a29e4f9ab3c982f0ac6b3f332b06cebea91926144f14e"
+    },
+    "residual_alpha_selection.parquet": {
+      "rows": 480,
+      "sha256": "bae87c89212325b5e90404f1f753f270ca4fa6c13a88630ac27238995b6f7e35"
+    },
+    "summary.parquet": {
+      "rows": 19,
+      "sha256": "6b5a32b6212902d037393df97990c0873e2f7100d63c2cebb286d470a141cfa2"
+    }
+  },
+  "forbidden_interpretation": "This diagnostic cannot promote a public model or establish causal defensive value for any input.",
+  "quality": {
+    "game_prediction_rows": 227411,
+    "identical_games_within_fold": true,
+    "learning_rows": 6360,
+    "prior_rows": 48474,
+    "rating_component_identity_error": 0.0
+  },
+  "run_id": "box15_defense_extension_9y_v1_346afdf3a2",
+  "sources": {
+    "contract": {
+      "path": "research/experiments/box15_defense_extension_9y_v1.yml",
+      "sha256": "7f56bea50a490a144d79ab9c71f06ba2c1d436080d72bb9d2868005c1f19137b"
+    },
+    "mechanism_features": {
+      "path": "artifacts/research/mechanism_feature_panel/mechanism_feature_panel_v1_9224606a01/annual_features.parquet",
+      "sha256": "99045a0a606d8b147c2cd607a238c9430425af18de5e7bc24843e82c6cbb72f9"
+    },
+    "rich_features": {
+      "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_fdee01ec4e/annual_features.parquet",
+      "sha256": "d44b622b8416af51199886103bbaf88911d6605b688c87d287989789aaf77d3a"
+    },
+    "runner": {
+      "path": "research/run_box15_defense_extension_9y.py",
+      "sha256": "6ae6351155976c9518d28660343571212be2def4621a7595a0ec0ccc831cccdc"
+    },
+    "source_manifest": {
+      "path": "artifacts/research/target_window_spm_aio/target_window_spm_aio_v1_8e028133cb/run.json",
+      "sha256": "e17895c2666ca1b81705c740af9c9cd399944b4ee561525f901d56073cc44746"
+    },
+    "source_priors": {
+      "path": "artifacts/research/target_window_spm_aio/target_window_spm_aio_v1_8e028133cb/priors.parquet",
+      "sha256": "41e950fea5e4eec5053049ecd6b1c7e23696b48bccef589085670cd5fb0485f2"
+    },
+    "source_targets": {
+      "path": "artifacts/research/target_window_spm_aio/target_window_spm_aio_v1_8e028133cb/targets.parquet",
+      "sha256": "7af4dddf3837bb41d015652eb0a83bd1632eb6261c7f677bb29f7843e2f8bd4f"
+    }
+  },
+  "status": "exploratory_reused_diagnostic_complete"
+}

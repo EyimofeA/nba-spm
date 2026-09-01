@@ -119,6 +119,11 @@ dead ends. Updated 2026-09-01. See `docs/README.md` for the document index,
   RAPM update. Box15 scores `207.421` MSE; the closest cumulative matchup arm
   scores `207.537`. Keep Box15 as the research AIO prior. Do not run another
   feature search before the independent audit or a later untouched confirmation.
+- Nine-year defense extension `box15_defense_extension_9y_v1_346afdf3a2`
+  improves Box15 AIO RMSE by only `.0101`. A post-hoc three-feature residual
+  reaches `.0111` but loses the 2026 fold. Keep Box15 selected and carry the
+  defensive mechanisms into current-state research instead of reopening the
+  retrospective feature search.
 - Focused follow-up `box15_top_feature_followup_v1_d9c274ca12` isolates the
   five strongest audited additions on each side. Offense and combined arms
   worsen the AIO. The defense-only arm improves MSE by only `0.066`; its paired

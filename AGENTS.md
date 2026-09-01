@@ -193,6 +193,13 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   block improves only `.0275` RMSE, below the `.05` practical gate, and loses
   narrowly in the reused 2026 fold. Keep Box15 frozen and retain these features
   as research candidates.
+- Nine-year follow-up `box15_defense_extension_9y_v1_346afdf3a2` preserves the
+  full-history Box15 base and predicts only its defensive residual. The four
+  mechanism fields lower ten-fold AIO RMSE by `.0101`. Post-hoc isolation run
+  `box15_defense_mechanism_followup_9y_v1_57b6011cd8` removes foul-adjusted
+  activity and gains `.0111`, but loses the 2026 fold and misses the `.05`
+  practical gate. Keep Box15 selected. Retain rebound conversion, workload
+  suppression, and rim workload for current-state research.
 - Strict blocked-game run `impact_validation_v2_gate_a_090cb2d323` uses the
   466 regulation games whose cached possession points match the official home
   and away final scores. It removes each held game from both Box15 inputs and
