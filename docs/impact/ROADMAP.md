@@ -1,7 +1,9 @@
-# RAPM and All-in-One Roadmap
+# Historical RAPM and all-in-one roadmap
 
-This file gives the detailed player-impact plan. `../../ROADMAP.md` remains the
-short project queue. `../modeling/PLAYBOOK.md` gives the validation rules.
+Status: historical snapshot through 2026-08-17. This file preserves the plan and
+results recorded at that date. Do not use its "current" or "next" statements as
+the active queue. Use [`../../ROADMAP.md`](../../ROADMAP.md) for current work and
+[`../modeling/PLAYBOOK.md`](../modeling/PLAYBOOK.md) for validation rules.
 
 ## Current facts
 

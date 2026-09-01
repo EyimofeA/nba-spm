@@ -1,9 +1,9 @@
 # NBA Impact Roadmap
 
-This is the one file to follow remotely. `RESEARCH_LOG.md` contains evidence and
-dead ends. Updated 2026-08-29. See `docs/README.md` for the document index,
-`docs/impact/ROADMAP.md` for the detailed RAPM/all-in-one plan, and
-`docs/modeling/PLAYBOOK.md` for the common statistical modeling procedure.
+This is the active queue. `RESEARCH_LOG.md` contains experiment evidence and
+dead ends. Updated 2026-09-01. See `docs/README.md` for the document index,
+`docs/impact/MODEL_REPLICATION_SPEC.md` for the reproducible model contract, and
+`docs/modeling/PLAYBOOK.md` for the statistical modeling procedure.
 
 ## Current position
 
@@ -94,8 +94,8 @@ dead ends. Updated 2026-08-29. See `docs/README.md` for the document index,
   the frozen 2025--26 AIO evaluation and changes only the prior center.
   BoxPIPM-style lowers mean future-game RMSE from `15.1588` to `15.1012`, wins
   both seasons, and has paired MSE interval `[-3.0402, -0.4367]`. Freeze it as
-  the research AIO prior. Keep zero-prior RAPM public and reserve 2027 for the
-  untouched production decision.
+  the research AIO prior. Keep zero-prior RAPM public until a later untouched
+  completed season supports a production decision.
 - Full-panel run `full_spm_history_ablation_v1_34725a86aa` refits the exact
   127/68 contract through the current 2026 rating. Removing all 13 hustle and
   matchup fields that start in 2018 worsens the standalone SPM. Full SPM plus
@@ -118,7 +118,7 @@ dead ends. Updated 2026-08-29. See `docs/README.md` for the document index,
   family lowers equal-season next-season game-margin MSE after the identical
   RAPM update. Box15 scores `207.421` MSE; the closest cumulative matchup arm
   scores `207.537`. Keep Box15 as the research AIO prior. Do not run another
-  feature search before the independent audit or untouched 2027 confirmation.
+  feature search before the independent audit or a later untouched confirmation.
 - Focused follow-up `box15_top_feature_followup_v1_d9c274ca12` isolates the
   five strongest audited additions on each side. Offense and combined arms
   worsen the AIO. The defense-only arm improves MSE by only `0.066`; its paired
@@ -189,57 +189,40 @@ dead ends. Updated 2026-08-29. See `docs/README.md` for the document index,
   AuPM, raw on-court margin, and a reproduced game-level PM ridge are retained
   as different-estimand diagnostics, not validation targets. All tables remain
   localhost-only in RAPM Lab.
+- Forward run `annual_rich_forward_aio_v1_0f766b0ee4` resolves the current
+  standalone-versus-prior question. The rich annual SPM beats five-year Box15
+  alone by `4.440` MSE points. After both models receive the same
+  precision-aware one-season RAPM update, Box15 wins by `2.855` MSE points.
+  Keep rich annual SPM as the standalone research leader and Box15 as the AIO
+  prior.
 
 ## Active next task
 
-Park the full SPM validation design until an independent review compares two
-evidence packets. The repo-aware packet includes code, manifests, and outputs.
-The repo-blind packet includes the estimand, available data, candidate formulas,
-and evaluation question without repository conclusions. Reviewers should use
-OMP Codex Sol high, OpenRouter Ox Alpha max, and Pi/Cursor with Opus 5 high,
-Kimi K3 high, and Grok 4.6. Pool their proposed splits, leakage controls,
-scoring rules, and disagreements before changing the validation contract.
+Test whether seven-year age-adjusted RAPM is a better SPM target than the current
+five-year RAPM target. Keep the one-season RAPM update unchanged.
 
-Hand the final Box15 ladder, semantic-completion artifacts, and corrected
-active-player leaderboard to the independent audit. The audit should check the
-estimand, chronological splits, oracle-lineup limitation, cumulative-order
-dependence, and artifact lineage. It should not redesign the model after seeing
-the reused 2022--26 results.
+1. Build rolling seven-year labels with the already tested categorical age
+   control. Keep the observed lineup-age terms separate from player ratings.
+2. Train the same Box15 mapping on five-year plain and seven-year age-adjusted
+   labels. Use identical chronological folds, players, games, and possession
+   weights.
+3. Compare the standalone priors and their precision-aware one-season RAPM
+   updates. Report game-margin MSE, RMSE, correlation, calibration slope, and
+   paired whole-game intervals.
+4. Diagnose complementarity with prior-update correlation and residual recovery.
+   Do not promote a target because it fits its RAPM label better.
+5. Keep five-year Box15 as the research AIO prior unless the seven-year target
+   improves the downstream AIO on the frozen gate.
 
-Obtain a better event or lineup source for the nine Gabriel fallback games that
-failed the strict repair gate. The adapter repaired `0022300535`; the 2024
-regular-season input now covers 1,228 of 1,230 games. The rebuilt 2024 rating is
-nearly unchanged (net correlation 0.99975; mean absolute change 0.0079 points
-per 100). Do not weaken the existing QA gates to close the remaining gaps.
-
-The precision-aware SPM-prior challenger is deferred. Its reviewed 2018--21
-schedule cannot be produced by the frozen feature history, and the invalid
-2021--24 run must not be reused. Keep zero-prior normal RAPM as the production
-reference. Keep annual AIO, matchup factors, trajectories, and peaks research-
-only. WP neural work stays paused on the Mac.
-
-The public product is live at `https://nba-impact-lab.mofe.chatgpt.site`.
-Normal RAPM covers 2017--26. SPM and AIO remain the validated 2017--24 model.
-The full 2014--26 SPM refresh was flat-to-worse on the exact 2017--24 comparison,
-and its 2025/2026 defensive correlations were 0.332/0.378. Keep that refresh as
-a null result. Do not rerun the same annual specification without a new feature
-or target-drift hypothesis.
-
-Slow-network policy: each immutable file resumes from `.partial`, retries up to
-20 times with exponential jitter, and waits up to five minutes for the next bytes.
+The public product is live at `https://courtsignalnba.pages.dev`. Public RAPM
+covers 2017--26. Public SPM and AIO retain their pinned 2017--24 contract. The
+full 2014--26 SPM refresh remains a research null.
 
 ## Ordered queue
 
-1. **All-in-one confirmation:** keep BoxPIPM-style frozen as the research prior
-   and run it once on untouched Season 2027. Do not tune from 2027. Separately,
-   freeze factor groups with the selected eight matchup-defense fields for the
-   next challenger; use direct offense and defense RAPM targets and no role
-   interactions.
-   Before another rich-SPM fit, audit stabilization one metric family at a
-   time. Compare raw and stabilized forms on identical rows. Select the
-   stabilization method from earlier seasons only. Do not stabilize counts or
-   high-exposure rates by default, and do not replace the test with a player
-   exposure filter.
+1. **SPM target:** compare five-year plain RAPM with seven-year age-adjusted
+   RAPM as the Box15 label. Select from downstream game prediction, not
+   same-target fit. Keep the one-season AIO likelihood fixed.
 2. **Role research:** evaluate role-relative skill before any role-fit
    counterfactual. Require support/overlap checks for counterfactual roles.
 3. **Dynamic impact:** retain the 2014--26 state-space filter as the leading
