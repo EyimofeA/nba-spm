@@ -157,13 +157,13 @@ minutes are not modeled.
 
 The internal posteriors use the same one-season terminal-lineup RAPM update:
 
-\[
+$$
 \hat\beta=(X^TX+P)^{-1}\left[X^T(y-b)+P\mu\right],
-\]
+$$
 
 with offense, defense, and home penalties of `3000`, `4500`, and `300`.
 Box15, Box15 2014+, rich SPM, and the defense residual differ only in prior
-center \(\mu\). External metrics remain standalone. EPM, xRAPM, PIPM, RAPTOR,
+center $\mu$. External metrics remain standalone. EPM, xRAPM, PIPM, RAPTOR,
 LEBRON, MAMBA, and DARKO already contain different amounts of on/off or impact
 information. Applying another RAPM update would not be a controlled comparison.
 
