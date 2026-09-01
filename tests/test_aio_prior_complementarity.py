@@ -7,6 +7,7 @@ from scipy.sparse import csr_matrix
 
 from research.run_aio_prior_complementarity import (
     AnnualMatrix,
+    _cross_fitted_box_defense,
     _metric_row,
     _validate_contract,
     _variance_model_multipliers,
@@ -16,6 +17,7 @@ from research.run_aio_prior_complementarity import (
     checkpoint_frame,
     coefficient_center,
     fully_lagged_pairs,
+    future_reference_seasons,
     lambda_components,
     outcome_censored_features,
     past_reference,
@@ -78,6 +80,12 @@ def test_past_reference_excludes_season_t() -> None:
     assert shifted.loc[0, "rating_season"] == 2020
     assert shifted.loc[0, "target_offense"] == 2.0
     assert shifted.loc[0, "reference"] == "nine_year_past"
+
+
+def test_future_reference_excludes_season_t() -> None:
+    seasons = future_reference_seasons(2020)
+    assert seasons == (2021, 2022, 2023)
+    assert 2020 not in seasons
 
 
 def test_fully_lagged_alignment_uses_previous_season_features() -> None:
@@ -143,6 +151,47 @@ def test_fold_selection_uses_only_earlier_outcomes_and_then_freezes() -> None:
     )
     assert early["choice"] == 0.0
     assert frozen["choice"] == 1.0
+
+
+def test_defense_residual_labels_use_cross_fitted_box_predictions(monkeypatch) -> None:
+    frame = pd.DataFrame(
+        {
+            "Season": np.repeat([2018, 2019, 2020], 2),
+            "target_defense": np.arange(6, dtype=float),
+            "sample_weight": np.ones(6),
+            **{feature: np.ones(6) for feature in (
+                "PTS_p100", "AST_p100", "TOV_p100", "STL_p100", "BLK_p100",
+                "OREB_p100", "DREB_p100", "PF_p100", "PFD_p100", "FTA_p100",
+                "FTM_p100", "FG2A_p100", "FG2M_p100", "FG3A_p100", "FG3M_p100",
+            )},
+        }
+    )
+    seen = []
+
+    class FoldModel:
+        def __init__(self, value: float) -> None:
+            self.value = value
+
+        def predict(self, features: pd.DataFrame) -> np.ndarray:
+            return np.full(len(features), self.value)
+
+    def fake_fit(train, *_args, **_kwargs):
+        seasons = tuple(sorted(train["Season"].unique()))
+        seen.append(seasons)
+        return FoldModel(float(sum(seasons)))
+
+    monkeypatch.setattr(
+        "research.run_aio_prior_complementarity.fit_box",
+        fake_fit,
+    )
+    contract = _contract()
+    contract["spm"] = {"box15": {"defense_alpha": 1000}}
+    prediction = _cross_fitted_box_defense(frame, contract)
+    assert seen == [(2019, 2020), (2018, 2020), (2018, 2019)]
+    assert np.array_equal(
+        prediction,
+        np.repeat([4039.0, 4038.0, 4037.0], 2),
+    )
 
 
 def test_outcome_censor_keeps_activity_and_removes_result_fields() -> None:

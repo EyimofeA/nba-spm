@@ -420,6 +420,11 @@ def _rating_frame(matrix: AnnualMatrix, beta: np.ndarray, candidate: str) -> pd.
     ).assign(net=lambda value: value["offense"] + value["defense"])
 
 
+def future_reference_seasons(rating_season: int) -> tuple[int, int, int]:
+    """Return the three seasons strictly after a rating season."""
+    return rating_season + 1, rating_season + 2, rating_season + 3
+
+
 def _future_reference(contract: dict) -> pd.DataFrame:
     rows = []
     config = RapmConfig(
@@ -444,8 +449,9 @@ def _future_reference(contract: dict) -> pd.DataFrame:
         y=frame["pts"].to_numpy(dtype=float)
         - frame["season"].map(season_mean).to_numpy(dtype=float),
     )
-    for end in range(2019, 2027):
-        mask = (design.seasons >= end - 2) & (design.seasons <= end)
+    for rating_season in range(2016, 2024):
+        reference_seasons = future_reference_seasons(rating_season)
+        mask = np.isin(design.seasons, reference_seasons)
         beta, _ = fit_coefficients(design, config, row_mask=mask)
         n = len(design.players)
         X = design.X[mask]
@@ -455,7 +461,7 @@ def _future_reference(contract: dict) -> pd.DataFrame:
         output = pd.DataFrame(
             {
                 "PLAYER_ID": design.players[active],
-                "rating_season": end - 3,
+                "rating_season": rating_season,
                 "reference": "three_year_future",
                 "target_offense": 100.0 * beta[:n][active],
                 "target_defense": -100.0 * beta[n : 2 * n][active],
@@ -465,7 +471,7 @@ def _future_reference(contract: dict) -> pd.DataFrame:
         )
         output["target_net"] = output["target_offense"] + output["target_defense"]
         rows.append(output)
-        print(f"future reference {end - 3} -> {end}: complete", flush=True)
+        print(f"future reference {rating_season} -> {reference_seasons[-1]}: complete", flush=True)
     return pd.concat(rows, ignore_index=True)
 
 

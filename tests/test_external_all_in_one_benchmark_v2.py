@@ -1,13 +1,47 @@
 from __future__ import annotations
 
+from pathlib import Path
+from zipfile import ZipFile
+
 import pandas as pd
 
 from research.run_external_all_in_one_benchmark_v2 import (
     component_frame,
     fit_box15_2014_onward,
     name_dimension,
+    read_xlsx_sheet,
     season_end,
 )
+
+
+def test_read_xlsx_sheet_resolves_named_sheet_and_shared_strings(tmp_path: Path) -> None:
+    path = tmp_path / "history.xlsx"
+    with ZipFile(path, "w") as archive:
+        archive.writestr(
+            "xl/workbook.xml",
+            '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+            'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            '<sheets><sheet name="Full DPM History" sheetId="1" r:id="rId1"/></sheets></workbook>',
+        )
+        archive.writestr(
+            "xl/_rels/workbook.xml.rels",
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            '<Relationship Id="rId1" Target="worksheets/sheet1.xml"/></Relationships>',
+        )
+        archive.writestr(
+            "xl/sharedStrings.xml",
+            '<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            '<si><t>nba_id</t></si><si><t>season</t></si></sst>',
+        )
+        archive.writestr(
+            "xl/worksheets/sheet1.xml",
+            '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'
+            '<row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c></row>'
+            '<row r="2"><c r="A2"><v>1</v></c><c r="B2"><v>2024</v></c></row>'
+            '</sheetData></worksheet>',
+        )
+    result = read_xlsx_sheet(path, "Full DPM History")
+    assert result.to_dict("records") == [{"nba_id": "1", "season": "2024"}]
 
 
 def test_season_end_uses_repository_end_year_convention() -> None:

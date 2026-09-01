@@ -224,7 +224,7 @@ The final classification is **Box15 retained**.
 
 The run emits `dual_head_spm.parquet`, which contains both statistical outputs.
 The full result is stored under
-`artifacts/research/aio_prior_complementarity/aio_prior_complementarity_v1_da7194b036`.
+`artifacts/research/aio_prior_complementarity/aio_prior_complementarity_v1_4d83e381af`.
 
 Reproduce the suite with:
 

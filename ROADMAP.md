@@ -203,15 +203,16 @@ dead ends. Updated 2026-09-01. See `docs/README.md` for the document index,
   target loses. Rich SPM remains better alone but worse after the update. Keep
   nine-year normal Box15 as the research target leader; do not change the
   public model from reused evidence.
-- Complementarity run `aio_prior_complementarity_v1_da7194b036` separates the
+- Complementarity run `aio_prior_complementarity_v1_4d83e381af` separates the
   standalone statistical rating from the prior used by AIO. Current rich SPM
   remains the standalone `spm_impact` head. Current-control Box15 remains the
   `spm_prior` head. A target-excluded, outcome-augmented defense residual lowers
   ten-fold AIO MSE by `.624`, but its later RMSE gain is only `.022`, below the
   frozen `.05` gate. The shared-error diagnostic is unresolved because a
   permuted common reference reproduces large correlations.
-- External benchmark `external_all_in_one_benchmark_v2_b3d21a4bd8` compares
-  internal priors, identical one-season RAPM updates, and eight public metrics.
+- External benchmark `external_all_in_one_benchmark_v2_6a898e99d9` compares
+  internal priors, identical one-season RAPM updates, and full 1997--2024 DARKO
+  history alongside the other public metrics.
   On the strict 2017--20 common panel, defense-residual AIO has RMSE `13.3745`,
   Box15 AIO has `13.3814`, MAMBA has `13.4526`, and rich-SPM AIO has `13.4569`.
   The defense-residual advantage over Box15 is unresolved; Box15 clearly beats

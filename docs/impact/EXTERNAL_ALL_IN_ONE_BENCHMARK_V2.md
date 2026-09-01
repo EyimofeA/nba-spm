@@ -28,6 +28,7 @@ predict games in 2018--21.
 | Box15 2014+ + RAPM | 4 | 179.514 | 13.398 | 0.354 | 0.859 |
 | MAMBA | 4 | 180.973 | 13.453 | **0.367** | 0.838 |
 | Rich elastic SPM + RAPM | 4 | 181.088 | 13.457 | 0.346 | 0.816 |
+| DARKO DPM | 4 | 184.186 | 13.572 | 0.340 | 0.950 |
 | EPM | 4 | 184.188 | 13.572 | 0.343 | 0.856 |
 | xRAPM | 4 | 184.662 | 13.589 | 0.343 | 0.831 |
 | LEBRON | 4 | 185.819 | 13.632 | 0.328 | 1.054 |
@@ -49,11 +50,12 @@ Key paired MSE differences use 5,000 whole-game bootstrap draws within season:
 
 | Comparison | MSE difference | 95% interval |
 | --- | ---: | ---: |
-| Defense residual AIO minus Box15 AIO | -0.184 | [-0.532, 0.171] |
-| Defense residual AIO minus MAMBA | -2.095 | [-4.483, 0.316] |
-| Box15 AIO minus MAMBA | -1.912 | [-4.343, 0.491] |
-| Box15 AIO minus rich-SPM AIO | **-2.027** | **[-2.826, -1.195]** |
-| Box15 2014+ AIO minus long-history Box15 AIO | +0.453 | [0.154, 0.750] |
+| Defense residual AIO minus Box15 AIO | -0.184 | [-0.523, 0.161] |
+| Defense residual AIO minus MAMBA | -2.095 | [-4.540, 0.268] |
+| Box15 AIO minus MAMBA | -1.912 | [-4.339, 0.439] |
+| Box15 AIO minus rich-SPM AIO | **-2.027** | **[-2.854, -1.224]** |
+| Box15 2014+ AIO minus long-history Box15 AIO | +0.453 | [0.157, 0.755] |
+| DARKO DPM minus EPM | -0.002 | [-1.741, 1.782] |
 
 The first three differences do not establish a winner. Box15 AIO does
 establish a lower error than rich-SPM AIO on this panel. Restricting Box15 to
@@ -67,29 +69,35 @@ uses 2005--23.
 
 | Candidate | MSE | RMSE | Correlation | Calibration slope |
 | --- | ---: | ---: | ---: | ---: |
-| MAMBA | **219.691** | **14.822** | **0.386** | 0.809 |
-| Defense residual + RAPM | 220.370 | 14.845 | 0.367 | 0.802 |
-| Box15 + RAPM | 221.583 | 14.886 | 0.360 | 0.802 |
-| Box15 2014+ + RAPM | 222.247 | 14.908 | 0.356 | 0.801 |
-| Rich elastic SPM + RAPM | 224.619 | 14.987 | 0.350 | 0.756 |
-| xRAPM | 226.052 | 15.035 | 0.352 | 0.790 |
-| EPM | 229.699 | 15.156 | 0.329 | 0.795 |
-| BPM 2.0 | 234.050 | 15.299 | 0.325 | 0.686 |
-| Defense residual prior | 234.060 | 15.299 | 0.296 | 1.280 |
-| Rich elastic SPM prior | 235.033 | 15.331 | 0.282 | 0.981 |
-| Box15 prior | 240.662 | 15.513 | 0.240 | 1.109 |
-| Box15 2014+ prior | 241.405 | 15.537 | 0.234 | 1.105 |
-| LEBRON | 241.722 | 15.547 | 0.239 | 0.774 |
+| MAMBA | **219.047** | **14.800** | **0.389** | 0.814 |
+| Defense residual + RAPM | 219.905 | 14.829 | 0.369 | 0.806 |
+| Box15 + RAPM | 220.884 | 14.862 | 0.363 | 0.807 |
+| Box15 2014+ + RAPM | 221.637 | 14.887 | 0.359 | 0.806 |
+| Rich elastic SPM + RAPM | 224.581 | 14.986 | 0.350 | 0.756 |
+| xRAPM | 228.072 | 15.102 | 0.342 | 0.776 |
+| EPM | 229.855 | 15.161 | 0.328 | 0.796 |
+| DARKO DPM | 232.242 | 15.239 | 0.304 | 0.857 |
+| Defense residual prior | 233.362 | 15.276 | 0.301 | 1.300 |
+| BPM 2.0 | 233.377 | 15.277 | 0.327 | 0.694 |
+| Rich elastic SPM prior | 234.972 | 15.329 | 0.282 | 0.983 |
+| Box15 prior | 239.600 | 15.479 | 0.249 | 1.146 |
+| Box15 2014+ prior | 240.515 | 15.509 | 0.242 | 1.140 |
+| LEBRON | 241.845 | 15.551 | 0.238 | 0.772 |
 
-MAMBA's MSE advantage over the defense-residual AIO is `0.678`, with a paired
-95% interval of `[-4.522, 5.983]` for defense residual minus MAMBA. One season
-cannot separate them. The defense residual beats Box15 AIO by `1.214` MSE on
-this fold, but this is reused evidence and does not satisfy the frozen
+MAMBA's MSE advantage over the defense-residual AIO is `0.858`, with a paired
+95% interval of `[-4.651, 6.290]` for defense residual minus MAMBA. One season
+cannot separate them. The defense residual beats Box15 AIO by `0.979` MSE on
+this fold, with interval
+`[-1.851, -0.128]`. This is reused evidence and does not satisfy the frozen
 multi-season promotion contract.
 
-Box15 AIO beats rich-SPM AIO by `3.036` MSE, with a paired 95% interval of
-`[-4.741, -1.317]`. The restricted 2014+ Box15 AIO loses `0.664` MSE to the
-long-history Box15 AIO, with interval `[0.263, 1.073]`.
+Box15 AIO beats rich-SPM AIO by `3.696` MSE, with a paired 95% interval of
+`[-5.461, -2.005]`. The restricted 2014+ Box15 AIO loses `0.753` MSE to the
+long-history Box15 AIO, with interval `[0.344, 1.166]`. DARKO trails EPM by
+`2.387` MSE, but its interval `[-1.840, 6.692]` does not separate them.
+
+This strict holdout intersection contains 415 rated players and covers 77.7%
+of next-season lineup slots.
 
 ## All available coverage
 
@@ -106,6 +114,7 @@ have eight.
 | Box15 + RAPM | 8 | 189.614 | 13.770 |
 | Rich elastic SPM + RAPM | 8 | 191.688 | 13.845 |
 | xRAPM | 8 | 192.578 | 13.877 |
+| DARKO DPM | 8 | 193.301 | 13.903 |
 | EPM | 8 | 193.650 | 13.916 |
 | PIPM | 5 | 194.587 | 13.949 |
 | LEBRON | 8 | 195.415 | 13.979 |
@@ -116,16 +125,26 @@ Public metrics cover about 85--89% of lineup slots in their available folds.
 The internal priors cover about 75--77%. This difference prevents a causal
 interpretation of the broad ordering.
 
-## DARKO sensitivity
+## DARKO history and timing sensitivity
 
-No historical DARKO panel was available. The benchmark uses one dated,
-preseason 2018--19 snapshot from the
+The supplied DARKO workbook contains 13,726 player-season rows from 1997
+through 2024. It has 2,703 unique NBA player IDs and no duplicate player-season
+keys. Every row has offensive, defensive, and net DPM. The component identity
+`o_dpm + d_dpm = dpm` holds exactly. The benchmark uses its 2017--24 seasons.
+
+DARKO and EPM are indistinguishable on the strict 2017--20 panel: DARKO's MSE
+is `184.186` and EPM's is `184.188`. The DARKO-minus-EPM interval is
+`[-1.741, 1.782]`. DARKO's broad 2017--24 MSE is `193.301`. Its strict 2025
+holdout MSE is `232.242`.
+
+The benchmark also keeps one dated preseason 2018--19 snapshot from the
 [Andrew Patton team-ratings tutorial](https://github.com/anpatton/basic-nba-tutorials/blob/main/team_ratings/how_to_make_team_ratings.md).
 The snapshot predicts 2018--19 games on one strict common-player panel.
 
 DARKO scores `183.493` MSE and `13.546` RMSE. MAMBA scores `182.826` MSE on the
 same panel. The defense-residual AIO scores `178.453`. This is one fold with a
-different timestamp. It cannot establish a general DARKO comparison.
+different timestamp. It checks information timing; the historical workbook
+provides the general season-end comparison.
 
 ## Model and evaluation contract
 
@@ -156,8 +175,8 @@ too little.
 
 ## Data quality and limitations
 
-- Exact NBA IDs identify EPM and LEBRON rows. Season-specific normalized names
-  identify the other imported metrics. Modern identity match rates are
+- Exact NBA IDs identify DARKO, EPM, and LEBRON rows. Season-specific normalized
+  names identify the other imported metrics. Modern identity match rates are
   97.7--99.7%.
 - MAMBA comes from the supplied historical file. Its internal offense plus
   defense identity passes, but this run does not independently reproduce its

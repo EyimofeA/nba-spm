@@ -7,8 +7,11 @@ import argparse
 import hashlib
 import json
 import math
+import re
 from datetime import datetime, timezone
 from pathlib import Path
+from xml.etree import ElementTree
+from zipfile import ZipFile
 
 import numpy as np
 import pandas as pd
@@ -31,7 +34,7 @@ from research.run_aio_prior_complementarity import (
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPERIMENT_ID = "external_all_in_one_benchmark_v2"
-INTERNAL_RUN = ROOT / "artifacts/research/aio_prior_complementarity/aio_prior_complementarity_v1_da7194b036"
+INTERNAL_RUN = ROOT / "artifacts/research/aio_prior_complementarity/aio_prior_complementarity_v1_4d83e381af"
 EXTERNAL_ANNUAL = ROOT / "artifacts/models/external_impact_benchmark/external_impact_benchmark_v1_bab43a4087/external_annual.parquet"
 DEFAULT_DOWNLOADS = Path.home() / "Downloads"
 INTERNAL_CANDIDATES = {
@@ -53,11 +56,64 @@ STRICT_CANDIDATES = (
     "EPM",
     "LEBRON",
     "MAMBA",
+    "DARKO DPM",
     "PIPM",
     "RAPTOR",
     "BPM 2.0",
     "xRAPM",
 )
+
+SPREADSHEET_NAMESPACE = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+RELATIONSHIP_NAMESPACE = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
+PACKAGE_RELATIONSHIP_NAMESPACE = "{http://schemas.openxmlformats.org/package/2006/relationships}"
+
+
+def read_xlsx_sheet(path: Path, sheet_name: str) -> pd.DataFrame:
+    """Read one value-only XLSX sheet without adding an Excel dependency."""
+    with ZipFile(path) as archive:
+        workbook = ElementTree.fromstring(archive.read("xl/workbook.xml"))
+        sheet = next(
+            item
+            for item in workbook.find(f"{SPREADSHEET_NAMESPACE}sheets")
+            if item.attrib["name"] == sheet_name
+        )
+        relationship_id = sheet.attrib[f"{RELATIONSHIP_NAMESPACE}id"]
+        relationships = ElementTree.fromstring(archive.read("xl/_rels/workbook.xml.rels"))
+        target = next(
+            item.attrib["Target"]
+            for item in relationships
+            if item.attrib["Id"] == relationship_id
+        )
+        target = target.lstrip("/")
+        if not target.startswith("xl/"):
+            target = f"xl/{target}"
+        shared_strings = []
+        if "xl/sharedStrings.xml" in archive.namelist():
+            strings = ElementTree.fromstring(archive.read("xl/sharedStrings.xml"))
+            shared_strings = [
+                "".join(node.text or "" for node in item.iter(f"{SPREADSHEET_NAMESPACE}t"))
+                for item in strings.findall(f"{SPREADSHEET_NAMESPACE}si")
+            ]
+        worksheet = ElementTree.fromstring(archive.read(target))
+
+    rows = []
+    for row in worksheet.iter(f"{SPREADSHEET_NAMESPACE}row"):
+        values = {}
+        for cell in row.findall(f"{SPREADSHEET_NAMESPACE}c"):
+            column = re.match(r"[A-Z]+", cell.attrib["r"]).group(0)
+            value_node = cell.find(f"{SPREADSHEET_NAMESPACE}v")
+            value = None if value_node is None else value_node.text
+            if value is not None and cell.attrib.get("t") == "s":
+                value = shared_strings[int(value)]
+            values[column] = value
+        rows.append(values)
+    if not rows:
+        raise ValueError(f"{path.name}:{sheet_name} is empty.")
+    header = rows[0]
+    columns = tuple(header)
+    return pd.DataFrame(
+        [{header[column]: row.get(column) for column in columns} for row in rows[1:]]
+    )
 
 
 def fit_box15_2014_onward() -> pd.DataFrame:
@@ -182,6 +238,7 @@ def load_panels(args: argparse.Namespace) -> tuple[pd.DataFrame, pd.DataFrame, d
         "internal_training_scope": INTERNAL_RUN / "base_prior_selections.parquet",
         "box15_features": BOX_ANNUAL,
         "nine_year_targets": TARGET_WINDOWS,
+        "darko_history": args.darko_history,
         "epm": args.epm,
         "lebron": args.lebron,
         "mamba": args.mamba,
@@ -210,6 +267,17 @@ def load_panels(args: argparse.Namespace) -> tuple[pd.DataFrame, pd.DataFrame, d
             defense_column="D-LEBRON",
         ),
     ]
+    darko_history = read_xlsx_sheet(args.darko_history, "Full DPM History")
+    panels.append(
+        component_frame(
+            darko_history,
+            candidate="DARKO DPM",
+            id_column="nba_id",
+            season_column="season",
+            offense_column="o_dpm",
+            defense_column="d_dpm",
+        )
+    )
     coverage_rows = []
 
     mamba, coverage = named_frame(
@@ -451,6 +519,11 @@ def main() -> None:
     parser.add_argument("--pipm", type=Path, default=DEFAULT_DOWNLOADS / "PIPM Player Finder through 2021 - Database.csv")
     parser.add_argument("--raptor", type=Path, default=DEFAULT_DOWNLOADS / "Data/modern_RAPTOR_by_player.csv")
     parser.add_argument("--darko", type=Path)
+    parser.add_argument(
+        "--darko-history",
+        type=Path,
+        default=DEFAULT_DOWNLOADS / "Data/DARKO - Daily Adjusted and Regressed Kalman Optimized projections.xlsx",
+    )
     args = parser.parse_args()
 
     ratings, identity_coverage, sources = load_panels(args)
@@ -469,7 +542,7 @@ def main() -> None:
         candidate
         for candidate in (
             "Box15", "Box15 (2014+)", "Rich elastic SPM", "Defense residual challenger",
-            "EPM", "LEBRON", "MAMBA", "BPM 2.0", "xRAPM",
+            "EPM", "LEBRON", "MAMBA", "DARKO DPM", "BPM 2.0", "xRAPM",
         )
         if candidate in set(ratings.loc[ratings["rating_season"].eq(2024), "candidate"])
     )
