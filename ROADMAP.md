@@ -203,19 +203,27 @@ dead ends. Updated 2026-09-01. See `docs/README.md` for the document index,
   target loses. Rich SPM remains better alone but worse after the update. Keep
   nine-year normal Box15 as the research target leader; do not change the
   public model from reused evidence.
+- Complementarity run `aio_prior_complementarity_v1_da7194b036` separates the
+  standalone statistical rating from the prior used by AIO. Current rich SPM
+  remains the standalone `spm_impact` head. Current-control Box15 remains the
+  `spm_prior` head. A target-excluded, outcome-augmented defense residual lowers
+  ten-fold AIO MSE by `.624`, but its later RMSE gain is only `.022`, below the
+  frozen `.05` gate. The shared-error diagnostic is unresolved because a
+  permuted common reference reproduces large correlations.
 
 ## Active next task
 
-Package the nine-year normal Box15 target as the research AIO challenger.
+Run one external all-in-one benchmark before product packaging.
 
-1. Refit the 2026 rating from the frozen nine-year normal target and current
-   Box15 inputs.
-2. Apply the frozen one-season 3000/4500/300 RAPM update.
-3. Add the prior and posterior to localhost-only model comparison tables.
-4. Preserve the five-year public model and label the nine-year result as reused
-   research evidence.
-5. Stop target-length and age-target searches until genuinely new outcomes are
-   available.
+1. Compare Box15, rich elastic-net SPM, the dual-head prior, EPM, DARKO, PIPM,
+   xRAPM, BPM, and every locally available external metric.
+2. Train internal models through 2023 and score the same later games without
+   using future-season inputs.
+3. Publish an all-available-coverage table and a strict common-coverage table.
+   Include a 2017--20 common-period sensitivity when the sources permit it.
+4. Report player-season correlations as descriptive agreement. Use identical
+   next-season games and paired MSE as the model comparison.
+5. Do not promote a model from heterogeneous source coverage or reused outcomes.
 
 The public product is live at `https://courtsignalnba.pages.dev`. Public RAPM
 covers 2017--26. Public SPM and AIO retain their pinned 2017--24 contract. The

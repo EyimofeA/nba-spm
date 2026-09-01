@@ -1,0 +1,483 @@
+{
+  "contract": {
+    "defense_residual": {
+      "activity_only": [
+        "dfg_attempts_p100",
+        "rim_dfga_p100",
+        "contested_2pt_p100",
+        "deflections_p100",
+        "recovered_blocks_p100",
+        "charges_drawn_p100",
+        "def_loose_balls_recovered_p100",
+        "rebound_chances_p100",
+        "rebound_contests_p100",
+        "dreb_conversion_above_expected_eb",
+        "foul_adjusted_activity_residual",
+        "has_hustle_tracking",
+        "has_matchup_tracking",
+        "has_dfg_tracking",
+        "has_rim_defense_tracking"
+      ],
+      "alpha": [
+        10,
+        30,
+        100,
+        300,
+        1000,
+        3000
+      ],
+      "gamma": [
+        0,
+        0.25,
+        0.5,
+        0.75,
+        1
+      ],
+      "minimum_prior_folds": 2,
+      "outcome_augmented": [
+        "workload_adjusted_shot_suppression_residual",
+        "rim_protection_workload_value",
+        "dfg_diff_pct_eb",
+        "rim_diff_pct_eb"
+      ]
+    },
+    "designs": {
+      "current_control": {
+        "rating_input_lag": 0,
+        "training_target": "nine_year_current"
+      },
+      "fully_lagged": {
+        "rating_input_lag": 1,
+        "training_target": "nine_year_current"
+      },
+      "target_excluded": {
+        "rating_input_lag": 0,
+        "training_target": "nine_year_past"
+      }
+    },
+    "direct_blend": {
+      "gamma": [
+        0,
+        0.25,
+        0.5,
+        0.75,
+        1
+      ],
+      "minimum_prior_folds": 2
+    },
+    "estimand_id": "complementary_spm_prior_for_one_season_rapm_v1",
+    "evaluation": {
+      "bootstrap_draws": 5000,
+      "bootstrap_seed": 20260901,
+      "maximum_correlation_loss": 0.01,
+      "minimum_later_fold_wins": 3,
+      "practical_rmse_gate": 0.05,
+      "primary": "equal_season_mean_next_season_whole_game_margin_mse",
+      "report": [
+        "rmse",
+        "correlation",
+        "calibration_slope"
+      ],
+      "shared_error_bootstrap_draws": 5000,
+      "shared_error_material_delta": 0.05
+    },
+    "experiment_id": "aio_prior_complementarity_v1",
+    "forbidden_interpretation": "These reused historical diagnostics cannot promote a public model or prove that correlated errors cause the Box15 reversal.",
+    "outcome_censor": {
+      "exact": [
+        "dfg_diff_pct_eb",
+        "rim_diff_pct_eb",
+        "rim_points_saved_p100",
+        "workload_adjusted_shot_suppression_residual",
+        "rim_protection_workload_value"
+      ],
+      "scorer_matchup_result_prefixes": [
+        "matchup_opponent_adjusted_points_saved",
+        "matchup_shotmaking_points_saved",
+        "matchup_shooting_fouls_prevented",
+        "matchup_fga_suppressed",
+        "matchup_three_pa_suppressed",
+        "matchup_turnovers_forced",
+        "matchup_assists_suppressed"
+      ]
+    },
+    "player_precision": {
+      "alpha": 10,
+      "inputs": [
+        "log_exposure",
+        "absolute_box_rich_disagreement",
+        "unavailable_source_family_count"
+      ],
+      "learner": "ridge",
+      "precision_multiplier_clip": [
+        0.5,
+        2
+      ],
+      "variance_clip_quantiles": [
+        0.1,
+        0.9
+      ]
+    },
+    "prior_design": {
+      "default_defense_total_penalty": 4500,
+      "default_offense_total_penalty": 3000,
+      "default_prior_trust": 1,
+      "defense_total_penalty": [
+        3000,
+        4500,
+        6000,
+        9000
+      ],
+      "home_penalty": 300,
+      "minimum_prior_folds": 2,
+      "offense_total_penalty": [
+        1500,
+        3000,
+        4500,
+        6000
+      ],
+      "prior_trust": [
+        0,
+        0.25,
+        0.5,
+        0.75,
+        1
+      ]
+    },
+    "question": "Why does rich SPM predict stable RAPM better than Box15 but produce a worse next-season game model after the same one-season RAPM update?",
+    "rapm": {
+      "aio_control": {
+        "lambda_def": 4500,
+        "lambda_home": 300,
+        "lambda_off": 3000
+      },
+      "lineup_policy": "terminal",
+      "target": {
+        "lambda_def": 3000,
+        "lambda_home": 300,
+        "lambda_off": 3000
+      }
+    },
+    "rules": [
+      "Every feature and hyperparameter decision uses only earlier rating folds.",
+      "The three-year future reference is diagnostic only.",
+      "Baseline and challenger score identical games and prior-covered players.",
+      "Offense plus defense must equal net for every prior and posterior.",
+      "The final public model, website, and API remain unchanged."
+    ],
+    "schema_version": "experiment_preregistration_v1",
+    "seasons": {
+      "design_selection_outcomes": [
+        2017,
+        2018,
+        2019,
+        2020,
+        2021
+      ],
+      "future_reference_rating_end": 2023,
+      "later_diagnostic_outcomes": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "outcome": [
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "rating": [
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ]
+    },
+    "spm": {
+      "box15": {
+        "defense_alpha": 1000,
+        "learner": "ridge",
+        "offense_alpha": 300
+      },
+      "correlation_prune_threshold": 0.95,
+      "input_window_seasons": 1,
+      "rich": {
+        "defense_alpha": 3000,
+        "defense_learner": "ridge",
+        "offense_alpha": 0.03,
+        "offense_l1_ratio": 0.1,
+        "offense_learner": "elastic_net"
+      },
+      "sample_weight": "square_root_minimum_side_possessions"
+    },
+    "status": "frozen_reused_diagnostic"
+  },
+  "created_at": "2026-09-01T10:00:49.739685+00:00",
+  "decision": {
+    "classification": "Box15 retained",
+    "later_fold_wins": 4,
+    "later_mean_correlation_loss": -0.003556051858650655,
+    "later_rmse_gain_points_per_game": 0.022020799667869184,
+    "passes_numeric_gate": false,
+    "reference": "current_control__box15",
+    "selected_spm_impact": "current_control__rich",
+    "selected_spm_prior": "current_control__box15"
+  },
+  "elapsed_seconds": 18.791231541894376,
+  "experiment_id": "aio_prior_complementarity_v1",
+  "files": {
+    "base_prior_selections.parquet": {
+      "path": "base_prior_selections.parquet",
+      "row_set_sha256": "d61797e171b1e157e19e17570aa86a5dbf7c7b41ea18e58daa31f6cfa6bba982",
+      "rows": 180,
+      "sha256": "45dba67539e9800da91706960a1370e18cc15347e9e54543e6025960613ebf34"
+    },
+    "defense_residual_grid.parquet": {
+      "path": "defense_residual_grid.parquet",
+      "row_set_sha256": "dd3a44c212bcd8e546215aaab99cf3150f6fd6831585e97695d0ddeb25dbe0e3",
+      "rows": 1140,
+      "sha256": "49b5c03c9d54b32a8eedead53c5b13812e9ea4a34ec8ae649b40f0d92b1c2ff4"
+    },
+    "direct_blend_grid.parquet": {
+      "path": "direct_blend_grid.parquet",
+      "row_set_sha256": "bdb0ab86e2945bb480cfc736a8f70997da2a805074ae584cf6dc762ad56e2455",
+      "rows": 500,
+      "sha256": "fa541f467701582063a0efd65f84de5cf7bae8538f7542298e564c7f957755d7"
+    },
+    "dual_head_spm.parquet": {
+      "path": "dual_head_spm.parquet",
+      "row_set_sha256": "b4517d22b536ae882a9072655f38d1b454bc0a215e671f353c896b5148616861",
+      "rows": 4201,
+      "sha256": "8b516b4fe98d6e325e239c21b4d7a8de89371b6ec9874b2f074efff4744bcb96"
+    },
+    "falsification_controls.parquet": {
+      "path": "falsification_controls.parquet",
+      "row_set_sha256": "ec2a5370e62f80a3decbd3a8b2cb4b89689b1d1c4fd310eb3bd21cf1161debc6",
+      "rows": 352,
+      "sha256": "9e2e400f16ef17ee369e6056ba4e8d3849f68334cdb3335bb612c0ed652a4597"
+    },
+    "falsification_summary.parquet": {
+      "path": "falsification_summary.parquet",
+      "row_set_sha256": "7fe53f9a8ede0a3311380dc3323d6f88b4617a61a783f2a62ef5442136ad6ee5",
+      "rows": 4,
+      "sha256": "e609898392c561b8f715e5a770e19efa2eea0d8a3eb04bc69ff4f9fed166432e"
+    },
+    "fold_deltas.parquet": {
+      "path": "fold_deltas.parquet",
+      "row_set_sha256": "546c106d03932c234af12f30fa52b921e18c632553e23edca917eb75983de10f",
+      "rows": 280,
+      "sha256": "402ffe04d6912ac5dc91ddf99aea17b085996fedcdf970ccca4175fa7f48cc46"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "row_set_sha256": "b1e77ec5bba4f31f733cfda152a3426901db4f2a6db738c502cd77b822070233",
+      "rows": 280,
+      "sha256": "c53ab888fc427a68494452a33d36269266223121029e70bd8b58a424dd1f768e"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "row_set_sha256": "d59947a220143d91f90f2167e2ab2b4c5643aa39774b6e3ff7a5d60eb74262f9",
+      "rows": 335132,
+      "sha256": "4be0b72faf9c2278b0f3515b8db7043f6592b95ff6dca8d63c2f82e2961c3c8d"
+    },
+    "leave_one_season_out_sensitivity.parquet": {
+      "path": "leave_one_season_out_sensitivity.parquet",
+      "row_set_sha256": "356235b85d28eb7f42109507e8570fd97694ae3b73d1dcf10050d502c444ec4e",
+      "rows": 130,
+      "sha256": "57d856198bc7bcf5f2423a244958d105df929e596a66bcb086aa7a488e279c36"
+    },
+    "matrix_quality.parquet": {
+      "path": "matrix_quality.parquet",
+      "row_set_sha256": "de3e49599cb3c9f5beafa01edcfb9a391e08012b5a121be88c3892b8e019f35e",
+      "rows": 10,
+      "sha256": "a9cbb6b7b1fa87da88a296053b3d353de3521d526776e176ff8fb5064eddc747"
+    },
+    "mse_decomposition.parquet": {
+      "path": "mse_decomposition.parquet",
+      "row_set_sha256": "84102e5db6ce5e28301675c78fe04a08777f1fa5fa64934c37c1c09e07bf31b0",
+      "rows": 140,
+      "sha256": "6d1c70b0686277a14aa008357f6fb7b0ff93a2392624b91660e1a57ab508c726"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "row_set_sha256": "7c36e73a9cb7e90cf3de870c12cb8dd1783ed97903f35986d70596677041b37d",
+      "rows": 13,
+      "sha256": "67676b96f703d768d8a3b6913ea11fc304861174f51ed485e8ad7edf01755502"
+    },
+    "precision_mode_selections.parquet": {
+      "path": "precision_mode_selections.parquet",
+      "row_set_sha256": "114b418e9c4d3870bdf7fd449e8f910e3aedf0c7eddd5b62e57de219859ed96c",
+      "rows": 140,
+      "sha256": "28255e7730986f1b1cefd06c477b7132dd49dccd021409cdf9df25bda3b63882"
+    },
+    "precision_multipliers.parquet": {
+      "path": "precision_multipliers.parquet",
+      "row_set_sha256": "e5da1066b964519811843e392ce0e56527b5d321439bf852cd2a2addcdac6237",
+      "rows": 185052,
+      "sha256": "b4ebd4d4228b80b6edca2ccb3c567134629c4466fa379f81b98c8e16b3e524e0"
+    },
+    "prior_coverage.parquet": {
+      "path": "prior_coverage.parquet",
+      "row_set_sha256": "2af98eeda48607df9327cf4f7039fd2262106c64dbc8aad43789cae13407c57c",
+      "rows": 140,
+      "sha256": "b3449c8ed7c4c78218bd2457908fb066ddaedec1799b9dbcb6dd7d65314f08be"
+    },
+    "prior_target_metrics.parquet": {
+      "path": "prior_target_metrics.parquet",
+      "row_set_sha256": "56a1685a582642e742f27b46d1ff18308845676bf214a4ec8c5b6cf2011833f7",
+      "rows": 420,
+      "sha256": "eca46bb060bbcfc21fc573a638568ac645a3a2c785bb553b81baa1c30c00e953"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "row_set_sha256": "fccae373fc59289dbaad65f7de10b8ff9132a2d4399ad708d51cba0386797152",
+      "rows": 58814,
+      "sha256": "c149d9fdd83874e2c4b0770f36d20a9008bb4804f4b9bccd9a558a18e745e467"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "row_set_sha256": "0410d2fefe6369e5322c167144e3c5bedd1d8f589c356977398e50900036fc3f",
+      "rows": 185052,
+      "sha256": "52fc96268df750d53ae8145a13aac23766b17ddf171efe6760f3f837bd33ed36"
+    },
+    "references.parquet": {
+      "path": "references.parquet",
+      "row_set_sha256": "360c631c045c35d1f4f4f73c61c7e7e98cef3e9514d9cfcf5ed29ef26b39a7fe",
+      "rows": 60397,
+      "sha256": "18262c73dee1e091351065483a57700375ea83edd4718ba239f32b8908f03a02"
+    },
+    "segmented_diagnostics.parquet": {
+      "path": "segmented_diagnostics.parquet",
+      "row_set_sha256": "7b60587473c78e9e9161d4ad16bd42fb65d9c498221cb7bb1c39491684f4bd05",
+      "rows": 98,
+      "sha256": "671a7dadbf8a79e774b2c0542a352dea0fe45b63e5a7fcaa3ad833e31d114b07"
+    },
+    "shared_error_bootstrap.parquet": {
+      "path": "shared_error_bootstrap.parquet",
+      "row_set_sha256": "498b911a11c38470cce3abc2eb53d77c16443b6f103756a320eed533cc1f54b5",
+      "rows": 4,
+      "sha256": "80a860aeb0a32313aa39860131499c555b4c86bbef538206784bbdc3c49d5401"
+    },
+    "shared_error_folds.parquet": {
+      "path": "shared_error_folds.parquet",
+      "row_set_sha256": "98de3c82d8f2e0ea148e4bb8ccd1a1436dc7e31d371ba6b3cc4bfbdbbcc8533a",
+      "rows": 64,
+      "sha256": "e7a0657248ef65389495491ea4a7c3ad0ed0dd168499239493beebb6e36fc996"
+    },
+    "shared_error_summary.parquet": {
+      "path": "shared_error_summary.parquet",
+      "row_set_sha256": "3bebdbabf5b0dfdb7f4aa1a8b4886aab8d25b3d2a565211f8442307f67fe3147",
+      "rows": 8,
+      "sha256": "65b167f8d6e2238a7aa0df702fd2e23137a3cc55ef8e9b70cc78c53f4637cc00"
+    },
+    "uniform_parameter_selections.parquet": {
+      "path": "uniform_parameter_selections.parquet",
+      "row_set_sha256": "7b0079c50d523f47b3dd801b5ff630cd5f8f7bfbc821394df701156a9c6a1769",
+      "rows": 140,
+      "sha256": "2c6c5a62631ee2327324aefc0f458d5c409ee67ebf65a1609076cb8093d2a82b"
+    },
+    "uniform_penalty_grid.parquet": {
+      "path": "uniform_penalty_grid.parquet",
+      "row_set_sha256": "9492783c13a8e9a44e732279922567dc91450661fa7953e7e1dfecc72918bdb9",
+      "rows": 56000,
+      "sha256": "0789268f57d7f991fd934c0cf8d3d573f25ce56d6b9179476d68df9aa1a8b040"
+    }
+  },
+  "forbidden_interpretation": "These reused historical diagnostics cannot promote a public model or prove that correlated errors cause the Box15 reversal.",
+  "quality": {
+    "checkpoint_root": "artifacts/research/aio_prior_complementarity/checkpoints_v1",
+    "identical_games": true,
+    "maximum_component_identity_error": 0.0,
+    "maximum_mse_decomposition_error": 8.526512829121202e-14,
+    "outcome_seasons": [
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "rating_seasons": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ]
+  },
+  "run_id": "aio_prior_complementarity_v1_da7194b036",
+  "sources": {
+    "annual_targets": {
+      "path": "artifacts/models/canonical_annual_target_panel/canonical_annual_target_panel_v1_2d9ff74ca3/targets.parquet",
+      "sha256": "8dcd6b03fc01125e6720747e3d2d8a07f726613a6f2a78c5737a970824a4310a"
+    },
+    "atlas": {
+      "path": "artifacts/research/spm_feature_atlas/spm_feature_atlas_v1_6949ad7b60/feature_atlas.parquet",
+      "sha256": "c555ef7310ecd0e1c85f2cbd89d39bb62e34976cc252efd4119d10bacf3d625b"
+    },
+    "box_annual": {
+      "path": "artifacts/research/historical_box15_extension/historical_box15_extension_v1_08ff4c34ff/annual_box15_features.parquet",
+      "sha256": "eaee3f93f3699c7ce33ff295f3d77a1d5b0d589597c19fcebee7e6743f5a90eb"
+    },
+    "contract": {
+      "path": "research/experiments/aio_prior_complementarity_v1.yml",
+      "sha256": "34ac5da66be39c78f621762b956c676e5d5eb96ecb2a4dc5b788711a8687d03d"
+    },
+    "mechanism_annual": {
+      "path": "artifacts/research/mechanism_feature_panel/mechanism_feature_panel_v1_9224606a01/annual_features.parquet",
+      "sha256": "99045a0a606d8b147c2cd607a238c9430425af18de5e7bc24843e82c6cbb72f9"
+    },
+    "rich_annual": {
+      "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_fdee01ec4e/annual_features.parquet",
+      "sha256": "d44b622b8416af51199886103bbaf88911d6605b688c87d287989789aaf77d3a"
+    },
+    "rich_manifest": {
+      "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_fdee01ec4e/run.json",
+      "sha256": "4dac9222fdbd8da8296f557c6f9cc20e2eab2614789f442ba027c63d41f00b5b"
+    },
+    "runner": {
+      "path": "research/run_aio_prior_complementarity.py",
+      "sha256": "6010241b667cf4ca5524b4f4ec18292f358695cfce71371356b6ba0943b52a03"
+    },
+    "silver_lineups": {
+      "path": "data/lake/silver/possession_lineup_segments.parquet",
+      "sha256": "68bc998a6ddb4bf02fcd962154a68c37db15f29c33d5bad2a2897926821b4063"
+    },
+    "silver_possessions": {
+      "path": "data/lake/silver/possessions.parquet",
+      "sha256": "5d97a6aec9e544d46adbd970e95f6d2226a15d2c5d9a3832ef1f915170182f75"
+    },
+    "target_window_manifest": {
+      "path": "artifacts/research/target_window_spm_aio/target_window_spm_aio_v1_8e028133cb/run.json",
+      "sha256": "e17895c2666ca1b81705c740af9c9cd399944b4ee561525f901d56073cc44746"
+    },
+    "target_windows": {
+      "path": "artifacts/research/target_window_spm_aio/target_window_spm_aio_v1_8e028133cb/targets.parquet",
+      "sha256": "7af4dddf3837bb41d015652eb0a83bd1632eb6261c7f677bb29f7843e2f8bd4f"
+    }
+  },
+  "status": "research_diagnostic_complete"
+}

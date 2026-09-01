@@ -5549,3 +5549,34 @@ by `1.902`, with interval `[-2.455, -1.316]` for Box15 minus rich.
 the tested categorical age-adjusted target. Keep the public five-year model
 unchanged because every scored season is reused and the nine-versus-seven RMSE
 gain is only `0.006`. Stop target-length searches until new outcomes exist.
+
+## 2026-09-01 — Box15 remains the AIO prior after the complementarity suite
+
+**Question:** Why does rich SPM reconstruct stable RAPM better than Box15 but
+lose after the same one-season RAPM update, and can a complementary rich
+correction pass the frozen downstream game gate?
+
+**Method:** Run `aio_prior_complementarity_v1_da7194b036` scores rating seasons
+2016--25 on identical next-season games from 2017--26. It compares
+current-control, target-excluded, and fully lagged priors; side-specific blends;
+activity-only and outcome-augmented defense residuals; outcome-censored rich
+SPM; separate total penalty and prior trust; and player-specific precision.
+Every selection uses earlier game folds. Paired intervals use 5,000 whole-game
+draws within season.
+
+**Result:** The target-excluded outcome-augmented defense residual is the best
+challenger. Across ten folds, it lowers AIO MSE from `190.598` to `189.974`,
+wins eight folds, and has a paired candidate-minus-Box15 interval of
+`[-0.904, -0.354]`. Across the five later diagnostics, it lowers RMSE from
+`14.374` to `14.352`, wins four folds, and improves mean correlation by `.0036`.
+The `.022` RMSE gain fails the frozen `.05` practical gate. Fully lagged priors,
+outcome-censored rich SPM, and full rich AIO lose.
+
+The shared-error diagnostic is unresolved. A permuted future reference still
+produces defense error correlations of `.755` for Box15 and `.801` for rich
+SPM. The common subtracted reference mechanically contaminates the statistic.
+
+**Decision:** Keep current rich SPM as the standalone `spm_impact` head. Keep
+current-control Box15 as the AIO `spm_prior` head. Preserve the defense residual
+as a frozen research challenger. The public model, website, and API remain
+unchanged.
