@@ -137,6 +137,13 @@ dead ends. Updated 2026-09-01. See `docs/README.md` for the document index,
   98.47% of SPM rows per window to minutes-weighted BPM and xRAPM. Among 2,295
   high-exposure player-windows, net SPM correlates 0.876 with BPM and 0.756 with
   xRAPM. Defense is the main external disagreement (0.630 with xRAPM).
+- Consensus run `spm_consensus_complementarity_v1_8f49b7448f` completes the
+  stability-selection follow-up. Stable rich additions improve the standalone
+  target but worsen the AIO by `1.588` MSE and lose nine of ten folds. Disjoint
+  future references retain a sub-threshold `+.040` defensive error-correlation
+  difference. A half-season held-out likelihood test favors Box15 by `.490`
+  MSE with interval `[.111, .875]`. Keep the dual-head decision: rich SPM for
+  standalone impact and Box15 for the RAPM prior.
 - Annual run `single_season_spm_v1_51adc53061` uses current-season-only inputs
   and one-season normal RAPM labels from 2014–24. Its 2017–24 leave-one-season-out
   net RMSE is 1.4611 and correlation is 0.5314. For 2,860 matched player-seasons

@@ -5617,3 +5617,37 @@ head, and the defense residual as a frozen challenger. Use the strict panel for
 head-to-head claims. Treat the broad table as a coverage diagnostic and the
 dated DARKO snapshot as a timing sensitivity. Do not promote any model from
 reused outcomes.
+
+## 2026-09-01 — Consensus selection improves SPM alone and worsens AIO
+
+**Question:** Can fold-local stability selection find rich features that retain
+their value after the one-season RAPM update, and does a disjoint-reference
+diagnostic support the shared-error explanation?
+
+**Method:** Run `spm_consensus_complementarity_v1_8f49b7448f` uses the
+target-excluded nine-year RAPM labels from the prior complementarity suite.
+Each rating fold applies training-only `.95` correlation pruning, 40
+player-cluster elastic-net bootstrap fits, 20 Gaussian noise inputs, and
+within-season target permutations. The recurrence cutoff is at least `.60` and
+never below the maximum observed null recurrence. Box15 remains mandatory.
+The selected prior receives the same `3000 / 4500 / 300` one-season RAPM update.
+Two future references use disjoint game halves. A second diagnostic fits the
+update on half of a rating season and scores the other half with fully lagged
+priors.
+
+**Result:** The consensus prior improves standalone net target RMSE from
+`2.242` for Box15 to `2.090`; full rich SPM scores `2.082`. After the RAPM
+update, consensus loses to target-excluded Box15 by `1.588` MSE, with paired
+95% interval `[1.232, 1.947]`, and loses nine of ten folds. Rich defense has
+`+.040` greater cross-reference error correlation than Box15, with interval
+`[.028, .051]` and the same sign in all eight seasons. Offense differs by
+`+.025`. Neither side clears the `.05` material rule. In the half-season
+held-out likelihood check, rich loses by `.490` MSE with interval
+`[.111, .875]` and loses eight of ten seasons.
+
+**Decision:** Close broad consensus feature selection as a null for the AIO
+prior. The held-out likelihood result establishes worse complementarity, but
+the disjoint-reference test does not prove shared error or identify a causal
+feature family. Keep full rich SPM as
+`spm_impact` and Box15 as `spm_prior`. Do not change the public model, site, or
+API.

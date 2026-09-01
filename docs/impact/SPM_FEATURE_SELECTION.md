@@ -132,8 +132,17 @@ The audit recommends these learner roles:
 - Fit one nonnegative out-of-fold blend only after two base learners pass on
   their own.
 
-The audit also recommends three controls that the next selection run should
-add: source-era panels, repeated noise and target-permutation controls, and a
-consensus feature rule learned only inside each chronological training fold.
-Numeric reliability or correlation thresholds remain hypotheses until this
-dataset calibrates them.
+The audit also recommended source-era panels, repeated noise and
+target-permutation controls, and a consensus feature rule learned only inside
+each chronological training fold.
+
+Follow-up run `spm_consensus_complementarity_v1_8f49b7448f` implements those
+controls. Each fold uses 40 player-cluster bootstrap fits, 20 Gaussian noise
+inputs, within-season target permutations, and a recurrence cutoff no lower
+than `.60` or the largest observed null recurrence. Box15 remains mandatory.
+
+The selected additions improve standalone stable-RAPM reconstruction. They
+worsen the AIO by `1.588` MSE against target-excluded Box15, with a paired 95%
+interval of `[1.232, 1.947]`, and lose nine of ten seasons. This closes broad
+consensus selection as a null. Recurrence identifies stable RAPM signal. It
+does not identify signal that complements the possession likelihood.
