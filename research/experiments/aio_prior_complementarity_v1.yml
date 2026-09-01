@@ -1,0 +1,140 @@
+schema_version: experiment_preregistration_v1
+experiment_id: aio_prior_complementarity_v1
+status: frozen_reused_diagnostic
+estimand_id: complementary_spm_prior_for_one_season_rapm_v1
+
+question: >-
+  Why does rich SPM predict stable RAPM better than Box15 but produce a worse
+  next-season game model after the same one-season RAPM update?
+
+seasons:
+  rating: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+  outcome: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+  design_selection_outcomes: [2017, 2018, 2019, 2020, 2021]
+  later_diagnostic_outcomes: [2022, 2023, 2024, 2025, 2026]
+  future_reference_rating_end: 2023
+
+rapm:
+  lineup_policy: terminal
+  target:
+    lambda_off: 3000
+    lambda_def: 3000
+    lambda_home: 300
+  aio_control:
+    lambda_off: 3000
+    lambda_def: 4500
+    lambda_home: 300
+
+spm:
+  input_window_seasons: 1
+  sample_weight: square_root_minimum_side_possessions
+  correlation_prune_threshold: 0.95
+  box15:
+    learner: ridge
+    offense_alpha: 300
+    defense_alpha: 1000
+  rich:
+    offense_learner: elastic_net
+    offense_alpha: 0.03
+    offense_l1_ratio: 0.1
+    defense_learner: ridge
+    defense_alpha: 3000
+
+designs:
+  current_control:
+    training_target: nine_year_current
+    rating_input_lag: 0
+  target_excluded:
+    training_target: nine_year_past
+    rating_input_lag: 0
+  fully_lagged:
+    training_target: nine_year_current
+    rating_input_lag: 1
+
+direct_blend:
+  gamma: [0, 0.25, 0.5, 0.75, 1]
+  minimum_prior_folds: 2
+
+defense_residual:
+  alpha: [10, 30, 100, 300, 1000, 3000]
+  gamma: [0, 0.25, 0.5, 0.75, 1]
+  minimum_prior_folds: 2
+  activity_only:
+    - dfg_attempts_p100
+    - rim_dfga_p100
+    - contested_2pt_p100
+    - deflections_p100
+    - recovered_blocks_p100
+    - charges_drawn_p100
+    - def_loose_balls_recovered_p100
+    - rebound_chances_p100
+    - rebound_contests_p100
+    - dreb_conversion_above_expected_eb
+    - foul_adjusted_activity_residual
+    - has_hustle_tracking
+    - has_matchup_tracking
+    - has_dfg_tracking
+    - has_rim_defense_tracking
+  outcome_augmented:
+    - workload_adjusted_shot_suppression_residual
+    - rim_protection_workload_value
+    - dfg_diff_pct_eb
+    - rim_diff_pct_eb
+
+outcome_censor:
+  exact:
+    - dfg_diff_pct_eb
+    - rim_diff_pct_eb
+    - rim_points_saved_p100
+    - workload_adjusted_shot_suppression_residual
+    - rim_protection_workload_value
+  scorer_matchup_result_prefixes:
+    - matchup_opponent_adjusted_points_saved
+    - matchup_shotmaking_points_saved
+    - matchup_shooting_fouls_prevented
+    - matchup_fga_suppressed
+    - matchup_three_pa_suppressed
+    - matchup_turnovers_forced
+    - matchup_assists_suppressed
+
+prior_design:
+  offense_total_penalty: [1500, 3000, 4500, 6000]
+  defense_total_penalty: [3000, 4500, 6000, 9000]
+  prior_trust: [0, 0.25, 0.5, 0.75, 1]
+  home_penalty: 300
+  default_offense_total_penalty: 3000
+  default_defense_total_penalty: 4500
+  default_prior_trust: 1
+  minimum_prior_folds: 2
+
+player_precision:
+  learner: ridge
+  alpha: 10
+  variance_clip_quantiles: [0.1, 0.9]
+  precision_multiplier_clip: [0.5, 2]
+  inputs:
+    - log_exposure
+    - absolute_box_rich_disagreement
+    - unavailable_source_family_count
+
+evaluation:
+  primary: equal_season_mean_next_season_whole_game_margin_mse
+  report: [rmse, correlation, calibration_slope]
+  bootstrap_draws: 5000
+  bootstrap_seed: 20260901
+  shared_error_bootstrap_draws: 5000
+  shared_error_material_delta: 0.05
+  practical_rmse_gate: 0.05
+  maximum_correlation_loss: 0.01
+  minimum_later_fold_wins: 3
+
+rules:
+  - Every feature and hyperparameter decision uses only earlier rating folds.
+  - The three-year future reference is diagnostic only.
+  - Baseline and challenger score identical games and prior-covered players.
+  - Offense plus defense must equal net for every prior and posterior.
+  - The final public model, website, and API remain unchanged.
+
+forbidden_interpretation: >-
+  These reused historical diagnostics cannot promote a public model or prove
+  that correlated errors cause the Box15 reversal.
