@@ -5651,3 +5651,29 @@ the disjoint-reference test does not prove shared error or identify a causal
 feature family. Keep full rich SPM as
 `spm_impact` and Box15 as `spm_prior`. Do not change the public model, site, or
 API.
+
+## 2026-09-01 — Final combined prior misses the practical gate
+
+**Question:** Can the best target-excluded defensive residual clear the frozen
+downstream gate when combined with fold-local consensus offense and defense
+increments, retuned total penalties, prior trust, and player-specific
+precision?
+
+**Method:** Run `spm_final_prior_stack_v1_3424be9c7d` scores rating seasons
+2016--25 on 11,969 identical next-season games from 2017--26. Each fold selects
+consensus-offense, consensus-defense, and defense-residual weights from
+`0, .25, .50, .75, 1` using earlier design outcomes only. The resulting prior
+receives the complementarity suite's fold-local penalty, trust, and precision
+search. Paired intervals use 5,000 whole-game draws within season.
+
+**Result:** The final stack lowers ten-fold MSE from `190.598` for
+current-control Box15 to `190.157`. Its paired interval is
+`[-.728, -.160]`, and it wins seven folds. Across the five later diagnostics,
+it lowers RMSE from `14.374` to `14.352`, improves mean correlation by `.0035`,
+and wins four folds. The `.0216` RMSE gain fails the frozen `.05` practical
+requirement. Every later fold selects zero consensus weight on offense and
+defense and full defense-residual weight.
+
+**Decision:** Keep Box15 as `spm_prior` and full rich SPM as `spm_impact`.
+Preserve the defensive residual as a research challenger. Stop broad
+retrospective SPM feature and combination research. Move to current-state AIO.
