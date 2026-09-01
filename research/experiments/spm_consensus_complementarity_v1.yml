@@ -1,0 +1,79 @@
+schema_version: experiment_preregistration_v1
+experiment_id: spm_consensus_complementarity_v1
+status: frozen_reused_diagnostic
+estimand_id: complementary_spm_prior_for_one_season_rapm_v1
+
+question: >-
+  Can fold-local stability selection find rich statistical features that add
+  information to Box15 after a one-season RAPM update, and does a diagnostic
+  with disjoint references support the shared-error explanation?
+
+source_experiment:
+  run_id: aio_prior_complementarity_v1_4d83e381af
+  design: target_excluded
+
+seasons:
+  rating: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+  outcome: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+  disjoint_reference_rating_end: 2023
+
+selector:
+  learner: elastic_net
+  alpha: 1.0
+  l1_ratio: 0.1
+  resamples: 40
+  seed: 20260901
+  player_cluster_bootstrap: true
+  correlation_prune_threshold: 0.95
+  minimum_recurrence: 0.60
+  null_quantile: 1.0
+  gaussian_noise_features: 20
+  target_permutation: within_season
+  mandatory_features: box15
+
+final_spm:
+  offense_learner: elastic_net
+  offense_alpha: 0.03
+  offense_l1_ratio: 0.1
+  defense_learner: ridge
+  defense_alpha: 3000
+  sample_weight: square_root_minimum_side_possessions
+
+rapm:
+  lineup_policy: terminal
+  target:
+    lambda_off: 3000
+    lambda_def: 3000
+    lambda_home: 300
+  aio:
+    lambda_off: 3000
+    lambda_def: 4500
+    lambda_home: 300
+
+diagnostics:
+  future_reference_seasons: 3
+  split_unit: game
+  split_method: sha256_parity
+  split_penalty_scale: 0.5
+  bootstrap_draws: 5000
+  material_shared_error_delta: 0.05
+
+evaluation:
+  primary: equal_season_mean_next_season_whole_game_margin_mse
+  practical_rmse_gate: 0.05
+  maximum_correlation_loss: 0.01
+  minimum_later_fold_wins: 3
+
+rules:
+  - Selection uses only seasons before the scored rating season.
+  - Correlation pruning uses only the current training fold.
+  - Target permutations remain within season.
+  - Player bootstrap resamples retain every historical row for a sampled player.
+  - Box15 features remain mandatory so the challenger tests incremental rich signal.
+  - Disjoint future references never share games.
+  - Held-out likelihood diagnostics use fully lagged priors and disjoint train and test games.
+  - The public model, website, and API remain unchanged.
+
+forbidden_interpretation: >-
+  This reused diagnostic can test consistency with shared error. It cannot
+  identify a causal source of model error or promote a public model.

@@ -314,6 +314,14 @@ Canonical code: `src/nba_impact/models/five_year_spm_feature_research.py`.
   panel starts at window end 2018, and purging overlapping five-year labels
   leaves no earlier rich-feature training window.
 - Box15 does not replace the public 2017--24 annual SPM or AIO.
+- Consensus run `spm_consensus_complementarity_v1_8f49b7448f` completes the
+  fold-local stability-selection proposal. Forty player-cluster resamples,
+  Gaussian noise, and within-season target permutations select stable rich
+  additions, but their AIO loses to target-excluded Box15 by `1.588` MSE with
+  interval `[1.232, 1.947]`. Disjoint references leave a sub-threshold `+.040`
+  defensive error-correlation difference. In a half-season held-out likelihood
+  test, rich loses by `.490` MSE with interval `[.111, .875]`. Keep rich SPM as
+  `spm_impact` and Box15 as `spm_prior`.
 
 Canonical code: `src/nba_impact/models/box_pipm_style.py`.
 

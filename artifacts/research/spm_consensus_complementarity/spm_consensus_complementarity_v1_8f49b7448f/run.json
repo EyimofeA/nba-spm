@@ -1,0 +1,153 @@
+{
+  "artifacts": {
+    "consensus_priors.parquet": {
+      "path": "consensus_priors.parquet",
+      "row_set_sha256": "887b3a798359b5d2821d5d5f26330e791c99ec12f06c8326745fb49d25e3425b",
+      "rows": 4372,
+      "sha256": "471e32820380a656ca17b0ecae08eba2bf25856db0dcd4f499fbed97c7b6fcbb"
+    },
+    "cross_reference_correlations.parquet": {
+      "path": "cross_reference_correlations.parquet",
+      "row_set_sha256": "f85942e50de8e0716a11741ac7bf204bafc5644e22ad792b1a9313019ccd3c5c",
+      "rows": 32,
+      "sha256": "3c78bc3502dc923a7afbdf73d20d90cbda5ebe782388904b47ad9ef37784d68f"
+    },
+    "cross_reference_summary.parquet": {
+      "path": "cross_reference_summary.parquet",
+      "row_set_sha256": "34469867616ad894ae89d8ddeafc4dd0b39d40ebae31d8966ab7c566b7032a06",
+      "rows": 2,
+      "sha256": "feaa7dcfe73a1137f948925a59f2bb63a6d35dd0a72df15ebeb33d77151f6284"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "row_set_sha256": "b9349380e922f7418c9bcdd452ad5d941570a2738ccd36b860224d1a1d59c96f",
+      "rows": 40,
+      "sha256": "4e6ba847d9ec3f9f943eba9f322e974635a03e77dfaecaf2ca2ae5d3f993d556"
+    },
+    "future_split_game_ledger.parquet": {
+      "path": "future_split_game_ledger.parquet",
+      "row_set_sha256": "3d1517a00fd4eecd7ab12d7133c5c723fb951bd30d80beb040cd10c950d68ead",
+      "rows": 11969,
+      "sha256": "edbf7e3eada9d19bbae4f80c3d990348f1c9db09c1b3aaaca90dccf66ffd71b0"
+    },
+    "future_split_references.parquet": {
+      "path": "future_split_references.parquet",
+      "row_set_sha256": "4d9057e9a5c637bd0911f9b9edc53401bfa2aafd01bfd7380f3ec2f99cdca5f0",
+      "rows": 12192,
+      "sha256": "315a10c3059d9ff9359814e8018a61d131dcb73cbedf603e1ccd2de8327a4281"
+    },
+    "heldout_likelihood_games.parquet": {
+      "path": "heldout_likelihood_games.parquet",
+      "row_set_sha256": "5bbeb828a3a705c1148ff943e61068663d8dceca7dcbe1dc4aee77af163ae6ae",
+      "rows": 23942,
+      "sha256": "ef54ab283c7f21a35b1092d3742ff2e8d6335bd3c1732925e63b6c8a4262e0a1"
+    },
+    "heldout_likelihood_paired.parquet": {
+      "path": "heldout_likelihood_paired.parquet",
+      "row_set_sha256": "bd39eda21ace12187efacfdb6d730e386aaaf05da7c3ccf26fd032ad91c33133",
+      "rows": 1,
+      "sha256": "d01beb4129358310c44ced25a5397d690a78a1825f6ae48982063d138164516c"
+    },
+    "heldout_likelihood_summary.parquet": {
+      "path": "heldout_likelihood_summary.parquet",
+      "row_set_sha256": "581046dd6fecfb99e0f345ad2faa1b5a9ce599b9da74f2536aed89b54088cccc",
+      "rows": 2,
+      "sha256": "26655b084a05cec89922a232a33abb6e80d3477f8b4910dcadf113cf6181cfad"
+    },
+    "later_paired_summary.parquet": {
+      "path": "later_paired_summary.parquet",
+      "row_set_sha256": "263c0ce8d753e69e705cf6429b010c41a7f303e484d1acc190531a7152388eb6",
+      "rows": 3,
+      "sha256": "1e80807441fa55bdcf0613633b249f678d75f21ad92b99bf2ec3960833cff671"
+    },
+    "matched_priors.parquet": {
+      "path": "matched_priors.parquet",
+      "row_set_sha256": "2197ef40fa8a579c073b8a5ad2abfcca631a46e2019c4db5260ff8af7be13c1f",
+      "rows": 29407,
+      "sha256": "18cfb5853bf9f7edfc7cdc83818a856b80651791e58c0a2d72d3d5351717a798"
+    },
+    "next_season_games.parquet": {
+      "path": "next_season_games.parquet",
+      "row_set_sha256": "3248c1a7eedb0d8575d8b2026c2d1cf92ce48017b1e4f260ae1d6cfae970bb35",
+      "rows": 47876,
+      "sha256": "3f8579faae3d1f599ce8a113c0e77af6412dcb22cb6d2582792fd61347971704"
+    },
+    "paired_summary.parquet": {
+      "path": "paired_summary.parquet",
+      "row_set_sha256": "5ca166bf11cb76149d7c8c86996d341f4e9a193538f36d7569f029d5a70098c6",
+      "rows": 3,
+      "sha256": "703b206d42cb5534ac37dbab28358591228995b8606cae7d0198f22cc21dbbae"
+    },
+    "prior_ratings.parquet": {
+      "path": "prior_ratings.parquet",
+      "row_set_sha256": "2814394d99e73f84760ccfd2b0a77c509af4b4803dbf3aa0b106f1f1fdae3418",
+      "rows": 26436,
+      "sha256": "f190900f37ff13d33404d26dda34744835f0ef38510f9f5d691618c936b7e054"
+    },
+    "prior_target_metrics.parquet": {
+      "path": "prior_target_metrics.parquet",
+      "row_set_sha256": "ec79ea3422b32d39064a2a1cbfd1e17b4af6f8c9ca8a8fabf673aae0e8bbbf2d",
+      "rows": 90,
+      "sha256": "ae8e29d8bc1dc99a12e67397c8784001de94c8aace90ce61f90c237bad81a754"
+    },
+    "selection_frequencies.parquet": {
+      "path": "selection_frequencies.parquet",
+      "row_set_sha256": "59ffc93a9568f1d08182b76fa9c071adb240c059bd4ebf2c8b4187677d31901a",
+      "rows": 2107,
+      "sha256": "10ee9b9823033547e6b8c3ef96cc460e1aa2c4391c5efa8daf441e43aa29dbb1"
+    },
+    "selector_quality.parquet": {
+      "path": "selector_quality.parquet",
+      "row_set_sha256": "e6a6483a89ce7dd20ce3b8aad9d4f212697823ba4d466c2a56401fdee7b37526",
+      "rows": 20,
+      "sha256": "f505f0b97b7bb94b3afc9546d80116b9e8741660bd07b2fd05410443643cae99"
+    },
+    "target_excluded_paired_summary.parquet": {
+      "path": "target_excluded_paired_summary.parquet",
+      "row_set_sha256": "feadb4b56d06847c5f2bc624e693626b83bd866a6d7542088be47044f186ef0e",
+      "rows": 3,
+      "sha256": "c93c2601c7cab6508436662a7cac67f4faf4c4f7fe294046c4b8437483a90f86"
+    }
+  },
+  "code_sha256": "3cc2f942c9c22c0715873854e7dafc6a74dac378683771001572e4dc35efbbf8",
+  "config_sha256": "78f2b69cec5a4c0544691156b9de374dd0a321eb82ddc423fc761c93d21c2db7",
+  "created_at": "2026-09-01T14:38:08.989844+00:00",
+  "estimand_id": "complementary_spm_prior_for_one_season_rapm_v1",
+  "forbidden_interpretation": "This reused diagnostic can test consistency with shared error. It cannot identify a causal source of model error or promote a public model.",
+  "input_hashes": {
+    "feature_atlas": "c555ef7310ecd0e1c85f2cbd89d39bb62e34976cc252efd4119d10bacf3d625b",
+    "legacy_possessions_2017": "a3845ef9eb7c9e777f9785fdf83a5baec992f151822c96c71e340f234af340e5",
+    "legacy_possessions_2018": "9795706ae88602450e2e8e51cf18334ca90e838ab60ecabf48c6a2628b007f92",
+    "legacy_possessions_2019": "13c96c21ec744bb50eadba1f385b75800895f78af00cc9535502803998c4103f",
+    "legacy_possessions_2020": "b177865501897984437fcc8c08ee229ff462e0319e032f7642b5077670d375c6",
+    "legacy_possessions_2021": "0bfd107dad6959b1a45e4c7762fcde2d901e364d64b632299deeb22092749a6a",
+    "legacy_possessions_2022": "b04388818590ad1bff4fb6b9ca9d27dd4ac9dc6dd744c34160153206bcb32248",
+    "legacy_possessions_2023": "15f710ba2964bcbc80ca4753038b8c22fb18188bafd0cb62c886ac39840faa15",
+    "rich_annual": "d44b622b8416af51199886103bbaf88911d6605b688c87d287989789aaf77d3a",
+    "silver_lineups": "68bc998a6ddb4bf02fcd962154a68c37db15f29c33d5bad2a2897926821b4063",
+    "silver_possessions": "5d97a6aec9e544d46adbd970e95f6d2226a15d2c5d9a3832ef1f915170182f75"
+  },
+  "quality": {
+    "disjoint_reference_game_keys": true,
+    "identical_heldout_likelihood_games": true,
+    "identical_next_season_games": true,
+    "maximum_component_identity_error": 0.0,
+    "minimum_cross_reference_players": 320,
+    "rating_seasons": [
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ]
+  },
+  "run_id": "spm_consensus_complementarity_v1_8f49b7448f",
+  "source_run_id": "aio_prior_complementarity_v1_4d83e381af",
+  "source_run_sha256": "a9414390ff1d605c1f8379c76bf15f7645ed436d2e537cc78948f15ed0eb64b1",
+  "status": "research_diagnostic_complete"
+}
