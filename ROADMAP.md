@@ -144,6 +144,13 @@ dead ends. Updated 2026-09-01. See `docs/README.md` for the document index,
   difference. A half-season held-out likelihood test favors Box15 by `.490`
   MSE with interval `[.111, .875]`. Keep the dual-head decision: rich SPM for
   standalone impact and Box15 for the RAPM prior.
+- Final stack `spm_final_prior_stack_v1_3424be9c7d` combines the best defensive
+  residual with the consensus increments and repeats the fold-local penalty,
+  trust, and player-precision search. Later folds select zero consensus weight
+  on both sides and full defensive-residual weight. The stack passes the paired
+  interval, correlation, and season-win checks, but its `.0216` later RMSE gain
+  misses the frozen `.05` requirement. End broad retrospective SPM feature
+  research. Keep Box15 as the AIO prior and move to current-state AIO.
 - Annual run `single_season_spm_v1_51adc53061` uses current-season-only inputs
   and one-season normal RAPM labels from 2014–24. Its 2017–24 leave-one-season-out
   net RMSE is 1.4611 and correlation is 0.5314. For 2,860 matched player-seasons
@@ -227,13 +234,17 @@ dead ends. Updated 2026-09-01. See `docs/README.md` for the document index,
 
 ## Active next task
 
-Package the frozen research findings for the product without changing the
+Define and validate the current-state AIO without changing the retrospective
 model contract.
 
-1. Expose RAPM, rich `spm_impact`, and Box15-centered AIO as distinct ratings.
-2. Keep the defense residual in the research lab until new outcome evidence.
-3. Publish model cards and the external benchmark's strict coverage caveat.
-4. Do not expose local research payloads or raw NBA events in the static build.
+1. Freeze the prediction timestamp, target, and information set.
+2. Build time-decayed box and possession state that uses only information
+   available at that timestamp.
+3. Compare Box15, rich statistical, and defensive-residual priors before and
+   after partial-season possession evidence.
+4. Keep retrospective RAPM, rich `spm_impact`, and Box15-centered AIO as
+   separate published ratings.
+5. Do not expose local research payloads or raw NBA events in the static build.
 
 The public product is live at `https://courtsignalnba.pages.dev`. Public RAPM
 covers 2017--26. Public SPM and AIO retain their pinned 2017--24 contract. The

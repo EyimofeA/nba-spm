@@ -106,6 +106,9 @@ hold the full experiment history.
 - [`impact/SPM_CONSENSUS_COMPLEMENTARITY_V1.md`](impact/SPM_CONSENSUS_COMPLEMENTARITY_V1.md) —
   fold-local consensus feature selection, disjoint future-reference error
   correlations, and the held-out likelihood check;
+- [`impact/SPM_FINAL_PRIOR_STACK_V1.md`](impact/SPM_FINAL_PRIOR_STACK_V1.md) —
+  final combined-prior test, promotion-gate result, and stop decision for broad
+  retrospective SPM feature research;
 - [`impact/EXTERNAL_ALL_IN_ONE_BENCHMARK_V2.md`](impact/EXTERNAL_ALL_IN_ONE_BENCHMARK_V2.md) —
   complete available-coverage, strict 2017--20, train-through-2023, full DARKO
   history, and dated DARKO timing comparisons against public all-in-one metrics;

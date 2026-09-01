@@ -177,6 +177,13 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   disruption/fouls, shooting/scoring, creation/security, and rebounding. Use
   `active_2026_leaderboard.parquet`; the earlier unfiltered table includes
   zero-exposure historical players.
+- Final stack `spm_final_prior_stack_v1_3424be9c7d` combines the retained
+  defense residual with fold-local consensus offense and defense increments,
+  then retunes total penalty, prior trust, and player precision. Later folds
+  assign zero weight to both consensus increments and full weight to the
+  defense residual. The stack improves later RMSE by only `.0216`, below the
+  frozen `.05` gate. Keep Box15 as `spm_prior`, full rich SPM as `spm_impact`,
+  and stop broad retrospective SPM feature research. Move to current-state AIO.
 - Same-season mechanism run `mechanism_feature_challenger_v1_5f3e0bad98`
   rejects four new offense features but finds a small defensive gain. The
   four-feature defense block lowers reused next-season AIO RMSE from `14.3792`

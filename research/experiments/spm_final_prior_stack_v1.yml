@@ -1,0 +1,44 @@
+schema_version: experiment_preregistration_v1
+experiment_id: spm_final_prior_stack_v1
+status: frozen_reused_diagnostic
+estimand_id: complementary_spm_prior_for_one_season_rapm_v1
+
+question: >-
+  Does the best target-excluded defensive residual become materially useful
+  when combined with fold-local consensus offense and defense increments?
+
+seasons:
+  rating: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+  outcome: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+  design_selection_outcomes: [2017, 2018, 2019, 2020, 2021]
+  later_diagnostic_outcomes: [2022, 2023, 2024, 2025, 2026]
+
+combination:
+  consensus_offense_weight: [0, 0.25, 0.5, 0.75, 1]
+  consensus_defense_weight: [0, 0.25, 0.5, 0.75, 1]
+  defense_residual_weight: [0, 0.25, 0.5, 0.75, 1]
+  defaults:
+    consensus_offense_weight: 0
+    consensus_defense_weight: 0
+    defense_residual_weight: 1
+  minimum_prior_folds: 2
+
+evaluation:
+  primary: equal_season_mean_next_season_whole_game_margin_mse
+  bootstrap_draws: 5000
+  bootstrap_seed: 20260901
+  practical_rmse_gate: 0.05
+  maximum_correlation_loss: 0.01
+  minimum_later_fold_wins: 3
+
+rules:
+  - Every combination and RAPM parameter decision uses only earlier design folds.
+  - The final stack receives the same penalty, trust, and player-precision search as prior candidates.
+  - Baseline and challengers score identical games and player coverage.
+  - Offense plus defense equals net for every prior and posterior.
+  - This run ends broad retrospective SPM feature research if no stack passes.
+  - The public model, website, and API remain unchanged.
+
+forbidden_interpretation: >-
+  Reused historical diagnostics cannot promote a public model or prove that a
+  selected feature causes better player impact measurement.

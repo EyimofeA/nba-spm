@@ -1,0 +1,198 @@
+{
+  "contract": {
+    "combination": {
+      "consensus_defense_weight": [
+        0,
+        0.25,
+        0.5,
+        0.75,
+        1
+      ],
+      "consensus_offense_weight": [
+        0,
+        0.25,
+        0.5,
+        0.75,
+        1
+      ],
+      "defaults": {
+        "consensus_defense_weight": 0,
+        "consensus_offense_weight": 0,
+        "defense_residual_weight": 1
+      },
+      "defense_residual_weight": [
+        0,
+        0.25,
+        0.5,
+        0.75,
+        1
+      ],
+      "minimum_prior_folds": 2
+    },
+    "estimand_id": "complementary_spm_prior_for_one_season_rapm_v1",
+    "evaluation": {
+      "bootstrap_draws": 5000,
+      "bootstrap_seed": 20260901,
+      "maximum_correlation_loss": 0.01,
+      "minimum_later_fold_wins": 3,
+      "practical_rmse_gate": 0.05,
+      "primary": "equal_season_mean_next_season_whole_game_margin_mse"
+    },
+    "experiment_id": "spm_final_prior_stack_v1",
+    "forbidden_interpretation": "Reused historical diagnostics cannot promote a public model or prove that a selected feature causes better player impact measurement.",
+    "question": "Does the best target-excluded defensive residual become materially useful when combined with fold-local consensus offense and defense increments?",
+    "rules": [
+      "Every combination and RAPM parameter decision uses only earlier design folds.",
+      "The final stack receives the same penalty, trust, and player-precision search as prior candidates.",
+      "Baseline and challengers score identical games and player coverage.",
+      "Offense plus defense equals net for every prior and posterior.",
+      "This run ends broad retrospective SPM feature research if no stack passes.",
+      "The public model, website, and API remain unchanged."
+    ],
+    "schema_version": "experiment_preregistration_v1",
+    "seasons": {
+      "design_selection_outcomes": [
+        2017,
+        2018,
+        2019,
+        2020,
+        2021
+      ],
+      "later_diagnostic_outcomes": [
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "outcome": [
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "rating": [
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ]
+    },
+    "status": "frozen_reused_diagnostic"
+  },
+  "created_at": "2026-09-01T15:28:09.080799+00:00",
+  "decision": {
+    "classification": "Box15 retained",
+    "later_fold_wins": 4,
+    "later_mean_correlation_loss": -0.003499571929628298,
+    "later_rmse_gain_points_per_game": 0.02164594579119239,
+    "passes_numeric_gate": false,
+    "stop_broad_retrospective_spm_feature_search": true
+  },
+  "experiment_id": "spm_final_prior_stack_v1",
+  "files": {
+    "combination_grid.parquet": {
+      "path": "combination_grid.parquet",
+      "row_set_sha256": "57921e591ace9f3e4e41a4f9e8b8d3ab1707aa898d2f767689440e71cfe2c623",
+      "rows": 1250,
+      "sha256": "9dceb439c8b276b1a025da0d1dce1a08d71831d22837e2d0c91bd48d078f25a7"
+    },
+    "combination_selections.parquet": {
+      "path": "combination_selections.parquet",
+      "row_set_sha256": "ddcc67edea2f9a29a88f220e875a8de6af3fd6687f6112ee776577d88d8318bc",
+      "rows": 10,
+      "sha256": "5ab612f6856f85625aebebe5008bcb92d279ed6e49d91b24432f17d75e6413c2"
+    },
+    "fold_metrics.parquet": {
+      "path": "fold_metrics.parquet",
+      "row_set_sha256": "e0ffbcf0f3923552d7400a73be1f9e3e249790a8535c513c5209ab3defc0c670",
+      "rows": 70,
+      "sha256": "efea5bc7087bb0fe82ef3a73d031cd096025948991b4131b7ec8c0d3fb735876"
+    },
+    "game_predictions.parquet": {
+      "path": "game_predictions.parquet",
+      "row_set_sha256": "ff8dccc3fa5b9bb04e6abc8dad41052f6a24af043efd46b6ca7104b93f334937",
+      "rows": 83783,
+      "sha256": "033df0c30e110c18c276c76d068f6592d8c1917c77eee9ee019de87511346930"
+    },
+    "paired_bootstrap.parquet": {
+      "path": "paired_bootstrap.parquet",
+      "row_set_sha256": "be3d7a386823ec2959c01e0b446cb8f285f95241a43fd81b795684fe0beccb30",
+      "rows": 3,
+      "sha256": "26338afcef07f1f175f6b992d8ab46fe399af25a952951a9fd705513dfdf69e9"
+    },
+    "precision_mode_selections.parquet": {
+      "path": "precision_mode_selections.parquet",
+      "row_set_sha256": "40e41fe3ff97bcf787e8d3974194e50754752449de7586a7a2d0a39b77bd5372",
+      "rows": 30,
+      "sha256": "0de485d339b49c0b4fd5e046c79de6b784767c8eefd58dfc796e622a2059bc5b"
+    },
+    "precision_multipliers.parquet": {
+      "path": "precision_multipliers.parquet",
+      "row_set_sha256": "27b5a740fa104fe29289176e2efc06534253decf027811ac6990579fadbed253",
+      "rows": 39654,
+      "sha256": "298b7afc6ac813d437b8e4db377b124cdae940c41827319bb3f8e11df384f453"
+    },
+    "priors.parquet": {
+      "path": "priors.parquet",
+      "row_set_sha256": "d2c69375d3f0c57effc04a80bac3c64d1d058b03cbb0fa8bbc59f2841e6d7ae6",
+      "rows": 12603,
+      "sha256": "3231567fb6707d3ce8b48e0b8daedb07f07a3e8f6c57be1276d3722ec51f07c8"
+    },
+    "ratings.parquet": {
+      "path": "ratings.parquet",
+      "row_set_sha256": "7ff24960d1bf7ac24000be9ee1e2667afff6bfff10c1bd7fe9b8b235fd0a981c",
+      "rows": 39654,
+      "sha256": "357a1f433ffa36a6c4d8b1bc07a850a0dec5d40c131ca057eef93369f0eed8f7"
+    },
+    "uniform_parameter_selections.parquet": {
+      "path": "uniform_parameter_selections.parquet",
+      "row_set_sha256": "b188d46bdab40a408c841375e4d92bc3612aeaa2eb65d782b23f1e2e38004278",
+      "rows": 30,
+      "sha256": "696c4fea68199576b10f9c117a002b5a78a37df50e8c58811da461627f62b0d2"
+    },
+    "uniform_penalty_grid.parquet": {
+      "path": "uniform_penalty_grid.parquet",
+      "row_set_sha256": "4eea5bab66ba79215b333c12535101dfe4cdb0fe02129b2d344a397fe9f7c074",
+      "rows": 12000,
+      "sha256": "5aac32b8101bcf14b0accd640b1ce0431b0a29923996f2b7da2ebc0c1edc4c70"
+    }
+  },
+  "forbidden_interpretation": "Reused historical diagnostics cannot promote a public model or prove that a selected feature causes better player impact measurement.",
+  "quality": {
+    "identical_games": true,
+    "maximum_component_identity_error": 0.0
+  },
+  "run_id": "spm_final_prior_stack_v1_3424be9c7d",
+  "sources": {
+    "consensus_manifest": {
+      "path": "artifacts/research/spm_consensus_complementarity/spm_consensus_complementarity_v1_8f49b7448f/run.json",
+      "sha256": "97af7c2d75a6dab4d2cef2e76e77ab5becb82dde44b955ac127aba806810868e"
+    },
+    "contract": {
+      "path": "research/experiments/spm_final_prior_stack_v1.yml",
+      "sha256": "4a3a5e3337aeaa4335e943a5efd4752f1e26f0b268610306c00c79cb0d5bf3c0"
+    },
+    "runner": {
+      "path": "research/run_spm_final_prior_stack.py",
+      "sha256": "b241a5f7082fa82c9842f542c61f0cc9f868c0cdeeb105d8decdc3d638255823"
+    },
+    "source_manifest": {
+      "path": "artifacts/research/aio_prior_complementarity/aio_prior_complementarity_v1_4d83e381af/run.json",
+      "sha256": "a9414390ff1d605c1f8379c76bf15f7645ed436d2e537cc78948f15ed0eb64b1"
+    }
+  },
+  "status": "research_diagnostic_complete"
+}
