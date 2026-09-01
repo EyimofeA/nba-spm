@@ -1,0 +1,34 @@
+schema_version: experiment_preregistration_v1
+experiment_id: dated_box15_history_v1
+status: preregistered_data_build
+created_at: 2026-09-01
+
+purpose: >-
+  Build the dated player-game Box15 input ledger for the first current-SPM
+  experiment. This contract creates features only. It does not fit or select a
+  player-impact model.
+
+seasons: [2021, 2022, 2023, 2024, 2025, 2026]
+season_2020_status: blocked_by_88_missing_espn_player_box_games
+
+sources:
+  possession_template: artifacts/research/historical_factor_targets/ledger_cache_6e077a0f_v2/season={season}/possessions.parquet
+  espn_player_box: data/lake/bronze/llimllib_nba_data/espn/player_box.parquet
+  nba_player_game_box: data/lake/bronze/llimllib_nba_data/player_game_logs.parquet
+  gabriel_pbp_root: data/lake/bronze/gabriel_merged_playbyplay/old_data
+  canonical_player_games: data/lake/silver/player_games.parquet
+
+rules:
+  game_type: regular
+  box_features: box15_counts_and_per_100_rates
+  foul_drawn_source: gabriel_play_by_play
+  fallback_policy: use_nba_player_game_box_only_for_games_missing_from_espn
+  missing_lineup_player_event_policy: zero_counts_with_explicit_quality_count
+  cutoff_policy: source_game_date_strictly_before_cutoff
+
+acceptance:
+  minimum_player_game_source_join_coverage: 0.99
+  require_equal_offensive_and_defensive_possession_slots: true
+  require_unique_player_game_keys: true
+  require_nonnegative_counts: true
+  require_source_hashes: true

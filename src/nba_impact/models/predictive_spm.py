@@ -18,6 +18,8 @@ import pandas as pd
 import yaml
 
 from nba_impact.data.manifest import sha256_file, write_json_atomic
+from nba_impact.data.statistical_features import CORE_RATE_SPECS
+from nba_impact.models.box_pipm_style import BOX_PIPM_STYLE_FEATURES
 from nba_impact.models.single_season_spm import _selected_single_season_features
 from nba_impact.models.statistical_feature_ablation import _frozen_model
 from nba_impact.models.statistical_model_comparison import _fit_model
@@ -25,6 +27,72 @@ from nba_impact.models.statistical_model_comparison import _fit_model
 SIDES = ("offense", "defense", "net")
 EXPECTED_SCHEMA_VERSION = "experiment_preregistration_v1"
 EXPECTED_EXPERIMENT_ID = "predictive_spm_v1"
+
+
+def aggregate_dated_box15_features(
+    player_games: pd.DataFrame,
+    *,
+    cutoff_date: str | pd.Timestamp,
+    half_life_days: float,
+    rate_prior_possessions: float = 0.0,
+) -> pd.DataFrame:
+    """Aggregate past player-game Box15 counts with exponential day decay."""
+    if not np.isfinite(half_life_days) or half_life_days <= 0:
+        raise ValueError("half_life_days must be positive and finite.")
+    if not np.isfinite(rate_prior_possessions) or rate_prior_possessions < 0:
+        raise ValueError("rate_prior_possessions must be nonnegative and finite.")
+    count_fields = tuple(
+        dict.fromkeys(
+            CORE_RATE_SPECS[feature][0] for feature in BOX_PIPM_STYLE_FEATURES
+        )
+    )
+    required = {
+        "game_date",
+        "PLAYER_ID",
+        "OffPoss",
+        "DefPoss",
+        *count_fields,
+    }
+    if missing := sorted(required - set(player_games.columns)):
+        raise ValueError(f"Dated Box15 input is missing {missing}.")
+
+    cutoff = pd.Timestamp(cutoff_date).normalize()
+    frame = player_games.loc[:, list(required)].copy()
+    frame["game_date"] = pd.to_datetime(
+        frame["game_date"], errors="raise"
+    ).dt.normalize()
+    frame = frame.loc[frame["game_date"].lt(cutoff)].copy()
+    if frame.empty:
+        raise ValueError("No player-game evidence precedes the cutoff.")
+    numeric = ["OffPoss", "DefPoss", *count_fields]
+    frame[numeric] = frame[numeric].apply(pd.to_numeric, errors="raise")
+    if not np.isfinite(frame[numeric].to_numpy(dtype=float)).all():
+        raise ValueError("Dated Box15 counts and exposures must be finite.")
+    if frame[numeric].lt(0).any().any():
+        raise ValueError("Dated Box15 counts and exposures cannot be negative.")
+
+    age_days = (cutoff - frame["game_date"]).dt.days.to_numpy(dtype=float)
+    weights = np.exp2(-age_days / float(half_life_days))
+    frame[numeric] = frame[numeric].mul(weights, axis=0)
+    sums = frame.groupby("PLAYER_ID", as_index=False, sort=False)[numeric].sum()
+    output: dict[str, pd.Series] = {
+        "PLAYER_ID": pd.to_numeric(sums["PLAYER_ID"], errors="raise").astype(
+            "int64"
+        ),
+        "OffPoss": sums["OffPoss"],
+        "DefPoss": sums["DefPoss"],
+    }
+    for feature in BOX_PIPM_STYLE_FEATURES:
+        numerator, denominator = CORE_RATE_SPECS[feature]
+        league_rate = frame[numerator].sum() / frame[denominator].sum()
+        output[feature] = 100.0 * (
+            sums[numerator] + float(rate_prior_possessions) * league_rate
+        ) / (sums[denominator] + float(rate_prior_possessions)).replace(0, np.nan)
+    result = pd.DataFrame(output)
+    result["cutoff_date"] = cutoff
+    result["half_life_days"] = float(half_life_days)
+    result["rate_prior_possessions"] = float(rate_prior_possessions)
+    return result.sort_values("PLAYER_ID", kind="stable").reset_index(drop=True)
 
 
 def _artifact_run_id(path: str | Path) -> str:

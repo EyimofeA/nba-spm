@@ -1,0 +1,76 @@
+{
+  "contract": {
+    "acceptance": {
+      "minimum_player_game_source_join_coverage": 0.99,
+      "require_equal_offensive_and_defensive_possession_slots": true,
+      "require_nonnegative_counts": true,
+      "require_source_hashes": true,
+      "require_unique_player_game_keys": true
+    },
+    "created_at": "2026-09-01",
+    "experiment_id": "dated_box15_history_v1",
+    "purpose": "Build the dated player-game Box15 input ledger for the first current-SPM experiment. This contract creates features only. It does not fit or select a player-impact model.",
+    "rules": {
+      "box_features": "box15_counts_and_per_100_rates",
+      "cutoff_policy": "source_game_date_strictly_before_cutoff",
+      "fallback_policy": "use_nba_player_game_box_only_for_games_missing_from_espn",
+      "foul_drawn_source": "gabriel_play_by_play",
+      "game_type": "regular",
+      "missing_lineup_player_event_policy": "zero_counts_with_explicit_quality_count"
+    },
+    "schema_version": "experiment_preregistration_v1",
+    "season_2020_status": "blocked_by_88_missing_espn_player_box_games",
+    "seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "sources": {
+      "canonical_player_games": "data/lake/silver/player_games.parquet",
+      "espn_player_box": "data/lake/bronze/llimllib_nba_data/espn/player_box.parquet",
+      "gabriel_pbp_root": "data/lake/bronze/gabriel_merged_playbyplay/old_data",
+      "nba_player_game_box": "data/lake/bronze/llimllib_nba_data/player_game_logs.parquet",
+      "possession_template": "artifacts/research/historical_factor_targets/ledger_cache_6e077a0f_v2/season={season}/possessions.parquet"
+    },
+    "status": "preregistered_data_build"
+  },
+  "created_at": "2026-09-01T19:57:43.977748+00:00",
+  "experiment_id": "dated_box15_history_v1",
+  "files": {
+    "player_games.parquet": "e2cb8758e3c71b161baf6874fe71d0b7bd8941741ff69ccc29fc7933118c9363",
+    "source_quality.parquet": "9edf58b54452b033b5634208ced0ecc011b24d5db000c4e84faf312f6ff47f6d"
+  },
+  "forbidden_interpretation": "This artifact contains dated inputs, not player ratings.",
+  "quality": {
+    "games": 7230,
+    "minimum_join_coverage": 0.9967394601152563,
+    "nba_fallback_games": 2,
+    "player_game_rows": 154234,
+    "seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ]
+  },
+  "run_id": "dated_box15_history_v1_65f2fa929c",
+  "source_hashes": {
+    "canonical_player_games": "88ba7fd958c757641b04ceec137817d37cc5bda133c0c74ace5d3acf4b6df21d",
+    "contract": "be5a11612c6dc38ca502489248d74424c56c7c48eed9cfd1b3b0820a8095215c",
+    "espn_player_box": "85be23af3026992d3a680f556e8bceb01ce94de5e15bed9df66e29a9aff06ead",
+    "nba_player_game_box": "959d07e246a1ed63227accad4e2af80757e8d428bb996cbb6f214f76a05b7fc1",
+    "possessions_2021": "8027571c0f13a7c0df19336c8a3519643a89031ce56ab83b3ba950aec429d963",
+    "possessions_2022": "a62a87db067d43126a001681992375ab950f8c9de0b026d4c825d2a97f98d39b",
+    "possessions_2023": "585c310395f49a4e59472fa44dee434d815ad345ae1934afe6f898a06d817a64",
+    "possessions_2024": "e96c5e4ce88966b40edcbecf6803a3bf3fa80c33e849a5492972fb139f437b38",
+    "possessions_2025": "f28cd2dccd940a18b5a99758a8692a2c75df7c8eef92b651d8851137e2447109",
+    "possessions_2026": "c8fbcbbe6a99f3db76ff3dab4164eac405668d4a7c05cc0d6904d066bd4295aa",
+    "runner": "30ab8a5c6069de5aa4586eab133a1a9ccdfb503c7030a6fb03085dca7f433e03"
+  },
+  "status": "research_data_ready"
+}

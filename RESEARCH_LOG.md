@@ -5705,3 +5705,34 @@ worsens the 2026 game fold.
 the three defensive mechanisms for current-state research. Do not treat the
 post-hoc isolation as independent evidence. Full methods and fold results are
 in `docs/impact/BOX15_DEFENSE_EXTENSION_9Y_V1.md`.
+
+## 2026-09-01 — Retrospective SPM closeout and dated current-SPM foundation
+
+**Question:** What is the defensible final retrospective SPM state, and can the
+first current-strength model use timestamped Box15 data without reopening the
+retrospective feature search?
+
+**Method:** Reconcile the target-window, complementarity, calibration, final
+stack, and external-benchmark results in one ledger. Write an independent
+current-model proposal before requesting Fable 5.1 and GPT Pro reviews. Build a
+2021--26 player-game Box15 ledger from the canonical possession universe,
+ESPN player boxes, Gabriel foul-drawn events, and an official-style local
+fallback. Parse numeric `YYYYMMDD` possession dates explicitly. Fit a dated
+Box15 ridge foundation at Monday cutoffs with 365- and 730-day decay and a
+500-possession league-rate prior. Fix current-AIO missing-prior recentering and
+add a nonoverlapping weekly game ledger.
+
+**Result:** The retrospective decision remains rich SPM for `spm_impact` and
+nine-year normal Box15 for `spm_prior`. The dated input artifact
+`dated_box15_history_v1_65f2fa929c` contains 7,230 games and 154,234 player-game
+rows across 2021--26. Minimum lineup-to-box join coverage is 99.674%; 2026 has
+1,230 games and 100% coverage, with two games filled from the official-style
+fallback. The unvalidated current-SPM foundation
+`current_spm_box15_v1_12168d9952` contains 188,892 player-cutoff ratings across
+109 cutoffs and 1,090 players. Focused current-model and RAPM tests pass.
+
+**Decision:** Close broad retrospective feature research. Treat the dated
+Box15 output as a research foundation, not a selected current metric. Next run
+the frozen four-arm weekly oracle-exposure comparison: frozen rich preseason,
+dated zero-prior possessions, frozen Box15 plus dated possessions, and dated
+Box15 plus dated possessions. Keep availability and minutes separate.

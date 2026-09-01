@@ -6,6 +6,7 @@ import pytest
 from scipy.sparse import csr_matrix
 
 from nba_impact.models.predictive_current_aio import (
+    build_partitioned_weekly_cutoff_ledger,
     build_weekly_cutoff_ledger,
     build_season_statistics,
     build_spm_center,
@@ -81,6 +82,29 @@ def test_spm_center_uses_positive_good_defense_and_reports_coverage() -> None:
     np.testing.assert_allclose(center[:2], [0.02, -0.02])
     np.testing.assert_allclose(center[2:4], [-0.01, 0.01])
     assert coverage["test_lineup_slot_coverage"] == 1.0
+
+
+def test_spm_center_keeps_missing_prior_players_at_zero() -> None:
+    design = _design()
+    predictions = pd.DataFrame(
+        {
+            "PLAYER_ID": [1],
+            "Target_Season": [2022],
+            "predicted_offense": [2.0],
+            "predicted_defense": [1.0],
+            "predicted_net": [3.0],
+        }
+    )
+    center, coverage = build_spm_center(
+        design,
+        predictions,
+        target_season=2022,
+        off_exposure=np.asarray([10.0, 10.0]),
+        def_exposure=np.asarray([10.0, 10.0]),
+        test_mask=np.ones(4, dtype=bool),
+    )
+    np.testing.assert_allclose(center[:4], 0.0)
+    assert coverage["train_off_possession_coverage"] == 0.5
 
 
 def test_time_decay_downweights_old_season() -> None:
@@ -164,3 +188,20 @@ def test_weekly_cutoff_ledger_enforces_the_frozen_14_day_window() -> None:
     )
     with pytest.raises(ValueError, match="exactly one date"):
         build_weekly_cutoff_ledger(conflicting, target_season=2026)
+
+
+def test_partitioned_weekly_cutoff_ledger_scores_each_game_once() -> None:
+    frame = pd.DataFrame(
+        {
+            "season": [2026, 2026, 2026, 2026],
+            "date": ["2025-11-03", "2025-11-04", "2025-11-09", "2025-11-10"],
+            "gameid": ["a", "b", "c", "d"],
+        }
+    )
+    ledger = build_partitioned_weekly_cutoff_ledger(frame, target_season=2026)
+    assert ledger["oracle_games"].sum() == 4
+    assert ledger["cutoff_date"].tolist() == [
+        pd.Timestamp("2025-11-03"),
+        pd.Timestamp("2025-11-10"),
+    ]
+    assert ledger["oracle_games"].tolist() == [3, 1]

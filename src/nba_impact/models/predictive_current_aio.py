@@ -163,6 +163,63 @@ def build_weekly_cutoff_ledger(
     return pd.DataFrame(rows)
 
 
+def build_partitioned_weekly_cutoff_ledger(
+    frame: pd.DataFrame, *, target_season: int
+) -> pd.DataFrame:
+    """Assign each game to its latest preceding Monday exactly once."""
+    required = {"season", "date", "gameid"}
+    if missing := sorted(required - set(frame.columns)):
+        raise ValueError(f"Weekly cutoff input is missing {missing}.")
+    games = frame.loc[:, ["season", "date", "gameid"]].copy()
+    games["season"] = pd.to_numeric(games["season"], errors="raise").astype(int)
+    games["game_date"] = (
+        pd.to_datetime(games["date"], errors="raise", utc=True)
+        .dt.tz_convert(None)
+        .dt.normalize()
+    )
+    games["gameid"] = games["gameid"].astype(str).str.strip()
+    if games[["gameid", "game_date"]].isna().any().any() or games["gameid"].eq("").any():
+        raise ValueError("Weekly cutoff input has a missing game ID or date.")
+    if (
+        games.groupby(["season", "gameid"], sort=False)["game_date"].nunique()
+        > 1
+    ).any():
+        raise ValueError("Each game must have exactly one date.")
+    games = games.drop_duplicates(["season", "gameid"]).loc[
+        lambda value: value["season"].eq(int(target_season))
+    ].copy()
+    if games.empty:
+        raise ValueError(f"Weekly cutoff input has no games for {target_season}.")
+
+    first = pd.Timestamp(f"{int(target_season) - 1}-11-01")
+    last = pd.Timestamp(f"{int(target_season)}-04-01")
+    cutoffs = pd.date_range(first, last, freq="W-MON")
+    games["cutoff_date"] = games["game_date"] - pd.to_timedelta(
+        games["game_date"].dt.dayofweek, unit="D"
+    )
+    games = games.loc[games["cutoff_date"].isin(cutoffs)].copy()
+    games["horizon_end_exclusive"] = games["cutoff_date"] + pd.Timedelta(days=7)
+    if games.duplicated("gameid").any():
+        raise AssertionError("A game cannot belong to more than one weekly cutoff.")
+
+    rows = []
+    for cutoff, group in games.groupby("cutoff_date", sort=True):
+        rows.append(
+            {
+                "target_season": int(target_season),
+                "cutoff_date": cutoff,
+                "horizon_end_exclusive": cutoff + pd.Timedelta(days=7),
+                "oracle_games": int(len(group)),
+                "first_oracle_game_date": group["game_date"].min(),
+                "last_oracle_game_date": group["game_date"].max(),
+                "oracle_game_rowset_hash": hashlib.sha256(
+                    "\n".join(sorted(group["gameid"])).encode()
+                ).hexdigest(),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def _penalty_vector(
     n_players: int, *, lambda_off: float, lambda_def: float, lambda_home: float
 ) -> np.ndarray:
@@ -287,21 +344,28 @@ def build_spm_center(
     available = offense.notna() & defense.notna()
     off = offense.fillna(0.0).to_numpy(dtype=float) / 100.0
     deff = -defense.fillna(0.0).to_numpy(dtype=float) / 100.0
-    off -= np.average(off, weights=off_exposure)
-    deff -= np.average(deff, weights=def_exposure)
+    available_array = available.to_numpy(dtype=bool)
+    if not available_array.any():
+        raise ValueError(f"Predictive SPM center for {target_season} has no coverage.")
+    off[available_array] -= np.average(
+        off[available_array], weights=off_exposure[available_array]
+    )
+    deff[available_array] -= np.average(
+        deff[available_array], weights=def_exposure[available_array]
+    )
     center = np.concatenate([off, deff, np.asarray([0.0])])
     test_columns = design.X[test_mask, : 2 * len(players)].indices % len(players)
     return center, {
         "target_season": int(target_season),
         "players_with_prior": int(available.sum()),
         "train_off_possession_coverage": float(
-            np.average(available.to_numpy(dtype=float), weights=off_exposure)
+            np.average(available_array.astype(float), weights=off_exposure)
         ),
         "train_def_possession_coverage": float(
-            np.average(available.to_numpy(dtype=float), weights=def_exposure)
+            np.average(available_array.astype(float), weights=def_exposure)
         ),
         "test_lineup_slot_coverage": float(
-            available.to_numpy(dtype=float)[test_columns].mean()
+            available_array.astype(float)[test_columns].mean()
         ),
     }
 

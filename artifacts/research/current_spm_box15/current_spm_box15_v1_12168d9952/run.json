@@ -1,0 +1,71 @@
+{
+  "contract": {
+    "created_at": "2026-09-01",
+    "cutoffs": {
+      "end_month_day": "04-01",
+      "evidence_rule": "game_date_strictly_before_cutoff",
+      "frequency": "weekly_monday",
+      "start_month_day": "11-01"
+    },
+    "estimand_id": "dated_current_player_strength_v1",
+    "experiment_id": "current_spm_box15_v1",
+    "input_run": "dated_box15_history_v1_65f2fa929c",
+    "limitations": [
+      "This foundation rates only players with NBA game history before the cutoff.",
+      "It does not include a rookie prior, absence variance, availability, or minutes projection.",
+      "It does not perform the partial-season RAPM update or downstream game validation.",
+      "Seasons before 2022 lack the complete dated Box15 history required by this run."
+    ],
+    "model": {
+      "box_half_life_days": [
+        365,
+        730
+      ],
+      "defense_alpha": 1000,
+      "features": "box15",
+      "learner": "ridge",
+      "offense_alpha": 300,
+      "rate_prior_possessions": 500,
+      "sample_weight": "square_root_minimum_target_window_side_possessions",
+      "training_rule": "target_window_ends_before_rating_season"
+    },
+    "rating_seasons": [
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "schema_version": "experiment_preregistration_v1",
+    "status": "preregistered_foundation",
+    "target": {
+      "horizon_seasons": 9,
+      "variant": "normal"
+    },
+    "target_run": "target_window_spm_aio_v1_be05a18f9b"
+  },
+  "created_at": "2026-09-01T19:59:26.776282+00:00",
+  "experiment_id": "current_spm_box15_v1",
+  "files": {
+    "ratings.parquet": "5741c012fe5eec36c1942308908213d3dc96cb1cfa0619846b2c16f08c5058c5"
+  },
+  "forbidden_interpretation": "These are unvalidated dated statistical ratings, not a current-AIO winner.",
+  "quality": {
+    "component_identity_max_error": 0.0,
+    "cutoffs": 109,
+    "first_cutoff": "2021-11-01",
+    "last_cutoff": "2026-03-30",
+    "players": 1090,
+    "rows": 188892
+  },
+  "run_id": "current_spm_box15_v1_12168d9952",
+  "source_hashes": {
+    "annual_box": "eaee3f93f3699c7ce33ff295f3d77a1d5b0d589597c19fcebee7e6743f5a90eb",
+    "contract": "f2fd94b9acf196f21b76dd5144b535ee3d42d683054f55a0f2c7aa41fecce379",
+    "dated_aggregator": "89a092277bd932ae99d8520c383f2352649099b47c6e3f14566ad95f043019ff",
+    "dated_history": "e2cb8758e3c71b161baf6874fe71d0b7bd8941741ff69ccc29fc7933118c9363",
+    "runner": "0f97dc31a5d5c109ff739fe9260bb19cbc5d707f7f1e381540294f15a814704c",
+    "targets": "7af4dddf3837bb41d015652eb0a83bd1632eb6261c7f677bb29f7843e2f8bd4f"
+  },
+  "status": "research_foundation_complete"
+}
