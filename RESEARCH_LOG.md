@@ -5516,3 +5516,36 @@ for Box15.
 rating. Keep five-year Box15 as the research AIO prior. The rich model appears
 to duplicate more of the one-season possession signal, so better RAPM target
 fit does not create a more complementary prior.
+
+## 2026-09-01 — Nine-year normal RAPM wins the target-window comparison
+
+**Question:** Should one season of Box15 or rich statistical inputs predict a
+five-, seven-, or nine-season RAPM target, and does categorical lineup-age
+adjustment improve the resulting prior or AIO?
+
+**Method:** Run `target_window_spm_aio_v1_8e028133cb` constructs normal and
+age-adjusted targets ending in every available season. Each scored prior uses
+one season of contemporaneous inputs and trains only on feature-target pairs
+ending before its 2014--25 rating season. Box15 covers all 12 folds. Rich
+inputs start in 2014, so rich covers 11 folds beginning with the 2015 rating.
+Learners and hyperparameters remain fixed. Every prior receives the same
+single-season 3000/4500/300 RAPM update. Ratings predict games in the next
+season. Paired intervals use 2,000 whole-game bootstrap draws within season.
+
+**Result:** Nine-year normal Box15 AIO has the best 12-fold MSE at `183.885`.
+Seven- and five-year normal Box15 AIO score `184.053` and `184.229`. Nine-year
+minus seven-year MSE is `-0.167`, with interval `[-0.223, -0.111]`. Nine-year
+minus five-year is `-0.344`, with interval `[-0.451, -0.249]`.
+
+Age adjustment loses in every target length and both learner families. For
+Box15 AIO, normal-minus-age MSE is `-1.252`, `-1.376`, and `-1.453` at five,
+seven, and nine years. Every interval excludes zero in favor of normal.
+
+On the common 2016--26 folds, rich nine-year normal SPM beats Box15 alone by
+`3.011` MSE points. The order reverses after the RAPM update: Box15 beats rich
+by `1.902`, with interval `[-2.455, -1.316]` for Box15 minus rich.
+
+**Decision:** Keep nine-year normal Box15 as the research target leader. Reject
+the tested categorical age-adjusted target. Keep the public five-year model
+unchanged because every scored season is reused and the nine-versus-seven RMSE
+gain is only `0.006`. Stop target-length searches until new outcomes exist.

@@ -1,0 +1,66 @@
+schema_version: experiment_preregistration_v1
+experiment_id: target_window_spm_aio_v1
+status: frozen_reused_diagnostic
+estimand_id: target_window_spm_to_next_season_games_v1
+
+question: >-
+  Does a five-, seven-, or nine-season age-adjusted RAPM label produce a better
+  Box15 or rich statistical prior, alone and after a one-season RAPM update?
+
+rating_seasons: [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+test_seasons: [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+target_horizons: [5, 7, 9]
+target_variants: [normal, age_adjusted]
+
+target_rapm:
+  lambda_off: 3000
+  lambda_def: 3000
+  lambda_home: 300
+  age_penalty: 100
+  age_reference: 27
+  lineup_policy: terminal
+  season_environment: centered
+
+spm:
+  input_window_seasons: 1
+  training_rule: expanding_history_ending_before_rating_season
+  sample_weight: square_root_minimum_side_possessions
+  box15:
+    learner: ridge
+    offense_alpha: 300
+    defense_alpha: 1000
+  rich:
+    offense_learner: elastic_net
+    offense_alpha: 0.03
+    offense_l1_ratio: 0.1
+    defense_learner: ridge
+    defense_alpha: 3000
+    correlation_threshold: 0.95
+    source_rule: audited_nonshifted_features
+
+aio:
+  likelihood_seasons: 1
+  lambda_off: 3000
+  lambda_def: 4500
+  lambda_home: 300
+  prior_scale: 1
+
+evaluation:
+  primary: equal-season mean next-season whole-game margin MSE
+  secondary: [rmse, correlation, calibration_slope]
+  bootstrap_draws: 2000
+  bootstrap_seed: 20260901
+  identical_games: required_within_each_test_season
+
+rules:
+  - Every scored prior trains only on target windows ending before its rating season.
+  - One season of statistical inputs predicts the multi-season RAPM target ending in that season.
+  - The age-adjusted label adds the fitted age effect at the player's age in the rating season.
+  - The same fixed one-season RAPM update applies to every prior.
+  - Learner families and hyperparameters remain fixed across every outer fold.
+  - Rich 2014 is unavailable because no earlier rich feature season exists for training.
+  - All scored seasons are reused diagnostic evidence.
+
+forbidden_interpretation: >-
+  Production promotion, an untouched confirmation, or a claim that missing
+  pre-2014 rich features were observed.

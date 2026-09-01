@@ -195,24 +195,27 @@ dead ends. Updated 2026-09-01. See `docs/README.md` for the document index,
   precision-aware one-season RAPM update, Box15 wins by `2.855` MSE points.
   Keep rich annual SPM as the standalone research leader and Box15 as the AIO
   prior.
+- Target-window run `target_window_spm_aio_v1` maps one season of inputs to
+  five-, seven-, and nine-season normal or categorical age-adjusted RAPM, then
+  applies the same one-season RAPM update. Across 12 next-season folds, the
+  nine-year normal Box15 AIO has the lowest MSE at `183.885`. The seven- and
+  five-year normal versions score `184.053` and `184.229`. Every age-adjusted
+  target loses. Rich SPM remains better alone but worse after the update. Keep
+  nine-year normal Box15 as the research target leader; do not change the
+  public model from reused evidence.
 
 ## Active next task
 
-Test whether seven-year age-adjusted RAPM is a better SPM target than the current
-five-year RAPM target. Keep the one-season RAPM update unchanged.
+Package the nine-year normal Box15 target as the research AIO challenger.
 
-1. Build rolling seven-year labels with the already tested categorical age
-   control. Keep the observed lineup-age terms separate from player ratings.
-2. Train the same Box15 mapping on five-year plain and seven-year age-adjusted
-   labels. Use identical chronological folds, players, games, and possession
-   weights.
-3. Compare the standalone priors and their precision-aware one-season RAPM
-   updates. Report game-margin MSE, RMSE, correlation, calibration slope, and
-   paired whole-game intervals.
-4. Diagnose complementarity with prior-update correlation and residual recovery.
-   Do not promote a target because it fits its RAPM label better.
-5. Keep five-year Box15 as the research AIO prior unless the seven-year target
-   improves the downstream AIO on the frozen gate.
+1. Refit the 2026 rating from the frozen nine-year normal target and current
+   Box15 inputs.
+2. Apply the frozen one-season 3000/4500/300 RAPM update.
+3. Add the prior and posterior to localhost-only model comparison tables.
+4. Preserve the five-year public model and label the nine-year result as reused
+   research evidence.
+5. Stop target-length and age-target searches until genuinely new outcomes are
+   available.
 
 The public product is live at `https://courtsignalnba.pages.dev`. Public RAPM
 covers 2017--26. Public SPM and AIO retain their pinned 2017--24 contract. The
@@ -220,9 +223,9 @@ full 2014--26 SPM refresh remains a research null.
 
 ## Ordered queue
 
-1. **SPM target:** compare five-year plain RAPM with seven-year age-adjusted
-   RAPM as the Box15 label. Select from downstream game prediction, not
-   same-target fit. Keep the one-season AIO likelihood fixed.
+1. **SPM target:** retain nine-year normal Box15 as the research target leader.
+   Keep the five-year public model unchanged and stop target searches on reused
+   seasons.
 2. **Role research:** evaluate role-relative skill before any role-fit
    counterfactual. Require support/overlap checks for counterfactual roles.
 3. **Dynamic impact:** retain the 2014--26 state-space filter as the leading
