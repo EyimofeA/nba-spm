@@ -1,7 +1,8 @@
 # AGENTS.md — CourtSignal / NBA Impact
 
 This repository contains the CourtSignal NBA impact product and its research
-work. Read this file before making changes. Keep it under 250 lines.
+work. Read this file before making changes. Keep operational rules here. Put
+experiment detail in the linked reports and `RESEARCH_LOG.md`.
 
 ## Start here
 
@@ -216,8 +217,8 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   scale from earlier folds. Full SPM selects `0.75`; BoxPIPM-style selects
   `1.00`. Scaling does not improve full SPM AIO accuracy. Keep both as research
   challengers.
-- The run emits current 2026 SPM and AIO ratings. It does not load or score
-  2027.
+- The run emits current 2026 SPM and AIO ratings. It does not load or score a
+  later confirmation season.
 - For AIO season `t`, this SPM is the prior and only season `t` possessions are
   the likelihood. It is not a five-year RAPM likelihood.
 - Run `five_year_target_spm_v1_65550acb79` beat the annual-prior AIO and
@@ -229,8 +230,8 @@ Canonical code: `src/nba_impact/models/single_season_spm.py` and
   `rim_assist_spm_challenger_v1_23e599d812` lost all three reused future-game
   folds and increased paired MSE. Keep rim assists in the descriptive skill
   layer. Do not add them to the impact prior.
-- Treat it as the research replacement, not a public promotion, until the
-  untouched 2027 confirmation.
+- Treat it as the research replacement, not a public promotion, until a later
+  untouched completed season confirms it.
 
 Canonical code: `src/nba_impact/models/five_year_target_spm.py`.
 
@@ -329,7 +330,11 @@ Canonical code: `src/nba_impact/models/box_pipm_style.py`.
 Canonical code: `src/nba_impact/models/annual_aio_ratings.py` and
 `src/nba_impact/models/rapm.py`.
 
-- Validation run `impact_validation_suite_v1_4f2ad7cdd8` keeps BoxPIPM-style as the research AIO prior. Four-way run `pipm_four_way_comparison_v1_0f1473b838` also beats a third-party PIPM reference after the same RAPM update, but the attached original file is partial and 2027 remains required.
+- Validation run `impact_validation_suite_v1_4f2ad7cdd8` keeps BoxPIPM-style
+  as the research AIO prior. Four-way run
+  `pipm_four_way_comparison_v1_0f1473b838` also beats a third-party PIPM
+  reference after the same RAPM update. The attached original file is partial,
+  so this comparison cannot support promotion.
 - Forward run `annual_rich_forward_aio_v1_0f766b0ee4` confirms the split: the
   frozen rich annual SPM beats five-year Box15 alone, but Box15 wins after both
   receive chronologically selected precision-aware one-season RAPM updates.
@@ -338,8 +343,9 @@ Canonical code: `src/nba_impact/models/annual_aio_ratings.py` and
 
 ## Evidence rules
 
-- Season 2027 is reserved as untouched annual confirmation. Do not use it for
-  development, debugging, feature selection, or hyperparameter selection.
+- Reserve the next completed, previously unseen season for annual confirmation.
+  Do not use it for development, debugging, feature selection, or
+  hyperparameter selection.
 - Use chronological outer folds. Tune only inside the training period.
 - Baseline and challenger must score identical games and rows.
 - Resample whole games when uncertainty is required. Random seeds are not

@@ -1,5 +1,11 @@
 # Documentation Index
 
+This index separates current sources of truth from supporting reports and old
+plans. When two documents conflict, use the root `ROADMAP.md`, the current model
+contract, and the newest pinned artifact manifest in that order.
+
+## Canonical entry points
+
 Start at the repository root:
 
 - [`AGENTS.md`](../AGENTS.md) — operating rules for agents;
@@ -11,7 +17,11 @@ Start at the repository root:
 - [`product/UI_GUIDE.md`](product/UI_GUIDE.md) — CourtSignal product, visual,
   interaction, and copy rules.
 
-## Active specifications
+## Current contracts and reports
+
+The list below contains the main entry points. Other files under `docs/impact/`
+are supporting experiment reports. `RESEARCH_LOG.md` and immutable run manifests
+hold the full experiment history.
 
 - [`data/MATCHUP_SOURCE.md`](data/MATCHUP_SOURCE.md) — licensed player-matchup
   archive contract and local coverage;
@@ -24,7 +34,6 @@ Start at the repository root:
 - [`data/HISTORICAL_PLAYER_GAME_SOURCE_AUDIT.md`](data/HISTORICAL_PLAYER_GAME_SOURCE_AUDIT.md) —
   local 2017-23 player-box coverage, validation, provenance, and safe
   historical-backfill boundary;
-- [`impact/ROADMAP.md`](impact/ROADMAP.md) — detailed RAPM and all-in-one plan;
 - [`impact/CURRENT_FEATURE_QUALITY.md`](impact/CURRENT_FEATURE_QUALITY.md) —
   2025/2026 statistical-feature coverage, drift, and frozen-SPM confirmation;
 - [`impact/CURRENT_2026_REFRESH.md`](impact/CURRENT_2026_REFRESH.md) — pinned
@@ -123,10 +132,12 @@ Start at the repository root:
 - [`planning/NBA_IMPACT_BUILD.md`](planning/NBA_IMPACT_BUILD.md) — earlier clean-build plan;
 - [`planning/RESEARCH_BACKLOG.md`](planning/RESEARCH_BACKLOG.md) — earlier broad research queue.
 
-The root `ROADMAP.md` is authoritative when planning files conflict.
+These files provide background. The root `ROADMAP.md` is the only active queue.
 
 ## Historical references
 
+- [`impact/ROADMAP.md`](impact/ROADMAP.md) — RAPM and all-in-one plan through
+  2026-08-17; preserved as a historical snapshot;
 - [`historical/TODO_2026-06-11.md`](historical/TODO_2026-06-11.md);
 - [`historical/CRITIQUE_2026-06-11.md`](historical/CRITIQUE_2026-06-11.md).
 
