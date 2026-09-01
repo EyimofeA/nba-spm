@@ -210,20 +210,22 @@ dead ends. Updated 2026-09-01. See `docs/README.md` for the document index,
   ten-fold AIO MSE by `.624`, but its later RMSE gain is only `.022`, below the
   frozen `.05` gate. The shared-error diagnostic is unresolved because a
   permuted common reference reproduces large correlations.
+- External benchmark `external_all_in_one_benchmark_v2_b3d21a4bd8` compares
+  internal priors, identical one-season RAPM updates, and eight public metrics.
+  On the strict 2017--20 common panel, defense-residual AIO has RMSE `13.3745`,
+  Box15 AIO has `13.3814`, MAMBA has `13.4526`, and rich-SPM AIO has `13.4569`.
+  The defense-residual advantage over Box15 is unresolved; Box15 clearly beats
+  rich SPM after the update. The 2025 holdout gives the same internal ordering.
 
 ## Active next task
 
-Run one external all-in-one benchmark before product packaging.
+Package the frozen research findings for the product without changing the
+model contract.
 
-1. Compare Box15, rich elastic-net SPM, the dual-head prior, EPM, DARKO, PIPM,
-   xRAPM, BPM, and every locally available external metric.
-2. Train internal models through 2023 and score the same later games without
-   using future-season inputs.
-3. Publish an all-available-coverage table and a strict common-coverage table.
-   Include a 2017--20 common-period sensitivity when the sources permit it.
-4. Report player-season correlations as descriptive agreement. Use identical
-   next-season games and paired MSE as the model comparison.
-5. Do not promote a model from heterogeneous source coverage or reused outcomes.
+1. Expose RAPM, rich `spm_impact`, and Box15-centered AIO as distinct ratings.
+2. Keep the defense residual in the research lab until new outcome evidence.
+3. Publish model cards and the external benchmark's strict coverage caveat.
+4. Do not expose local research payloads or raw NBA events in the static build.
 
 The public product is live at `https://courtsignalnba.pages.dev`. Public RAPM
 covers 2017--26. Public SPM and AIO retain their pinned 2017--24 contract. The

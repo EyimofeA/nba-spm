@@ -5580,3 +5580,35 @@ SPM. The common subtracted reference mechanically contaminates the statistic.
 current-control Box15 as the AIO `spm_prior` head. Preserve the defense residual
 as a frozen research challenger. The public model, website, and API remain
 unchanged.
+
+## 2026-09-01 — External all-in-one benchmark retains Box15 prior
+
+**Question:** How do Box15, rich SPM, and the defense-residual challenger compare
+with public all-in-one metrics on complete available coverage, a strict
+2017--20 common panel, and a model trained through 2023?
+
+**Method:** Run `external_all_in_one_benchmark_v2_b3d21a4bd8` normalizes EPM,
+LEBRON, MAMBA, PIPM, RAPTOR, BPM 2.0, xRAPM, and one dated DARKO snapshot. It
+scores season-end ratings on next-season game margins using observed future
+lineups only as exposure weights. Internal priors also receive the same
+one-season terminal-lineup RAPM update with `3000 / 4500 / 300` penalties. A
+separate Box15 arm restricts training to 2014 onward. Strict scopes use the
+same player intersection and games. Paired intervals use 5,000 whole-game
+draws within season.
+
+**Result:** On the strict 2017--20 common panel, defense-residual AIO has MSE
+`178.878`, Box15 AIO `179.062`, MAMBA `180.973`, and rich-SPM AIO `181.088`.
+Defense residual minus Box15 is `-0.184`, with interval `[-0.532, 0.171]`.
+Box15 minus rich-SPM AIO is `-2.027`, with interval `[-2.826, -1.195]`.
+Restricting Box15 training to 2014 onward worsens its AIO by `0.453`, with
+interval `[0.154, 0.750]`.
+
+The 2024 rating trained through 2023 predicts 2025 games. MAMBA has MSE
+`219.691`, defense-residual AIO `220.370`, long-history Box15 AIO `221.583`,
+2014+ Box15 AIO `222.247`, and rich-SPM AIO `224.619`. MAMBA's one-fold lead
+over the defense residual is unresolved. Box15 AIO again beats rich-SPM AIO.
+
+**Decision:** Keep Box15 as the AIO prior, rich SPM as the standalone impact
+head, and the defense residual as a frozen challenger. Use the strict panel for
+head-to-head claims. Treat the broad table and one-fold DARKO snapshot as
+coverage diagnostics. Do not promote any model from reused outcomes.

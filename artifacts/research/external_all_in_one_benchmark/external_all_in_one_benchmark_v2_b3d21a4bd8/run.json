@@ -1,0 +1,127 @@
+{
+  "created_at": "2026-09-01T10:34:13.932070+00:00",
+  "experiment_id": "external_all_in_one_benchmark_v2",
+  "files": {
+    "aggregate_metrics.parquet": {
+      "rows": 59,
+      "sha256": "4a0276c315bfc6c6c23cc5a3e1125f049e1e317cd3a0b46693681c14b6b52f7d"
+    },
+    "fold_metrics.parquet": {
+      "rows": 204,
+      "sha256": "0317789dd38ec45b3a4ffda562ace1375efa531c39f7de03aa419065a282455d"
+    },
+    "game_predictions.parquet": {
+      "rows": 241117,
+      "sha256": "6e8b9701683ef4f64c724b2b1ce9152a481cd41aa72447a2749916bde7ef3e25"
+    },
+    "identity_coverage.parquet": {
+      "rows": 35,
+      "sha256": "f71fe2101bfaf84367d14acc97417900cf6e3d5051d856603ef333a5b98d1c03"
+    },
+    "internal_training_scope.parquet": {
+      "rows": 48,
+      "sha256": "54c7562987e8a3c038796448420aeac85020875b65ebf06928977b966fc10a49"
+    },
+    "lineup_coverage.parquet": {
+      "rows": 204,
+      "sha256": "536a2728a83ae8800dcbf577fc0cf189c17c9424499ace2e60eb7a9df55cdc80"
+    },
+    "metric_correlations.parquet": {
+      "rows": 55,
+      "sha256": "c64c3966106c7f239ac904de5e016393a4ff669b477019d3a04bdfdcf4d30864"
+    },
+    "paired_intervals.parquet": {
+      "rows": 303,
+      "sha256": "23c63150a3c0611831233049f93de7f74a79252150cb40553071f47163391d5f"
+    },
+    "ratings.parquet": {
+      "rows": 41890,
+      "sha256": "ca828e46bfc023bbc4a7d0c74541a8e7d8f1792126f29fc9d203c13994c94b7d"
+    }
+  },
+  "forbidden_interpretation": "Different coverage periods are not a head-to-head ranking. DARKO has different information timing. All outcomes are reused evidence.",
+  "method": {
+    "bootstrap": "5000 paired whole-game draws within season",
+    "external_update": "external metrics remain standalone to avoid double-counting embedded on-off evidence",
+    "internal_aio_update": "one-season terminal-lineup RAPM with 3000 offense, 4500 defense, and 300 home penalties",
+    "lineup_weights": "observed next-season lineups; evaluation device, not deployable forecast",
+    "missing_players": "zero relative impact after exposure centering",
+    "score": "equal-season mean next-season whole-game margin MSE",
+    "strict_scope": "same player intersection and same games for every candidate"
+  },
+  "quality": {
+    "games": 16565,
+    "maximum_component_identity_error": 0.0,
+    "rating_rows": 41890,
+    "row_set_sha256": "4f2bbd7bcf2f451757eae07e73225b3a4de5cf7f5b7d7de2c063b4a3953614fb"
+  },
+  "run_id": "external_all_in_one_benchmark_v2_b3d21a4bd8",
+  "runner_sha256": "a9004635be362a01f1772dabf6a12312a656ee174b14f6e71d5e3bc1a689f494",
+  "scope": {
+    "all_available_rating_seasons": [
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "darko_snapshot": "day one of 2018-19; different information timing",
+    "strict_common_rating_seasons": [
+      2017,
+      2018,
+      2019,
+      2020
+    ],
+    "trained_through_2023_rating_season": 2024
+  },
+  "sources": {
+    "box15_features": {
+      "file": "annual_box15_features.parquet",
+      "sha256": "eaee3f93f3699c7ce33ff295f3d77a1d5b0d589597c19fcebee7e6743f5a90eb"
+    },
+    "bpm_xrapm": {
+      "file": "external_annual.parquet",
+      "sha256": "46cdef37e6135bf8459023b47a6ae77fc7bb69cbb4382c29c195c72796389770"
+    },
+    "darko_2019_snapshot": {
+      "file": "player_ratings_minutes.csv",
+      "sha256": "702fbeef982882e89879b66aae730092fd8e10318abaf18c196f8c0e2fe38899"
+    },
+    "epm": {
+      "file": "EPM_All_Seasons.csv",
+      "sha256": "c08723f5db12470f4140794a13c0bb2f1e9ebf19e9362188959ae45dcab32171"
+    },
+    "internal_priors": {
+      "file": "priors.parquet",
+      "sha256": "c149d9fdd83874e2c4b0770f36d20a9008bb4804f4b9bccd9a558a18e745e467"
+    },
+    "internal_training_scope": {
+      "file": "base_prior_selections.parquet",
+      "sha256": "45dba67539e9800da91706960a1370e18cc15347e9e54543e6025960613ebf34"
+    },
+    "lebron": {
+      "file": "lebron-data-2026-2025-2024-2023-2022-2021-2020-2019-2018-2017-2016-2015-2014-2013-2012-2011-2010.csv",
+      "sha256": "3749a608559a229bc01e98f2d7a1bf570f85af5acecb9551ba696f953cbe1f90"
+    },
+    "mamba": {
+      "file": "MAMBAVALUES.xlsx - Sheet1.csv",
+      "sha256": "016a50e7f9eff2cb2f28c6964d6f91ccdd85edf2ba4630a2f7f63928496e8892"
+    },
+    "nine_year_targets": {
+      "file": "targets.parquet",
+      "sha256": "7af4dddf3837bb41d015652eb0a83bd1632eb6261c7f677bb29f7843e2f8bd4f"
+    },
+    "pipm": {
+      "file": "PIPM Player Finder through 2021 - Database.csv",
+      "sha256": "fccd30eefb122412dee2901d2bbd543516ae781cd864436cb4beb083d049d3c6"
+    },
+    "raptor": {
+      "file": "modern_RAPTOR_by_player.csv",
+      "sha256": "cb64bd15492b540e5a376fcebddc1ba77b94847ee33ab26811d4123ef5fd7160"
+    }
+  },
+  "status": "reused_external_benchmark_complete"
+}

@@ -100,6 +100,12 @@ hold the full experiment history.
 - [`impact/TARGET_WINDOW_SPM_AIO_V1.md`](impact/TARGET_WINDOW_SPM_AIO_V1.md) —
   five-, seven-, and nine-season normal versus age-adjusted RAPM targets for
   annual Box15 and rich SPM priors under the same one-season RAPM update;
+- [`impact/AIO_PRIOR_COMPLEMENTARITY_V1.md`](impact/AIO_PRIOR_COMPLEMENTARITY_V1.md) —
+  target-overlap, defensive-residual, prior-trust, and player-precision tests
+  that retain Box15 as the AIO prior and rich SPM as the standalone impact head;
+- [`impact/EXTERNAL_ALL_IN_ONE_BENCHMARK_V2.md`](impact/EXTERNAL_ALL_IN_ONE_BENCHMARK_V2.md) —
+  complete available-coverage, strict 2017--20, train-through-2023, and dated
+  DARKO comparisons against public all-in-one metrics;
 - [`impact/WALK_FORWARD_SPM_PILOT_V1.md`](impact/WALK_FORWARD_SPM_PILOT_V1.md) —
   one-cutoff Full SPM versus BoxSPM future-game implementation check;
 - [`impact/BOX_VS_TRACKING_SPM_PILOT_V1.md`](impact/BOX_VS_TRACKING_SPM_PILOT_V1.md) —
