@@ -1,0 +1,89 @@
+schema_version: experiment_preregistration_v1
+experiment_id: box15_defense_extension_9y_v1
+status: exploratory_reused_diagnostic
+estimand_id: target_window_spm_to_next_season_games_v1
+
+question: >-
+  Do a few high-value defensive fields improve the nine-year Box15 prior after
+  the same one-season RAPM update?
+
+source_model:
+  run_id: target_window_spm_aio_v1_8e028133cb
+  candidate: box15_9y_normal
+  target_horizon: 9
+  target_variant: normal
+
+rating_seasons: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+test_seasons: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+
+residual_model:
+  side: defense
+  learner: standardized_ridge
+  target: nine_year_defensive_rapm_minus_chronological_box15_defense
+  alpha_grid: [10, 30, 100, 300, 1000, 3000]
+  alpha_selection: leave_one_training_season_out_weighted_mse
+  sample_weight: square_root_minimum_side_possessions
+  residual_scale: 1
+
+candidates:
+  box15_9y_normal: []
+  box15_plus_dreb_chances:
+    - dreb_chances_p100
+  box15_plus_recovered_blocks:
+    - recovered_blocks_p100
+  box15_plus_workload_suppression:
+    - workload_adjusted_shot_suppression_residual
+  box15_plus_rim_workload:
+    - rim_protection_workload_value
+  box15_plus_top5_defense:
+    - assist_points_created_p100
+    - touches_p100
+    - dreb_chances_p100
+    - recovered_blocks_p100
+    - paint_touches_p100
+  box15_plus_mechanism4:
+    - dreb_conversion_above_expected_eb
+    - foul_adjusted_activity_residual
+    - workload_adjusted_shot_suppression_residual
+    - rim_protection_workload_value
+  box15_plus_core4:
+    - dreb_chances_p100
+    - recovered_blocks_p100
+    - workload_adjusted_shot_suppression_residual
+    - rim_protection_workload_value
+  box15_plus_all9:
+    - assist_points_created_p100
+    - touches_p100
+    - dreb_chances_p100
+    - recovered_blocks_p100
+    - paint_touches_p100
+    - dreb_conversion_above_expected_eb
+    - foul_adjusted_activity_residual
+    - workload_adjusted_shot_suppression_residual
+    - rim_protection_workload_value
+
+aio:
+  likelihood_seasons: 1
+  lambda_off: 3000
+  lambda_def: 4500
+  lambda_home: 300
+  prior_scale: 1
+
+evaluation:
+  primary: equal_season_mean_next_season_whole_game_margin_mse
+  secondary: [rmse, correlation, calibration_slope]
+  bootstrap_draws: 2000
+  bootstrap_seed: 20260901
+  practical_rmse_gate: 0.05
+  identical_games: required_within_each_test_season
+
+rules:
+  - The base Box15 prior and every residual label are chronological predictions.
+  - Each residual fit uses only feature seasons before the rating season.
+  - Offense remains the unchanged nine-year Box15 prediction.
+  - Every candidate receives the same players, possessions, games, and RAPM update.
+  - Results are exploratory because every outcome season has already been inspected.
+
+forbidden_interpretation: >-
+  This diagnostic cannot promote a public model or establish causal defensive
+  value for any input.

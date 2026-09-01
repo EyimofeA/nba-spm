@@ -1,0 +1,85 @@
+schema_version: experiment_preregistration_v1
+experiment_id: box15_defense_mechanism_followup_9y_v1
+status: posthoc_reused_diagnostic
+estimand_id: target_window_spm_to_next_season_games_v1
+
+question: >-
+  Which fields account for the exploratory nine-year defensive mechanism gain?
+
+source_model:
+  run_id: target_window_spm_aio_v1_8e028133cb
+  candidate: box15_9y_normal
+  target_horizon: 9
+  target_variant: normal
+
+rating_seasons: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+test_seasons: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+
+residual_model:
+  side: defense
+  learner: standardized_ridge
+  target: nine_year_defensive_rapm_minus_chronological_box15_defense
+  alpha_grid: [10, 30, 100, 300, 1000, 3000]
+  alpha_selection: leave_one_training_season_out_weighted_mse
+  sample_weight: square_root_minimum_side_possessions
+  residual_scale: 1
+
+candidates:
+  box15_9y_normal: []
+  box15_plus_dreb_conversion:
+    - dreb_conversion_above_expected_eb
+  box15_plus_foul_activity:
+    - foul_adjusted_activity_residual
+  box15_plus_activity_pair:
+    - dreb_conversion_above_expected_eb
+    - foul_adjusted_activity_residual
+  box15_plus_shot_pair:
+    - workload_adjusted_shot_suppression_residual
+    - rim_protection_workload_value
+  box15_plus_mechanism4:
+    - dreb_conversion_above_expected_eb
+    - foul_adjusted_activity_residual
+    - workload_adjusted_shot_suppression_residual
+    - rim_protection_workload_value
+  box15_mechanism_without_dreb:
+    - foul_adjusted_activity_residual
+    - workload_adjusted_shot_suppression_residual
+    - rim_protection_workload_value
+  box15_mechanism_without_foul:
+    - dreb_conversion_above_expected_eb
+    - workload_adjusted_shot_suppression_residual
+    - rim_protection_workload_value
+  box15_mechanism_without_suppression:
+    - dreb_conversion_above_expected_eb
+    - foul_adjusted_activity_residual
+    - rim_protection_workload_value
+  box15_mechanism_without_rim:
+    - dreb_conversion_above_expected_eb
+    - foul_adjusted_activity_residual
+    - workload_adjusted_shot_suppression_residual
+
+aio:
+  likelihood_seasons: 1
+  lambda_off: 3000
+  lambda_def: 4500
+  lambda_home: 300
+  prior_scale: 1
+
+evaluation:
+  primary: equal_season_mean_next_season_whole_game_margin_mse
+  secondary: [rmse, correlation, calibration_slope]
+  bootstrap_draws: 2000
+  bootstrap_seed: 20260902
+  practical_rmse_gate: 0.05
+  identical_games: required_within_each_test_season
+
+rules:
+  - This follow-up was specified after the four-feature family result was inspected.
+  - Every residual fit uses only feature seasons before the rating season.
+  - Offense remains the unchanged nine-year Box15 prediction.
+  - Every candidate receives the same players, possessions, games, and RAPM update.
+  - The follow-up may explain the family result but cannot validate or promote it.
+
+forbidden_interpretation: >-
+  Post-hoc feature attribution cannot promote a public model or establish
+  causal defensive value.
