@@ -97,6 +97,9 @@ hold the full experiment history.
 - [`impact/ANNUAL_RICH_FORWARD_AIO_V1.md`](impact/ANNUAL_RICH_FORWARD_AIO_V1.md) —
   aligned next-season comparison of the frozen rich annual SPM and five-year
   Box15, alone and after precision-aware one-season RAPM updates;
+- [`impact/TARGET_WINDOW_SPM_AIO_V1.md`](impact/TARGET_WINDOW_SPM_AIO_V1.md) —
+  five-, seven-, and nine-season normal versus age-adjusted RAPM targets for
+  annual Box15 and rich SPM priors under the same one-season RAPM update;
 - [`impact/WALK_FORWARD_SPM_PILOT_V1.md`](impact/WALK_FORWARD_SPM_PILOT_V1.md) —
   one-cutoff Full SPM versus BoxSPM future-game implementation check;
 - [`impact/BOX_VS_TRACKING_SPM_PILOT_V1.md`](impact/BOX_VS_TRACKING_SPM_PILOT_V1.md) —

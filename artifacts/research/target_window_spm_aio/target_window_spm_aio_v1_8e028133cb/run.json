@@ -1,0 +1,427 @@
+{
+  "contract": {
+    "aio": {
+      "lambda_def": 4500,
+      "lambda_home": 300,
+      "lambda_off": 3000,
+      "likelihood_seasons": 1,
+      "prior_scale": 1
+    },
+    "estimand_id": "target_window_spm_to_next_season_games_v1",
+    "evaluation": {
+      "bootstrap_draws": 2000,
+      "bootstrap_seed": 20260901,
+      "identical_games": "required_within_each_test_season",
+      "primary": "equal-season mean next-season whole-game margin MSE",
+      "secondary": [
+        "rmse",
+        "correlation",
+        "calibration_slope"
+      ]
+    },
+    "experiment_id": "target_window_spm_aio_v1",
+    "forbidden_interpretation": "Production promotion, an untouched confirmation, or a claim that missing pre-2014 rich features were observed.",
+    "question": "Does a five-, seven-, or nine-season age-adjusted RAPM label produce a better Box15 or rich statistical prior, alone and after a one-season RAPM update?",
+    "rating_seasons": [
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "rules": [
+      "Every scored prior trains only on target windows ending before its rating season.",
+      "One season of statistical inputs predicts the multi-season RAPM target ending in that season.",
+      "The age-adjusted label adds the fitted age effect at the player's age in the rating season.",
+      "The same fixed one-season RAPM update applies to every prior.",
+      "Learner families and hyperparameters remain fixed across every outer fold.",
+      "Rich 2014 is unavailable because no earlier rich feature season exists for training.",
+      "All scored seasons are reused diagnostic evidence."
+    ],
+    "schema_version": "experiment_preregistration_v1",
+    "spm": {
+      "box15": {
+        "defense_alpha": 1000,
+        "learner": "ridge",
+        "offense_alpha": 300
+      },
+      "input_window_seasons": 1,
+      "rich": {
+        "correlation_threshold": 0.95,
+        "defense_alpha": 3000,
+        "defense_learner": "ridge",
+        "offense_alpha": 0.03,
+        "offense_l1_ratio": 0.1,
+        "offense_learner": "elastic_net",
+        "source_rule": "audited_nonshifted_features"
+      },
+      "sample_weight": "square_root_minimum_side_possessions",
+      "training_rule": "expanding_history_ending_before_rating_season"
+    },
+    "status": "frozen_reused_diagnostic",
+    "target_horizons": [
+      5,
+      7,
+      9
+    ],
+    "target_rapm": {
+      "age_penalty": 100,
+      "age_reference": 27,
+      "lambda_def": 3000,
+      "lambda_home": 300,
+      "lambda_off": 3000,
+      "lineup_policy": "terminal",
+      "season_environment": "centered"
+    },
+    "target_variants": [
+      "normal",
+      "age_adjusted"
+    ],
+    "test_seasons": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ]
+  },
+  "created_at": "2026-09-01T00:43:54.082464+00:00",
+  "elapsed_seconds": 329.0392727497965,
+  "experiment_id": "target_window_spm_aio_v1",
+  "files": {
+    "fold_metrics.parquet": {
+      "rows": 288,
+      "sha256": "ed0a8995df7cad925da56af3d26b46ae063e818e3048691469da212afe7b0415"
+    },
+    "game_predictions.parquet": {
+      "rows": 345965,
+      "sha256": "98c8beeb47ba0e3132f185a1bc41b818ea7811829ed4a50fc3b197f46d913118"
+    },
+    "paired_age_bootstrap.parquet": {
+      "rows": 12,
+      "sha256": "38296be68f2ec2a6a0f2f794d572c791391f1ca2f199071ca395d4054f2becdc"
+    },
+    "paired_key_comparisons.parquet": {
+      "rows": 12,
+      "sha256": "1588325a7925d45e59684d460e6221f46b19dabdaabf7b4e67bd1ec6ffed2395"
+    },
+    "prior_coverage.parquet": {
+      "rows": 138,
+      "sha256": "bbe0453338106edbd126ef7b0b167f1c856ce1f2b377c8d30909cd2bd66a718e"
+    },
+    "priors.parquet": {
+      "rows": 73428,
+      "sha256": "41e950fea5e4eec5053049ecd6b1c7e23696b48bccef589085670cd5fb0485f2"
+    },
+    "ratings.parquet": {
+      "rows": 187052,
+      "sha256": "e197e107697d6e2dd64222fdad06ab800a5ae2b6d4ce32764925421b472cbba7"
+    },
+    "source_coverage.parquet": {
+      "rows": 6,
+      "sha256": "3dabc1617d22bac8b017466fa3f27c8bdb48d1489e6e0e05d4577f6b3ecc1ac3"
+    },
+    "spm_fold_metrics.parquet": {
+      "rows": 276,
+      "sha256": "70aebfe511abdf6a2a1558d09d03b6bdf4626261ab228c5bf6c60015dfecf39c"
+    },
+    "summary.parquet": {
+      "rows": 25,
+      "sha256": "739756ecc8b1ef9164cd80b1202d20624faf8a188ba0d4464dd8f9a8b29895c0"
+    },
+    "target_quality.parquet": {
+      "rows": 69,
+      "sha256": "b50dd93a2e3845e97d8de92456048ab1cb9dab90881eb1c06f36a53fab9a757a"
+    },
+    "targets.parquet": {
+      "rows": 132882,
+      "sha256": "7af4dddf3837bb41d015652eb0a83bd1632eb6261c7f677bb29f7843e2f8bd4f"
+    }
+  },
+  "forbidden_interpretation": "Production promotion, an untouched confirmation, or a claim that missing pre-2014 rich features were observed.",
+  "quality": {
+    "game_prediction_rows": 345965,
+    "prior_rows": 73428,
+    "rating_component_identity_error": 0.0,
+    "target_component_identity_error": 0.0,
+    "target_rows": 132882
+  },
+  "run_id": "target_window_spm_aio_v1_8e028133cb",
+  "sources": {
+    "age_source_1997": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/1997.csv",
+      "sha256": "3d858ae0316047b16c9d65113fb26a7841e2b2ab7911f7c08117081bbde65165"
+    },
+    "age_source_1998": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/1998.csv",
+      "sha256": "a7a7fcc134a0e89bcd98a3135197a2acd6fe9d3b7f959f6b8ef12fef332c3bb2"
+    },
+    "age_source_1999": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/1999.csv",
+      "sha256": "8f57dee29232a197c46b049bed64fab80a4f11e8ec99e6ac8d8653d814eac8ab"
+    },
+    "age_source_2000": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2000.csv",
+      "sha256": "30a248724c6cd39f772e57fbf96ea870e8be73fed38094cc3e3d73dabfc6893e"
+    },
+    "age_source_2001": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2001.csv",
+      "sha256": "605d870776d7c504c1094b64a0c6ef2546a6e63ef2d3e7cd6f6685d0f60f1cf1"
+    },
+    "age_source_2002": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2002.csv",
+      "sha256": "3b530d3fcbee32b2d19b0ff753ba417347b468f14ef8efc32911d2955a9ac1cf"
+    },
+    "age_source_2003": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2003.csv",
+      "sha256": "656f655ad42277bd104016cd831ff301d12ab959fe02960326c62da63b775db8"
+    },
+    "age_source_2004": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2004.csv",
+      "sha256": "006e4c7baff11cc5d98220ab7ebd4ada692b899d43daf13fc35ea614ae14f545"
+    },
+    "age_source_2005": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2005.csv",
+      "sha256": "5afa9dc2693ac2cc3d2040336c7161b398b05147b4f70c11f16ea55add283441"
+    },
+    "age_source_2006": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2006.csv",
+      "sha256": "04b24b13431bfd600edfb1535ae30bcf12c78e90b0dda57ba02cbf58207b9bcf"
+    },
+    "age_source_2007": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2007.csv",
+      "sha256": "4aa2029b2f3bcebb403ba19c71413a3af7c20aa6f1cbef142d4ff0530484b96c"
+    },
+    "age_source_2008": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2008.csv",
+      "sha256": "d5c5b50f862f1708f64889a5c2b1162bb50413ccf3ed55698ce4765bfde28b07"
+    },
+    "age_source_2009": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2009.csv",
+      "sha256": "d22d695c6ec9237c668b05c18e92b97006a273bd4cf2c29db3446138a1842d67"
+    },
+    "age_source_2010": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2010.csv",
+      "sha256": "dc27c78cd19d6df85f40ff7b6b5edaa5ff7f2ce53a6fe1d628f6c85931683bfe"
+    },
+    "age_source_2011": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2011.csv",
+      "sha256": "f2ea5cacda799449a760e4b5da8d0fe5eca60b72a74be8878cde2fa6906243ae"
+    },
+    "age_source_2012": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2012.csv",
+      "sha256": "a9872e8d3f84c839ba142dadb613b847b1ff9fc61d7ec75679bfc0ca2d6ecfc7"
+    },
+    "age_source_2013": {
+      "path": "data/lake/bronze/historical_player_sheets/year_totals/2013.csv",
+      "sha256": "96db75e13bf1ccc8a903d52132cdbb0abe2d118e12eb770aab3c22cdce4f35a9"
+    },
+    "age_source_2014": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2014.parquet",
+      "sha256": "30ffc3f5090e76d9ddda98cb41ca72785e296430dae2aa3cad165318025f62dc"
+    },
+    "age_source_2015": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2015.parquet",
+      "sha256": "90ddc43dfffcc827e154677ef46f2a0c0b6c31b51784e27832869ea63c49dc20"
+    },
+    "age_source_2016": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2016.parquet",
+      "sha256": "62690961d72c732b7b0bcf6e8fb8d7921ce3c3715bb45a52d285171b831697b9"
+    },
+    "age_source_2017": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2017.parquet",
+      "sha256": "590d42a93951e43f55413582e65f4539a44b7257a24e531cf721f58ed135098e"
+    },
+    "age_source_2018": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2018.parquet",
+      "sha256": "e26f1af99c6ae9a8ba9632d5522079b4b2d38265ac2008ae9f9d8738bab83770"
+    },
+    "age_source_2019": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2019.parquet",
+      "sha256": "ebebe7174b1ab529eaa6299d6da73783420424e59bbb125d65925f1155675340"
+    },
+    "age_source_2020": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2020.parquet",
+      "sha256": "a8f0e782be214a72bee072781152d5ae637e5b80d508f46ee7efdb919d658065"
+    },
+    "age_source_2021": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2021.parquet",
+      "sha256": "7f542206d8a6206b25ff6397ef34d75fc9cb1c6315aab84b9c401c59ba6ca51f"
+    },
+    "age_source_2022": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2022.parquet",
+      "sha256": "4e46a94b3c9f85aeb0dfe49abc08340a4c86720e192783b0319ff0e375f0f95b"
+    },
+    "age_source_2023": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2023.parquet",
+      "sha256": "6d85fb54ac49f6c73e4d6dedacb216f2b28d5db475153d1bebffa9585ec1268d"
+    },
+    "age_source_2024": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2024.parquet",
+      "sha256": "beb5a5aceb7d1d3504529102a4c93eb4898ff525474ea75bd3babeeeb0e38ad3"
+    },
+    "age_source_2025": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2025.parquet",
+      "sha256": "8cbeab5559385f7be8226e168e4b2eceac3ce40029360fb770ff40770a7fc4ed"
+    },
+    "age_source_2026": {
+      "path": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2026.parquet",
+      "sha256": "09a6a34855a3685e89ced2dcb2f79b60ed2ef97b9709b29d30848a3165fe7e2c"
+    },
+    "contract": {
+      "path": "research/experiments/target_window_spm_aio_v1.yml",
+      "sha256": "e6799a795f7c92ba2264ddd1818b317f96d789df90b70893f3135b173eb58002"
+    },
+    "feature_atlas": {
+      "path": "artifacts/research/spm_feature_atlas/spm_feature_atlas_v1_6949ad7b60/feature_atlas.parquet",
+      "sha256": "c555ef7310ecd0e1c85f2cbd89d39bb62e34976cc252efd4119d10bacf3d625b"
+    },
+    "historical_box_features": {
+      "path": "artifacts/research/historical_box15_extension/historical_box15_extension_v1_08ff4c34ff/annual_box15_features.parquet",
+      "sha256": "eaee3f93f3699c7ce33ff295f3d77a1d5b0d589597c19fcebee7e6743f5a90eb"
+    },
+    "legacy_possessions_1997": {
+      "path": "rapm/data/possession_cache/matchups_1997.parquet",
+      "sha256": "0e8c1595c30a1d992ede193a6a5c49c288d1d27db6384b169ebaf51fd4c9a143"
+    },
+    "legacy_possessions_1998": {
+      "path": "rapm/data/possession_cache/matchups_1998.parquet",
+      "sha256": "5850ca110f24f01e46fb86178b1610c722e487f563780c49c1a666abd2ebe009"
+    },
+    "legacy_possessions_1999": {
+      "path": "rapm/data/possession_cache/matchups_1999.parquet",
+      "sha256": "08336b1c5a11c0564f96d84d05a1d534ba49d9526a3f5f842cadeec5e6e28dcd"
+    },
+    "legacy_possessions_2000": {
+      "path": "rapm/data/possession_cache/matchups_2000.parquet",
+      "sha256": "cafbf4683758f1e784575ca3868b851775d0f9cedfbc13759454664ed4d62fe9"
+    },
+    "legacy_possessions_2001": {
+      "path": "rapm/data/possession_cache/matchups_2001.parquet",
+      "sha256": "63582303b28ee1026aa58428dec663fee5856fbd0f938ab595c1640739510353"
+    },
+    "legacy_possessions_2002": {
+      "path": "rapm/data/possession_cache/matchups_2002.parquet",
+      "sha256": "81c1c3ffc42ec61510ac739f53d6b17c5a6b329275d3ad4a99897154e08828a2"
+    },
+    "legacy_possessions_2003": {
+      "path": "rapm/data/possession_cache/matchups_2003.parquet",
+      "sha256": "50cf444a63a9da1bb136066a9eae1f272739b4da67e0c1f6b028f57e907e777f"
+    },
+    "legacy_possessions_2004": {
+      "path": "rapm/data/possession_cache/matchups_2004.parquet",
+      "sha256": "110bb46481b0b64d2018587fbfd8fa341afd4d33a243acf3ab7817d8e7ce47fa"
+    },
+    "legacy_possessions_2005": {
+      "path": "rapm/data/possession_cache/matchups_2005.parquet",
+      "sha256": "4e8eaca4acae5336272a9a980b979a089626ecb7c7d18c56306a974fe10980af"
+    },
+    "legacy_possessions_2006": {
+      "path": "rapm/data/possession_cache/matchups_2006.parquet",
+      "sha256": "e1c6cd8985622cb04d37e8e0ddb3eb52e494be6bed2727538e40f79f72ab2b88"
+    },
+    "legacy_possessions_2007": {
+      "path": "rapm/data/possession_cache/matchups_2007.parquet",
+      "sha256": "a563f4d752f0224282200806e4a7b0f66f68eed68d272d0e9c3c6c8dc7b4e140"
+    },
+    "legacy_possessions_2008": {
+      "path": "rapm/data/possession_cache/matchups_2008.parquet",
+      "sha256": "0875b29f3c75694e3af2a2ae8ddb284b3e335fc823baecaa58b7ca8d84027ab1"
+    },
+    "legacy_possessions_2009": {
+      "path": "rapm/data/possession_cache/matchups_2009.parquet",
+      "sha256": "8c7913d0d637e67b5ccea8bd6035990c0a9805815da3946c922ec22e824e0e96"
+    },
+    "legacy_possessions_2010": {
+      "path": "rapm/data/possession_cache/matchups_2010.parquet",
+      "sha256": "7444cc16c6c7421ea7056b200db49d19010151689a6d27f94178f9a83c7c4300"
+    },
+    "legacy_possessions_2011": {
+      "path": "rapm/data/possession_cache/matchups_2011.parquet",
+      "sha256": "c18f5d9a523839dbb0c8e823b550a3df1dc49a566139ef4a3e95bc03b89597ac"
+    },
+    "legacy_possessions_2012": {
+      "path": "rapm/data/possession_cache/matchups_2012.parquet",
+      "sha256": "3099aadc5d321a6875f0f48aa3d7f39a14b7210c2de12382225b1e9aa5989979"
+    },
+    "legacy_possessions_2013": {
+      "path": "rapm/data/possession_cache/matchups_2013.parquet",
+      "sha256": "2f0754bd9076ffd02dffda47a1403a3f9e5c06bc8168e194b4ef72f8fc42127a"
+    },
+    "legacy_possessions_2014": {
+      "path": "rapm/data/possession_cache/matchups_2014.parquet",
+      "sha256": "fb43d6adac1498dad4ac146d7d8af6302689a0f398fc4ce11a1633c8439a3b7b"
+    },
+    "legacy_possessions_2015": {
+      "path": "rapm/data/possession_cache/matchups_2015.parquet",
+      "sha256": "7da4d7782cb6f0ee7ea62a2a8cf0c4aad20c278894f383687d453f28dbfb5790"
+    },
+    "legacy_possessions_2016": {
+      "path": "rapm/data/possession_cache/matchups_2016.parquet",
+      "sha256": "76a2d71a3a99aa59f5b350202074a4aa6593d69b1eadcb970e25580165951c43"
+    },
+    "legacy_possessions_2017": {
+      "path": "rapm/data/possession_cache/matchups_2017.parquet",
+      "sha256": "a3845ef9eb7c9e777f9785fdf83a5baec992f151822c96c71e340f234af340e5"
+    },
+    "legacy_possessions_2018": {
+      "path": "rapm/data/possession_cache/matchups_2018.parquet",
+      "sha256": "9795706ae88602450e2e8e51cf18334ca90e838ab60ecabf48c6a2628b007f92"
+    },
+    "legacy_possessions_2019": {
+      "path": "rapm/data/possession_cache/matchups_2019.parquet",
+      "sha256": "13c96c21ec744bb50eadba1f385b75800895f78af00cc9535502803998c4103f"
+    },
+    "legacy_possessions_2020": {
+      "path": "rapm/data/possession_cache/matchups_2020.parquet",
+      "sha256": "b177865501897984437fcc8c08ee229ff462e0319e032f7642b5077670d375c6"
+    },
+    "legacy_possessions_2021": {
+      "path": "rapm/data/possession_cache/matchups_2021.parquet",
+      "sha256": "0bfd107dad6959b1a45e4c7762fcde2d901e364d64b632299deeb22092749a6a"
+    },
+    "legacy_possessions_2022": {
+      "path": "rapm/data/possession_cache/matchups_2022.parquet",
+      "sha256": "b04388818590ad1bff4fb6b9ca9d27dd4ac9dc6dd744c34160153206bcb32248"
+    },
+    "legacy_possessions_2023": {
+      "path": "rapm/data/possession_cache/matchups_2023.parquet",
+      "sha256": "15f710ba2964bcbc80ca4753038b8c22fb18188bafd0cb62c886ac39840faa15"
+    },
+    "mechanism_annual_features": {
+      "path": "artifacts/research/mechanism_feature_panel/mechanism_feature_panel_v1_9224606a01/annual_features.parquet",
+      "sha256": "99045a0a606d8b147c2cd607a238c9430425af18de5e7bc24843e82c6cbb72f9"
+    },
+    "rich_annual_features": {
+      "path": "artifacts/research/complete_feature_coverage/semantically_complete_spm_features_v1_fdee01ec4e/annual_features.parquet",
+      "sha256": "d44b622b8416af51199886103bbaf88911d6605b688c87d287989789aaf77d3a"
+    },
+    "runner": {
+      "path": "research/run_target_window_spm_aio.py",
+      "sha256": "d9e1f8b797b73a4ed39db3a531597fe0e58aefbe899dae9aafbbd91908e83765"
+    },
+    "silver_lineups": {
+      "path": "data/lake/silver/possession_lineup_segments.parquet",
+      "sha256": "68bc998a6ddb4bf02fcd962154a68c37db15f29c33d5bad2a2897926821b4063"
+    },
+    "silver_possessions": {
+      "path": "data/lake/silver/possessions.parquet",
+      "sha256": "5d97a6aec9e544d46adbd970e95f6d2226a15d2c5d9a3832ef1f915170182f75"
+    }
+  },
+  "status": "reused_diagnostic_complete"
+}
