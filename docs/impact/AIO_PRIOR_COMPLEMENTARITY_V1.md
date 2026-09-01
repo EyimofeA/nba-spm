@@ -59,27 +59,27 @@ five offensive player columns, five defensive player columns, and one home
 column. The baseline AIO penalties are `3000` for offense, `4500` for defense,
 and `300` for home.
 
-For prior center \(\mu\), total penalty \(\lambda_T\), and prior trust \(s\),
+For prior center $\mu$, total penalty $\lambda_T$, and prior trust $s$,
 the AIO solves:
 
-\[
+$$
 \hat\beta
 =
 (X^TX+P_{\lambda_T})^{-1}
 \left[X^T(y-b)+sP_{\lambda_T}\mu\right].
-\]
+$$
 
 This form separates general ridge shrinkage from trust in the statistical
 center. It is equivalent to combining a zero-centered penalty and a
 prior-centered penalty:
 
-\[
+$$
 \lambda_0\|\beta\|^2+\lambda_\mu\|\beta-\mu\|^2
 =
 \lambda_T\|\beta-s\mu\|^2+C,
 \qquad
 s=\frac{\lambda_\mu}{\lambda_T}.
-\]
+$$
 
 Box15 uses 15 box-score rates for each side and ridge regression. Rich SPM uses
 the full annual statistical feature panel. Offense uses elastic net. Defense
@@ -90,11 +90,11 @@ their RAPM labels. Possessions are weights, not input features.
 
 The experiment compares three chronological definitions.
 
-| Design | Training pair | Input at rating season \(t\) | Interpretation |
+| Design | Training pair | Input at rating season $t$ | Interpretation |
 | --- | --- | --- | --- |
-| Current control | \(X_s \rightarrow R^{9,current}_s\) | \(X_t\) | Target and input include season \(t\) evidence |
-| Target-excluded | \(X_s \rightarrow R^{9,past}_s\) | \(X_t\) | Stable RAPM label excludes season \(t\) |
-| Fully lagged | \(X_s \rightarrow R^{9,current}_s\) | \(X_{t-1}\) | Statistical input and target precede season \(t\) |
+| Current control | $X_s \rightarrow R^{9,current}_s$ | $X_t$ | Target and input include season $t$ evidence |
+| Target-excluded | $X_s \rightarrow R^{9,past}_s$ | $X_t$ | Stable RAPM label excludes season $t$ |
+| Fully lagged | $X_s \rightarrow R^{9,current}_s$ | $X_{t-1}$ | Statistical input and target precede season $t$ |
 
 Target exclusion helps Box15 by only `0.0035` aggregate RMSE across all ten
 folds. Its paired MSE interval crosses zero. Full lagging worsens Box15 by
@@ -110,13 +110,13 @@ simple censoring does not create complementarity.
 The direct blend takes Box15 offense and defense and adds separate fractions
 of the rich-minus-Box difference:
 
-\[
+$$
 \mu_O=\mu_{Box,O}+\gamma_O(\mu_{Rich,O}-\mu_{Box,O}),
 \qquad
 \mu_D=\mu_{Box,D}+\gamma_D(\mu_{Rich,D}-\mu_{Box,D}).
-\]
+$$
 
-Later walk-forward selections keep \(\gamma_O=0\) and use nonzero defensive
+Later walk-forward selections keep $\gamma_O=0$ and use nonzero defensive
 weight. Rich offense does not add transferable signal after the one-season
 RAPM update.
 
@@ -154,11 +154,11 @@ inputs.
 Both prior error and one-season RAPM error subtract the same future RAPM
 reference:
 
-\[
+$$
 e^{prior}=\mu-R^{3,future},
 \qquad
 e^{rapm}=R^1-R^{3,future}.
-\]
+$$
 
 The observed defense correlation is `0.683` for Box15 and `0.740` for rich
 SPM. The rich-minus-Box difference is about `0.057`. Offense differs by only
@@ -176,11 +176,11 @@ game results support a defense-only residual. They do not prove why it works.
 
 ## The RAPM update helps Box15 more
 
-For prior prediction error \(e\) and RAPM update \(u\), the scored identity is:
+For prior prediction error $e$ and RAPM update $u$, the scored identity is:
 
-\[
+$$
 MSE_{AIO}=MSE_{prior}+E[u^2]-2E[eu].
-\]
+$$
 
 The identity holds to a maximum numerical error of `8.53e-14`. Every candidate
 benefits from the one-season possession update. Box15 leaves more useful signal
