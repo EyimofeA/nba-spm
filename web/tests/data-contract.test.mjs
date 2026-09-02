@@ -22,9 +22,8 @@ test("the catalog offers exactly the models the client can render", () => {
   assert.deepEqual(
     catalog.catalog.models.map(({ id, prefix }) => ({ id, prefix })),
     [
-      { id: "aio", prefix: "aio_" },
-      { id: "rapm", prefix: "normal_rapm_" },
-      { id: "spm", prefix: "spm_" },
+      { id: "pulse", prefix: "pulse_" },
+      { id: "rapm", prefix: "rapm_" },
     ],
   );
   for (const model of catalog.catalog.models) {
@@ -42,8 +41,8 @@ test("the snapshot carries no win probability and no stabilized roles", () => {
 });
 
 test("an unavailable model falls back to a model carried by the season", () => {
-  assert.equal(resolveModel(read("leaderboard-2026.json"), "aio").id, "rapm");
-  assert.equal(resolveModel(read("leaderboard-2024.json"), "aio").id, "aio");
+  assert.equal(resolveModel(read("leaderboard-2026.json"), "unknown").id, "pulse");
+  assert.equal(resolveModel(read("leaderboard-2024.json"), "rapm").id, "rapm");
 });
 
 test("every production payload matches the release manifest", () => {
@@ -61,15 +60,13 @@ test("every production payload matches the release manifest", () => {
 });
 
 test("season tables expose only the validated model coverage", () => {
-  const rapmSeasons = [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
-  const annualSeasons = [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024];
-  assert.deepEqual(catalog.catalog.seasons, rapmSeasons);
+  const seasons = Array.from({ length: 30 }, (_, index) => 1997 + index);
+  assert.deepEqual(catalog.catalog.seasons, seasons);
   assert.deepEqual(
     Object.fromEntries(catalog.catalog.models.map((model) => [model.id, model.seasons])),
     {
-      aio: annualSeasons,
-      rapm: rapmSeasons,
-      spm: annualSeasons,
+      pulse: seasons,
+      rapm: seasons,
     },
   );
   for (const season of catalog.catalog.seasons) {
@@ -78,20 +75,18 @@ test("season tables expose only the validated model coverage", () => {
     for (const row of rows) {
       assert.equal(row.Season, season);
       assert.equal(typeof row.PLAYER_NAME, "string");
-      assert.equal(typeof row.normal_rapm_net, "number");
-      assert.ok(Math.abs(row.normal_rapm_offense + row.normal_rapm_defense - row.normal_rapm_net) < 0.001, "RAPM offense plus defense must equal net");
-      for (const model of catalog.catalog.models.filter(({ id }) => id !== "rapm")) {
-        const published = model.seasons.includes(season);
-        for (const component of ["offense", "defense", "net"]) {
-          assert.equal(
-            typeof row[`${model.prefix}${component}`] === "number",
-            published,
-            `${model.id} ${season} coverage disagrees with the catalog`,
-          );
-        }
+      for (const prefix of ["rapm_", "pulse_", "pulse_prior_", "lineup_update_"]) {
+        assert.equal(typeof row[`${prefix}net`], "number");
+        assert.ok(
+          Math.abs(row[`${prefix}offense`] + row[`${prefix}defense`] - row[`${prefix}net`]) < 0.001,
+          `${prefix} offense plus defense must equal net`,
+        );
       }
-      if (annualSeasons.includes(season)) {
-        assert.ok(Math.abs(row.aio_offense + row.aio_defense - row.aio_net) < 0.001, "AIO offense plus defense must equal net");
+      for (const component of ["offense", "defense", "net"]) {
+        assert.ok(
+          Math.abs(row[`pulse_prior_${component}`] + row[`lineup_update_${component}`] - row[`pulse_${component}`]) < 0.001,
+          `PULSE prior plus lineup update must equal PULSE ${component}`,
+        );
       }
       assert.ok(row.Poss_Off >= 0 && row.Poss_Def >= 0);
     }
@@ -112,9 +107,11 @@ test("the player index points at existing shards", () => {
 });
 
 test("historical player metadata survives snapshot generation", () => {
-  const historicalSeasons = new Set(catalog.catalog.models.find(({ id }) => id === "aio").seasons);
+  const historicalSeasons = new Set(catalog.catalog.seasons);
+  const profileSeasons = new Set(Array.from({ length: 13 }, (_, index) => 2014 + index));
   let historicalRows = 0;
   let rowsWithTeam = 0;
+  let eligibleProfileRows = 0;
   let profileRows = 0;
   for (const shard of new Set(read("players.json").map(({ shard }) => shard))) {
     for (const player of Object.values(read(`ratings-${String(shard).padStart(2, "0")}.json`))) {
@@ -122,10 +119,11 @@ test("historical player metadata survives snapshot generation", () => {
         if (!historicalSeasons.has(row.Season)) continue;
         historicalRows += 1;
         rowsWithTeam += Number(typeof row.TEAM_ABBREVIATION === "string" && row.TEAM_ABBREVIATION.length > 0);
+        eligibleProfileRows += Number(profileSeasons.has(row.Season));
       }
-      profileRows += player.profiles.filter(({ Season }) => historicalSeasons.has(Season)).length;
+      profileRows += player.profiles.filter(({ Season }) => profileSeasons.has(Season)).length;
     }
   }
   assert.ok(rowsWithTeam / historicalRows >= 0.98, "historical team labels disappeared");
-  assert.ok(profileRows / historicalRows >= 0.98, "historical player profiles disappeared");
+  assert.ok(profileRows / eligibleProfileRows >= 0.98, "2014–26 player profiles disappeared");
 });

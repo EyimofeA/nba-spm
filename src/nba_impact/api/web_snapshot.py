@@ -45,6 +45,23 @@ MODEL_CATALOG = [
     },
 ]
 
+PULSE_MODEL_CATALOG = [
+    {
+        "id": "pulse",
+        "label": "PULSE",
+        "prefix": "pulse_",
+        "source": "pulse_",
+        "note": "Box prior updated with one season of lineup evidence.",
+    },
+    {
+        "id": "rapm",
+        "label": "RAPM",
+        "prefix": "rapm_",
+        "source": "rapm_",
+        "note": "One-season zero-prior ridge fit on possession lineups.",
+    },
+]
+
 # Public snapshots must not transcribe values from unrelated model runs. The
 # research app can load a benchmark artifact with matching lineage separately.
 EXTERNAL_BENCHMARK: dict[str, Any] = {}
@@ -74,13 +91,66 @@ def _compact_role(role: dict[str, Any] | None) -> dict[str, Any] | None:
     }
 
 
-def _model_columns(frame: pd.DataFrame) -> dict[str, str]:
+def _model_columns(
+    frame: pd.DataFrame, model_catalog: list[dict[str, str]] | None = None
+) -> dict[str, str]:
     """Map available source rating columns to their exported names."""
     return {
         f"{model['source']}{component}": f"{model['prefix']}{component}"
-        for model in MODEL_CATALOG
+        for model in (model_catalog or MODEL_CATALOG)
         for component in COMPONENTS
         if f"{model['source']}{component}" in frame.columns
+    }
+
+
+def _pulse_evidence(project_root: Path, manifest: dict[str, Any] | None) -> dict[str, Any]:
+    if manifest is None:
+        return {}
+    evidence = manifest.get("config", {}).get("evidence", {})
+    pulse_path = project_root / "artifacts/models/pulse" / str(manifest.get("run_id", ""))
+    canonical_summary = pulse_path / "validation_summary.parquet"
+    target_path = project_root / str(evidence.get("target_window_run", ""))
+    summary_path = canonical_summary if canonical_summary.exists() else target_path / "summary.parquet"
+    rows: list[dict[str, Any]] = []
+    if summary_path.exists():
+        summary = pd.read_parquet(summary_path)
+        wanted = summary.loc[summary["candidate"].isin([
+            "pulse", "rapm", "prior", "box15_9y_normal_aio",
+            "zero_prior_rapm", "rich_spm_9y_normal_aio",
+        ])].copy()
+        rows = wanted.round(6).astype(object).where(wanted.notna(), None).to_dict(orient="records")
+    return {
+        "definition": "PULSE prior + lineup update = PULSE",
+        "prior": "Ridge model of nine-year normal RAPM from one season of 15 per-100 box inputs.",
+        "lineup_update": "One joint score-conserving lineup-stint ridge fit with possession weights and 3000 offense, 4500 defense, and 300 home penalties.",
+        "validation": "Train on earlier rating seasons, form the rated-season prior, update with rated-season possessions, and score next-season games.",
+        "box15_inputs": [
+            "Points", "Assists", "Turnovers", "Steals", "Blocks",
+            "Offensive rebounds", "Defensive rebounds", "Personal fouls",
+            "Fouls drawn", "Free throws attempted", "Free throws made",
+            "Two-point attempts", "Two-point makes", "Three-point attempts",
+            "Three-point makes",
+        ],
+        "comparison": rows,
+    }
+
+
+def _external_metric_evidence(run_path: Path | None) -> dict[str, Any]:
+    if run_path is None:
+        return {"summary": [], "correlations": [], "note": ""}
+    manifest_path = run_path / "run.json"
+    summary_path = run_path / "aggregate_metrics.parquet"
+    correlations_path = run_path / "metric_correlations.parquet"
+    if not all(path.exists() for path in (manifest_path, summary_path, correlations_path)):
+        raise FileNotFoundError("External benchmark requires its manifest, summary, and correlations.")
+    manifest = json.loads(manifest_path.read_text())
+    summary = pd.read_parquet(summary_path)
+    correlations = pd.read_parquet(correlations_path)
+    return {
+        "run_id": manifest.get("run_id", run_path.name),
+        "summary": summary.round(6).astype(object).where(summary.notna(), None).to_dict(orient="records"),
+        "correlations": correlations.round(6).astype(object).where(correlations.notna(), None).to_dict(orient="records"),
+        "note": manifest.get("forbidden_interpretation", ""),
     }
 
 
@@ -465,6 +535,9 @@ def build_web_snapshot(
     current_normal_rapm_run_path: str | Path | None = None,
     current_player_games_path: str | Path | None = None,
     player_sheet_source_overrides: dict[int, str | Path] | None = None,
+    pulse_run_path: str | Path | None = None,
+    pulse_decomposition_run_path: str | Path | None = None,
+    external_benchmark_run_path: str | Path | None = None,
     shards: int = 128,
 ) -> dict:
     """Write indexes plus season-specific tables and role maps."""
@@ -475,16 +548,72 @@ def build_web_snapshot(
     historical_seasons = sorted(int(value) for value in store.annual["Season"].unique())
     project_root = Path(__file__).resolve().parents[3]
     sheets = Path(player_sheets_dir or project_root / "data/raw/playersheets/year_totals")
+    pulse_path = Path(pulse_run_path) if pulse_run_path else None
     current_run_id: str | None = None
     current_rows = pd.DataFrame(columns=["PLAYER_ID", "Season"])
-    if current_normal_rapm_run_path is not None:
+    if current_normal_rapm_run_path is not None and pulse_path is None:
         current_rows, current_run_id = _current_normal_rapm_rows(
             Path(current_normal_rapm_run_path),
             sheets,
             Path(current_player_games_path) if current_player_games_path else None,
             historical_seasons,
         )
-    historical = store.annual.copy()
+    model_catalog = PULSE_MODEL_CATALOG if pulse_path else MODEL_CATALOG
+    if pulse_path:
+        pulse_manifest_path = pulse_path / "run.json"
+        pulse_ratings_path = pulse_path / "ratings.parquet"
+        if not pulse_manifest_path.exists() or not pulse_ratings_path.exists():
+            raise FileNotFoundError("PULSE snapshot requires run.json and ratings.parquet.")
+        pulse_manifest = json.loads(pulse_manifest_path.read_text())
+        historical = pd.read_parquet(pulse_ratings_path)
+        required_pulse = {
+            "PLAYER_ID", "PLAYER_NAME", "Season", "Poss_Off", "Poss_Def",
+            "pulse_offense", "pulse_defense", "pulse_net",
+            "pulse_prior_offense", "pulse_prior_defense", "pulse_prior_net",
+            "lineup_update_offense", "lineup_update_defense", "lineup_update_net",
+            "rapm_offense", "rapm_defense", "rapm_net",
+        }
+        if missing := sorted(required_pulse - set(historical.columns)):
+            raise ValueError(f"PULSE ratings are missing columns: {missing}")
+        if historical.duplicated(["PLAYER_ID", "Season"]).any():
+            raise ValueError("PULSE ratings contain duplicate player-seasons.")
+        for prefix in ("pulse_", "pulse_prior_", "lineup_update_", "rapm_"):
+            if not np.allclose(
+                historical[f"{prefix}net"],
+                historical[f"{prefix}offense"] + historical[f"{prefix}defense"],
+                atol=1e-10,
+            ):
+                raise ValueError(f"PULSE ratings violate the {prefix} side identity.")
+        if not np.allclose(
+            historical[["pulse_offense", "pulse_defense", "pulse_net"]].to_numpy(),
+            historical[["pulse_prior_offense", "pulse_prior_defense", "pulse_prior_net"]].to_numpy()
+            + historical[["lineup_update_offense", "lineup_update_defense", "lineup_update_net"]].to_numpy(),
+            atol=1e-10,
+        ):
+            raise ValueError("PULSE prior plus lineup update does not equal PULSE.")
+        historical_seasons = sorted(int(value) for value in historical["Season"].unique())
+    else:
+        pulse_manifest = None
+        historical = store.annual.copy()
+    decomposition_manifest: dict[str, Any] | None = None
+    if pulse_decomposition_run_path is not None:
+        decomposition_path = Path(pulse_decomposition_run_path)
+        decomposition_manifest = json.loads((decomposition_path / "run.json").read_text())
+        decomposition = pd.read_parquet(decomposition_path / "factor_ledger.parquet")
+        if decomposition.duplicated(["PLAYER_ID", "Season"]).any():
+            raise ValueError("PULSE factor ledger contains duplicate player-seasons.")
+        factor_columns = [
+            column for column in decomposition
+            if column.endswith("_contribution") or column.endswith("_residual")
+        ]
+        native_columns = [
+            column for column in decomposition
+            if column.startswith(("shooting_ts_", "turnover_avoidance_", "opponent_oreb_prevention_"))
+        ]
+        historical = historical.merge(
+            decomposition[["PLAYER_ID", "Season", *native_columns, *factor_columns]],
+            on=["PLAYER_ID", "Season"], how="left", validate="one_to_one",
+        )
     overlap = current_rows.loc[current_rows["Season"].isin(historical_seasons)].copy()
     if not overlap.empty:
         overlap_seasons = sorted(int(value) for value in overlap["Season"].unique())
@@ -560,7 +689,7 @@ def build_web_snapshot(
         for player_id, group in profiles.groupby("PLAYER_ID", sort=False)
     }
 
-    annual_model_columns = _model_columns(annual)
+    annual_model_columns = _model_columns(annual, model_catalog)
     player_ids = sorted(set(annual["PLAYER_ID"].astype(int)))
     players: dict[str, dict] = {}
     index = []
@@ -583,6 +712,26 @@ def build_web_snapshot(
                         exported: round(float(row[source]), 4)
                         for source, exported in annual_model_columns.items()
                         if pd.notna(row.get(source))
+                    },
+                    **{
+                        column: round(float(row[column]), 4)
+                        for column in (
+                            "pulse_prior_offense", "pulse_prior_defense", "pulse_prior_net",
+                            "lineup_update_offense", "lineup_update_defense", "lineup_update_net",
+                        )
+                        if column in row and pd.notna(row[column])
+                    },
+                    **{
+                        column: round(float(row[column]), 4)
+                        for column in row
+                        if (
+                            column.endswith("_contribution")
+                            or column.endswith("_residual")
+                            or column.startswith((
+                                "shooting_ts_", "turnover_avoidance_",
+                                "opponent_oreb_prevention_",
+                            ))
+                        ) and pd.notna(row[column])
                     },
                 }
                 for row in player_rows.to_dict(orient="records")
@@ -625,11 +774,12 @@ def build_web_snapshot(
                 ].unique()
             ),
         }
-        for model in MODEL_CATALOG
+        for model in model_catalog
     ]
+    aging_source = "pulse_net" if pulse_path else "aio_net"
     aio_aging_seasons = sorted(
         int(value)
-        for value in annual.loc[annual["aio_net"].notna(), "Season"].unique()
+        for value in annual.loc[annual[aging_source].notna(), "Season"].unique()
     )
     catalog = {
         "schema_version": "nba_impact_web_snapshot_v2",
@@ -647,17 +797,30 @@ def build_web_snapshot(
             },
         },
         "lineage": {
-            "annual_run_id": config.annual_run_id,
+            "annual_run_id": (
+                pulse_manifest.get("run_id", pulse_path.name) if pulse_manifest else config.annual_run_id
+            ),
             "rolling_run_id": config.rolling_run_id,
             "current_rapm_run_id": config.current_rapm_run_id,
             "current_normal_rapm_run_id": current_run_id,
             "side_roles_run_id": config.side_roles_run_id,
             "profile_feature_source": profile_feature_source,
+            "pulse_decomposition_run_id": (
+                decomposition_manifest.get("run_id") if decomposition_manifest else None
+            ),
         },
         "methods": {
-            "aio_equation": "AIO = SPM center + centered RAPM update",
-            "rapm_update_note": "The update is the deviation of one joint centered ridge fit from its SPM center; it is not zero-prior RAPM added afterward.",
+            "aio_equation": (
+                "PULSE = PULSE prior + lineup update"
+                if pulse_path else "AIO = SPM center + centered RAPM update"
+            ),
+            "rapm_update_note": (
+                "The lineup update is the movement from the statistical prior in one joint ridge fit."
+                if pulse_path else
+                "The update is the deviation of one joint centered ridge fit from its SPM center; it is not zero-prior RAPM added afterward."
+            ),
             "spm_calibration": _calibration_summary(spm_path / "oof_predictions.parquet") if spm_path else {},
+            "pulse": _pulse_evidence(project_root, pulse_manifest),
         },
         "aging": {
             "rapm": {
@@ -671,7 +834,7 @@ def build_web_snapshot(
                     if aio_aging_seasons
                     else "unavailable"
                 ),
-                "rows": _aio_aging_rows(store.annual, team_age),
+                "rows": _aio_aging_rows(store.annual, team_age) if not pulse_path else [],
             },
         },
         "validation": {
@@ -680,6 +843,9 @@ def build_web_snapshot(
             "walk_backward": _walk_backward_summary(backward_path) if backward_path else [],
             "aging_projection": _aging_projection_summary(projection_path) if projection_path else {},
             "external_benchmark": EXTERNAL_BENCHMARK,
+            "metric_comparison": _external_metric_evidence(
+                Path(external_benchmark_run_path) if external_benchmark_run_path else None
+            ),
         },
         "shards": shards,
     }
@@ -725,7 +891,7 @@ def build_web_snapshot(
     base_columns = [
         "PLAYER_ID", "PLAYER_NAME", "Season", "TEAM_ABBREVIATION", "Poss_Off", "Poss_Def",
     ]
-    rating_columns = _model_columns(annual)
+    rating_columns = _model_columns(annual, model_catalog)
     for season in seasons:
         frame = annual.loc[annual["Season"].eq(season)].copy()
         for column in base_columns:
@@ -736,9 +902,15 @@ def build_web_snapshot(
             for source, exported in rating_columns.items()
             if frame[source].notna().any()
         }
-        selected = frame[base_columns + list(season_rating_columns)].rename(columns=season_rating_columns)
+        detail_columns = [
+            column for column in (
+                "pulse_prior_offense", "pulse_prior_defense", "pulse_prior_net",
+                "lineup_update_offense", "lineup_update_defense", "lineup_update_net",
+            ) if column in frame
+        ]
+        selected = frame[base_columns + list(season_rating_columns) + detail_columns].rename(columns=season_rating_columns)
         exported = list(season_rating_columns.values())
-        selected[exported] = selected[exported].round(4)
+        selected[exported + detail_columns] = selected[exported + detail_columns].round(4)
         selected = selected.astype(object).where(selected.notna(), None)
         name = f"leaderboard-{season}.json"
         files[name] = write(name, selected.to_dict(orient="records"))
@@ -772,11 +944,16 @@ def build_web_snapshot(
     ).hexdigest()
     release_artifacts = [
         {
-            "artifact_id": config.annual_run_id,
-            "relative_path": f"models/{config.annual_model_family}/{config.annual_run_id}",
+            "artifact_id": pulse_manifest.get("run_id", pulse_path.name) if pulse_manifest else config.annual_run_id,
+            "relative_path": (
+                f"models/pulse/{pulse_manifest.get('run_id', pulse_path.name)}"
+                if pulse_manifest else f"models/{config.annual_model_family}/{config.annual_run_id}"
+            ),
             "season_scope": f"{historical_seasons[0]}-{historical_seasons[-1]}",
-            "evidence_status": "research_challenger_not_production",
-            "run_status": str(store.annual_manifest.get("status", "unknown")),
+            "evidence_status": "public_retrospective_reference" if pulse_manifest else "research_challenger_not_production",
+            "run_status": str(
+                pulse_manifest.get("status", "unknown") if pulse_manifest else store.annual_manifest.get("status", "unknown")
+            ),
         }
     ]
     if current_run_id is not None:

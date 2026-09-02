@@ -2111,6 +2111,9 @@ def command_build_web_snapshot(args: argparse.Namespace) -> int:
         current_normal_rapm_run_path=args.current_normal_rapm_run,
         current_player_games_path=args.current_player_games,
         player_sheet_source_overrides=player_sheet_source_overrides,
+        pulse_run_path=args.pulse_run,
+        pulse_decomposition_run_path=args.pulse_decomposition_run,
+        external_benchmark_run_path=args.external_benchmark_run,
         shards=args.shards,
     )
     print(json.dumps(result, indent=2))
@@ -4457,6 +4460,24 @@ def build_parser() -> argparse.ArgumentParser:
         / "models"
         / "single_season_spm"
         / "single_season_spm_v1_18496a1348",
+    )
+    web_snapshot.add_argument(
+        "--pulse-run",
+        type=Path,
+        default=None,
+        help="Optional PULSE release artifact. When set, PULSE replaces the legacy AIO panel.",
+    )
+    web_snapshot.add_argument(
+        "--pulse-decomposition-run",
+        type=Path,
+        default=None,
+        help="Optional exact-residual PULSE factor ledger.",
+    )
+    web_snapshot.add_argument(
+        "--external-benchmark-run",
+        type=Path,
+        default=None,
+        help="Optional external all-in-one benchmark artifact for About PULSE.",
     )
     web_snapshot.add_argument(
         "--player-sheets-dir",

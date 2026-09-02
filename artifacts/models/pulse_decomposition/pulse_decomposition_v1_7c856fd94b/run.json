@@ -1,0 +1,37 @@
+{
+  "alpha": 100.0,
+  "factor_sides": {
+    "defense": {
+      "opponent_oreb_prevention": "opponent_oreb_prevention_defense",
+      "shooting_ts": "shooting_ts_defense",
+      "turnover_value": "turnover_avoidance_defense"
+    },
+    "offense": {
+      "offensive_rebound_value": "opponent_oreb_prevention_offense",
+      "shooting_ts": "shooting_ts_offense",
+      "turnover_value": "turnover_avoidance_offense"
+    }
+  },
+  "files": {
+    "factor_ledger": "factor_ledger.parquet"
+  },
+  "forbidden_interpretation": "The calibrated components are descriptive statistical allocations, not causal credits. Raw factor values use different units and must not be added without the bridge.",
+  "identity_checks": {
+    "factor_contributions_plus_residual_equal_each_target": true,
+    "offense_plus_defense_equals_net": true,
+    "pulse_prior_plus_lineup_update_equals_pulse": true
+  },
+  "model_family": "descriptive_pulse_factor_bridge_with_exact_residual",
+  "rows": 3407,
+  "run_id": "pulse_decomposition_v1_7c856fd94b",
+  "season_scope": [
+    2021,
+    2026
+  ],
+  "source_hashes": {
+    "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/models/pulse/pulse_canonical_v1_cd3c14750a/ratings.parquet": "2edc649ff02c84a131dae4384c1689846be7fa2c7355114e6a41ceae16177110",
+    "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/research/historical_factor_residual_tournament/historical_factor_residual_tournament_v2_c06bdebcd5/factor_predictions.parquet": "cdf2b544ca2da42639559c5f63a178455aec4f049b7620d8d8e4b2b20db06a39",
+    "/Users/eadebayo/Developer/Projects/Sports Analytics/Basketball/New SPM/artifacts/research/historical_factor_targets/historical_factor_targets_v2_6cd7e959eb/annual_factor_targets.parquet": "6fe917c46aba1a663484389d92ca89da1a4de790cb3680d582c1a5a411cda64d"
+  },
+  "status": "research_descriptive"
+}

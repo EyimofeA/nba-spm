@@ -1,0 +1,28 @@
+{
+  "created_at": "2026-09-02T01:12:34.354516+00:00",
+  "estimand": "next-season whole-game margin prediction from prior-season ratings",
+  "files": {
+    "aggregate_metrics": "aggregate_metrics.parquet",
+    "fold_metrics": "fold_metrics.parquet",
+    "maximal_game_predictions": "maximal_game_predictions.parquet",
+    "paired_intervals": "paired_intervals.parquet",
+    "strict_game_predictions": "strict_game_predictions.parquet"
+  },
+  "forbidden_interpretation": "This is retrospective validation with observed future lineups, not a preseason forecast.",
+  "payload": {
+    "draws": 5000,
+    "inputs": {
+      "pulse_validation_games": "c294b8969f3e8027fba8c67ca97bbf01909c5857857b466ba3615b67665dcb9b"
+    },
+    "seed": 20260902
+  },
+  "primary_metric": "equal-season mean whole-game margin MSE",
+  "quality": {
+    "bootstrap_draws": 5000,
+    "identical_games_within_scope": true,
+    "maximal_seasons": 12,
+    "strict_seasons": 12
+  },
+  "run_id": "pulse_validation_v1_228ca31e8d",
+  "status": "reused_evidence_validation_release"
+}

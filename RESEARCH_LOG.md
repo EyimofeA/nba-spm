@@ -5736,3 +5736,55 @@ Box15 output as a research foundation, not a selected current metric. Next run
 the frozen four-arm weekly oracle-exposure comparison: frozen rich preseason,
 dated zero-prior possessions, frozen Box15 plus dated possessions, and dated
 Box15 plus dated possessions. Keep availability and minutes separate.
+
+## 2026-09-02 — CourtSignal PULSE release candidate
+
+**Question:** Can the selected retrospective prior, its annual lineup update,
+the selected RAPM suite, and a chronological matchup experiment be packaged as
+one reproducible release without reopening model selection?
+
+**Method:** Refit the frozen Box15 ridge mapping to nine-year normal RAPM and
+generate annual PULSE ratings from 1997 through 2026. PULSE uses one-season
+terminal-lineup possession evidence with `3000 / 4500 / 300` offense, defense,
+and home penalties. Build an exact four-factor ledger with an explicit residual.
+Run 5,000 paired whole-game bootstrap draws for the frozen next-season
+comparison. Reconcile official game scores and ten-player lineups. Separately,
+fit scorer-only, two-way ridge, contextual ridge, and chronological residual-
+update matchup models on the archived 2018--25 feed plus the official 2026
+feed. Keep the matchup artifact local-only.
+
+**Result:** PULSE contains 14,568 player-seasons for 2,858 players with complete
+prior coverage and exact prior-plus-update identities. Across 12 available
+next-season folds, PULSE records `13.5604` RMSE versus `13.7248` for zero-prior
+RAPM; the paired MSE difference is `-4.4838`, with 95% interval
+`[-5.2676, -3.6784]`. Across 11 strict common-coverage folds, PULSE records
+`13.6637` RMSE versus `13.7331` for rich SPM plus the same lineup update; the
+paired MSE difference is `-1.9021`, with interval `[-2.4617, -1.3605]`.
+Official-score reconciliation is at least `99.675%` in every season and valid
+ten-player lineup coverage is `100%` in the release contract. The contextual
+matchup model improves on the scorer-only baseline in six of seven seasons and
+records `23.5377` mean RMSE versus `24.4484`; its 2021--26 paired intervals are
+below zero. The sequential Elo-style model does not beat the contextual ridge.
+
+**Decision:** Publish PULSE as the default retrospective rating and keep rich
+SPM as a comparison model. Publish only selected RAPM estimands; keep tuning
+sweeps internal. Keep Matchup Lab local because the contextual model has not
+passed a production gate and the sources do not support defender-specific shot
+quality. The 1997--2016 possession source cannot identify technical free throws.
+Full-span PULSE therefore preserves recorded game scores, while event-derived
+factor ledgers exclude technical free throws only where the feed labels them.
+This limitation blocks a claim of full historical technical-free-throw
+exclusion.
+# 2026-09-02 — Canonical CourtSignal PULSE release candidate
+
+- Corrected the canonical score audit. Nullable reconciliation flags had caused missing games to be ignored. The corrected legacy cache failed and was not released.
+- Downloaded official 1997–2025 play-by-play and complete 1997–2026 lineup stints. The 2026 event feed came from the existing official V3 archive.
+- Built score-conserving lineup stints and excluded 37,735 identified made technical free throws. Minimum season score reconciliation is 99.916%. Valid ten-player lineup coverage is 100%. No identified technical free throw is unmatched.
+- Refit annual RAPM with 3,000 offense, 4,500 defense, and 300 home penalties.
+- Refit nine-year normal RAPM targets with 3,000 offense, 3,000 defense, and 300 home penalties.
+- Refit Box15 PULSE and tested 12 chronological folds from 2014→2015 through 2025→2026.
+- PULSE RMSE is 13.614 points per game. RAPM RMSE is 13.723. The paired MSE difference is -2.970 with a 95% interval of [-3.697, -2.216]. PULSE wins 11 of 12 seasons.
+- PULSE improves in every audited source-era, exposure, and team-change subgroup.
+- Built canonical rolling three-year, rolling five-year, and full-history RAPM leaderboards.
+- Matchup Lab remains local-only. The public bundle contains no matchup artifact.
+- Release manifest: `artifacts/releases/courtsignal_pulse_release_v1_cb99cc7bb1/release_manifest.json`.

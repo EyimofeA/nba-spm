@@ -1,0 +1,56 @@
+schema_version: experiment_preregistration_v1
+experiment_id: pulse_model_screen_v1
+status: frozen_reused_diagnostic
+estimand_id: pulse_nine_year_prior_to_next_season_games_v1
+
+question: >-
+  Can another compact learner or a chronology-safe era representation improve
+  the nine-year Box15 prior after the same one-season lineup update?
+
+rating_seasons: [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+test_seasons: [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+selection_test_seasons: [2017, 2018, 2019, 2020, 2021]
+diagnostic_test_seasons: [2022, 2023, 2024, 2025, 2026]
+
+target:
+  horizon_seasons: 9
+  variant: normal
+  season_environment: centered
+
+features:
+  set: box15
+  input_window_seasons: 1
+  representations: [raw, season_relative, season_standardized]
+  sample_weight: square_root_minimum_side_possessions
+
+learners:
+  families: [ridge, elastic_net, additive_spline_ridge, histogram_gbm, extra_trees]
+  hyperparameter_rule: last_earlier_season_inner_validation
+
+aio:
+  likelihood_seasons: 1
+  lambda_off: 3000
+  lambda_def: 4500
+  lambda_home: 300
+  prior_scale: 1
+  lineup_policy: terminal
+
+evaluation:
+  primary: equal-season mean next-season whole-game margin MSE
+  secondary: [rmse, correlation, calibration_slope]
+  bootstrap_draws: 5000
+  bootstrap_seed: 20260901
+  minimum_rmse_gain: 0.05
+  maximum_correlation_loss: 0.01
+
+rules:
+  - Every prior trains only on target windows ending before its rating season.
+  - Era transformations use only players in the same input season.
+  - Hyperparameters use only seasons earlier than the rating season.
+  - The same rating-season possessions and penalties update every prior.
+  - Selection uses only 2017 through 2021 outcome seasons.
+  - Later outcomes are reused diagnostics, not independent confirmation.
+
+forbidden_interpretation: >-
+  Untouched confirmation, causal player value, or proof that a nonlinear model
+  is intrinsically better than ridge.

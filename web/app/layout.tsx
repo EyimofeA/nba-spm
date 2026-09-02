@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "CourtSignal",
   description:
-    "Basketball player impact in points per 100 possessions: SPM, RAPM, AIO, and roles.",
+    "CourtSignal PULSE and NBA player impact research.",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
 };
 

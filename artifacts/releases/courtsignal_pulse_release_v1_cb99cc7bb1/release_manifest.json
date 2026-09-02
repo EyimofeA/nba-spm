@@ -1,0 +1,97 @@
+{
+  "created_at": "2026-09-02T01:15:00.405396+00:00",
+  "data_quality": {
+    "created_at": "2026-09-02T00:55:18.237153+00:00",
+    "minimum_model_plus_technical_reconciliation": 0.9991589571068125,
+    "minimum_native_score_reconciliation": 0.9991589571068125,
+    "minimum_valid_lineup_fraction": 1.0,
+    "passed": true,
+    "quality_sha256": "fd00e590a415e6474509d0d0d8b8714d108d12d544a0e0f40271f41d9a341eee",
+    "schema_version": "canonical_lineup_stints_v1",
+    "seasons": [
+      1997,
+      2026
+    ],
+    "technical_points_excluded": 37735,
+    "unmatched_technical_free_throws": 0
+  },
+  "gates": {
+    "canonical_data": true,
+    "correlation": true,
+    "decomposition": true,
+    "initial_payload": true,
+    "paired_interval": true,
+    "public_matchup_absent": true,
+    "pulse_identity": true,
+    "rapm_sweeps_absent": true,
+    "rmse_improvement": true,
+    "season_wins": true,
+    "subgroups": true
+  },
+  "initial_payload_gzip_bytes": 84760,
+  "passed": true,
+  "run_id": "courtsignal_pulse_release_v1_cb99cc7bb1",
+  "source_hashes": {
+    "canonical": "deaecb2a0b91254ceada80240b8e9f543a26c69d67d5bb779856d76b8d8eb76e",
+    "decomposition": "d5a5258025b9c07b1af4a77d6b49cc4b9103b3f5939e0b460cd2c140a0645eaf",
+    "pulse": "5f097e1e88e221ead556896c357a8d9262c6fab65034743a04a3056d0ba0f56d",
+    "rapm": "1c36a05873838de554ee3d4a5d4df6a5e301f31de8b6f54ab7adc1ce214a9416",
+    "web": "a560a397bca5d78e7081912f0930e206593eee39f910cebd20d32d980ff3eba4"
+  },
+  "validation": {
+    "mse_delta": -2.9703977675325643,
+    "mse_interval_95": [
+      -3.6965107048551897,
+      -2.2159368409491744
+    ],
+    "pulse_rmse": 13.614438412483118,
+    "pulse_season_wins": 11,
+    "rapm_rmse": 13.723094806013272,
+    "rmse_improvement": 0.1086563935301541,
+    "seasons": 12,
+    "subgroups": [
+      {
+        "dimension": "source_era",
+        "equal_season_mse_delta_pulse_minus_rapm": -1.88915286703856,
+        "games": 3690,
+        "seasons": 3,
+        "value": "pre_tracking"
+      },
+      {
+        "dimension": "source_era",
+        "equal_season_mse_delta_pulse_minus_rapm": -3.3308127343639,
+        "games": 10749,
+        "seasons": 9,
+        "value": "tracking"
+      },
+      {
+        "dimension": "exposure_group",
+        "equal_season_mse_delta_pulse_minus_rapm": -2.042473434537055,
+        "games": 13654,
+        "seasons": 12,
+        "value": "established"
+      },
+      {
+        "dimension": "exposure_group",
+        "equal_season_mse_delta_pulse_minus_rapm": -13.621203994297845,
+        "games": 785,
+        "seasons": 12,
+        "value": "low_exposure"
+      },
+      {
+        "dimension": "team_change_group",
+        "equal_season_mse_delta_pulse_minus_rapm": -3.5522756584793136,
+        "games": 10641,
+        "seasons": 12,
+        "value": "high_team_change"
+      },
+      {
+        "dimension": "team_change_group",
+        "equal_season_mse_delta_pulse_minus_rapm": -1.1069950628487215,
+        "games": 3798,
+        "seasons": 12,
+        "value": "low_team_change"
+      }
+    ]
+  }
+}
