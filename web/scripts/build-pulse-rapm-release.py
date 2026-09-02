@@ -15,6 +15,26 @@ ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / "web/public/data/rapm"
 PULSE = ROOT / "artifacts/models/pulse/pulse_canonical_v1_cd3c14750a"
 CANONICAL_SUITE = ROOT / "artifacts/models/canonical_rapm_suite/canonical_rapm_suite_v1_ed9af098b6"
+EXTERNAL_REPRODUCTION = ROOT / (
+    "research/rapm_lab/outputs/external_reproduction_benchmark/"
+    "external_reproduction_benchmark_v1_0a95702214"
+)
+POINT_CHANNELS = ROOT / (
+    "research/rapm_lab/outputs/points_channel_rapm/"
+    "points_channel_rapm_v1_4507aab97c"
+)
+WP_VS_PULSE = ROOT / (
+    "research/rapm_lab/outputs/wp_rapm_vs_pulse/"
+    "wp_rapm_vs_pulse_v1_3d2995995c"
+)
+TEAMMATE_EFFECTS = ROOT / (
+    "research/rapm_lab/outputs/teammate_play_channels/"
+    "teammate_play_channels_v1_9f5feb3641"
+)
+SHOOTING_LUCK = ROOT / (
+    "research/rapm_lab/outputs/luck_teammate_shooting_rapm/"
+    "luck_teammate_shooting_rapm_v1_3641085323"
+)
 
 
 def _write(path: Path, value: object) -> dict[str, object]:
@@ -108,36 +128,11 @@ def main() -> int:
     filename = "same-age-27-1997-2026.json"
     cols = ["PLAYER_ID", "PLAYER_NAME", "offense", "defense", "net", "Poss_Off", "Poss_Def"]
     files[filename] = _write(OUTPUT / filename, _records(one[[c for c in cols if c in one]]))
-    catalog.append({"id": "same-age-27", "title": "Full-history same-age RAPM", "unit": "points per 100", "note": "Player impact evaluated at age 27.", "periods": [{"id": "1997-2026", "label": "1997–2026", "url": f"/data/rapm/{filename}", "rows": len(one)}]})
+    catalog.append({"id": "same-age-27", "title": "Full-history age-27 RAPM", "unit": "points per 100", "note": "One 1997–2026 fit with every player evaluated at age 27. This is not single-season RAPM.", "periods": [{"id": "1997-2026", "label": "1997–2026", "url": f"/data/rapm/{filename}", "rows": len(one)}]})
 
     age_curve = pd.read_parquet(
         ROOT / "research/rapm_lab/outputs/age_adjusted_rapm/age_adjusted_full_1997_2026_v1_1765feaffc/age_curve.parquet"
     ).rename(columns={"offense": "age_offense", "defense": "age_defense", "net": "age_net"})
-    age_rows = []
-    for season in range(1997, 2027):
-        if season <= 2013:
-            source = ROOT / f"data/lake/bronze/historical_player_sheets/year_totals/{season}.csv"
-            annual_age = pd.read_csv(source, usecols=["PLAYER_ID", "AGE"])
-        else:
-            source = ROOT / f"data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/{season}.parquet"
-            annual_age = pd.read_parquet(source, columns=["PLAYER_ID", "AGE"])
-        annual_age = annual_age.dropna().drop_duplicates("PLAYER_ID")
-        annual_age["PLAYER_ID"] = pd.to_numeric(annual_age["PLAYER_ID"], errors="raise").astype(int)
-        annual_age["age"] = pd.to_numeric(annual_age["AGE"], errors="raise").round().clip(19, 43).astype(int)
-        annual_age["Season"] = season
-        age_rows.append(annual_age[["PLAYER_ID", "Season", "age"]])
-    actual_age = pd.concat(age_rows, ignore_index=True).merge(age_curve, on="age", validate="many_to_one")
-    same_age = age[["PLAYER_ID", "PLAYER_NAME", "age27_offense", "age27_defense"]]
-    actual_age = actual_age.merge(same_age, on="PLAYER_ID", how="inner", validate="many_to_one")
-    actual_age["offense"] = actual_age["age27_offense"] + actual_age["age_offense"]
-    actual_age["defense"] = actual_age["age27_defense"] + actual_age["age_defense"]
-    actual_age["net"] = actual_age["offense"] + actual_age["defense"]
-    _add_grouped(
-        catalog, files, ident="full-history-actual-age", title="Full-history age-conditioned RAPM",
-        frame=actual_age, group="Season",
-        columns=["PLAYER_ID", "PLAYER_NAME", "Season", "age", "offense", "defense", "net"],
-        note="One full-history fit evaluated at each player-season age.",
-    )
 
     decay = _normalize_player(pd.read_parquet(
         ROOT / "research/rapm_lab/outputs/time_decay_actual_age_5y_rapm/time_decay_actual_age_5y_rapm_v1_009decdcfa/ratings.parquet"
@@ -155,7 +150,7 @@ def main() -> int:
     catalog.append({"id": "current-time-decay", "title": "Current time-decayed RAPM", "unit": "points per 100", "note": "Five recent seasons with a five-year half-life. Research leaderboard only.", "periods": [{"id": "2022-2026", "label": "2022–2026", "url": f"/data/rapm/{filename}", "rows": len(normal_decay)}]})
 
     luck = _normalize_player(pd.read_parquet(
-        ROOT / "research/rapm_lab/outputs/luck_teammate_shooting_rapm/luck_teammate_shooting_rapm_v1_3641085323/luck_adjusted_ratings.parquet"
+        SHOOTING_LUCK / "luck_adjusted_ratings.parquet"
     ), names).rename(columns={"luck_offense": "offense", "luck_defense": "defense", "luck_net": "net"})
     filename = "luck-adjusted-2024-2026.json"
     luck_cols = ["PLAYER_ID", "PLAYER_NAME", "offense", "defense", "net", "Poss_Off", "Poss_Def"]
@@ -182,10 +177,12 @@ def main() -> int:
         "defense_wp_percentage_points_per_100": "defense",
         "net_wp_percentage_points_per_100": "net",
     })
+    wp = wp.loc[wp["window_end"].between(2024, 2026)].copy()
     _add_grouped(
         catalog, files, ident="win-probability", title="Win-probability RAPM", frame=wp,
         group="window_end", columns=["PLAYER_ID", "PLAYER_NAME", "window_start", "window_end", "offense", "defense", "net", "Poss_Off", "Poss_Def"],
-        unit="win-probability percentage points per 100", note="Conserved game-level win-probability credit.",
+        unit="win-probability percentage points per 100",
+        note="Conserved game-level win-probability credit. Each board uses a rolling five-season fit; only the latest three endpoints are published.",
     )
 
     units = pd.read_parquet(
@@ -237,6 +234,185 @@ def main() -> int:
                 unit=unit,
                 note="Native factor units. Offense and defense are lineup-adjusted; net is their sum.",
             )
+
+    # One compact six-factor board. The factor columns stay in their native
+    # estimands; the final three columns are the point-scoring RAPM totals.
+    # We do not add unlike factor units together or publish the discarded
+    # factor-to-RAPM reconstruction.
+    factors = _normalize_player(
+        pd.read_parquet(factor_root / "annual_factor_targets.parquet"), names
+    )
+    rapm_totals = annual[[
+        "PLAYER_ID", "Season", "rapm_offense", "rapm_defense", "rapm_net",
+        "Poss_Off", "Poss_Def",
+    ]]
+    six = factors.merge(
+        rapm_totals, on=["PLAYER_ID", "Season"], how="inner", validate="one_to_one"
+    ).rename(columns={
+        "shooting_ts_offense": "off_ts",
+        "turnover_avoidance_offense": "off_tov",
+        "opponent_oreb_prevention_offense": "off_reb",
+        "shooting_ts_defense": "def_ts",
+        "turnover_avoidance_defense": "def_tov",
+        "opponent_oreb_prevention_defense": "def_reb",
+        "rapm_offense": "offense",
+        "rapm_defense": "defense",
+        "rapm_net": "net",
+    })
+    _add_grouped(
+        catalog,
+        files,
+        ident="six-factor-annual",
+        title="Six-factor RAPM",
+        frame=six,
+        group="Season",
+        columns=[
+            "PLAYER_ID", "PLAYER_NAME", "Season", "Poss_Off", "Poss_Def",
+            "off_ts", "off_tov", "off_reb", "def_ts", "def_tov", "def_reb",
+            "offense", "defense", "net",
+        ],
+        note="TS, turnover, and rebound factor ratings beside total offense, defense, and RAPM.",
+    )
+
+    game_pm = pd.read_parquet(EXTERNAL_REPRODUCTION / "matched_rows.parquet")
+    game_pm = game_pm.loc[
+        game_pm["source"].eq("CourtSignal reproduction")
+        & game_pm["comparison"].eq("GPM-style game-level ridge")
+        & game_pm["scope"].eq("2024-2026")
+        & game_pm["component"].eq("net"),
+        ["PLAYER_ID", "player_name", "reference"],
+    ].rename(columns={"player_name": "PLAYER_NAME", "reference": "net"})
+    game_pm["PLAYER_ID"] = pd.to_numeric(game_pm["PLAYER_ID"], errors="raise").astype(int)
+    minutes = pd.read_parquet(
+        ROOT / "data/lake/silver/player_games.parquet",
+        columns=["season_end", "player_id", "played", "minutes_seconds"],
+    )
+    minutes = minutes.loc[
+        minutes["season_end"].between(2024, 2026) & minutes["played"]
+    ]
+    minutes = (
+        minutes.groupby("player_id", as_index=False)["minutes_seconds"].sum()
+        .rename(columns={"player_id": "PLAYER_ID"})
+    )
+    minutes["minutes"] = minutes.pop("minutes_seconds") / 60
+    game_pm = game_pm.merge(minutes, on="PLAYER_ID", how="left", validate="one_to_one")
+    filename = "game-level-pm-2024-2026.json"
+    files[filename] = _write(OUTPUT / filename, _records(game_pm))
+    catalog.append({
+        "id": "game-level-pm",
+        "title": "Game-level plus-minus",
+        "unit": "game margin points per 100",
+        "note": "Ridge on final game margins and signed player minute shares, 2024–2026.",
+        "periods": [{"id": "2024-2026", "label": "2024–2026", "url": f"/data/rapm/{filename}", "rows": len(game_pm)}],
+    })
+
+    point_channels = _normalize_player(
+        pd.read_parquet(POINT_CHANNELS / "ratings.parquet"), names
+    )
+    filename = "point-channels-2024-2026.json"
+    files[filename] = _write(OUTPUT / filename, _records(point_channels))
+    catalog.append({
+        "id": "point-channels",
+        "title": "Point-channel RAPM",
+        "unit": "points per 100",
+        "note": "One-point, two-point, and three-plus-point channels add to total offense, defense, and RAPM.",
+        "periods": [{"id": "2024-2026", "label": "2024–2026", "url": f"/data/rapm/{filename}", "rows": len(point_channels)}],
+    })
+
+    teammate_effects = _normalize_player(
+        pd.read_parquet(TEAMMATE_EFFECTS / "teammate_effect_ratings.parquet"), names
+    )
+    filename = "teammate-effects-2024-2026.json"
+    teammate_columns = [
+        "PLAYER_ID", "PLAYER_NAME", "possession_opportunities",
+        "teammate_scoring", "teammate_turnovers", "teammate_assists",
+        "teammate_steals", "teammate_blocks", "teammate_oreb", "teammate_dreb",
+    ]
+    files[filename] = _write(
+        OUTPUT / filename,
+        _records(teammate_effects[teammate_columns]),
+    )
+    catalog.append({
+        "id": "teammate-effects",
+        "title": "Teammate outcome RAPM",
+        "unit": "events per 100 opportunities",
+        "note": "Lineup-adjusted associations with the other four teammates' outcomes. Descriptive, not causal.",
+        "periods": [{"id": "2024-2026", "label": "2024–2026", "url": f"/data/rapm/{filename}", "rows": len(teammate_effects)}],
+    })
+
+    teammate_efg = _normalize_player(
+        pd.read_parquet(SHOOTING_LUCK / "teammate_efg_ratings.parquet"), names
+    )
+    filename = "teammate-efg-2024-2026.json"
+    teammate_efg_columns = [
+        "PLAYER_ID", "PLAYER_NAME", "Poss_Off", "Poss_Def",
+        "teammate_efg_offense", "shot_defense", "teammate_efg_net",
+    ]
+    files[filename] = _write(OUTPUT / filename, _records(teammate_efg[teammate_efg_columns]))
+    catalog.append({
+        "id": "teammate-efg",
+        "title": "Teammate eFG and shot defense",
+        "unit": "points per 100 shot attempts",
+        "note": "The shooter is excluded from the offensive lineup. The defensive side estimates five-defender shot suppression.",
+        "periods": [{"id": "2024-2026", "label": "2024–2026", "url": f"/data/rapm/{filename}", "rows": len(teammate_efg)}],
+    })
+
+    observable = _normalize_player(
+        pd.read_parquet(TEAMMATE_EFFECTS / "observable_play_channel_ratings.parquet"), names
+    )
+    scoring_columns = [
+        "PLAYER_ID", "PLAYER_NAME", "Poss_Off", "Poss_Def",
+        "rim_assists_net", "transition_points_net", "three_point_points_net",
+        "free_throw_points_net", "midrange_attempts_net", "rim_points_net",
+    ]
+    filename = "observable-scoring-channels-2024-2026.json"
+    files[filename] = _write(OUTPUT / filename, _records(observable[scoring_columns]))
+    catalog.append({
+        "id": "observable-scoring-channels",
+        "title": "Observable scoring channels",
+        "unit": "channel value per 100 possessions",
+        "note": "Lineup-adjusted rim assists, transition, three-point, free-throw, midrange-attempt, and rim-point channels.",
+        "periods": [{"id": "2024-2026", "label": "2024–2026", "url": f"/data/rapm/{filename}", "rows": len(observable)}],
+    })
+
+    finish_columns = [
+        "PLAYER_ID", "PLAYER_NAME", "Poss_Off", "Poss_Def",
+        "playtype_transition_points_net", "playtype_putback_points_net",
+        "playtype_cut_points_net", "playtype_drive_points_net",
+        "playtype_pullup_points_net", "playtype_post_points_net",
+        "playtype_spotup_points_net", "playtype_other_points_net",
+    ]
+    filename = "observable-finish-channels-2024-2026.json"
+    files[filename] = _write(OUTPUT / filename, _records(observable[finish_columns]))
+    catalog.append({
+        "id": "observable-finish-channels",
+        "title": "Observable shot-finish channels",
+        "unit": "points per 100 possessions",
+        "note": "Lineup-adjusted transition, putback, cut, drive, pull-up, post-like, jump-shot, and other finish channels.",
+        "periods": [{"id": "2024-2026", "label": "2024–2026", "url": f"/data/rapm/{filename}", "rows": len(observable)}],
+    })
+
+    score_state_curve = pd.read_parquet(
+        ROOT / "research/rapm_lab/outputs/rubberband_score_signal/"
+        "rubberband_score_signal_v1_deac872ede/curve.parquet"
+    )
+    curve_filename = "research-curves.json"
+    wp_vs_pulse = json.loads((WP_VS_PULSE / "run.json").read_text())
+    files[curve_filename] = _write(OUTPUT / curve_filename, {
+        "age": _records(age_curve.rename(columns={
+            "age_offense": "offense",
+            "age_defense": "defense",
+            "age_net": "net",
+        })),
+        "score_state": _records(score_state_curve),
+        "wp_rapm_vs_pulse": {
+            key: wp_vs_pulse[key]
+            for key in (
+                "comparison", "target", "outcome_seasons", "games",
+                "summary", "paired_comparisons", "warning",
+            )
+        },
+    })
 
     release = {
         "schema": "courtsignal_rapm_release_v1",

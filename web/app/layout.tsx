@@ -21,6 +21,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script
+          type="module"
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token":"661fa8a2a815494c887ce8d0df168206"}'
+        />
       </head>
       <body>{children}</body>
     </html>

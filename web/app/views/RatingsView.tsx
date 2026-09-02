@@ -9,15 +9,30 @@ import {
   ModelId,
   RolePoint,
   RoleSide,
+  availableModels,
   loadRoleMap,
-  possessions,
+  loadSeason,
   rating,
   resolveModel,
 } from "../lib/data";
-import { fmtRating, symmetricBound } from "../lib/viz";
-import { MinPossField, ModelField, SeasonField, TeamField } from "./controls";
+import { fmtRating, ordinalSuffix } from "../lib/viz";
+import { MinPossField, TeamField } from "./controls";
 
-type SortKey = "net" | "offense" | "defense" | "prior" | "update" | "name" | "team";
+type SortKey = "net" | "offense" | "defense" | "prior" | "update" | "name" | "team" | "season";
+
+type ShapedRow = {
+  key: string;
+  id: number;
+  name: string;
+  team: string | null;
+  season: number;
+  offense: number;
+  defense: number;
+  net: number;
+  poss: number;
+  prior: number;
+  update: number;
+};
 
 export function RatingsView({
   catalog,
@@ -41,70 +56,137 @@ export function RatingsView({
   onPlayer: (id: number) => void;
 }) {
   const [team, setTeam] = useState("All");
-  const [roleSide, setRoleSide] = useState<RoleSide>("offense");
-  const [roleFilter, setRoleFilter] = useState("All");
-  const [roleRows, setRoleRows] = useState<RolePoint[]>([]);
+  const [playerQuery, setPlayerQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("net");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [view, setView] = useState<"table" | "chart">("table");
+  const [rowMode, setRowMode] = useState<"season" | "average">("season");
   const [showParts, setShowParts] = useState(false);
-
-  const active = resolveModel(rows, model);
+  const [selectedSeasons, setSelectedSeasons] = useState<number[]>([season]);
+  const [loadedRows, setLoadedRows] = useState<LeaderboardRow[]>(rows);
+  const [roleSide, setRoleSide] = useState<RoleSide>("offense");
+  const [role, setRole] = useState("All");
+  const [rolePoints, setRolePoints] = useState<RolePoint[]>([]);
 
   useEffect(() => {
-    if (!(catalog.catalog.role_seasons[roleSide] ?? []).includes(season)) {
-      return;
-    }
     let live = true;
-    void loadRoleMap(roleSide, season)
-      .then((next) => { if (live) setRoleRows(next); })
-      .catch(() => { if (live) setRoleRows([]); });
+    Promise.all(selectedSeasons.map(loadSeason)).then((parts) => {
+      if (live) setLoadedRows(parts.flat());
+    }).catch(() => {
+      if (live) setLoadedRows(rows);
+    });
     return () => { live = false; };
-  }, [catalog, roleSide, season]);
+  }, [rows, selectedSeasons]);
 
-  const roleNames = useMemo(
-    () => [...new Set(roleRows.filter((row) => row.Season === season).map((row) => row.raw_role))].sort(),
-    [roleRows, season],
+  const roleSeason = Math.max(...selectedSeasons);
+  useEffect(() => {
+    let live = true;
+    Promise.all(selectedSeasons.map((year) => loadRoleMap(roleSide, year))).then((parts) => {
+      if (!live) return;
+      setRolePoints(parts.flat());
+      setRole("All");
+    }).catch(() => {
+      if (live) setRolePoints([]);
+    });
+    return () => { live = false; };
+  }, [roleSide, selectedSeasons]);
+
+  const displayModels = availableModels(loadedRows).filter((item) =>
+    item.available && selectedSeasons.every((year) =>
+      loadedRows.some((row) => row.Season === year && typeof row[`${item.prefix}net`] === "number"),
+    ),
   );
-  const rolePlayerIds = useMemo(
-    () => new Set(roleRows.filter((row) => row.Season === season && (roleFilter === "All" || row.raw_role === roleFilter)).map((row) => row.PLAYER_ID)),
-    [roleRows, roleFilter, season],
-  );
-  const activeRoleFilter = roleNames.includes(roleFilter) ? roleFilter : "All";
+  const active = displayModels.find((item) => item.id === model)
+    ?? resolveModel(loadedRows, model);
+  const activePrefix = active.prefix;
+
   const teams = useMemo(
     () =>
       [
         ...new Set(
-          rows
+          loadedRows
             .map((row) => row.TEAM_ABBREVIATION)
             .filter((v): v is string => Boolean(v)),
         ),
       ].sort(),
-    [rows],
+    [loadedRows],
   );
 
-  const shaped = useMemo(
-    () =>
-      rows
-        .filter((row) => possessions(row) >= minPoss)
-        .filter((row) => team === "All" || row.TEAM_ABBREVIATION === team)
-        .filter((row) => activeRoleFilter === "All" || rolePlayerIds.has(row.PLAYER_ID))
-        .map((row) => ({
-          id: row.PLAYER_ID,
-          name: row.PLAYER_NAME,
-          team: row.TEAM_ABBREVIATION,
-          season: row.Season,
-          offense: rating(row, active.prefix, "offense") ?? 0,
-          defense: rating(row, active.prefix, "defense") ?? 0,
-          net: rating(row, active.prefix, "net") ?? 0,
-          poss: possessions(row),
-          prior: typeof row.pulse_prior_net === "number" ? row.pulse_prior_net : 0,
-          update: typeof row.lineup_update_net === "number" ? row.lineup_update_net : 0,
-        })),
-    [rows, minPoss, team, activeRoleFilter, rolePlayerIds, active.prefix],
+  const roleNames = useMemo(
+    () => [...new Set(rolePoints.map((point) => point.raw_role))].sort(),
+    [rolePoints],
+  );
+  const roleByPlayerSeason = useMemo(
+    () => new Map(rolePoints.map((point) => [`${point.Season}:${point.PLAYER_ID}`, point.raw_role])),
+    [rolePoints],
   );
 
-  const sorted = useMemo(() => {
+  const seasonRows: ShapedRow[] = loadedRows.map((row) => {
+    const offense = rating(row, activePrefix, "offense") ?? 0;
+    const defense = rating(row, activePrefix, "defense") ?? 0;
+    return {
+      key: `${row.Season}:${row.PLAYER_ID}`,
+      id: row.PLAYER_ID,
+      name: row.PLAYER_NAME,
+      team: row.TEAM_ABBREVIATION,
+      season: row.Season,
+      offense,
+      defense,
+      net: offense + defense,
+      poss: Math.min(Math.max(0, Number(row.Poss_Off)), Math.max(0, Number(row.Poss_Def))),
+      prior: Number(row.pulse_prior_net ?? 0),
+      update: Number(row.lineup_update_net ?? 0),
+    };
+  });
+
+  const averageRows: ShapedRow[] = [...loadedRows.reduce((byPlayer, row) => {
+        const offWeight = Math.max(0, Number(row.Poss_Off));
+        const defWeight = Math.max(0, Number(row.Poss_Def));
+        const weight = Math.min(offWeight, defWeight);
+        const current = byPlayer.get(row.PLAYER_ID) ?? {
+          id: row.PLAYER_ID, name: row.PLAYER_NAME, team: row.TEAM_ABBREVIATION,
+          season: row.Season, offSum: 0, defSum: 0, priorSum: 0, updateSum: 0,
+          offWeight: 0, defWeight: 0, weight: 0,
+        };
+        current.offSum += (rating(row, activePrefix, "offense") ?? 0) * offWeight;
+        current.defSum += (rating(row, activePrefix, "defense") ?? 0) * defWeight;
+        current.priorSum += Number(row.pulse_prior_net ?? 0) * weight;
+        current.updateSum += Number(row.lineup_update_net ?? 0) * weight;
+        current.offWeight += offWeight;
+        current.defWeight += defWeight;
+        current.weight += weight;
+        if (row.Season >= current.season) {
+          current.season = row.Season;
+          current.team = row.TEAM_ABBREVIATION;
+        }
+        byPlayer.set(row.PLAYER_ID, current);
+        return byPlayer;
+      }, new Map<number, {
+        id: number; name: string; team: string | null; season: number;
+        offSum: number; defSum: number; priorSum: number; updateSum: number;
+        offWeight: number; defWeight: number; weight: number;
+      }>()).values()]
+        .map((row) => {
+          const offense = row.offWeight ? row.offSum / row.offWeight : 0;
+          const defense = row.defWeight ? row.defSum / row.defWeight : 0;
+          return {
+            key: `average:${row.id}`,
+            id: row.id, name: row.name, team: row.team, season: row.season,
+            offense, defense, net: offense + defense, poss: row.weight,
+            prior: row.weight ? row.priorSum / row.weight : 0,
+            update: row.weight ? row.updateSum / row.weight : 0,
+          };
+        });
+
+  const shaped = (rowMode === "season" ? seasonRows : averageRows)
+        .filter((row) => row.poss >= minPoss)
+        .filter((row) => team === "All" || row.team === team)
+        .filter((row) => role === "All" || (
+          roleByPlayerSeason.get(`${row.season}:${row.id}`)
+          ?? roleByPlayerSeason.get(`${roleSeason}:${row.id}`)
+        ) === role);
+
+  const sorted = (() => {
     const direction = order === "asc" ? 1 : -1;
     return [...shaped].sort((a, b) => {
       const compare =
@@ -112,15 +194,36 @@ export function RatingsView({
           ? a.name.localeCompare(b.name)
           : sortKey === "team"
             ? (a.team ?? "").localeCompare(b.team ?? "")
+            : sortKey === "season"
+              ? a.season - b.season
             : a[sortKey] - b[sortKey];
       return compare * direction || b.net - a.net;
     });
-  }, [shaped, sortKey, order]);
+  })();
+  const playerNeedle = playerQuery.trim().normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+  const tableRows = playerNeedle
+    ? sorted.filter((row) => row.name.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().includes(playerNeedle))
+    : sorted;
+  const percentiles = (() => {
+    const byKey = (key: "offense" | "defense" | "net" | "prior" | "update") => {
+      const groups = rowMode === "season"
+        ? shaped.reduce((result, row) => {
+          result.set(row.season, [...(result.get(row.season) ?? []), row]);
+          return result;
+        }, new Map<number, ShapedRow[]>())
+        : new Map([[0, shaped]]);
+      return new Map([...groups.values()].flatMap((group) => {
+        const ordered = [...group].sort((a, b) => a[key] - b[key]);
+        return ordered.map((row, index) => [row.key, ordered.length <= 1 ? 100 : Math.round((index / (ordered.length - 1)) * 99 + 1)] as const);
+      }));
+    };
+    return {
+      offense: byKey("offense"), defense: byKey("defense"), net: byKey("net"),
+      prior: byKey("prior"), update: byKey("update"),
+    };
+  })();
 
-  const points = useMemo<LandscapeDatum[]>(
-    () => shaped.filter((row) => row.poss >= 300),
-    [shaped],
-  );
+  const points: LandscapeDatum[] = shaped.filter((row) => row.poss >= 300);
   const quadrant = (row: LandscapeDatum) =>
     row.offense >= 0
       ? row.defense >= 0
@@ -129,10 +232,6 @@ export function RatingsView({
       : row.defense >= 0
         ? "Defense first"
         : "Below average";
-  const bound = symmetricBound(
-    shaped.map((row) => row.net),
-    3,
-  );
   function sortBy(key: SortKey) {
     if (key === sortKey) setOrder(order === "desc" ? "asc" : "desc");
     else {
@@ -150,6 +249,7 @@ export function RatingsView({
   const columns: { key: SortKey; label: string; left?: boolean }[] = [
     { key: "name", label: "Player", left: true },
     { key: "team", label: "Team", left: true },
+    ...(rowMode === "season" ? [{ key: "season" as const, label: "Season" }] : []),
     { key: "offense", label: "Off" },
     { key: "defense", label: "Def" },
     { key: "net", label: active.id === "pulse" ? "PULSE" : "Net" },
@@ -157,43 +257,74 @@ export function RatingsView({
       ? ([{ key: "prior", label: "Prior" }, { key: "update", label: "Update" }] as const)
       : []),
   ];
+  const seasonLabel = selectedSeasons
+    .map((year) => `${year - 1}–${String(year).slice(2)}`)
+    .join(", ");
 
   return (
     <section className="ratings-workbench" aria-labelledby="ratings-heading">
       <header className="ratings-titlebar">
         <div>
-          <p className="kicker">{season - 1}–{String(season).slice(2)}</p>
+          <p className="kicker">CourtSignal ratings</p>
           <h1 id="ratings-heading">Player impact</h1>
         </div>
       </header>
 
+      <nav className="season-strip ratings-season-strip" aria-label="Rating season">
+        {[...catalog.catalog.seasons].reverse().map((year) => (
+          <button key={year} type="button" aria-pressed={selectedSeasons.includes(year)} onClick={() => {
+            const next = selectedSeasons.includes(year)
+              ? selectedSeasons.length === 1 ? selectedSeasons : selectedSeasons.filter((item) => item !== year)
+              : [...selectedSeasons, year].sort((a, b) => a - b);
+            setSelectedSeasons(next);
+            onSeason(Math.max(...next));
+          }}>
+            {year - 1}–{String(year).slice(2)}
+          </button>
+        ))}
+      </nav>
+
+      <div className="model-tabs" role="tablist" aria-label="Rating model">
+        {displayModels.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            role="tab"
+            aria-selected={active.id === item.id}
+            onClick={() => onModel(item.id)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
       <div className="ratings-toolbar">
         <div className="filters" aria-label="Ratings filters">
-          <SeasonField seasons={catalog.catalog.seasons} value={season} onChange={onSeason} />
-          <ModelField rows={rows} value={model} onChange={onModel} />
           <TeamField teams={teams} value={team} onChange={setTeam} />
           <MinPossField value={minPoss} onChange={onMinPoss} />
-          <label className="field">
-            <span>Role side</span>
-            <select value={roleSide} onChange={(event) => setRoleSide(event.target.value as RoleSide)}>
-              <option value="offense">Offense</option>
-              <option value="defense">Defense</option>
-            </select>
-          </label>
-          <label className="field">
-            <span>Role</span>
-            <select value={activeRoleFilter} onChange={(event) => setRoleFilter(event.target.value)} disabled={!roleNames.length}>
-              <option value="All">All roles</option>
-              {roleNames.map((role) => <option key={role} value={role}>{role}</option>)}
-            </select>
-          </label>
+          {rolePoints.length > 0 && <>
+            <label className="field"><span>Role side</span><select value={roleSide} onChange={(event) => setRoleSide(event.target.value as RoleSide)}><option value="offense">Offense</option><option value="defense">Defense</option></select></label>
+            <label className="field"><span>Role</span><select value={role} onChange={(event) => setRole(event.target.value)}><option value="All">All roles</option>{roleNames.map((name) => <option key={name} value={name}>{name}</option>)}</select></label>
+          </>}
         </div>
-        <div className="segmented" aria-label="Ratings view">
-          {active.id === "pulse" && (
-            <button type="button" aria-pressed={showParts} onClick={() => setShowParts(!showParts)}>Prior + update</button>
-          )}
-          <button type="button" aria-pressed={view === "table"} onClick={() => setView("table")}>Table</button>
-          <button type="button" aria-pressed={view === "chart"} onClick={() => setView("chart")}>Map</button>
+        <div className="ratings-actions">
+          <button
+            type="button"
+            className="check-toggle"
+            aria-pressed={rowMode === "average"}
+            onClick={() => {
+              const next = rowMode === "average" ? "season" : "average";
+              setRowMode(next);
+              if (next === "season") setView("table");
+            }}
+          ><span aria-hidden="true">{rowMode === "average" ? "✓" : ""}</span>Average</button>
+          <div className="segmented" aria-label="Ratings view">
+            {active.id === "pulse" && (
+              <button type="button" aria-pressed={showParts} onClick={() => setShowParts(!showParts)}>Prior + update</button>
+            )}
+            <button type="button" aria-pressed={view === "table"} onClick={() => setView("table")}>Table</button>
+            <button type="button" aria-pressed={view === "chart"} onClick={() => { if (selectedSeasons.length > 1) setRowMode("average"); setView("chart"); }}>Map</button>
+          </div>
         </div>
       </div>
 
@@ -201,22 +332,28 @@ export function RatingsView({
         <section className="leaderboard-panel" aria-labelledby="leaderboard-heading">
           <header className="board-head">
             <div>
-              <span>RANK / PLAYER</span>
-              <h2 id="leaderboard-heading">{active.label} leaderboard</h2>
+              <span>{seasonLabel} / {active.label}</span>
+              <h2 id="leaderboard-heading">Leaderboard</h2>
             </div>
-            <p>Select any column to sort.</p>
+            <label className="field table-search">
+              <span>Search player</span>
+              <input
+                type="search"
+                value={playerQuery}
+                onChange={(event) => setPlayerQuery(event.target.value)}
+                placeholder="Player name"
+              />
+            </label>
           </header>
           <p className="scroll-hint">Swipe for impact columns →</p>
           <div className="table-wrap">
             <table className="data">
               <caption className="visually-hidden">
-                {active.label} ratings for {season}, points per 100 possessions
+                {active.label} ratings for {seasonLabel}, points per 100 possessions
               </caption>
               <thead>
                 <tr>
-                  <th scope="col" className="left">
-                    <button type="button" disabled style={{ cursor: "default" }}>#</button>
-                  </th>
+                  <th scope="col" className="left">#</th>
                   {columns.map((column) => (
                     <th
                       key={column.key}
@@ -233,9 +370,9 @@ export function RatingsView({
                 </tr>
               </thead>
               <tbody>
-                {sorted.map((row, position) => (
+                {tableRows.map((row, position) => (
                   <tr
-                    key={row.id}
+                    key={row.key}
                     className="player-row"
                     onClick={(event) => {
                       if (!(event.target as HTMLElement).closest("a")) onPlayer(row.id);
@@ -246,24 +383,19 @@ export function RatingsView({
                       <a className="player-link" href={`#player/${row.id}`}>{row.name}</a>
                     </th>
                     <td className="left team">{row.team ?? "—"}</td>
-                    <td className={`metric-cell ${row.offense >= 0 ? "positive" : "negative"}`}>{fmtRating(row.offense)}</td>
-                    <td className={`metric-cell ${row.defense >= 0 ? "positive" : "negative"}`}>{fmtRating(row.defense)}</td>
+                    {rowMode === "season" && <td>{row.season - 1}–{String(row.season).slice(2)}</td>}
+                    <td className={`metric-cell ${row.offense >= 0 ? "positive" : "negative"}`}><b>{fmtRating(row.offense)}</b><small>{ordinalSuffix(percentiles.offense.get(row.key) ?? 0)}</small></td>
+                    <td className={`metric-cell ${row.defense >= 0 ? "positive" : "negative"}`}><b>{fmtRating(row.defense)}</b><small>{ordinalSuffix(percentiles.defense.get(row.key) ?? 0)}</small></td>
                     <td className="headline">
-                      <div className="cellbar">
-                        <span className="track" aria-hidden="true">
-                          <i
-                            className={`fill ${row.net >= 0 ? "pos" : "neg"}`}
-                            style={{ width: `${Math.min(50, (Math.abs(row.net) / bound) * 50)}%` }}
-                          />
-                        </span>
-                        <b>{fmtRating(row.net)}</b>
+                      <div className="metric-cell">
+                        <b>{fmtRating(row.net)}</b><small>{ordinalSuffix(percentiles.net.get(row.key) ?? 0)}</small>
                       </div>
                     </td>
-                    {showParts && active.id === "pulse" && <td>{fmtRating(row.prior)}</td>}
-                    {showParts && active.id === "pulse" && <td>{fmtRating(row.update)}</td>}
+                    {showParts && active.id === "pulse" && <td className="metric-cell"><b>{fmtRating(row.prior)}</b><small>{ordinalSuffix(percentiles.prior.get(row.key) ?? 0)}</small></td>}
+                    {showParts && active.id === "pulse" && <td className="metric-cell"><b>{fmtRating(row.update)}</b><small>{ordinalSuffix(percentiles.update.get(row.key) ?? 0)}</small></td>}
                   </tr>
                 ))}
-                {!sorted.length && (
+                {!tableRows.length && (
                   <tr><td colSpan={columns.length + 1} className="empty">No players match these filters.</td></tr>
                 )}
               </tbody>
@@ -273,7 +405,7 @@ export function RatingsView({
       ) : (
         <div className="ratings-map">
           <Figure
-            kicker={`${season - 1}–${String(season).slice(2)} · ${active.label}`}
+            kicker={`${seasonLabel} · ${active.label}${selectedSeasons.length > 1 ? " average" : ""}`}
             title="Offense against defense"
             legend={<ScaleLegend caption="Net" low={`−${netBoundFor(points).toFixed(1)}`} high={`+${netBoundFor(points).toFixed(1)}`} />}
             table={

@@ -23,14 +23,15 @@ Rules the client follows:
 
 - Public roles are raw, single-season clusters. Stabilized role labels are a
   display experiment and stay out of the snapshot.
-- Ratings stay pinned to the validated 2017–24 model. Season 2027 is reserved
-  for annual confirmation and is never scored here.
+- PULSE covers 1997–2026. Rich SPM appears only in seasons carried by the
+  release catalog. Season 2027 remains reserved for confirmation.
 - Every number comes from the snapshot or from a transcribed frozen run. The
   client never recomputes a model result.
 - Matchups is a localhost-only research view. Its payloads live in
   `web/local-data/` and are not copied into a production build.
-- RAPM Lab is localhost-only. It shows the saved test, result, and decision for
-  recent experiments, the actual-clock rubber-band estimate, and Matchups.
+- RAPM Lab publishes selected derived leaderboards from
+  `web/public/data/rapm/`. The full experiment ledger and rejected variants
+  remain localhost-only in `web/local-data/rapm-lab.json`.
 - Current Skills is localhost-only on the Player page. It loads one selected
   player's 34-skill shard, career and current-season views, stabilized/source
   controls, league references, and a comparison profile. The source-value

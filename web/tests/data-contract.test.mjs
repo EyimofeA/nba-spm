@@ -23,7 +23,7 @@ test("the catalog offers exactly the models the client can render", () => {
     catalog.catalog.models.map(({ id, prefix }) => ({ id, prefix })),
     [
       { id: "pulse", prefix: "pulse_" },
-      { id: "rapm", prefix: "rapm_" },
+      { id: "rich_spm", prefix: "rich_spm_" },
     ],
   );
   for (const model of catalog.catalog.models) {
@@ -31,18 +31,17 @@ test("the catalog offers exactly the models the client can render", () => {
   }
 });
 
-test("the snapshot carries no win probability and no stabilized roles", () => {
+test("the core snapshot carries no WP target or stabilized roles", () => {
   const payload = JSON.stringify(catalog);
   assert.ok(!("win_probability" in catalog.validation));
   assert.doesNotMatch(payload, /brier|espn|stabiliz/i);
-  assert.doesNotMatch(client, /win probability|brier/i);
   assert.doesNotMatch(JSON.stringify(read("roles-offense-2024.json")), /stable_role/);
   assert.doesNotMatch(JSON.stringify(read("ratings-00.json")), /stabilized/);
 });
 
 test("an unavailable model falls back to a model carried by the season", () => {
   assert.equal(resolveModel(read("leaderboard-2026.json"), "unknown").id, "pulse");
-  assert.equal(resolveModel(read("leaderboard-2024.json"), "rapm").id, "rapm");
+  assert.equal(resolveModel(read("leaderboard-2024.json"), "rich_spm").id, "rich_spm");
 });
 
 test("every production payload matches the release manifest", () => {
@@ -66,7 +65,7 @@ test("season tables expose only the validated model coverage", () => {
     Object.fromEntries(catalog.catalog.models.map((model) => [model.id, model.seasons])),
     {
       pulse: seasons,
-      rapm: seasons,
+      rich_spm: Array.from({ length: 11 }, (_, index) => 2016 + index),
     },
   );
   for (const season of catalog.catalog.seasons) {
@@ -75,11 +74,17 @@ test("season tables expose only the validated model coverage", () => {
     for (const row of rows) {
       assert.equal(row.Season, season);
       assert.equal(typeof row.PLAYER_NAME, "string");
-      for (const prefix of ["rapm_", "pulse_", "pulse_prior_", "lineup_update_"]) {
+      for (const prefix of ["pulse_", "pulse_prior_", "lineup_update_"]) {
         assert.equal(typeof row[`${prefix}net`], "number");
         assert.ok(
           Math.abs(row[`${prefix}offense`] + row[`${prefix}defense`] - row[`${prefix}net`]) < 0.001,
           `${prefix} offense plus defense must equal net`,
+        );
+      }
+      if (season >= 2016 && season <= 2025 && typeof row.rich_spm_net === "number") {
+        assert.ok(
+          Math.abs(row.rich_spm_offense + row.rich_spm_defense - row.rich_spm_net) < 0.001,
+          "rich SPM offense plus defense must equal net",
         );
       }
       for (const component of ["offense", "defense", "net"]) {

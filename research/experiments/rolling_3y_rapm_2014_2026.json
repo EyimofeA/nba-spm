@@ -1,0 +1,43 @@
+{
+  "experiment_id": "rolling_3y_rapm_2014_2026_v1",
+  "status": "active_research",
+  "estimand": "retrospective regular-season terminal-lineup RAPM points per 100 possessions",
+  "season_range": [2014, 2026],
+  "window_seasons": 3,
+  "window_ends": [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026],
+  "transition_season": 2024,
+  "sources": {
+    "2014_2023": "score-conserved legacy possession cache with terminal lineups",
+    "2024_2026": "canonical event possessions with ordinal terminal lineups"
+  },
+  "model": {
+    "prior": "zero",
+    "lambda_off": 3000.0,
+    "lambda_def": 3000.0,
+    "lambda_home": 300.0,
+    "season_scoring_environment": "remove each season mean before fitting player effects"
+  },
+  "peak_eligibility": {"minimum_possessions_per_side_per_season": 1000},
+  "reference_run_id": null,
+  "lambda_research": {
+    "store_training_sufficient_statistics": false,
+    "evaluation_rule": "descriptive public leaderboard only",
+    "evaluation_seasons": [],
+    "stored_train_objects": [],
+    "stored_evaluation_objects": [],
+    "raw_possession_design_stored": false
+  },
+  "acceptance": {
+    "expected_windows": 11,
+    "expected_lambda_training_matrices": 0,
+    "expected_lambda_evaluation_matrices": 0,
+    "unchanged_source_window_ends": [],
+    "maximum_reference_component_error": 1e-10,
+    "maximum_component_identity_error": 1e-12,
+    "require_finite_ratings": true,
+    "require_unique_keys": true,
+    "require_complete_names": true
+  },
+  "evidence_status": "research_descriptive",
+  "forbidden_interpretation": "This build is descriptive. It is not a forecast or a tuning result."
+}

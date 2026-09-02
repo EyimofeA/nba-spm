@@ -99,6 +99,81 @@ def unit_name(value: str, names: dict[int, str]) -> str:
     return " + ".join(names.get(int(player), str(player)) for player in value.split("|"))
 
 
+def only_metric(
+    metrics: pd.DataFrame, filters: dict[str, str], description: str
+) -> pd.Series:
+    rows = metrics
+    for column, value in filters.items():
+        rows = rows.loc[rows[column].eq(value)]
+    if len(rows) != 1:
+        raise ValueError(f"Expected one metric row for {description}")
+    return rows.iloc[0]
+
+
+def coefficient_of_determination(
+    reference: pd.Series, reconstruction: pd.Series
+) -> float:
+    complete = pd.DataFrame(
+        {"reference": reference, "reconstruction": reconstruction}
+    ).dropna()
+    residual = float(((complete["reference"] - complete["reconstruction"]) ** 2).sum())
+    total = float(((complete["reference"] - complete["reference"].mean()) ** 2).sum())
+    return 1.0 - residual / total
+
+
+def boards_for(
+    frame: pd.DataFrame,
+    *,
+    metric: str,
+    slug: str,
+    columns: list[dict],
+    sort_key: str = "net",
+    minimum: float = 250,
+    minimum_key: str | None = None,
+) -> list[dict]:
+    boards = []
+    numeric_keys = [column["key"] for column in columns]
+    for season in sorted(frame["season"].dropna().astype(int).unique(), reverse=True):
+        rows = frame.loc[frame["season"].eq(season)].copy()
+        filter_key = minimum_key
+        if filter_key is None:
+            if "minutes" in rows and rows["minutes"].notna().any():
+                filter_key = "minutes"
+            elif "exposure" in rows and rows["exposure"].notna().any():
+                filter_key = "exposure"
+        if filter_key and filter_key in rows:
+            rows = rows.loc[rows[filter_key].fillna(0).ge(minimum)]
+        keep = [
+            key for key in numeric_keys
+            if key in rows and (key in {"player", "team"} or rows[key].notna().any())
+        ]
+        rows = rows.loc[rows["player"].notna(), keep].sort_values(sort_key, ascending=False)
+        boards.append({
+            "id": f"{slug}-{season}",
+            "title": f"{metric} · {season}",
+            "season": int(season),
+            "metric": metric,
+            "source": "CourtSignal reconstruction",
+            "columns": [column for column in columns if column["key"] in keep],
+            "rows": clean_records(rows),
+        })
+    return boards
+
+
+def latest_repaired_wp(default: Path) -> Path:
+    repaired = sorted(
+        (OUTPUTS / "rolling_5y_wp_rapm").glob("*/ratings_repaired.parquet")
+    )
+    return repaired[-1] if repaired else default
+
+
+def read_optional_parquet(path: Path, fallback: pd.DataFrame) -> pd.DataFrame:
+    try:
+        return pd.read_parquet(path)
+    except FileNotFoundError:
+        return fallback
+
+
 def build_payload() -> dict:
     aging, _ = latest_run("aging_resolution", "aging_resolution_v1_")
     interactions, interactions_path = latest_run(
@@ -187,143 +262,90 @@ def build_payload() -> dict:
     }
     external_metrics = pd.read_parquet(external_path / "comparison_metrics.parquet")
     external_matched = pd.read_parquet(external_path / "matched_rows.parquet")
-    public_reproduction, public_reproduction_path = pinned_run(
-        "wowy_raptor_reproduction", "wowy_raptor_reproduction_v1_4983f2cd47"
+    public_reproduction, public_reproduction_path = latest_run(
+        "wowy_raptor_reproduction", "wowy_raptor_reproduction_v1_"
     )
-    raptor_proxy, _ = pinned_run(
-        "raptor_onoff_proxy", "raptor_onoff_proxy_v1_171fed6d4c"
+    raptor, raptor_path = latest_run(
+        "raptor_reconstruction", "raptor_reconstruction_v1_"
+    )
+    pipm, pipm_path = latest_run(
+        "pipm_reconstruction", "pipm_reconstruction_v1_"
     )
     public_metrics = pd.DataFrame(public_reproduction["metrics"])
-    raptor_proxy_metrics = pd.DataFrame(raptor_proxy["metrics"])
-    pipm_matches = pd.read_parquet(PIPM_REFERENCE / "matched_players.parquet")
-    bpm_reference = pd.read_parquet(BPM_REFERENCE)
-
-    def public_metric(source: str, component: str) -> pd.Series:
-        rows = public_metrics.loc[
-            public_metrics["source"].eq(source)
-            & public_metrics["component"].eq(component)
-        ]
-        if len(rows) != 1:
-            raise ValueError(f"Expected one public reproduction row for {source}/{component}")
-        return rows.iloc[0]
-
-    raptor_net_proxy = raptor_proxy_metrics.loc[
-        raptor_proxy_metrics["model"].eq("three-family courtmate proxy")
-        & raptor_proxy_metrics["cohort"].eq("1000+ minutes")
-        & raptor_proxy_metrics["component"].eq("net")
+    raptor_metrics = pd.DataFrame(raptor["metrics"])
+    pipm_metrics = pd.DataFrame(pipm["metrics"])
+    raptor_net = raptor_metrics.loc[
+        raptor_metrics["family"].eq("raptor")
+        & raptor_metrics["component"].eq("net")
     ].iloc[0]
+    pipm_net = pipm_metrics.loc[pipm_metrics["component"].eq("net")].iloc[0]
+    darko_matches = pd.read_parquet(public_reproduction_path / "darko_matches.parquet")
+    darko_reconstruction_path = public_reproduction_path / "darko_reconstructions.parquet"
+    darko_reconstructions = read_optional_parquet(
+        darko_reconstruction_path, darko_matches
+    )
+    raptor_ratings = pd.read_parquet(raptor_path / "reconstructions.parquet")
+
+    darko_net_r2 = coefficient_of_determination(
+        darko_matches["reference_net"], darko_matches["reproduced_net"]
+    )
     replications = [
         {
-            "metric": "DARKO WOWY",
+            "metric": "CourtSignal DARKO WOWY reconstruction",
             "build": "Season average from public player-game files",
-            "status": "exact_public_output",
-            "matched_rows": int(public_metric("DARKO WOWY", "net")["matched_rows"]),
-            "pearson": float(public_metric("DARKO WOWY", "net")["pearson"]),
+            "status": "exact_reconstruction",
+            "matched_rows": int(only_metric(public_metrics, {"source": "DARKO WOWY", "component": "net"}, "DARKO WOWY/net")["matched_rows"]),
+            "pearson": float(only_metric(public_metrics, {"source": "DARKO WOWY", "component": "net"}, "DARKO WOWY/net")["pearson"]),
+            "r_squared": darko_net_r2,
             "maximum_absolute_error": float(
-                public_metric("DARKO WOWY", "net")["maximum_absolute_error"]
+                only_metric(public_metrics, {"source": "DARKO WOWY", "component": "net"}, "DARKO WOWY/net")["maximum_absolute_error"]
             ),
-            "decision": "Exact public aggregation. The private DARKO model is not reproduced.",
+            "decision": "Exact reconstruction of the published player-game aggregation. This does not reproduce DARKO's private model.",
             "run_id": public_reproduction["run_id"],
         },
         {
-            "metric": "RAPTOR table",
-            "build": "Official FiveThirtyEight CSV semantic identity",
-            "status": "exact_public_output",
-            "matched_rows": int(
-                public_metric("FiveThirtyEight RAPTOR", "net")["matched_rows"]
-            ),
-            "pearson": float(public_metric("FiveThirtyEight RAPTOR", "net")["pearson"]),
-            "maximum_absolute_error": float(
-                public_metric("FiveThirtyEight RAPTOR", "net")["maximum_absolute_error"]
-            ),
-            "decision": "Exact table identity. This does not reconstruct RAPTOR's private on/off coefficients.",
-            "run_id": public_reproduction["run_id"],
+            "metric": "CourtSignal RAPTOR reconstruction",
+            "build": "Fitted box component plus reconstructed RAPTOR on/off",
+            "status": raptor["status"],
+            "matched_rows": int(raptor_net["matched_rows"]),
+            "pearson": float(raptor_net["pearson"]),
+            "r_squared": float(raptor_net["r_squared"]),
+            "maximum_absolute_error": None,
+            "decision": "Methodology-aligned reconstruction. FiveThirtyEight did not publish the fitted box or on/off coefficients, so exact identity is not claimed.",
+            "run_id": raptor["run_id"],
         },
         {
-            "metric": "RAPTOR on/off",
-            "build": "Frozen three-family courtmate proxy",
-            "status": "proxy",
-            "matched_rows": int(raptor_net_proxy["n"]),
-            "pearson": float(raptor_net_proxy["pearson"]),
+            "metric": "CourtSignal PIPM reconstruction",
+            "build": "Published PIPM box and blend coefficients with CourtSignal raw on/off",
+            "status": pipm["status"],
+            "matched_rows": int(pipm_net["matched_rows"]),
+            "pearson": float(pipm_net["pearson"]),
+            "r_squared": float(pipm_net["r_squared"]),
             "maximum_absolute_error": None,
-            "decision": "High agreement for 1000-minute players. Keep the proxy label.",
-            "run_id": raptor_proxy["run_id"],
-        },
-        {
-            "metric": "PIPM",
-            "build": "BoxPIPM-style prior against published PIPM",
-            "status": "partial_reference",
-            "matched_rows": int(len(pipm_matches)),
-            "pearson": float(pipm_matches["net_box_prior"].corr(pipm_matches["pipm_net"])),
-            "maximum_absolute_error": None,
-            "decision": "The public reference is partial. BoxPIPM-style is not the full PIPM formula.",
-            "run_id": PIPM_REFERENCE.name,
-        },
-        {
-            "metric": "BPM 2.0",
-            "build": "Basketball-Reference output import",
-            "status": "reference_only",
-            "matched_rows": int(bpm_reference["bpm_net"].notna().sum()),
-            "pearson": None,
-            "maximum_absolute_error": None,
-            "decision": "The exact formula reconstruction remains open. Imported ratings are comparison data only.",
-            "run_id": BPM_REFERENCE.parent.name,
-        },
-        {
-            "metric": "xRAPM",
-            "build": "Pinned external annual ratings",
-            "status": "reference_only",
-            "matched_rows": int(bpm_reference["xrapm_net"].notna().sum()),
-            "pearson": None,
-            "maximum_absolute_error": None,
-            "decision": "Imported comparison ratings. No private model reconstruction is claimed.",
-            "run_id": BPM_REFERENCE.parent.name,
+            "decision": "Methodology-aligned regular-season reconstruction. The source includes playoffs and uses a private luck adjustment, so exact identity is not claimed.",
+            "run_id": pipm["run_id"],
         },
     ]
-    darko_ratings = pd.read_parquet(public_reproduction_path / "darko_matches.parquet")
-    darko_ratings = darko_ratings.rename(columns={
+    darko_ratings = darko_reconstructions.rename(columns={
         "player_name": "player",
-        "reference_offense": "offense",
-        "reference_defense": "defense",
-        "reference_net": "net",
+        "reproduced_offense": "offense",
+        "reproduced_defense": "defense",
+        "reproduced_net": "net",
     })
-    raptor_ratings = pd.read_parquet(
-        public_reproduction_path / "raptor_table_matches.parquet"
-    )
     raptor_ratings = raptor_ratings.rename(columns={
-        "player_name_official": "player",
-        "mp_official": "minutes",
-        "raptor_box_offense_official": "box_offense",
-        "raptor_box_defense_official": "box_defense",
-        "raptor_box_total_official": "box_net",
-        "raptor_onoff_offense_official": "onoff_offense",
-        "raptor_onoff_defense_official": "onoff_defense",
-        "raptor_onoff_total_official": "onoff_net",
-        "raptor_offense_official": "offense",
-        "raptor_defense_official": "defense",
-        "raptor_total_official": "net",
-        "war_total_official": "war",
+        "TEAM_ABBREVIATION": "team",
+        "raptor_offense": "offense",
+        "raptor_defense": "defense",
+        "raptor_net": "net",
     })
-    pipm_ratings = pd.read_parquet(PIPM_REFERENCE / "reference.parquet")
-    pipm_ratings = pipm_ratings.rename(columns={
+    raptor_ratings["exposure"] = raptor_ratings[["OffPoss", "DefPoss"]].min(axis=1)
+    pipm_ratings = pd.read_parquet(pipm_path / "reconstructions.parquet").rename(columns={
         "PLAYER_NAME": "player",
         "TEAM_ABBREVIATION": "team",
+        "MIN": "minutes",
         "pipm_offense": "offense",
         "pipm_defense": "defense",
         "pipm_net": "net",
-        "rating_season": "season",
-    })
-    bpm_ratings = bpm_reference.rename(columns={
-        "player_name_bpm": "player",
-        "bpm_offense": "offense",
-        "bpm_defense": "defense",
-        "bpm_net": "net",
-    })
-    xrapm_ratings = bpm_reference.rename(columns={
-        "player_name_xrapm": "player",
-        "xrapm_offense": "offense",
-        "xrapm_defense": "defense",
-        "xrapm_net": "net",
     })
 
     standard_columns = [
@@ -335,87 +357,56 @@ def build_payload() -> dict:
         {"key": "minutes", "label": "Minutes"},
         {"key": "exposure", "label": "Exposure"},
     ]
-    raptor_columns = [
-        {"key": "player", "label": "Player"},
-        {"key": "box_offense", "label": "Box O"},
-        {"key": "box_defense", "label": "Box D"},
-        {"key": "box_net", "label": "Box"},
-        {"key": "onoff_offense", "label": "On/off O"},
-        {"key": "onoff_defense", "label": "On/off D"},
-        {"key": "onoff_net", "label": "On/off"},
-        {"key": "offense", "label": "RAPTOR O"},
-        {"key": "defense", "label": "RAPTOR D"},
-        {"key": "net", "label": "RAPTOR"},
-        {"key": "war", "label": "WAR"},
-        {"key": "minutes", "label": "Minutes"},
-    ]
-
-    def boards_for(
-        frame: pd.DataFrame,
-        *,
-        metric: str,
-        slug: str,
-        columns: list[dict],
-        sort_key: str = "net",
-    ) -> list[dict]:
-        boards = []
-        numeric_keys = [column["key"] for column in columns]
-        for season in sorted(frame["season"].dropna().astype(int).unique(), reverse=True):
-            rows = frame.loc[frame["season"].eq(season)].copy()
-            if "minutes" in rows and rows["minutes"].notna().any():
-                rows = rows.loc[rows["minutes"].fillna(0).ge(250)]
-            elif "exposure" in rows and rows["exposure"].notna().any():
-                rows = rows.loc[rows["exposure"].fillna(0).ge(250)]
-            keep = [
-                key for key in numeric_keys
-                if key in rows and (key in {"player", "team"} or rows[key].notna().any())
-            ]
-            rows = rows.loc[rows["player"].notna(), keep].sort_values(sort_key, ascending=False)
-            boards.append({
-                "id": f"{slug}-{season}",
-                "title": f"{metric} · {season}",
-                "season": int(season),
-                "metric": metric,
-                "columns": [column for column in columns if column["key"] in keep],
-                "rows": clean_records(rows),
-            })
-        return boards
-
     replication_leaderboards = []
     replication_leaderboards += boards_for(
-        darko_ratings, metric="DARKO WOWY", slug="darko-wowy", columns=standard_columns
+        darko_ratings,
+        metric="CourtSignal DARKO WOWY reconstruction",
+        slug="darko-wowy-reconstruction",
+        columns=standard_columns,
+        minimum=10,
+        minimum_key="reproduced_games",
     )
     replication_leaderboards += boards_for(
         raptor_ratings,
-        metric="RAPTOR table",
-        slug="raptor",
-        columns=raptor_columns,
+        metric="CourtSignal RAPTOR reconstruction",
+        slug="raptor-reconstruction",
+        columns=[
+            {"key": "player", "label": "Player"},
+            {"key": "team", "label": "Team"},
+            {"key": "box_offense", "label": "Box Off"},
+            {"key": "box_defense", "label": "Box Def"},
+            {"key": "box_net", "label": "Box"},
+            {"key": "onoff_offense", "label": "On/Off Off"},
+            {"key": "onoff_defense", "label": "On/Off Def"},
+            {"key": "onoff_net", "label": "On/Off"},
+            {"key": "offense", "label": "RAPTOR Off"},
+            {"key": "defense", "label": "RAPTOR Def"},
+            {"key": "net", "label": "RAPTOR"},
+            {"key": "exposure", "label": "Poss"},
+        ],
+        minimum=1000,
+        minimum_key="exposure",
     )
     replication_leaderboards += boards_for(
-        pipm_ratings, metric="PIPM", slug="pipm", columns=standard_columns
-    )
-    replication_leaderboards += boards_for(
-        bpm_ratings, metric="BPM 2.0", slug="bpm-2", columns=standard_columns
-    )
-    replication_leaderboards += boards_for(
-        xrapm_ratings.loc[xrapm_ratings["player"].notna()],
-        metric="xRAPM",
-        slug="xrapm",
+        pipm_ratings,
+        metric="CourtSignal PIPM reconstruction",
+        slug="pipm-reconstruction",
         columns=standard_columns,
     )
 
-    def external_metric(source: str, comparison: str, scope: str, component: str) -> pd.Series:
-        rows = external_metrics.loc[
-            external_metrics["source"].eq(source)
-            & external_metrics["comparison"].eq(comparison)
-            & external_metrics["scope"].eq(scope)
-            & external_metrics["component"].eq(component)
-        ]
-        if len(rows) != 1:
-            raise ValueError(
-                f"Expected one external metric row for {source}/{comparison}/{scope}/{component}"
-            )
-        return rows.iloc[0]
+    def external_metric(
+        source: str, comparison: str, scope: str, component: str
+    ) -> pd.Series:
+        return only_metric(
+            external_metrics,
+            {
+                "source": source,
+                "comparison": comparison,
+                "scope": scope,
+                "component": component,
+            },
+            f"{source}/{comparison}/{scope}/{component}",
+        )
 
     multinomial = next(
         row
@@ -767,12 +758,11 @@ def build_payload() -> dict:
     ].copy()
 
     points_ratings = pd.read_parquet(points_path / "ratings.parquet")
-    name_lookup = dict(
-        zip(
-            points_ratings["PLAYER_ID"].astype(int),
-            points_ratings["PLAYER_NAME"].astype(str),
-        )
-    )
+    all_names = pd.read_parquet(
+        REPO_ROOT / "artifacts/models/pulse/pulse_canonical_v1_cd3c14750a/ratings.parquet",
+        columns=["PLAYER_ID", "PLAYER_NAME", "Season"],
+    ).sort_values("Season").drop_duplicates("PLAYER_ID", keep="last")
+    name_lookup = dict(zip(all_names["PLAYER_ID"].astype(int), all_names["PLAYER_NAME"].astype(str)))
     lab_leaderboards = [
         leaderboard(
             "age-score-context-ratings",
@@ -943,7 +933,12 @@ def build_payload() -> dict:
             ),
         )
     )
-    rolling_wp_ratings = pd.read_parquet(rolling_wp_path / "ratings.parquet")
+    rolling_wp_ratings = pd.read_parquet(
+        latest_repaired_wp(rolling_wp_path / "ratings.parquet")
+    )
+    rolling_wp_ratings["player_name"] = rolling_wp_ratings["player_id"].map(name_lookup).fillna(
+        rolling_wp_ratings.get("player_name")
+    )
     rolling_wp_qualified = rolling_wp_ratings.loc[
         rolling_wp_ratings[["off_possessions", "def_possessions"]]
         .min(axis=1)
@@ -972,7 +967,7 @@ def build_payload() -> dict:
     wp_aio_ratings = pd.read_parquet(wp_spm_aio_path / "leaderboard_2026.parquet")
     wp_aio_ratings["candidate"] = wp_aio_ratings["candidate"].map({
         "zero_wp_rapm": "Zero WP-RAPM",
-        "box15_aio": "Box15 WP-AIO",
+        "box15_aio": "WP-PULSE",
         "rich_aio": "Rich WP-AIO",
     }).fillna(wp_aio_ratings["candidate"])
     wp_aio_qualified = wp_aio_ratings.loc[

@@ -19,7 +19,7 @@ export function RolesView({
   onPlayer: (id: number) => void;
 }) {
   const available = useMemo(
-    () => catalog.catalog.role_seasons[side] ?? [],
+    () => (catalog.catalog.role_seasons[side] ?? []).filter((year) => year >= 2017),
     [catalog, side],
   );
   const [chosenSeason, setChosenSeason] = useState<number | null>(null);
@@ -196,48 +196,8 @@ export function RolesView({
             <button type="button" className="button-secondary" onClick={() => onPlayer(chosen.id)}>Open player</button>
           </section>}
 
-          <div className="grid two">
-            <section className="card">
-              <div className="card-head">
-                <div>
-                  <p className="kicker">Cluster sizes</p>
-                  <h2>
-                    {season} {side}
-                  </h2>
-                </div>
-              </div>
-              {/* Doubles as the map's picker: the list is the legend. */}
-              <div className="mix" style={{ marginTop: 14 }}>
-                {roleNames.map((role) => {
-                  const count = counts.get(role) ?? 0;
-                  const lit = role === emphasis;
-                  return (
-                    <button
-                      type="button"
-                      className="mix-row pickable"
-                      key={role}
-                      aria-pressed={lit}
-                      onClick={() => setEmphasis(lit ? "All" : role)}
-                    >
-                      <span className="label">{role}</span>
-                      <b>{count}</b>
-                      <span className="track">
-                        <i
-                          style={{
-                            width: `${(count / Math.max(1, shaped.length)) * 100}%`,
-                            background: lit
-                              ? "var(--series-1)"
-                              : "var(--text-muted)",
-                          }}
-                        />
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-
-            <section className="card">
+          <div>
+            <section className="card role-neighbour-panel">
               <div className="card-head">
                 <div>
                   <p className="kicker">Nearest neighbours</p>
