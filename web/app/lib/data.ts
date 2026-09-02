@@ -1,36 +1,88 @@
 /** Types and cached loaders for the published web snapshot. */
 
 export type Component = "net" | "offense" | "defense";
-export type ModelId = "aio" | "rapm" | "spm";
+export type ModelId = "pulse" | "rapm";
 export type RoleSide = "offense" | "defense";
-export type MatchupRow = {
+export type MatchupLabPlayer = {
   PLAYER_ID: number;
   PLAYER_NAME: string;
   TEAM_ABBREVIATION: string | null;
   Season: number;
-  offense_elo: number;
-  defense_elo: number;
-  net_elo: number;
+  raw_offense: number;
+  raw_defense: number;
+  raw_net: number;
+  scorer_adjusted_offense: number | null;
+  scorer_adjusted_defense: number | null;
+  scorer_adjusted_net: number | null;
+  contextual_offense: number | null;
+  contextual_defense: number | null;
+  contextual_net: number | null;
+  sequential_offense: number | null;
+  sequential_defense: number | null;
+  sequential_net: number | null;
   offense_matchup_possessions: number;
   defense_matchup_possessions: number;
-  window_start_season: number;
-  window_end_season: number;
-  time_decay: number;
+  reliability: number;
 };
-export type ShotQualityRow = {
+export type MatchupChannel = {
   PLAYER_ID: number;
   PLAYER_NAME: string;
   TEAM_ABBREVIATION: string | null;
   Season: number;
-  raw_net_rank: number;
-  shot_quality_net_rank: number;
-  rank_change: number;
-  lineup_offense_shotmaking_per_100_shots: number;
-  lineup_defense_contest_per_100_shots: number;
-  lineup_net_residual_per_100_shots: number;
-  lineup_shots: number;
-  shooter_quality_above_league_per_100_shots: number | null;
-  shooter_shotmaking_above_quality_per_100_shots: number | null;
+  channel: string;
+  offense: number;
+  defense: number;
+  offense_matchup_possessions: number;
+  defense_matchup_possessions: number;
+  reliability: number;
+};
+export type MatchupValidation = {
+  Season: number;
+  model: string;
+  weighted_matchup_points_mse: number;
+  mse: number;
+  rmse: number;
+  correlation: number;
+  calibration_slope: number;
+  games: number;
+};
+export type MatchupHistory = {
+  PLAYER_ID: number;
+  PLAYER_NAME: string;
+  TEAM_ABBREVIATION: string | null;
+  Season: number;
+  raw_offense: number;
+  raw_defense: number;
+  raw_net: number;
+  offense_matchup_possessions: number;
+  defense_matchup_possessions: number;
+};
+export type MatchupPair = {
+  SCORER_ID: number;
+  SCORER_NAME: string;
+  DEFENDER_ID: number;
+  DEFENDER_NAME: string;
+  matchup_possessions: number;
+  player_points: number;
+  field_goal_attempts: number;
+  turnovers: number;
+  assists: number;
+};
+export type MatchupLabPayload = {
+  run_id: string;
+  scope: "localhost_only";
+  status: string;
+  seasons: number[];
+  latest_season: number;
+  quality: Record<string, boolean>;
+  forbidden_interpretation: string;
+  validation: MatchupValidation[];
+  bootstrap: Record<string, string | number>[];
+  sequential_selection: Record<string, number>[];
+  players: MatchupLabPlayer[];
+  channels: MatchupChannel[];
+  history: MatchupHistory[];
+  pairs: MatchupPair[];
 };
 export type SpmLabRating = {
   PLAYER_ID: number;
@@ -480,22 +532,16 @@ export const MODELS: {
   note: string;
 }[] = [
   {
-    id: "aio",
-    label: "AIO",
-    prefix: "aio_",
-    note: "SPM center plus the RAPM update.",
+    id: "pulse",
+    label: "PULSE",
+    prefix: "pulse_",
+    note: "Box prior updated with one season of lineup evidence.",
   },
   {
     id: "rapm",
     label: "RAPM",
-    prefix: "normal_rapm_",
+    prefix: "rapm_",
     note: "Zero-prior one-season ridge on possessions.",
-  },
-  {
-    id: "spm",
-    label: "SPM",
-    prefix: "spm_",
-    note: "Held-out statistical prediction that centers the RAPM fit.",
   },
 ];
 
@@ -635,7 +681,25 @@ export type Catalog = {
     role_seasons: Record<RoleSide, number[]>;
     role_labels: Record<RoleSide, Record<string, string>>;
   };
-  methods: { aio_equation: string; rapm_update_note: string };
+  methods: {
+    aio_equation: string;
+    rapm_update_note: string;
+    pulse?: {
+      definition: string;
+      prior: string;
+      lineup_update: string;
+      validation: string;
+      box15_inputs: string[];
+      comparison: {
+        candidate: string;
+        folds: number;
+        equal_season_mse: number;
+        equal_season_rmse: number;
+        mean_correlation: number;
+        mean_calibration_slope: number;
+      }[];
+    };
+  };
   aging: Record<"rapm" | "aio", { coverage: string; rows: AgingRow[] }>;
   validation: {
     walk_forward: ValidationRow[];
@@ -649,6 +713,26 @@ export type Catalog = {
       note: string;
       pinned_model_note: string;
       rows: ExternalRow[];
+    };
+    metric_comparison?: {
+      run_id?: string;
+      note: string;
+      summary: {
+        scope: string;
+        candidate: string;
+        folds: number;
+        mean_mse: number;
+        aggregate_rmse: number;
+        mean_correlation: number;
+        mean_calibration_slope: number;
+      }[];
+      correlations: {
+        left_candidate: string;
+        right_candidate: string;
+        matched_player_seasons: number;
+        pearson: number;
+        spearman: number;
+      }[];
     };
   };
 };
@@ -715,10 +799,8 @@ export const loadShard = (shard: number) =>
   );
 export const loadRoleMap = (side: RoleSide, season: number) =>
   load<RolePoint[]>(`/data/roles-${side}-${season}.json`);
-export const loadMatchups = (season: number) =>
-  load<MatchupRow[]>(`/data/matchup-elo-${season}.json`);
-export const loadShotQualityMatchups = () =>
-  load<ShotQualityRow[]>("/data/shot-quality-lineup-2026.json");
+export const loadMatchupLab = () =>
+  load<MatchupLabPayload>("/data/matchup-lab.json");
 export const loadRapmLab = () => load<RapmLabPayload>("/data/rapm-lab.json");
 export const loadSpmLab = () => load<SpmLabPayload>("/data/spm-lab.json");
 export const loadLocalSkillIndex = () =>

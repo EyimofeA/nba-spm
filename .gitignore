@@ -25,5 +25,6 @@ venv/
 /research/rapm_lab/data/
 /research/rapm_lab/outputs/
 /research/rapm_lab/external/external/
+/web/local-data/matchup-lab.json
 /artifacts/models/luck_adjusted_rapm/*/checkpoints/
 /artifacts/models/predictive_player_skills/*/checkpoints/

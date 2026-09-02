@@ -1,0 +1,58 @@
+{
+  "annual_identity_max_error": 0.0,
+  "annual_penalties": {
+    "defense": 4500,
+    "home": 300,
+    "offense": 3000
+  },
+  "annual_rows": 14569,
+  "artifacts": {
+    "annual_rapm": "annual_rapm.parquet",
+    "point_only_audit": "point_only_audit.parquet",
+    "targets": "targets.parquet"
+  },
+  "created_at": "2026-09-02T00:56:49.361849+00:00",
+  "point_only_observations": "included_in_score_rhs_with_zero_possession_weight",
+  "run_id": "canonical_stint_rapm_v1_45606a4b1b",
+  "source_hashes": {
+    "1997": "513db201fe1c587aa579992d8df025823962f33eac3629407689639395b405f9",
+    "1998": "189383c25f48a5b6f34200281f4dcbb3e63197a6b223dc7a2c2f32b5efb95b38",
+    "1999": "9467730559592ba90c1b59986f4409eaf8184350499c87259aa1b303784c4382",
+    "2000": "c0b91d60bb8a8c1361b36e90da805193f333fb9ad69319588975383e970a205b",
+    "2001": "fa68daa7de731ea5ec1b721c4f54fc6dc09af264340484185b7b42e2fe63e74d",
+    "2002": "322dd26e032ca26469eeba2ddf40c23832036da0915e0f613c8347fa4d62195f",
+    "2003": "2d68e5342fd2ef521aacca4c36b4ec86ead2455ae0b02aae674efee8fba436bf",
+    "2004": "1d8a0a0e8ebf903b7d8d5dcdfdaabef07feef21d451108b485820f9e238bcb10",
+    "2005": "71769639f7eb4e751ef56160cd2313182f8b757d2971e3225298eae0a49d9766",
+    "2006": "a6e5430ad4d3c29974aa4fad2c4c8c091b950b359121b9c8796dfdac2e2b37d2",
+    "2007": "297794ceb971bdee47a1ab57bdcb6f26d619fa30fe2735169149c204d330aaa7",
+    "2008": "1cc45df88883bc54f4bc0d9ebc60ae087310c8e9e6514905a552c1cb71e7cbb7",
+    "2009": "4894cf7d02623198cf8a243ef014fbbc4abf6b3c2434f4dafd47651c267db2a2",
+    "2010": "97ebfa262d12e838e6caef6f1e77e823fabc856c6b39eb13d902f55272e3018f",
+    "2011": "79ab56bbf84ba0ef791b7f346dd3759bc20e6bb307096f2e938de7eeff151716",
+    "2012": "2bf28e5b2150ea2950528658b4129d19edbed4d2b368c2b296a74cee78b6aebf",
+    "2013": "247967a0b0ba9cde1c7a9f755753df0b6dc7d290974389aadee3d37edbe2c362",
+    "2014": "eb25efbaa8987a46b2f00aae39b9f5a87c93407f68cf7d0a4e3a307193abf789",
+    "2015": "de7fb599a32549ae9abf6120f56caddb5625ac3f402be3882b23d482f9e91165",
+    "2016": "7da138bd84db6831a61a63a2a61b1e215e54bdfcbd9d08c9708d1d3a3f021aab",
+    "2017": "1ed6f5457b6a29926ce75e2d9ac6023817b2a8d9f1e5a16add6a2f63d0a3d701",
+    "2018": "64e1f7fd5f652e1eb22e27c423e23208900af74e315afea3516dc3bc436c7fa6",
+    "2019": "96e5e9f377aff7bea3e3adb0a612d26f2660c60a4020875a4cd1e42d69641b12",
+    "2020": "9462294255d306c2297fc3e3da9a4adbbe7522e48ddeddb839de14c84f6fb964",
+    "2021": "70f3d9625d7ca54b1422912acd6e444d6b0658709940446ef0fcd36a7722f9b4",
+    "2022": "90e3f5e0ee96410d82ffa1cbfedba75c7ff1f55b57f02b09989f316bc984374c",
+    "2023": "0c813965a0853ffb1d7c186c8bdba01c47d219aff6ee35d7ae978f88aec09f9b",
+    "2024": "150e92dd82d1bb9b0c4c259922bde62c12cef37ef1da9da923a1bfb1a80121f0",
+    "2025": "a30b7db22576b4af6e5476c831cde1ff956a4b16753795effdf5b19d51c3f7f3",
+    "2026": "471fb601f8c8b00c59d1c09ea823e5b069b751be63d18c010143292e734884e7"
+  },
+  "source_manifest_sha256": "deaecb2a0b91254ceada80240b8e9f543a26c69d67d5bb779856d76b8d8eb76e",
+  "target_horizon": 9,
+  "target_identity_max_error": 0.0,
+  "target_penalties": {
+    "defense": 3000,
+    "home": 300,
+    "offense": 3000
+  },
+  "target_rows": 25023
+}

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Figure } from "../charts/frame";
 import { MultiLine } from "../charts/lines";
 import { ScoreStateBubble } from "../charts/scatter";
-import { MatchupRow, RapmLabPayload, ShotQualityRow } from "../lib/data";
+import { MatchupLabPayload, RapmLabPayload } from "../lib/data";
 import { fmtInt, fmtRating } from "../lib/viz";
 import { MatchupsView } from "./MatchupsView";
 
@@ -33,18 +33,10 @@ function formatLabValue(key: string, value: string | number | null) {
 
 export function RapmLabView({
   lab,
-  matchupRows,
-  shotQualityRows,
-  season,
-  seasons,
-  onSeason,
+  matchupLab,
 }: {
   lab: RapmLabPayload | null;
-  matchupRows: MatchupRow[];
-  shotQualityRows: ShotQualityRow[];
-  season: number;
-  seasons: number[];
-  onSeason: (season: number) => void;
+  matchupLab: MatchupLabPayload | null;
 }) {
   const [project, setProject] = useState<Project>("tests");
   const [replicationBoardId, setReplicationBoardId] = useState("darko-wowy-2026");
@@ -917,13 +909,7 @@ export function RapmLabView({
       )}
 
       {project === "matchups" && (
-        <MatchupsView
-          rows={matchupRows}
-          shotQualityRows={shotQualityRows}
-          season={season}
-          seasons={seasons}
-          onSeason={onSeason}
-        />
+        <MatchupsView lab={matchupLab} />
       )}
     </>
   );

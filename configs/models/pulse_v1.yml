@@ -1,0 +1,50 @@
+schema_version: impact_model_contract_v1
+model_id: pulse_v1
+status: public_retrospective_reference_reused_evidence
+estimand_id: retrospective_single_season_player_impact_per_100_v1
+
+prior:
+  name: PULSE prior
+  feature_set: box15
+  input_window_seasons: 1
+  target: nine_year_normal_rapm_ending_in_input_season
+  learner: ridge
+  offense_alpha: 300
+  defense_alpha: 1000
+  sample_weight: square_root_minimum_side_possessions
+  representation: raw_per_100
+
+lineup_update:
+  name: Lineup update
+  likelihood_seasons: 1
+  lineup_policy: score_conserving_stint_aggregated_possessions
+  lambda_off: 3000
+  lambda_def: 4500
+  lambda_home: 300
+  prior_scale: 1
+
+scope:
+  descriptive_seasons: 1997-2026
+  past_only_validation_rating_seasons: 2014-2025
+  next_season_outcomes: 2015-2026
+  regular_season_only: true
+
+evidence:
+  target_window_run: artifacts/models/canonical_stint_rapm/canonical_stint_rapm_v1_45606a4b1b
+  canonical_lineup_contract: data/lake/silver/canonical_lineup_stints/manifest.json
+  learner_screen_run: artifacts/research/pulse_model_screen/pulse_model_screen_v1_049628902f
+  rich_spm_role: research_comparison_only
+
+identities:
+  - pulse_prior_offense + pulse_prior_defense = pulse_prior_net
+  - lineup_update_offense + lineup_update_defense = lineup_update_net
+  - pulse_prior + lineup_update = pulse
+  - pulse_offense + pulse_defense = pulse_net
+  - rapm_offense + rapm_defense = rapm_net
+
+interpretation:
+  validation_rows: past_only
+  descriptive_rows: final_mapping_backcast_or_refit
+  forbidden: >-
+    Forecast, causal credit, untouched confirmation, or use of the descriptive
+    backcast as chronological validation evidence.

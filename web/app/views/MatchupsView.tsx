@@ -1,315 +1,134 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MatchupRow, ShotQualityRow } from "../lib/data";
-import { fmtInt } from "../lib/viz";
+import { MatchupLabPayload } from "../lib/data";
+import { fmtInt, fmtRating } from "../lib/viz";
 
-type SortKey =
-  | "PLAYER_NAME"
-  | "TEAM_ABBREVIATION"
-  | "offense_elo"
-  | "defense_elo"
-  | "net_elo"
-  | "matchups";
-type QualitySortKey =
-  | "PLAYER_NAME"
-  | "TEAM_ABBREVIATION"
-  | "raw_net_rank"
-  | "shot_quality_net_rank"
-  | "rank_change"
-  | "lineup_offense_shotmaking_per_100_shots"
-  | "lineup_defense_contest_per_100_shots"
-  | "lineup_net_residual_per_100_shots"
-  | "lineup_shots";
-type View = "raw" | "shot_quality";
+type Model = "raw" | "scorer_adjusted" | "contextual" | "sequential";
+type Side = "net" | "offense" | "defense";
 
-const elo = (value: number) => value.toFixed(0);
-const net = (value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(0)}`;
-const residual = (value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
-const rankChange = (value: number) => `${value >= 0 ? "+" : ""}${value}`;
+const MODEL_LABELS: Record<Model, string> = {
+  raw: "Raw",
+  scorer_adjusted: "Two-way ridge",
+  contextual: "Contextual ridge",
+  sequential: "Sequential",
+};
 
-/**
- * A deliberately separate surface for the experimental matchup model. Elo is
- * not a points-per-100 measure, so sharing the ratings table would imply a
- * comparability the model has not earned.
- */
-export function MatchupsView({
-  rows,
-  shotQualityRows,
-  season,
-  seasons,
-  onSeason,
-}: {
-  rows: MatchupRow[];
-  shotQualityRows: ShotQualityRow[];
-  season: number;
-  seasons: number[];
-  onSeason: (season: number) => void;
-}) {
-  const [view, setView] = useState<View>("raw");
-  const [minimum, setMinimum] = useState(5000);
-  const [qualityMinimum, setQualityMinimum] = useState(2500);
-  const [sortKey, setSortKey] = useState<SortKey>("net_elo");
-  const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const [qualitySortKey, setQualitySortKey] = useState<QualitySortKey>(
-    "lineup_net_residual_per_100_shots",
-  );
-  const [qualityOrder, setQualityOrder] = useState<"asc" | "desc">("desc");
+const modelValue = (row: Record<string, unknown>, model: Model, side: Side) =>
+  Number(row[`${model}_${side}`] ?? Number.NaN);
 
-  const shaped = useMemo(
-    () =>
-      rows
+export function MatchupsView({ lab }: { lab: MatchupLabPayload | null }) {
+  const [model, setModel] = useState<Model>("contextual");
+  const [side, setSide] = useState<Side>("net");
+  const [channel, setChannel] = useState("total_scoring");
+  const [minimum, setMinimum] = useState(250);
+  const [selected, setSelected] = useState<number | null>(null);
+
+  const rows = useMemo(() => {
+    if (!lab) return [];
+    if (channel !== "total_scoring") {
+      return lab.channels
+        .filter((row) => row.channel === channel)
         .map((row) => ({
           ...row,
-          matchups: Math.min(
-            row.offense_matchup_possessions,
-            row.defense_matchup_possessions,
-          ),
-        }))
-        .filter((row) => row.matchups >= minimum),
-    [rows, minimum],
+          value: side === "net" ? row.offense + row.defense : row[side],
+          exposure: Math.min(row.offense_matchup_possessions, row.defense_matchup_possessions),
+        }));
+    }
+    return lab.players.map((row) => ({
+      ...row,
+      value: modelValue(row as unknown as Record<string, unknown>, model, side),
+      exposure: Math.min(row.offense_matchup_possessions, row.defense_matchup_possessions),
+    }));
+  }, [channel, lab, model, side]);
+
+  const sorted = useMemo(
+    () => rows.filter((row) => row.exposure >= minimum && Number.isFinite(row.value))
+      .sort((a, b) => b.value - a.value),
+    [minimum, rows],
+  );
+  const history = useMemo(
+    () => lab?.history.filter((row) => row.PLAYER_ID === selected).sort((a, b) => a.Season - b.Season) ?? [],
+    [lab, selected],
+  );
+  const validation = useMemo(
+    () => lab?.validation.filter((row) => row.model !== "league_average") ?? [],
+    [lab],
+  );
+  const channels = useMemo(
+    () => [...new Set(["total_scoring", ...(lab?.channels.map((row) => row.channel) ?? [])])],
+    [lab],
   );
 
-  const sorted = useMemo(() => {
-    const direction = order === "asc" ? 1 : -1;
-    return [...shaped].sort((a, b) => {
-      const left = a[sortKey];
-      const right = b[sortKey];
-      const compare =
-        typeof left === "string" && typeof right === "string"
-          ? left.localeCompare(right)
-          : Number(left) - Number(right);
-      return compare * direction || b.net_elo - a.net_elo;
-    });
-  }, [shaped, sortKey, order]);
-
-  const sortBy = (key: SortKey) => {
-    if (key === sortKey) setOrder(order === "desc" ? "asc" : "desc");
-    else {
-      setSortKey(key);
-      setOrder(key === "PLAYER_NAME" || key === "TEAM_ABBREVIATION" ? "asc" : "desc");
-    }
-  };
-
-  const shapedQuality = useMemo(
-    () => shotQualityRows.filter((row) => row.lineup_shots >= qualityMinimum),
-    [shotQualityRows, qualityMinimum],
-  );
-  const sortedQuality = useMemo(() => {
-    const direction = qualityOrder === "asc" ? 1 : -1;
-    return [...shapedQuality].sort((a, b) => {
-      const left = a[qualitySortKey];
-      const right = b[qualitySortKey];
-      const compare =
-        typeof left === "string" && typeof right === "string"
-          ? left.localeCompare(right)
-          : Number(left) - Number(right);
-      return compare * direction || a.shot_quality_net_rank - b.shot_quality_net_rank;
-    });
-  }, [shapedQuality, qualityOrder, qualitySortKey]);
-  const sortQualityBy = (key: QualitySortKey) => {
-    if (key === qualitySortKey) setQualityOrder(qualityOrder === "desc" ? "asc" : "desc");
-    else {
-      setQualitySortKey(key);
-      setQualityOrder(key === "PLAYER_NAME" || key === "TEAM_ABBREVIATION" ? "asc" : "desc");
-    }
-  };
-
-  const columns: { key: SortKey; label: string; left?: boolean }[] = [
-    { key: "PLAYER_NAME", label: "Player", left: true },
-    { key: "TEAM_ABBREVIATION", label: "Team", left: true },
-    { key: "offense_elo", label: "Off Elo" },
-    { key: "defense_elo", label: "Def Elo" },
-    { key: "net_elo", label: "Net" },
-    { key: "matchups", label: "Matchups" },
-  ];
-  const qualityColumns: { key: QualitySortKey; label: string; left?: boolean }[] = [
-    { key: "PLAYER_NAME", label: "Player", left: true },
-    { key: "TEAM_ABBREVIATION", label: "Team", left: true },
-    { key: "raw_net_rank", label: "Raw rank" },
-    { key: "shot_quality_net_rank", label: "SQ rank" },
-    { key: "rank_change", label: "Change" },
-    { key: "lineup_offense_shotmaking_per_100_shots", label: "Off residual" },
-    { key: "lineup_defense_contest_per_100_shots", label: "Def residual" },
-    { key: "lineup_net_residual_per_100_shots", label: "SQ net" },
-    { key: "lineup_shots", label: "Lineup shots" },
-  ];
+  if (!lab) {
+    return <section className="card"><p>Matchup Lab data unavailable.</p></section>;
+  }
 
   return (
     <>
       <div className="page-head">
-        <div>
-          <p className="kicker">Experimental</p>
-          <h1>Matchup Elo</h1>
-        </div>
+        <div><p className="kicker">Local research</p><h1>Matchup Lab</h1></div>
+        <span className="meta">2018–{lab.latest_season}</span>
       </div>
 
       <div className="filters">
-        <div className="field">
-          <span>View</span>
-          <div className="segmented" role="group" aria-label="Matchup model view">
-            <button type="button" aria-pressed={view === "raw"} onClick={() => setView("raw")}>
-              Raw
-            </button>
-            <button type="button" aria-pressed={view === "shot_quality"} onClick={() => setView("shot_quality")}>
-              Shot quality
-            </button>
-          </div>
-        </div>
-        {view === "raw" ? (
-        <label className="field">
-          <span>Season</span>
-          <select value={season} onChange={(event) => onSeason(Number(event.target.value))}>
-            {[...seasons].reverse().map((value) => (
-              <option key={value} value={value}>
-                {value - 1}–{String(value).slice(2)}
-              </option>
-            ))}
+        <label className="field"><span>Model</span>
+          <select value={model} disabled={channel !== "total_scoring"} onChange={(event) => setModel(event.target.value as Model)}>
+            {Object.entries(MODEL_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
-        ) : (
-          <span className="meta">2025–26 only</span>
-        )}
-        {view === "raw" ? (
-        <label className="field">
-          <span>Min matchups</span>
+        <label className="field"><span>Side</span>
+          <select value={side} onChange={(event) => setSide(event.target.value as Side)}>
+            <option value="net">Net</option><option value="offense">Offense</option><option value="defense">Defense</option>
+          </select>
+        </label>
+        <label className="field"><span>Channel</span>
+          <select value={channel} onChange={(event) => setChannel(event.target.value)}>
+            {channels.map((value) => <option key={value} value={value}>{value.replaceAll("_", " ")}</option>)}
+          </select>
+        </label>
+        <label className="field"><span>Min exposure</span>
           <select value={minimum} onChange={(event) => setMinimum(Number(event.target.value))}>
-            <option value={0}>Any</option>
-            <option value={2000}>2,000+</option>
-            <option value={5000}>5,000+</option>
-            <option value={8000}>8,000+</option>
+            <option value={0}>Any</option><option value={100}>100+</option><option value={250}>250+</option><option value={500}>500+</option>
           </select>
         </label>
-        ) : (
-          <label className="field">
-            <span>Min lineup shots</span>
-            <select value={qualityMinimum} onChange={(event) => setQualityMinimum(Number(event.target.value))}>
-              <option value={0}>Any</option>
-              <option value={1000}>1,000+</option>
-              <option value={2500}>2,500+</option>
-              <option value={4000}>4,000+</option>
-            </select>
-          </label>
-        )}
       </div>
 
-      {view === "raw" ? (
-        <>
-          <section className="card matchup-intro">
-            <p className="kicker">Three-year trailing window</p>
-            <p>
-              Matchups from the current season count fully; the two earlier seasons
-              are weighted by {rows[0]?.time_decay ?? 0.7} and {((rows[0]?.time_decay ?? 0.7) ** 2).toFixed(2)}.
-              Elo 1500 is league average. Net is offense plus defense minus 3000.
-            </p>
-          </section>
+      <section>
+        <div className="section-head"><div><p className="kicker">Leaderboard</p><h2>{channel.replaceAll("_", " ")}</h2></div></div>
+        <div className="table-wrap"><table className="data">
+          <thead><tr><th>#</th><th className="left">Player</th><th>Rating</th><th>Reliability</th><th>Exposure</th></tr></thead>
+          <tbody>{sorted.map((row, index) => (
+            <tr key={row.PLAYER_ID} className={selected === row.PLAYER_ID ? "selected" : undefined} onClick={() => setSelected(row.PLAYER_ID)}>
+              <td>{index + 1}</td><td className="left name">{row.PLAYER_NAME}</td><td className="headline">{fmtRating(row.value)}</td>
+              <td>{Math.round(100 * row.reliability)}%</td><td>{fmtInt(row.exposure)}</td>
+            </tr>
+          ))}</tbody>
+        </table></div>
+      </section>
 
-          <section>
-            <div className="section-head" style={{ marginTop: 18 }}>
-              <div>
-                <p className="kicker">Player matchups</p>
-                <h2>{season - 1}–{String(season).slice(2)}</h2>
-              </div>
-              <span className="meta">{sorted.length} players</span>
-            </div>
-            <div className="table-wrap">
-              <table className="data">
-                <caption className="visually-hidden">Experimental matchup Elo ratings</caption>
-                <thead>
-                  <tr>
-                    <th scope="col" className="left"><button type="button" disabled style={{ cursor: "default" }}>#</button></th>
-                    {columns.map((column) => (
-                      <th key={column.key} scope="col" className={column.left ? "left" : undefined}>
-                        <button type="button" onClick={() => sortBy(column.key)}>
-                          {column.label}{sortKey === column.key && <span className="arrow">{order === "asc" ? "▲" : "▼"}</span>}
-                        </button>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sorted.map((row, index) => (
-                    <tr key={row.PLAYER_ID}>
-                      <td className="rank">{index + 1}</td>
-                      <td className="left name">{row.PLAYER_NAME}</td>
-                      <td className="left team">{row.TEAM_ABBREVIATION ?? "—"}</td>
-                      <td>{elo(row.offense_elo)}</td>
-                      <td>{elo(row.defense_elo)}</td>
-                      <td className="headline">{net(row.net_elo)}</td>
-                      <td>{fmtInt(row.matchups)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+      {history.length > 0 && <section className="card">
+        <p className="kicker">Player history</p><h2>{history[0].PLAYER_NAME}</h2>
+        <div className="table-wrap"><table className="mini"><thead><tr><th>Season</th><th>Offense</th><th>Defense</th><th>Net</th></tr></thead>
+          <tbody>{history.map((row) => <tr key={row.Season}><td>{row.Season}</td><td>{fmtRating(row.raw_offense)}</td><td>{fmtRating(row.raw_defense)}</td><td>{fmtRating(row.raw_net)}</td></tr>)}</tbody>
+        </table></div>
+      </section>}
 
-          <p className="note matchup-caveat">
-            This is a matchup-assignment model, not a primary-defender estimate.
-            It is useful for iteration; its defensive ranking is not yet validated
-            for publication or inclusion in RAPM, SPM, or AIO.
-          </p>
-        </>
-      ) : (
-        <>
-          <section className="card matchup-intro">
-            <p className="kicker">Local research comparison</p>
-            <h2>Location-adjusted shot residuals</h2>
-            <p>
-              This view holds shot location and game context fixed, then estimates
-              what the five players on each side add to makes above expectation.
-              It is a five-on-five diagnostic, not an individual defender-at-shot model.
-              Compare ranks, not Elo against residual points.
-            </p>
-          </section>
-          <section>
-            <div className="section-head" style={{ marginTop: 18 }}>
-              <div>
-                <p className="kicker">Raw versus shot quality</p>
-                <h2>2025–26</h2>
-              </div>
-              <span className="meta">{sortedQuality.length} players</span>
-            </div>
-            <div className="table-wrap">
-              <table className="data">
-                <caption className="visually-hidden">Raw matchup and shot-quality diagnostic rank comparison</caption>
-                <thead>
-                  <tr>
-                    <th scope="col" className="left"><button type="button" disabled style={{ cursor: "default" }}>#</button></th>
-                    {qualityColumns.map((column) => (
-                      <th key={column.key} scope="col" className={column.left ? "left" : undefined}>
-                        <button type="button" onClick={() => sortQualityBy(column.key)}>
-                          {column.label}{qualitySortKey === column.key && <span className="arrow">{qualityOrder === "asc" ? "▲" : "▼"}</span>}
-                        </button>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedQuality.map((row, index) => (
-                    <tr key={row.PLAYER_ID}>
-                      <td className="rank">{index + 1}</td>
-                      <td className="left name">{row.PLAYER_NAME}</td>
-                      <td className="left team">{row.TEAM_ABBREVIATION ?? "—"}</td>
-                      <td>{row.raw_net_rank}</td>
-                      <td>{row.shot_quality_net_rank}</td>
-                      <td className="headline">{rankChange(row.rank_change)}</td>
-                      <td>{residual(row.lineup_offense_shotmaking_per_100_shots)}</td>
-                      <td>{residual(row.lineup_defense_contest_per_100_shots)}</td>
-                      <td className="headline">{residual(row.lineup_net_residual_per_100_shots)}</td>
-                      <td>{fmtInt(row.lineup_shots)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-          <p className="note matchup-caveat">
-            A positive change means the player ranks higher in the shot-quality diagnostic.
-            This diagnostic did not clear its held-out improvement gate, so it remains local only.
-          </p>
-        </>
-      )}
+      <section className="card">
+        <p className="kicker">Chronological validation</p>
+        <div className="table-wrap"><table className="mini"><thead><tr><th>Season</th><th>Model</th><th>RMSE</th><th>Correlation</th><th>Slope</th></tr></thead>
+          <tbody>{validation.map((row) => <tr key={`${row.Season}-${row.model}`}><td>{row.Season}</td><td>{row.model.replaceAll("_", " ")}</td><td>{row.rmse.toFixed(2)}</td><td>{row.correlation.toFixed(3)}</td><td>{row.calibration_slope.toFixed(2)}</td></tr>)}</tbody>
+        </table></div>
+      </section>
+
+      <section className="card">
+        <p className="kicker">Frequent scorer–defender pairs</p>
+        <div className="table-wrap"><table className="mini"><thead><tr><th>Scorer</th><th>Defender</th><th>Exposure</th><th>Points</th></tr></thead>
+          <tbody>{lab.pairs.slice(0, 25).map((row) => <tr key={`${row.SCORER_ID}-${row.DEFENDER_ID}`}><td>{row.SCORER_NAME}</td><td>{row.DEFENDER_NAME}</td><td>{row.matchup_possessions.toFixed(1)}</td><td>{row.player_points.toFixed(0)}</td></tr>)}</tbody>
+        </table></div>
+      </section>
+
+      <p className="note matchup-caveat">Aggregated scorer–listed-defender assignments are not shot-level guarding. This lab remains local until a model clears the chronological gate.</p>
     </>
   );
 }

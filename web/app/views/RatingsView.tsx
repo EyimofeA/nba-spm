@@ -14,10 +14,10 @@ import {
   rating,
   resolveModel,
 } from "../lib/data";
-import { fmtInt, fmtRating, symmetricBound } from "../lib/viz";
+import { fmtRating, symmetricBound } from "../lib/viz";
 import { MinPossField, ModelField, SeasonField, TeamField } from "./controls";
 
-type SortKey = "net" | "offense" | "defense" | "poss" | "name" | "team";
+type SortKey = "net" | "offense" | "defense" | "prior" | "update" | "name" | "team";
 
 export function RatingsView({
   catalog,
@@ -47,6 +47,7 @@ export function RatingsView({
   const [sortKey, setSortKey] = useState<SortKey>("net");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [view, setView] = useState<"table" | "chart">("table");
+  const [showParts, setShowParts] = useState(false);
 
   const active = resolveModel(rows, model);
 
@@ -97,6 +98,8 @@ export function RatingsView({
           defense: rating(row, active.prefix, "defense") ?? 0,
           net: rating(row, active.prefix, "net") ?? 0,
           poss: possessions(row),
+          prior: typeof row.pulse_prior_net === "number" ? row.pulse_prior_net : 0,
+          update: typeof row.lineup_update_net === "number" ? row.lineup_update_net : 0,
         })),
     [rows, minPoss, team, activeRoleFilter, rolePlayerIds, active.prefix],
   );
@@ -109,9 +112,7 @@ export function RatingsView({
           ? a.name.localeCompare(b.name)
           : sortKey === "team"
             ? (a.team ?? "").localeCompare(b.team ?? "")
-            : sortKey === "poss"
-              ? a.poss - b.poss
-              : a[sortKey] - b[sortKey];
+            : a[sortKey] - b[sortKey];
       return compare * direction || b.net - a.net;
     });
   }, [shaped, sortKey, order]);
@@ -151,71 +152,60 @@ export function RatingsView({
     { key: "team", label: "Team", left: true },
     { key: "offense", label: "Off" },
     { key: "defense", label: "Def" },
-    { key: "net", label: "Net" },
-    { key: "poss", label: "Poss" },
+    { key: "net", label: active.id === "pulse" ? "PULSE" : "Net" },
+    ...(showParts && active.id === "pulse"
+      ? ([{ key: "prior", label: "Prior" }, { key: "update", label: "Update" }] as const)
+      : []),
   ];
-  const leader = sorted[0];
 
   return (
-    <>
-      <div className="page-head">
+    <section className="ratings-workbench" aria-labelledby="ratings-heading">
+      <header className="ratings-titlebar">
         <div>
-          <p className="kicker">NBA impact ratings</p>
-          <h1>Ratings</h1>
+          <p className="kicker">{season - 1}–{String(season).slice(2)}</p>
+          <h1 id="ratings-heading">Player impact</h1>
         </div>
-        <div className="view-actions">
-          <span className="meta" aria-live="polite">
-            {season - 1}–{String(season).slice(2)} · {active.label} · {sorted.length} players
-          </span>
-          <div className="segmented" aria-label="Ratings view">
-            <button type="button" aria-pressed={view === "table"} onClick={() => setView("table")}>Table</button>
-            <button type="button" aria-pressed={view === "chart"} onClick={() => setView("chart")}>Map</button>
-          </div>
+      </header>
+
+      <div className="ratings-toolbar">
+        <div className="filters" aria-label="Ratings filters">
+          <SeasonField seasons={catalog.catalog.seasons} value={season} onChange={onSeason} />
+          <ModelField rows={rows} value={model} onChange={onModel} />
+          <TeamField teams={teams} value={team} onChange={setTeam} />
+          <MinPossField value={minPoss} onChange={onMinPoss} />
+          <label className="field">
+            <span>Role side</span>
+            <select value={roleSide} onChange={(event) => setRoleSide(event.target.value as RoleSide)}>
+              <option value="offense">Offense</option>
+              <option value="defense">Defense</option>
+            </select>
+          </label>
+          <label className="field">
+            <span>Role</span>
+            <select value={activeRoleFilter} onChange={(event) => setRoleFilter(event.target.value)} disabled={!roleNames.length}>
+              <option value="All">All roles</option>
+              {roleNames.map((role) => <option key={role} value={role}>{role}</option>)}
+            </select>
+          </label>
+        </div>
+        <div className="segmented" aria-label="Ratings view">
+          {active.id === "pulse" && (
+            <button type="button" aria-pressed={showParts} onClick={() => setShowParts(!showParts)}>Prior + update</button>
+          )}
+          <button type="button" aria-pressed={view === "table"} onClick={() => setView("table")}>Table</button>
+          <button type="button" aria-pressed={view === "chart"} onClick={() => setView("chart")}>Map</button>
         </div>
       </div>
 
-      {/* One filter row, above everything it scopes. */}
-      <div className="filters">
-        <SeasonField
-          seasons={catalog.catalog.seasons}
-          value={season}
-          onChange={onSeason}
-        />
-        <ModelField rows={rows} value={model} onChange={onModel} />
-        <TeamField teams={teams} value={team} onChange={setTeam} />
-        <MinPossField value={minPoss} onChange={onMinPoss} />
-        <label className="field">
-          <span>Role side</span>
-          <select value={roleSide} onChange={(event) => setRoleSide(event.target.value as RoleSide)}>
-            <option value="offense">Offense</option>
-            <option value="defense">Defense</option>
-          </select>
-        </label>
-        <label className="field">
-          <span>Role</span>
-          <select value={activeRoleFilter} onChange={(event) => setRoleFilter(event.target.value)} disabled={!roleNames.length}>
-            <option value="All">All roles</option>
-            {roleNames.map((role) => <option key={role} value={role}>{role}</option>)}
-          </select>
-        </label>
-      </div>
-
-      {view === "table" ? <section>
-          <div className="section-head" style={{ marginTop: 8 }}>
+      {view === "table" ? (
+        <section className="leaderboard-panel" aria-labelledby="leaderboard-heading">
+          <header className="board-head">
             <div>
-              <p className="kicker">Leaderboard</p>
-              <h2>{active.label} per 100 possessions</h2>
+              <span>RANK / PLAYER</span>
+              <h2 id="leaderboard-heading">{active.label} leaderboard</h2>
             </div>
-            {leader ? (
-              <p className="note" style={{ margin: 0 }}>
-                Highest net rating: {" "}
-                <a className="player-link" href={`#player/${leader.id}`}>
-                  {leader.name}
-                </a>{" "}
-                <b>{fmtRating(leader.net)}</b>
-              </p>
-            ) : <span className="meta">No players match these filters</span>}
-          </div>
+            <p>Select any column to sort.</p>
+          </header>
           <p className="scroll-hint">Swipe for impact columns →</p>
           <div className="table-wrap">
             <table className="data">
@@ -225,13 +215,7 @@ export function RatingsView({
               <thead>
                 <tr>
                   <th scope="col" className="left">
-                    <button
-                      type="button"
-                      disabled
-                      style={{ cursor: "default" }}
-                    >
-                      #
-                    </button>
+                    <button type="button" disabled style={{ cursor: "default" }}>#</button>
                   </th>
                   {columns.map((column) => (
                     <th
@@ -242,11 +226,7 @@ export function RatingsView({
                     >
                       <button type="button" onClick={() => sortBy(column.key)}>
                         {column.label}
-                        {sortKey === column.key && (
-                          <span className="arrow">
-                            {order === "asc" ? "▲" : "▼"}
-                          </span>
-                        )}
+                        {sortKey === column.key && <span className="arrow">{order === "asc" ? "▲" : "▼"}</span>}
                       </button>
                     </th>
                   ))}
@@ -261,40 +241,39 @@ export function RatingsView({
                       if (!(event.target as HTMLElement).closest("a")) onPlayer(row.id);
                     }}
                   >
-                    <td className="rank">{position + 1}</td>
+                    <td className="rank">{String(position + 1).padStart(2, "0")}</td>
                     <th scope="row" className="left name">
                       <a className="player-link" href={`#player/${row.id}`}>{row.name}</a>
                     </th>
                     <td className="left team">{row.team ?? "—"}</td>
-                    <td>{fmtRating(row.offense)}</td>
-                    <td>{fmtRating(row.defense)}</td>
+                    <td className={`metric-cell ${row.offense >= 0 ? "positive" : "negative"}`}>{fmtRating(row.offense)}</td>
+                    <td className={`metric-cell ${row.defense >= 0 ? "positive" : "negative"}`}>{fmtRating(row.defense)}</td>
                     <td className="headline">
                       <div className="cellbar">
                         <span className="track" aria-hidden="true">
                           <i
                             className={`fill ${row.net >= 0 ? "pos" : "neg"}`}
-                            style={{
-                              width: `${Math.min(50, (Math.abs(row.net) / bound) * 50)}%`,
-                            }}
+                            style={{ width: `${Math.min(50, (Math.abs(row.net) / bound) * 50)}%` }}
                           />
                         </span>
                         <b>{fmtRating(row.net)}</b>
                       </div>
                     </td>
-                    <td>{fmtInt(row.poss)}</td>
+                    {showParts && active.id === "pulse" && <td>{fmtRating(row.prior)}</td>}
+                    {showParts && active.id === "pulse" && <td>{fmtRating(row.update)}</td>}
                   </tr>
                 ))}
                 {!sorted.length && (
-                  <tr>
-                    <td colSpan={7} className="empty">No players match these filters.</td>
-                  </tr>
+                  <tr><td colSpan={columns.length + 1} className="empty">No players match these filters.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
-      </section> : (
-        <Figure
-            kicker={active.label}
+        </section>
+      ) : (
+        <div className="ratings-map">
+          <Figure
+            kicker={`${season - 1}–${String(season).slice(2)} · ${active.label}`}
             title="Offense against defense"
             legend={<ScaleLegend caption="Net" low={`−${netBoundFor(points).toFixed(1)}`} high={`+${netBoundFor(points).toFixed(1)}`} />}
             table={
@@ -303,7 +282,8 @@ export function RatingsView({
                 <tbody>
                   {[...points].sort((a, b) => b.net - a.net).map((row) => (
                     <tr key={row.id}>
-                      <th scope="row"><a className="player-link" href={`#player/${row.id}`}>{row.name}</a></th><td>{quadrant(row)}</td><td>{fmtRating(row.offense)}</td><td>{fmtRating(row.defense)}</td><td>{fmtRating(row.net)}</td>
+                      <th scope="row"><a className="player-link" href={`#player/${row.id}`}>{row.name}</a></th>
+                      <td>{quadrant(row)}</td><td>{fmtRating(row.offense)}</td><td>{fmtRating(row.defense)}</td><td>{fmtRating(row.net)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -312,7 +292,8 @@ export function RatingsView({
           >
             <Landscape rows={points} onSelect={(row) => onPlayer(row.id)} />
           </Figure>
+        </div>
       )}
-    </>
+    </section>
   );
 }

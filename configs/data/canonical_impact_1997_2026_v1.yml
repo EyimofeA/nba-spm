@@ -1,0 +1,40 @@
+schema_version: canonical_impact_data_contract_v1
+contract_id: canonical_impact_1997_2026_v1
+project_seasons: 1997-2026
+game_types: [regular]
+
+sources:
+  official_scores: data/lake/bronze/official_game_scores/official_game_scores.parquet
+  legacy_terminal_possessions: rapm/data/possession_cache/matchups_{season}.parquet
+  current_possessions: data/lake/silver/possessions.parquet
+  current_lineups: data/lake/silver/possession_lineup_segments.parquet
+  current_events: data/lake/silver/event_states.parquet
+  annual_player_features: artifacts/research/historical_box15_extension/historical_box15_extension_v1_08ff4c34ff/annual_box15_features.parquet
+  factor_source_quality: artifacts/research/historical_factor_targets/historical_factor_targets_v2_6cd7e959eb/source_quality.parquet
+
+transitions:
+  current_event_start: 2024
+  detailed_factor_event_start: 2014
+
+gates:
+  minimum_game_score_reconciliation: 0.99
+  minimum_valid_lineup_fraction: 0.95
+  require_unique_player_season_keys: true
+  require_unique_game_ids: true
+
+technical_free_throws:
+  total_rapm: retained
+  event_factor_ledgers: excluded
+  reason: >-
+    The legacy terminal possession source does not identify technical free throws.
+    The total-RAPM comparison must preserve one consistent outcome definition.
+    Event-derived factor ledgers exclude technical free throws explicitly.
+
+missingness:
+  shot_defender: never_impute
+  shot_location: never_impute
+  rebound_responsibility: never_impute
+
+forbidden_interpretation: >-
+  Event-level mechanisms before their observed source era, or a claim that total
+  RAPM excludes technical free throws throughout 1997-2026.

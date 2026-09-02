@@ -1,0 +1,35 @@
+{
+  "schema_version": "replication_registry_v1",
+  "entries": [
+    {
+      "metric": "BPM 2.0",
+      "status": "methodology_aligned_reconstruction",
+      "evidence": "artifacts/research/external_all_in_one_benchmark/external_all_in_one_benchmark_v2_e6817bf1fa"
+    },
+    {
+      "metric": "Box PIPM",
+      "status": "methodology_aligned_reconstruction",
+      "evidence": "artifacts/research/pipm_breaker/pipm_breaker_v1_d154ebea55"
+    },
+    {
+      "metric": "Full PIPM",
+      "status": "published_output_comparison",
+      "evidence": "artifacts/research/pipm_reference_comparison/pipm_reference_comparison_v1_49a3c2c973"
+    },
+    {
+      "metric": "RAPTOR box, on/off, and total",
+      "status": "official_output_identity_plus_local_proxy",
+      "evidence": "research/rapm_lab/outputs/wowy_raptor_reproduction/wowy_raptor_reproduction_v1_33cc445ee9"
+    },
+    {
+      "metric": "DARKO WOWY",
+      "status": "exact_public_aggregation_on_sample",
+      "evidence": "research/rapm_lab/outputs/wowy_raptor_reproduction/wowy_raptor_reproduction_v1_33cc445ee9"
+    },
+    {
+      "metric": "xRAPM",
+      "status": "published_output_comparison",
+      "evidence": "research/rapm_lab/outputs/external_reproduction_benchmark/external_reproduction_benchmark_v1_0a95702214"
+    }
+  ]
+}

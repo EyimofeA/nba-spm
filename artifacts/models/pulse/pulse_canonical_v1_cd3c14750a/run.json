@@ -1,0 +1,172 @@
+{
+  "artifacts": {
+    "coverage": "coverage.parquet",
+    "final_priors": "final_priors.parquet",
+    "ratings": "ratings.parquet",
+    "validation_folds": "validation_folds.parquet",
+    "validation_games": "validation_games.parquet",
+    "validation_priors": "validation_priors.parquet",
+    "validation_subgroups": "validation_subgroups.parquet",
+    "validation_summary": "validation_summary.parquet"
+  },
+  "config": {
+    "estimand_id": "retrospective_single_season_player_impact_per_100_v1",
+    "evidence": {
+      "canonical_lineup_contract": "data/lake/silver/canonical_lineup_stints/manifest.json",
+      "learner_screen_run": "artifacts/research/pulse_model_screen/pulse_model_screen_v1_049628902f",
+      "rich_spm_role": "research_comparison_only",
+      "target_window_run": "artifacts/models/canonical_stint_rapm/canonical_stint_rapm_v1_45606a4b1b"
+    },
+    "identities": [
+      "pulse_prior_offense + pulse_prior_defense = pulse_prior_net",
+      "lineup_update_offense + lineup_update_defense = lineup_update_net",
+      "pulse_prior + lineup_update = pulse",
+      "pulse_offense + pulse_defense = pulse_net",
+      "rapm_offense + rapm_defense = rapm_net"
+    ],
+    "interpretation": {
+      "descriptive_rows": "final_mapping_backcast_or_refit",
+      "forbidden": "Forecast, causal credit, untouched confirmation, or use of the descriptive backcast as chronological validation evidence.",
+      "validation_rows": "past_only"
+    },
+    "lineup_update": {
+      "lambda_def": 4500,
+      "lambda_home": 300,
+      "lambda_off": 3000,
+      "likelihood_seasons": 1,
+      "lineup_policy": "score_conserving_stint_aggregated_possessions",
+      "name": "Lineup update",
+      "prior_scale": 1
+    },
+    "model_id": "pulse_v1",
+    "prior": {
+      "defense_alpha": 1000,
+      "feature_set": "box15",
+      "input_window_seasons": 1,
+      "learner": "ridge",
+      "name": "PULSE prior",
+      "offense_alpha": 300,
+      "representation": "raw_per_100",
+      "sample_weight": "square_root_minimum_side_possessions",
+      "target": "nine_year_normal_rapm_ending_in_input_season"
+    },
+    "schema_version": "impact_model_contract_v1",
+    "scope": {
+      "descriptive_seasons": "1997-2026",
+      "next_season_outcomes": "2015-2026",
+      "past_only_validation_rating_seasons": "2014-2025",
+      "regular_season_only": true
+    },
+    "status": "public_retrospective_reference_reused_evidence"
+  },
+  "created_at": "2026-09-02T01:04:03.115381+00:00",
+  "final_prior": {
+    "prediction_rows": 14568,
+    "training_end": 2026,
+    "training_rows": 11058,
+    "training_start": 2005
+  },
+  "identity_errors": {
+    "prior_side_identity": 0.0,
+    "pulse_side_identity": 0.0,
+    "pulse_sum_identity": 8.881784197001252e-16,
+    "rapm_side_identity": 0.0,
+    "update_side_identity": 4.440892098500626e-15
+  },
+  "run_id": "pulse_canonical_v1_cd3c14750a",
+  "source_hashes": {
+    "builder": "f05004fdbce7f850cae4ee0d3c11c646c3dda624990ad5a052bfcb80ed252964",
+    "config": "38d79bb0171dabd51b3516aa45e75c9d7009e55bc29cbe8a9648f880cc79085e",
+    "features": "eaee3f93f3699c7ce33ff295f3d77a1d5b0d589597c19fcebee7e6743f5a90eb",
+    "stint_manifest": "deaecb2a0b91254ceada80240b8e9f543a26c69d67d5bb779856d76b8d8eb76e",
+    "targets": "db90b279315ad152ac73cfa856669b774d83f8b8f16fbdba7d5d3efdf344f5f9"
+  },
+  "status": "release_candidate",
+  "validation": {
+    "outcome_seasons": [
+      2015,
+      2026
+    ],
+    "paired_bootstrap": {
+      "draws": 5000,
+      "lower_95": -3.6965107048551897,
+      "probability_pulse_better": 1.0,
+      "pulse_minus_rapm_mse": -2.9703977675325643,
+      "upper_95": -2.2159368409491744
+    },
+    "rating_seasons": [
+      2014,
+      2025
+    ],
+    "subgroups": [
+      {
+        "dimension": "source_era",
+        "equal_season_mse_delta_pulse_minus_rapm": -1.88915286703856,
+        "games": 3690,
+        "seasons": 3,
+        "value": "pre_tracking"
+      },
+      {
+        "dimension": "source_era",
+        "equal_season_mse_delta_pulse_minus_rapm": -3.3308127343639,
+        "games": 10749,
+        "seasons": 9,
+        "value": "tracking"
+      },
+      {
+        "dimension": "exposure_group",
+        "equal_season_mse_delta_pulse_minus_rapm": -2.042473434537055,
+        "games": 13654,
+        "seasons": 12,
+        "value": "established"
+      },
+      {
+        "dimension": "exposure_group",
+        "equal_season_mse_delta_pulse_minus_rapm": -13.621203994297845,
+        "games": 785,
+        "seasons": 12,
+        "value": "low_exposure"
+      },
+      {
+        "dimension": "team_change_group",
+        "equal_season_mse_delta_pulse_minus_rapm": -3.5522756584793136,
+        "games": 10641,
+        "seasons": 12,
+        "value": "high_team_change"
+      },
+      {
+        "dimension": "team_change_group",
+        "equal_season_mse_delta_pulse_minus_rapm": -1.1069950628487215,
+        "games": 3798,
+        "seasons": 12,
+        "value": "low_team_change"
+      }
+    ],
+    "summary": [
+      {
+        "candidate": "prior",
+        "equal_season_mse": 198.69516667527049,
+        "equal_season_rmse": 14.095927308101105,
+        "folds": 12,
+        "mean_calibration_slope": 1.543933542801615,
+        "mean_correlation": 0.3136068329906657
+      },
+      {
+        "candidate": "pulse",
+        "equal_season_mse": 185.35293328729585,
+        "equal_season_rmse": 13.614438412483118,
+        "folds": 12,
+        "mean_calibration_slope": 0.871070229029526,
+        "mean_correlation": 0.3623372774439715
+      },
+      {
+        "candidate": "rapm",
+        "equal_season_mse": 188.32333105482846,
+        "equal_season_rmse": 13.723094806013272,
+        "folds": 12,
+        "mean_calibration_slope": 0.9342490064785692,
+        "mean_correlation": 0.3396232509363715
+      }
+    ]
+  }
+}

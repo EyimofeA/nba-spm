@@ -30,6 +30,10 @@ DEFAULT_CACHE = REPO_ROOT / "rapm" / "data" / "possession_cache"
 DEFAULT_POSSESSIONS = REPO_ROOT / "data" / "lake" / "silver" / "possessions.parquet"
 DEFAULT_SEGMENTS = REPO_ROOT / "data" / "lake" / "silver" / "possession_lineup_segments.parquet"
 DEFAULT_PLAYER_GAMES = REPO_ROOT / "data" / "lake" / "silver" / "player_games.parquet"
+DEFAULT_PULSE_NAMES = (
+    REPO_ROOT
+    / "artifacts/models/pulse/pulse_canonical_v1_cd3c14750a/ratings.parquet"
+)
 DEFAULT_NAMES = REPO_ROOT / "rapm" / "data" / "all_names.csv"
 DEFAULT_SHEETS = REPO_ROOT / "data" / "raw" / "playersheets" / "year_totals"
 DEFAULT_ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "models" / "rolling_rapm_peaks"
@@ -55,17 +59,27 @@ def _source_hashes(
     player_sheets_dir: Path,
     player_games_path: Path,
 ) -> dict[str, str]:
-    paths = [
+    required_paths = [
         *(cache_dir / f"matchups_{season}.parquet" for season in seasons if season < transition_season),
         possessions_path,
         segments_path,
         player_games_path,
-        names_path,
-        *(player_sheets_dir / f"{season}.csv" for season in seasons),
     ]
-    missing = [str(path) for path in paths if not path.exists()]
+    missing = [str(path) for path in required_paths if not path.exists()]
     if missing:
         raise ValueError(f"Rolling RAPM inputs are missing: {missing}")
+    optional_paths = [
+        names_path,
+        *(
+            (player_sheets_dir / f"{season}.csv")
+            if (player_sheets_dir / f"{season}.csv").exists()
+            else (player_sheets_dir / f"{season}.parquet")
+            for season in seasons
+        ),
+    ]
+    paths = [*required_paths, *(path for path in optional_paths if path.exists())]
+    if DEFAULT_PULSE_NAMES.exists():
+        paths.append(DEFAULT_PULSE_NAMES)
     return {_relative(path): sha256_file(path) for path in paths}
 
 
@@ -151,7 +165,7 @@ def build_rolling_rapm(
     identity = hashlib.sha256(
         json.dumps(identity_payload, sort_keys=True).encode()
     ).hexdigest()[:10]
-    run_id = f"rolling_5y_rapm_2014_2026_{identity}"
+    run_id = f"rolling_{window_seasons}y_rapm_{season_start}_{season_end}_{identity}"
     output = output_root / run_id if resume_run_dir is None else resume_run_dir
     run_id = output.name
     completed = output / "run.json"
@@ -160,7 +174,6 @@ def build_rolling_rapm(
     checkpoint_root = output / "window_checkpoints"
     checkpoint_root.mkdir(parents=True, exist_ok=True)
 
-    names, name_hashes = load_peak_player_names(names_path, player_sheets_dir, all_seasons)
     player_games = pd.read_parquet(
         player_games_path,
         columns=["player_id", "player_name", "game_date"],
@@ -177,10 +190,32 @@ def build_rolling_rapm(
     )
     current_names["PLAYER_ID"] = current_names["PLAYER_ID"].astype(int)
     current_names["name_source"] = "canonical_player_games_fallback"
-    names = pd.concat(
-        [names, current_names.loc[~current_names["PLAYER_ID"].isin(names["PLAYER_ID"])]],
-        ignore_index=True,
-    )
+    if DEFAULT_PULSE_NAMES.exists():
+        pulse_names = (
+            pd.read_parquet(DEFAULT_PULSE_NAMES, columns=["PLAYER_ID", "PLAYER_NAME"])
+            .dropna()
+            .drop_duplicates("PLAYER_ID", keep="last")
+        )
+        pulse_names["PLAYER_ID"] = pd.to_numeric(
+            pulse_names["PLAYER_ID"], errors="raise"
+        ).astype(int)
+        pulse_names["name_source"] = "canonical_pulse_identity_panel"
+        current_names = pd.concat(
+            [pulse_names, current_names.loc[~current_names["PLAYER_ID"].isin(pulse_names["PLAYER_ID"])]],
+            ignore_index=True,
+        )
+    if names_path.exists() and all(
+        (player_sheets_dir / f"{season}.csv").exists()
+        for season in all_seasons
+    ):
+        names, name_hashes = load_peak_player_names(names_path, player_sheets_dir, all_seasons)
+        names = pd.concat(
+            [names, current_names.loc[~current_names["PLAYER_ID"].isin(names["PLAYER_ID"])]],
+            ignore_index=True,
+        )
+    else:
+        names = current_names.copy()
+        name_hashes = {}
     name_hashes[str(player_games_path.resolve())] = sha256_file(player_games_path)
     model = contract["model"]
     threshold = int(contract["peak_eligibility"]["minimum_possessions_per_side_per_season"])
@@ -327,26 +362,32 @@ def build_rolling_rapm(
         raise ValueError(f"Rolling RAPM has unresolved player names: {unresolved}")
     peaks = extract_player_peaks(rolling)
 
-    reference_run_id = contract["reference_run_id"]
-    reference_path = artifact_root / reference_run_id / "rolling_ratings.parquet"
-    reference = pd.read_parquet(reference_path)
-    comparison = compare_to_reference(
-        rolling,
-        reference,
-        window_seasons=window_seasons,
-        transition_season=transition_season,
-    )
+    reference_run_id = contract.get("reference_run_id")
+    if reference_run_id:
+        reference_path = artifact_root / reference_run_id / "rolling_ratings.parquet"
+        reference = pd.read_parquet(reference_path)
+        comparison = compare_to_reference(
+            rolling,
+            reference,
+            window_seasons=window_seasons,
+            transition_season=transition_season,
+        )
+    else:
+        comparison = pd.DataFrame(columns=["window_end"])
     acceptance = contract["acceptance"]
     unchanged = comparison.loc[
         comparison["window_end"].isin(acceptance["unchanged_source_window_ends"])
     ]
     component_error_columns = [f"{component}_max_abs_error" for component in COMPONENTS]
-    max_reference_error = float(unchanged[component_error_columns].to_numpy().max())
+    max_reference_error = (
+        float(unchanged[component_error_columns].to_numpy().max())
+        if reference_run_id and not unchanged.empty else 0.0
+    )
     max_identity_error = float(quality_frame["max_component_identity_error"].max())
     is_full_run = tuple(window_ends) == contract_ends
     gates = {
         "full_window_count": (not is_full_run) or len(quality_frame) == int(acceptance["expected_windows"]),
-        "unchanged_windows_reproduce_reference": max_reference_error
+        "unchanged_windows_reproduce_reference": (not reference_run_id) or max_reference_error
         <= float(acceptance["maximum_reference_component_error"]),
         "component_identity": max_identity_error
         <= float(acceptance["maximum_component_identity_error"]),

@@ -15,10 +15,9 @@ import {
   LeaderboardRow,
   LocalPlayerSkills,
   LocalSkillIndex,
-  MatchupRow,
+  MatchupLabPayload,
   RapmLabPayload,
   SpmLabPayload,
-  ShotQualityRow,
   ModelId,
   Player,
   PlayerIndex,
@@ -27,10 +26,9 @@ import {
   loadIndex,
   loadLocalPlayerSkills,
   loadLocalSkillIndex,
-  loadMatchups,
+  loadMatchupLab,
   loadRapmLab,
   loadSpmLab,
-  loadShotQualityMatchups,
   loadPlayer,
   loadSeason,
 } from "./lib/data";
@@ -49,6 +47,9 @@ const RolesView = lazy(() =>
 const RapmLabView = lazy(() =>
   import("./views/RapmLabView").then((module) => ({ default: module.RapmLabView })),
 );
+const PublicRapmLabView = lazy(() =>
+  import("./views/PublicRapmLabView").then((module) => ({ default: module.PublicRapmLabView })),
+);
 const SpmLabView = lazy(() =>
   import("./views/SpmLabView").then((module) => ({ default: module.SpmLabView })),
 );
@@ -65,6 +66,7 @@ const ALL_TABS = [
 const NAV_TABS = [
   { id: "ratings", label: "Ratings" },
   { id: "roles", label: "Role map" },
+  { id: "rapm-lab", label: "RAPM Lab" },
   { id: "research", label: "Evidence" },
 ] as const;
 
@@ -82,7 +84,7 @@ const isLocalHost = () => {
 const isTab = (value: string, showResearchLab: boolean): value is Tab => {
   const tabs = showResearchLab
     ? ALL_TABS
-    : ALL_TABS.filter((tab) => !tab.id.endsWith("-lab"));
+    : ALL_TABS.filter((tab) => tab.id !== "spm-lab");
   return tabs.some((tab) => tab.id === value);
 };
 
@@ -118,7 +120,7 @@ export function App() {
 
   // Filters live at the shell so every view below reads the same slice.
   const [season, setSeason] = useState(2026);
-  const [model, setModel] = useState<ModelId>("rapm");
+  const [model, setModel] = useState<ModelId>("pulse");
   const [component, setComponent] = useState<Component>("net");
   const [minPoss, setMinPoss] = useState(0);
 
@@ -127,8 +129,7 @@ export function App() {
   const [comparePlayer, setComparePlayer] = useState<Player | null>(null);
   const [playerSeason, setPlayerSeason] = useState(2024);
   const [roleSide, setRoleSide] = useState<RoleSide>("offense");
-  const [matchupRows, setMatchupRows] = useState<MatchupRow[]>([]);
-  const [shotQualityRows, setShotQualityRows] = useState<ShotQualityRow[]>([]);
+  const [matchupLab, setMatchupLab] = useState<MatchupLabPayload | null>(null);
   const [rapmLab, setRapmLab] = useState<RapmLabPayload | null>(null);
   const [spmLab, setSpmLab] = useState<SpmLabPayload | null>(null);
   const [localSkillIndex, setLocalSkillIndex] = useState<LocalSkillIndex | null>(null);
@@ -155,9 +156,7 @@ export function App() {
     loadCatalog()
       .then((nextCatalog) => {
         if (!live) return;
-        // Open on the most recent complete rating season. AIO/SPM remain
-        // available as historical model selections where their validated
-        // public artifacts exist.
+        // Open on the most recent complete PULSE season.
         const latest = Math.max(...nextCatalog.catalog.seasons);
         setCatalog(nextCatalog);
         setSeason(latest);
@@ -252,19 +251,16 @@ export function App() {
     let live = true;
     const run = async () => {
       try {
-        const [next, nextShotQuality, nextLab] = await Promise.all([
-          loadMatchups(season).catch(() => []),
-          loadShotQualityMatchups().catch(() => []),
+        const [nextMatchupLab, nextLab] = await Promise.all([
+          loadMatchupLab().catch(() => null),
           loadRapmLab().catch(() => null),
         ]);
         if (!live) return;
-        setMatchupRows(next);
-        setShotQualityRows(nextShotQuality);
+        setMatchupLab(nextMatchupLab);
         setRapmLab(nextLab);
       } catch {
         if (live) {
-          setMatchupRows([]);
-          setShotQualityRows([]);
+          setMatchupLab(null);
           setRapmLab(null);
         }
       }
@@ -274,7 +270,7 @@ export function App() {
       live = false;
       window.clearTimeout(start);
     };
-  }, [catalog, hasLocalResearch, route.tab, season]);
+  }, [catalog, hasLocalResearch, route.tab]);
 
   useEffect(() => {
     if (!catalog || !hasLocalResearch || route.tab !== "spm-lab") return;
@@ -404,70 +400,51 @@ export function App() {
     if (matches[0]) openPlayer(matches[0].id);
   }
 
-  const seasons = catalog?.catalog.seasons ?? [];
   const { tab } = route;
   // Player pages are drilled into from the ratings board, so retain that
   // context in the primary navigation instead of making a dead-end tab.
   const activeNavTab = tab === "player" ? "ratings" : tab;
+  const viewLabel =
+    tab === "player"
+      ? "Player report"
+      : (NAV_TABS.find((item) => item.id === activeNavTab)?.label ?? "Ratings");
 
   /* -------------------------------------------------------------- view --- */
 
   return (
-    <>
-      <header className="masthead">
-        <a
-          className="wordmark"
-          href="#ratings"
-          aria-label="CourtSignal ratings"
-        >
-          <b>COURTSIGNAL</b>
-          <span>PLAYER IMPACT</span>
+    <div className="app-shell">
+      <aside className="side-rail">
+        <a className="rail-brand" href="#ratings" aria-label="CourtSignal ratings">
+          <span className="brand-glyph" aria-hidden="true">CS</span>
+          <span className="brand-copy">
+            <b>CourtSignal</b>
+            <small>NBA impact</small>
+          </span>
         </a>
-        <span className="snapshot-status" aria-label={`NBA season ${season - 1} to ${season}`}>
-          SEASON&nbsp;&nbsp;{season - 1}–{String(season).slice(2)}
-        </span>
-        <div className="masthead-spacer" />
-        <div className="search" ref={searchRef}>
-          <form onSubmit={submitSearch} role="search">
-            <svg
-              viewBox="0 0 16 16"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
+
+        <nav className="rail-nav" aria-label="Primary analysis">
+          {NAV_TABS.map((item, index) => (
+            <a
+              key={item.id}
+              href={`#${item.id}`}
+              className={activeNavTab === item.id ? "active" : ""}
+              aria-current={activeNavTab === item.id ? "page" : undefined}
             >
-              <circle cx="7" cy="7" r="4.5" />
-              <path d="M10.5 10.5 14 14" strokeLinecap="round" />
-            </svg>
-            <input
-              aria-label="Find a player"
-              placeholder="Find a player"
-              value={query}
-              onChange={(event) => {
-                setQuery(event.target.value);
-                setSearchOpen(true);
-              }}
-              onFocus={() => setSearchOpen(true)}
-            />
-          </form>
-          {searchOpen && matches.length > 0 && (
-            <div className="search-results">
-              {matches.map((item) => (
-                <button
-                  type="button"
-                  key={item.id}
-                  onClick={() => openPlayer(item.id)}
-                >
-                  {item.name}
-                  <em>#{item.id}</em>
-                </button>
-              ))}
-            </div>
-          )}
+              <span aria-hidden="true">0{index + 1}</span>
+              {item.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="rail-spacer" />
+        <div className="rail-dataset" aria-label={`NBA season ${season - 1} to ${season}`}>
+          <span>Dataset</span>
+          <strong>{season - 1}–{String(season).slice(2)}</strong>
+          <small>{catalog ? "Loaded" : "Connecting"}</small>
         </div>
         <button
           type="button"
-          className="theme-toggle"
+          className="theme-toggle rail-theme"
           onClick={toggleTheme}
           aria-label="Toggle light and dark theme"
           title="Toggle theme"
@@ -483,27 +460,61 @@ export function App() {
           >
             <circle cx="8" cy="8" r="3.4" />
             <path
-              d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3.1 3.1l1.1 1.1M11.8 11.8l1.1 1.1M12.9 3.1l-1.1 1.1M4.2 11.8l-1.1 1.1"
+              d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4V8H15M3.1 3.1l1.1 1.1M11.8 11.8l1.1 1.1M12.9 3.1l-1.1 1.1M4.2 11.8l-1.1 1.1"
               strokeLinecap="round"
             />
           </svg>
+          <span>Theme</span>
         </button>
-      </header>
+      </aside>
 
-      <nav className="tabs" aria-label="Primary analysis">
-        {NAV_TABS.map((item) => (
-          <a
-            key={item.id}
-            href={`#${item.id}`}
-            className={activeNavTab === item.id ? "active" : ""}
-            aria-current={activeNavTab === item.id ? "page" : undefined}
-          >
-            {item.label}
-          </a>
-        ))}
-      </nav>
+      <div className="workspace">
+        <header className="commandbar">
+          <div className="command-context">
+            <span>NBA / PLAYER IMPACT</span>
+            <strong>{viewLabel}</strong>
+          </div>
+          <div className="search" ref={searchRef}>
+            <form onSubmit={submitSearch} role="search">
+              <svg
+                viewBox="0 0 16 16"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+              >
+                <circle cx="7" cy="7" r="4.5" />
+                <path d="M10.5 10.5 14 14" strokeLinecap="round" />
+              </svg>
+              <input
+                aria-label="Find a player"
+                placeholder="Search 582 players"
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  setSearchOpen(true);
+                }}
+                onFocus={() => setSearchOpen(true)}
+              />
+            </form>
+            {searchOpen && matches.length > 0 && (
+              <div className="search-results">
+                {matches.map((item) => (
+                  <button
+                    type="button"
+                    key={item.id}
+                    onClick={() => openPlayer(item.id)}
+                  >
+                    {item.name}
+                    <em>#{item.id}</em>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </header>
 
-      <main className={busy ? "content stale" : "content"}>
+        <main className={busy ? "content stale" : "content"}>
         {!catalog ? (
           <div className="empty">{error || "Loading snapshot…"}</div>
         ) : (
@@ -549,30 +560,29 @@ export function App() {
               />
             )}
             {tab === "rapm-lab" && (
-              <RapmLabView
-                lab={rapmLab}
-                matchupRows={matchupRows}
-                shotQualityRows={shotQualityRows}
-                season={season}
-                seasons={seasons}
-                onSeason={setSeason}
-              />
+              hasLocalResearch ? (
+                <RapmLabView
+                  lab={rapmLab}
+                  matchupLab={matchupLab}
+                />
+              ) : <PublicRapmLabView />
             )}
             {tab === "spm-lab" && <SpmLabView lab={spmLab} />}
             {tab === "research" && <ResearchView catalog={catalog} />}
           </Suspense>
         )}
-      </main>
+        </main>
 
-      <footer className="site-footer">
-        <p>NBA impact, measured in points per 100 possessions.</p>
-      </footer>
+        <footer className="site-footer">
+          <p>NBA impact, measured in points per 100 possessions.</p>
+        </footer>
+      </div>
 
       {error && (
         <p className="toast" role="status">
           {error}
         </p>
       )}
-    </>
+    </div>
   );
 }
