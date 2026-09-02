@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Figure, Legend } from "../charts/frame";
 import { MultiLine } from "../charts/lines";
-import { Pizza, RadarComparison, SKILL_DEFINITIONS, SKILLS, Slice, pizzaLegend } from "../charts/pizza";
+import { Pizza, RadarComparison, SKILLS, Slice, pizzaLegend } from "../charts/pizza";
 import {
   Catalog,
   COMPONENT_LABEL,
@@ -13,6 +13,7 @@ import {
   LocalSkillIndex,
   Player,
   PlayerIndex,
+  RapmLabPayload,
   Role,
   RoleSide,
   rating,
@@ -22,9 +23,8 @@ import {
   COMPONENT_COLOR,
   SERIES,
   fmtRating,
-  ordinalSuffix,
 } from "../lib/viz";
-import { ComponentToggle, ModelField } from "./controls";
+import { ModelField } from "./controls";
 import { PlayerSkills } from "./PlayerSkills";
 
 type PlayerViewProps = {
@@ -33,13 +33,12 @@ type PlayerViewProps = {
   onSeason: (season: number) => void;
   model: ModelId;
   onModel: (model: ModelId) => void;
-  component: Component;
-  onComponent: (component: Component) => void;
   index: PlayerIndex[];
   comparePlayer: Player | null;
   localSkillIndex: LocalSkillIndex | null;
   localSkills: LocalPlayerSkills | null;
   compareLocalSkills: LocalPlayerSkills | null;
+  rapmLab: RapmLabPayload | null;
   onCompare: (id: number) => void;
 };
 
@@ -69,13 +68,12 @@ function PlayerBody({
   onSeason,
   model,
   onModel,
-  component,
-  onComponent,
   index,
   comparePlayer,
   localSkillIndex,
   localSkills,
   compareLocalSkills,
+  rapmLab,
   onCompare,
 }: PlayerViewProps & { player: Player }) {
   const [compareQuery, setCompareQuery] = useState("");
@@ -141,7 +139,28 @@ function PlayerBody({
   const currentRatings = (['net', 'offense', 'defense'] as Component[]).map(
     (key) => ({ key, value: rating(current, active.prefix, key) }),
   );
-  const selectedValue = rating(current, active.prefix, component);
+  const selectedValue = rating(current, active.prefix, "net");
+  const researchComparisons = (() => {
+    if (!rapmLab) return [];
+    const values: { label: string; value: number; note: string }[] = [];
+    const wp = rapmLab.leaderboards
+      .find((board) => board.id === `wp-spm-aio-${currentSeason}`)
+      ?.rows.find((row) => row.player_name === player.PLAYER_NAME && row.candidate === "Zero WP-RAPM");
+    if (typeof wp?.net_per_100 === "number") {
+      values.push({ label: "WP-RAPM", value: wp.net_per_100, note: "WP change / 100" });
+    }
+    const seen = new Set<string>();
+    for (const board of rapmLab.replication_leaderboards) {
+      if (board.season !== currentSeason || seen.has(board.metric)) continue;
+      const row = board.rows.find((candidate) => candidate.player === player.PLAYER_NAME);
+      const value = row?.raptor ?? row?.net;
+      if (typeof value === "number") {
+        values.push({ label: board.metric.replace(" table", ""), value, note: "Reference rating" });
+        seen.add(board.metric);
+      }
+    }
+    return values;
+  })();
 
   return (
     <section aria-labelledby="player-heading">
@@ -168,7 +187,7 @@ function PlayerBody({
             {fmtRating(selectedValue)}
           </div>
           <div className="hero-caption">
-            {COMPONENT_LABEL[component]} · {active.label}
+            Net · {active.label}
           </div>
         </div>
       </header>
@@ -188,7 +207,6 @@ function PlayerBody({
             ))}
           </select>
         </label>
-        <ComponentToggle value={component} onChange={onComponent} />
       </div>
 
       <section aria-labelledby="current-impact-heading">
@@ -217,6 +235,24 @@ function PlayerBody({
         </div>
       </section>
 
+      {researchComparisons.length > 0 && (
+        <section aria-labelledby="research-comparisons-heading">
+          <div className="section-head" style={{ marginTop: 18 }}>
+            <div>
+              <p className="kicker">Local research</p>
+              <h2 id="research-comparisons-heading">Replications and WP-RAPM</h2>
+            </div>
+          </div>
+          <div className="kpi-row">
+            {researchComparisons.map((item) => <article className="tile" key={item.label}>
+              <div className="tile-label">{item.label}</div>
+              <div className="tile-value">{fmtRating(item.value)}</div>
+              <div className="tile-sub">{item.note}</div>
+            </article>)}
+          </div>
+        </section>
+      )}
+
       <div className="grid" style={{ marginTop: 14 }}>
         <Figure
           kicker="Career"
@@ -232,43 +268,6 @@ function PlayerBody({
               Select a season on the chart to move the whole page to it. Offense
               and defense add to net.
             </>
-          }
-          table={
-            <table className="mini">
-              <thead>
-                <tr>
-                  <th scope="col">Season</th>
-                  <th scope="col">Team</th>
-                  <th scope="col">Off</th>
-                  <th scope="col">Def</th>
-                  <th scope="col">Net</th>
-                </tr>
-              </thead>
-              <tbody>
-                {player.annual.map((row) => (
-                  <tr
-                    key={row.Season}
-                    className={row.Season === season ? "flag" : undefined}
-                  >
-                    <td>
-                      <button
-                        type="button"
-                        className="text-button"
-                        aria-current={row.Season === season ? "true" : undefined}
-                        aria-label={`Show ${row.Season - 1}–${String(row.Season).slice(2)} ratings`}
-                        onClick={() => onSeason(row.Season)}
-                      >
-                        {row.Season - 1}–{String(row.Season).slice(2)}
-                      </button>
-                    </td>
-                    <td>{row.TEAM_ABBREVIATION ?? "—"}</td>
-                    <td>{fmtRating(rating(row, active.prefix, "offense"))}</td>
-                    <td>{fmtRating(rating(row, active.prefix, "defense"))}</td>
-                    <td>{fmtRating(rating(row, active.prefix, "net"))}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           }
         >
           <MultiLine
@@ -294,33 +293,7 @@ function PlayerBody({
             kicker={`Skill profile · ${season}`}
             title="Season-relative percentile"
             legend={<Legend items={pizzaLegend} />}
-            note="Percentiles compare this player to the rest of the season. Open the table for the inputs behind each skill."
-            table={
-              <table className="mini">
-                <thead>
-                  <tr>
-                    <th scope="col">Skill</th>
-                    <th scope="col">Group</th>
-                    <th scope="col">Inputs</th>
-                    <th scope="col">Percentile</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...slices]
-                    .sort((a, b) => b.value - a.value)
-                    .map((slice) => (
-                      <tr key={slice.key}>
-                        <td>{slice.label}</td>
-                        <td>
-                          {slice.group === "shared" ? "Both ends" : slice.group}
-                        </td>
-                        <td>{SKILL_DEFINITIONS[slice.key]}</td>
-                        <td>{ordinalSuffix(slice.value)}</td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            }
+            note="Percentiles compare this player to the rest of the season."
           >
             <Pizza slices={slices} />
           </Figure>}
@@ -360,7 +333,7 @@ function PlayerBody({
               )}
             </div>
             {comparePlayer ? (
-              <ComparisonTable left={player} right={comparePlayer} model={model} />
+              <ComparisonCards left={player} right={comparePlayer} model={model} season={season} />
             ) : (
               <p className="note">Compare offense, defense, and net against a player from the same season.</p>
             )}
@@ -377,7 +350,6 @@ function PlayerBody({
               { label: comparePlayer.PLAYER_NAME, color: "var(--series-2)" },
             ]} />}
             note="Each spoke is the same season-relative skill percentile used above."
-            table={<SkillComparisonTable left={slices} right={comparisonSlices} leftName={player.PLAYER_NAME} rightName={comparePlayer.PLAYER_NAME} />}
           >
             <RadarComparison left={slices} right={comparisonSlices} leftName={player.PLAYER_NAME} rightName={comparePlayer.PLAYER_NAME} />
           </Figure>
@@ -404,26 +376,21 @@ function PlayerBody({
   );
 }
 
-function ComparisonTable({ left, right, model }: { left: Player; right: Player; model: ModelId }) {
+function ComparisonCards({ left, right, model, season }: { left: Player; right: Player; model: ModelId; season: number }) {
   const leftActive = resolveModel(left.annual, model);
   const rightActive = resolveModel(right.annual, model);
-  const rightBySeason = new Map(right.annual.map((row) => [row.Season, row]));
-  const seasons = left.annual
-    .filter((row) => rightBySeason.has(row.Season))
-    .map((row) => row.Season)
-    .sort((a, b) => b - a);
-  return <div className="table-wrap" style={{ marginTop: 16 }}>
-    <table className="mini comparison-table">
-      <caption className="visually-hidden">{left.PLAYER_NAME} and {right.PLAYER_NAME} comparison</caption>
-      <thead><tr><th scope="col">Season</th><th scope="col">{left.PLAYER_NAME}<br />Off / Def / Net</th><th scope="col">{right.PLAYER_NAME}<br />Off / Def / Net</th></tr></thead>
-      <tbody>{seasons.map((season) => { const leftRow = left.annual.find((row) => row.Season === season); const rightRow = rightBySeason.get(season); return <tr key={season}><th scope="row">{season - 1}–{String(season).slice(2)}</th><td>{["offense", "defense", "net"].map((key) => fmtRating(rating(leftRow, leftActive.prefix, key as Component))).join(" / ")}</td><td>{["offense", "defense", "net"].map((key) => fmtRating(rating(rightRow, rightActive.prefix, key as Component))).join(" / ")}</td></tr>; })}</tbody>
-    </table>
+  const players = [
+    { player: left, active: leftActive, row: left.annual.find((row) => row.Season === season) },
+    { player: right, active: rightActive, row: right.annual.find((row) => row.Season === season) },
+  ];
+  return <div className="comparison-cards" style={{ marginTop: 16 }}>
+    {players.map(({ player, active, row }) => <article key={player.PLAYER_ID} className="comparison-player">
+      <h3>{player.PLAYER_NAME}</h3>
+      <div className="comparison-values" aria-label={`${player.PLAYER_NAME} ${season} offense defense and net`}>
+        {(["offense", "defense", "net"] as Component[]).map((key) => <span key={key}><small>{COMPONENT_LABEL[key]}</small><b>{fmtRating(rating(row, active.prefix, key))}</b></span>)}
+      </div>
+    </article>)}
   </div>;
-}
-
-function SkillComparisonTable({ left, right, leftName, rightName }: { left: Slice[]; right: Slice[]; leftName: string; rightName: string }) {
-  const rightByKey = new Map(right.map((slice) => [slice.key, slice]));
-  return <table className="mini comparison-table"><thead><tr><th scope="col">Skill</th><th scope="col">{leftName}</th><th scope="col">{rightName}</th></tr></thead><tbody>{left.map((slice) => <tr key={slice.key}><td>{slice.label}</td><td>{ordinalSuffix(slice.value)}</td><td>{rightByKey.get(slice.key) ? ordinalSuffix(rightByKey.get(slice.key)!.value) : "—"}</td></tr>)}</tbody></table>;
 }
 
 function RoleComparisonPlayer({ name, roles, catalog }: { name: string; roles?: Player["roles"][number]; catalog: Catalog }) {

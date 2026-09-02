@@ -5788,3 +5788,31 @@ exclusion.
 - Built canonical rolling three-year, rolling five-year, and full-history RAPM leaderboards.
 - Matchup Lab remains local-only. The public bundle contains no matchup artifact.
 - Release manifest: `artifacts/releases/courtsignal_pulse_release_v1_cb99cc7bb1/release_manifest.json`.
+
+## 2026-09-02 — WP-RAPM statistical priors
+
+**Question:** Can Box15 or rich SPM improve a one-season WP-RAPM update, and
+can rolling progress-WP RAPM be extended across the available possession era?
+
+**Method:** Train past-only player-neutral WP surfaces. Convert consecutive
+states into conserved offense-perspective WP changes. Fit rolling five-year
+WP-RAPM with `3000 / 10000 / 300` penalties. Train Box15 and rich statistical
+priors on earlier rolling targets, update each with one rating season, and
+score the same next-season games from 2022 through 2026. Use 5,000 paired
+within-season whole-game bootstrap draws.
+
+**Result:** Zero-centered WP-RAPM records `0.9805` equal-season mean RMSE.
+Box15 WP-AIO records `1.1305`; rich WP-AIO records `1.1190`. Box15 minus the
+control has `+0.3430` MSE with interval `[+0.3176, +0.3699]`. Rich minus the
+control has `+0.3335` MSE with interval `[+0.3082, +0.3596]`. Rich reconstructs
+historical WP-RAPM targets better than Box15 but still supplies a harmful
+posterior center.
+
+**Decision:** Reject both WP statistical priors. Keep zero-centered WP-RAPM as
+the local research control. Do not expose WP-AIO publicly or treat WP-RAPM as
+ordinary point impact. Full methods appear in
+`docs/impact/WP_RAPM_SPM_AIO_V1.md`.
+
+The full historical follow-up `rolling_5y_wp_rapm_v1_0e6e0304f0` processes
+6,738,828 possessions and produces 25 five-year windows from 1998–2002 through
+2022–2026. All 34,344 rating games conserve WP to `1.11e-15`.

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import math
@@ -72,8 +73,8 @@ def _states(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     return result.drop(columns=["_home_points", "_away_points"]), features
 
 
-def run() -> dict:
-    contract = json.loads(CONTRACT.read_text())
+def run(contract_path: Path = CONTRACT) -> dict:
+    contract = json.loads(contract_path.read_text())
     start_source, end_source = (int(v) for v in contract["surface_source_seasons"])
     if end_source >= int(contract["untouched_confirmation_season"]):
         raise ValueError("Season 2027 must remain untouched.")
@@ -176,7 +177,7 @@ def run() -> dict:
     identity = hashlib.sha256(
         json.dumps(
             {
-                "contract": sha256_file(CONTRACT),
+                "contract": sha256_file(contract_path),
                 "runner": sha256_file(Path(__file__)),
                 "legacy": {str(s): sha256_file(ROOT / f"rapm/data/possession_cache/matchups_{s}.parquet") for s in range(start_source, 2024)},
                 "current": sha256_file(ROOT / "data/lake/silver/possessions.parquet"),
@@ -213,4 +214,7 @@ def run() -> dict:
 
 
 if __name__ == "__main__":
-    print(json.dumps(run(), indent=2))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--contract", type=Path, default=CONTRACT)
+    args = parser.parse_args()
+    print(json.dumps(run(args.contract), indent=2))

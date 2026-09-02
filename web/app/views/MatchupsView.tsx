@@ -6,6 +6,7 @@ import { fmtInt, fmtRating } from "../lib/viz";
 
 type Model = "raw" | "scorer_adjusted" | "contextual" | "sequential";
 type Side = "net" | "offense" | "defense";
+type SortKey = "PLAYER_NAME" | "value" | "reliability" | "exposure";
 
 const MODEL_LABELS: Record<Model, string> = {
   raw: "Raw",
@@ -23,6 +24,8 @@ export function MatchupsView({ lab }: { lab: MatchupLabPayload | null }) {
   const [channel, setChannel] = useState("total_scoring");
   const [minimum, setMinimum] = useState(250);
   const [selected, setSelected] = useState<number | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("value");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const rows = useMemo(() => {
     if (!lab) return [];
@@ -42,11 +45,22 @@ export function MatchupsView({ lab }: { lab: MatchupLabPayload | null }) {
     }));
   }, [channel, lab, model, side]);
 
-  const sorted = useMemo(
-    () => rows.filter((row) => row.exposure >= minimum && Number.isFinite(row.value))
-      .sort((a, b) => b.value - a.value),
-    [minimum, rows],
-  );
+  const sorted = useMemo(() => {
+    const direction = sortDirection === "asc" ? 1 : -1;
+    return rows.filter((row) => row.exposure >= minimum && Number.isFinite(row.value))
+      .sort((a, b) => {
+        if (sortKey === "PLAYER_NAME") return a.PLAYER_NAME.localeCompare(b.PLAYER_NAME) * direction;
+        return (Number(a[sortKey]) - Number(b[sortKey])) * direction;
+      });
+  }, [minimum, rows, sortDirection, sortKey]);
+
+  function sortBy(key: SortKey) {
+    if (key === sortKey) setSortDirection((value) => value === "desc" ? "asc" : "desc");
+    else {
+      setSortKey(key);
+      setSortDirection(key === "PLAYER_NAME" ? "asc" : "desc");
+    }
+  }
   const history = useMemo(
     () => lab?.history.filter((row) => row.PLAYER_ID === selected).sort((a, b) => a.Season - b.Season) ?? [],
     [lab, selected],
@@ -97,7 +111,9 @@ export function MatchupsView({ lab }: { lab: MatchupLabPayload | null }) {
       <section>
         <div className="section-head"><div><p className="kicker">Leaderboard</p><h2>{channel.replaceAll("_", " ")}</h2></div></div>
         <div className="table-wrap"><table className="data">
-          <thead><tr><th>#</th><th className="left">Player</th><th>Rating</th><th>Reliability</th><th>Exposure</th></tr></thead>
+          <thead><tr><th>#</th>{([
+            ["PLAYER_NAME", "Player"], ["value", "Rating"], ["reliability", "Reliability"], ["exposure", "Exposure"],
+          ] as [SortKey, string][]).map(([key, label]) => <th key={key} className={key === "PLAYER_NAME" ? "left" : undefined} aria-sort={sortKey === key ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}><button type="button" onClick={() => sortBy(key)}>{label}</button></th>)}</tr></thead>
           <tbody>{sorted.map((row, index) => (
             <tr key={row.PLAYER_ID} className={selected === row.PLAYER_ID ? "selected" : undefined} onClick={() => setSelected(row.PLAYER_ID)}>
               <td>{index + 1}</td><td className="left name">{row.PLAYER_NAME}</td><td className="headline">{fmtRating(row.value)}</td>

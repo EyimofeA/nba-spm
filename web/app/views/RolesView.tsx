@@ -25,6 +25,7 @@ export function RolesView({
   const [chosenSeason, setChosenSeason] = useState<number | null>(null);
   const [points, setPoints] = useState<RolePoint[]>([]);
   const [emphasis, setEmphasis] = useState<string>("All");
+  const [selectedId, setSelectedId] = useState<number | null>(player?.PLAYER_ID ?? null);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
 
   // Each side publishes its own season list, so the chosen season can fall out
@@ -91,7 +92,7 @@ export function RolesView({
     return tally;
   }, [shaped]);
 
-  const chosen = shaped.find((row) => row.id === player?.PLAYER_ID);
+  const chosen = shaped.find((row) => row.id === selectedId) ?? shaped[0];
   const similar = useMemo(() => {
     if (!chosen) return [];
     return shaped
@@ -176,52 +177,24 @@ export function RolesView({
               side === "offense" ? "Offense clusters" : "Defense clusters"
             }
             title={emphasis === "All" ? "All roles" : emphasis}
-            note={
-              <>
-                Each dot is one player-season, positioned by behaviour only —
-                height and listed position are excluded. Roles run to{" "}
-                {roleNames.length} categories, which is past the three-colour
-                cap for a scatter, so one role at a time is lifted into the
-                accent instead of colouring all of them at once. Roles describe
-                how a player is used; they do not measure impact.
-              </>
-            }
-            table={
-              <table className="mini">
-                <thead>
-                  <tr>
-                    <th scope="col">Player</th>
-                    <th scope="col">Team</th>
-                    <th scope="col">Primary role</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...shaped]
-                    .filter(
-                      (row) => emphasis === "All" || row.role === emphasis,
-                    )
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((row) => (
-                      <tr
-                        key={row.id}
-                        className={row.id === chosen?.id ? "flag" : undefined}
-                      >
-                        <td>{row.name}</td>
-                        <td>{row.team ?? "—"}</td>
-                        <td>{row.role}</td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            }
           >
             <RoleMap
               rows={shaped}
               emphasis={emphasis === "All" ? undefined : emphasis}
               highlight={chosen?.id}
-              onSelect={(row) => onPlayer(row.id)}
+              onSelect={(row) => setSelectedId(row.id)}
             />
           </Figure>
+
+          {chosen && <section className="role-focus card" aria-label="Selected player role">
+            <PlayerFace id={chosen.id} name={chosen.name} />
+            <div>
+              <p className="kicker">Selected player</p>
+              <h2>{chosen.name}</h2>
+              <p className="role-focus-meta">{chosen.team ?? "—"} · {chosen.role}</p>
+            </div>
+            <button type="button" className="button-secondary" onClick={() => onPlayer(chosen.id)}>Open player</button>
+          </section>}
 
           <div className="grid two">
             <section className="card">
@@ -262,11 +235,6 @@ export function RolesView({
                   );
                 })}
               </div>
-              <p className="note">
-                Share of the rated field assigned to each primary role this
-                season. Select a role to lift it on the map; select it again for
-                all roles at once.
-              </p>
             </section>
 
             <section className="card">
@@ -278,23 +246,20 @@ export function RolesView({
               </div>
               {chosen ? (
                 <>
-                  <div className="mix" style={{ marginTop: 14 }}>
+                  <div className="role-neighbors" style={{ marginTop: 14 }}>
                     {similar.map((row) => (
                       <button
                         key={row.id}
                         type="button"
-                        className="mix-row pickable"
-                        onClick={() => onPlayer(row.id)}
+                        className="role-neighbor"
+                        onClick={() => setSelectedId(row.id)}
                       >
-                        <span className="label">{row.name}</span>
-                        <b>{row.role}</b>
+                        <PlayerFace id={row.id} name={row.name} />
+                        <span>{row.name}</span>
+                        <small>{row.role}</small>
                       </button>
                     ))}
                   </div>
-                  <p className="note">
-                    Closest player-seasons on the map, by straight-line distance
-                    in the two role axes.
-                  </p>
                 </>
               ) : (
                 <p className="note" style={{ marginTop: 12 }}>
@@ -308,4 +273,11 @@ export function RolesView({
       )}
     </>
   );
+}
+
+function PlayerFace({ id, name }: { id: number; name: string }) {
+  return <span className="role-face" aria-hidden="true">
+    <img src={`https://cdn.nba.com/headshots/nba/latest/260x190/${id}.png`} alt="" onError={(event) => { event.currentTarget.hidden = true; }} />
+    <span>{name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("")}</span>
+  </span>;
 }

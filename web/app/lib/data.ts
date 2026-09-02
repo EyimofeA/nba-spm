@@ -269,13 +269,12 @@ export type ReplicationLeaderboard = {
   id: string;
   title: string;
   season: number;
-  rows: {
+  metric: string;
+  columns: { key: string; label: string }[];
+  rows: ({
     player: string;
     team?: string | null;
-    offense: number;
-    defense: number;
-    net: number;
-  }[];
+  } & Record<string, string | number | null | undefined>)[];
 };
 export type RubberbandCoefficient = {
   fit_seasons: string;

@@ -142,6 +142,7 @@ def build_payload() -> dict:
     rolling_wp, rolling_wp_path = latest_run(
         "rolling_5y_wp_rapm", "rolling_5y_wp_rapm_v1_"
     )
+    wp_spm_aio, wp_spm_aio_path = latest_run("wp_spm_aio", "wp_spm_aio_v1_")
     ts_factors, ts_factors_path = latest_run(
         "ts_factor_rapm", "ts_factor_rapm_v1_"
     )
@@ -268,86 +269,140 @@ def build_payload() -> dict:
             "decision": "The exact formula reconstruction remains open. Imported ratings are comparison data only.",
             "run_id": BPM_REFERENCE.parent.name,
         },
+        {
+            "metric": "xRAPM",
+            "build": "Pinned external annual ratings",
+            "status": "reference_only",
+            "matched_rows": int(bpm_reference["xrapm_net"].notna().sum()),
+            "pearson": None,
+            "maximum_absolute_error": None,
+            "decision": "Imported comparison ratings. No private model reconstruction is claimed.",
+            "run_id": BPM_REFERENCE.parent.name,
+        },
     ]
     darko_ratings = pd.read_parquet(public_reproduction_path / "darko_matches.parquet")
-    darko_ratings = darko_ratings.loc[darko_ratings["season"].eq(2026)].rename(
-        columns={
-            "player_name": "player",
-            "reference_offense": "offense",
-            "reference_defense": "defense",
-            "reference_net": "net",
-        }
-    )
+    darko_ratings = darko_ratings.rename(columns={
+        "player_name": "player",
+        "reference_offense": "offense",
+        "reference_defense": "defense",
+        "reference_net": "net",
+    })
     raptor_ratings = pd.read_parquet(
         public_reproduction_path / "raptor_table_matches.parquet"
     )
-    raptor_ratings = raptor_ratings.loc[raptor_ratings["season"].eq(2022)].rename(
-        columns={
-            "player_name_official": "player",
-            "raptor_offense_official": "offense",
-            "raptor_defense_official": "defense",
-            "raptor_total_official": "net",
-        }
-    )
+    raptor_ratings = raptor_ratings.rename(columns={
+        "player_name_official": "player",
+        "mp_official": "minutes",
+        "raptor_box_offense_official": "box_offense",
+        "raptor_box_defense_official": "box_defense",
+        "raptor_box_total_official": "box_net",
+        "raptor_onoff_offense_official": "onoff_offense",
+        "raptor_onoff_defense_official": "onoff_defense",
+        "raptor_onoff_total_official": "onoff_net",
+        "raptor_offense_official": "offense",
+        "raptor_defense_official": "defense",
+        "raptor_total_official": "net",
+        "war_total_official": "war",
+    })
     pipm_ratings = pd.read_parquet(PIPM_REFERENCE / "reference.parquet")
-    pipm_ratings = pipm_ratings.loc[pipm_ratings["rating_season"].eq(2023)].rename(
-        columns={
-            "PLAYER_NAME": "player",
-            "pipm_offense": "offense",
-            "pipm_defense": "defense",
-            "pipm_net": "net",
-        }
-    )
-    bpm_ratings = bpm_reference.loc[bpm_reference["season"].eq(2024)].rename(
-        columns={
-            "player_name_bpm": "player",
-            "bpm_offense": "offense",
-            "bpm_defense": "defense",
-            "bpm_net": "net",
-        }
-    )
-    replication_leaderboards = [
-        {
-            "id": "darko-wowy-2026",
-            "title": "DARKO WOWY · 2026",
-            "season": 2026,
-            "rows": clean_records(
-                darko_ratings[["player", "offense", "defense", "net"]].sort_values(
-                    "net", ascending=False
-                )
-            ),
-        },
-        {
-            "id": "bpm-2-2024",
-            "title": "BPM 2.0 · 2024",
-            "season": 2024,
-            "rows": clean_records(
-                bpm_ratings[["player", "team", "offense", "defense", "net"]].sort_values(
-                    "net", ascending=False
-                )
-            ),
-        },
-        {
-            "id": "raptor-2022",
-            "title": "RAPTOR · 2022",
-            "season": 2022,
-            "rows": clean_records(
-                raptor_ratings[["player", "offense", "defense", "net"]].sort_values(
-                    "net", ascending=False
-                )
-            ),
-        },
-        {
-            "id": "pipm-2023",
-            "title": "PIPM · 2023",
-            "season": 2023,
-            "rows": clean_records(
-                pipm_ratings[["player", "TEAM_ABBREVIATION", "offense", "defense", "net"]]
-                .rename(columns={"TEAM_ABBREVIATION": "team"})
-                .sort_values("net", ascending=False)
-            ),
-        },
+    pipm_ratings = pipm_ratings.rename(columns={
+        "PLAYER_NAME": "player",
+        "TEAM_ABBREVIATION": "team",
+        "pipm_offense": "offense",
+        "pipm_defense": "defense",
+        "pipm_net": "net",
+        "rating_season": "season",
+    })
+    bpm_ratings = bpm_reference.rename(columns={
+        "player_name_bpm": "player",
+        "bpm_offense": "offense",
+        "bpm_defense": "defense",
+        "bpm_net": "net",
+    })
+    xrapm_ratings = bpm_reference.rename(columns={
+        "player_name_xrapm": "player",
+        "xrapm_offense": "offense",
+        "xrapm_defense": "defense",
+        "xrapm_net": "net",
+    })
+
+    standard_columns = [
+        {"key": "player", "label": "Player"},
+        {"key": "team", "label": "Team"},
+        {"key": "offense", "label": "Off"},
+        {"key": "defense", "label": "Def"},
+        {"key": "net", "label": "Net"},
+        {"key": "minutes", "label": "Minutes"},
+        {"key": "exposure", "label": "Exposure"},
     ]
+    raptor_columns = [
+        {"key": "player", "label": "Player"},
+        {"key": "box_offense", "label": "Box O"},
+        {"key": "box_defense", "label": "Box D"},
+        {"key": "box_net", "label": "Box"},
+        {"key": "onoff_offense", "label": "On/off O"},
+        {"key": "onoff_defense", "label": "On/off D"},
+        {"key": "onoff_net", "label": "On/off"},
+        {"key": "offense", "label": "RAPTOR O"},
+        {"key": "defense", "label": "RAPTOR D"},
+        {"key": "net", "label": "RAPTOR"},
+        {"key": "war", "label": "WAR"},
+        {"key": "minutes", "label": "Minutes"},
+    ]
+
+    def boards_for(
+        frame: pd.DataFrame,
+        *,
+        metric: str,
+        slug: str,
+        columns: list[dict],
+        sort_key: str = "net",
+    ) -> list[dict]:
+        boards = []
+        numeric_keys = [column["key"] for column in columns]
+        for season in sorted(frame["season"].dropna().astype(int).unique(), reverse=True):
+            rows = frame.loc[frame["season"].eq(season)].copy()
+            if "minutes" in rows and rows["minutes"].notna().any():
+                rows = rows.loc[rows["minutes"].fillna(0).ge(250)]
+            elif "exposure" in rows and rows["exposure"].notna().any():
+                rows = rows.loc[rows["exposure"].fillna(0).ge(250)]
+            keep = [
+                key for key in numeric_keys
+                if key in rows and (key in {"player", "team"} or rows[key].notna().any())
+            ]
+            rows = rows.loc[rows["player"].notna(), keep].sort_values(sort_key, ascending=False)
+            boards.append({
+                "id": f"{slug}-{season}",
+                "title": f"{metric} · {season}",
+                "season": int(season),
+                "metric": metric,
+                "columns": [column for column in columns if column["key"] in keep],
+                "rows": clean_records(rows),
+            })
+        return boards
+
+    replication_leaderboards = []
+    replication_leaderboards += boards_for(
+        darko_ratings, metric="DARKO WOWY", slug="darko-wowy", columns=standard_columns
+    )
+    replication_leaderboards += boards_for(
+        raptor_ratings,
+        metric="RAPTOR table",
+        slug="raptor",
+        columns=raptor_columns,
+    )
+    replication_leaderboards += boards_for(
+        pipm_ratings, metric="PIPM", slug="pipm", columns=standard_columns
+    )
+    replication_leaderboards += boards_for(
+        bpm_ratings, metric="BPM 2.0", slug="bpm-2", columns=standard_columns
+    )
+    replication_leaderboards += boards_for(
+        xrapm_ratings.loc[xrapm_ratings["player"].notna()],
+        metric="xRAPM",
+        slug="xrapm",
+        columns=standard_columns,
+    )
 
     def external_metric(source: str, comparison: str, scope: str, component: str) -> pd.Series:
         rows = external_metrics.loc[
@@ -373,6 +428,15 @@ def build_payload() -> dict:
         if row["stage"] == "diagnostic" and row["model"] == "linear_points_rapm"
     )
     experiments = [
+        experiment(
+            "wp-spm-aio",
+            "WP-RAPM statistical priors",
+            "Train Box15 and rich statistical models on past rolling five-year progress-WP RAPM, update each with one season of WP possessions, then score the same next-season games.",
+            f"Zero-centered WP-RAPM had {next(row['mean_rmse'] for row in wp_spm_aio['summary'] if row['candidate'] == 'zero_wp_rapm'):.3f} RMSE. Box15 WP-AIO had {next(row['mean_rmse'] for row in wp_spm_aio['summary'] if row['candidate'] == 'box15_aio'):.3f}; rich WP-AIO had {next(row['mean_rmse'] for row in wp_spm_aio['summary'] if row['candidate'] == 'rich_aio'):.3f}.",
+            "Reject both priors. Each raised paired next-season game MSE on all five folds. Keep zero-centered WP-RAPM as the research control.",
+            "lost",
+            wp_spm_aio["run_id"],
+        ),
         experiment(
             "single-season-rapm-sweep",
             "Single-season penalty and score-control sweep",
@@ -598,7 +662,7 @@ def build_payload() -> dict:
             "win-probability",
             "Win-probability RAPM",
             "Tune offense and defense penalties on 2025 to 2026, then fit conserved rolling five-year WP credit from 2014 to 2026 with player-neutral surfaces trained only on prior seasons.",
-            f"3000 offense / 10000 defense improved 2026 game-total RMSE by {wp_lambda['delta_selected_minus_baseline']['game_total_rmse']:+.4f}. All nine rolling windows conserve game WP within {rolling_wp['quality']['maximum_conservation_error']:.2e}.",
+            f"3000 offense / 10000 defense improved 2026 game-total RMSE by {wp_lambda['delta_selected_minus_baseline']['game_total_rmse']:+.4f}. All {len(rolling_wp['windows'])} rolling windows conserve game WP within {rolling_wp['quality']['maximum_conservation_error']:.2e}.",
             "Use the tuned penalties for WP research only. WP credit is leverage attribution, not points impact.",
             "built",
             rolling_wp["run_id"],
@@ -902,6 +966,33 @@ def build_payload() -> dict:
                 ["window_end", "net_wp_percentage_points_per_100"],
                 ascending=[False, False],
             ),
+        )
+    )
+
+    wp_aio_ratings = pd.read_parquet(wp_spm_aio_path / "leaderboard_2026.parquet")
+    wp_aio_ratings["candidate"] = wp_aio_ratings["candidate"].map({
+        "zero_wp_rapm": "Zero WP-RAPM",
+        "box15_aio": "Box15 WP-AIO",
+        "rich_aio": "Rich WP-AIO",
+    }).fillna(wp_aio_ratings["candidate"])
+    wp_aio_qualified = wp_aio_ratings.loc[
+        wp_aio_ratings[["off_possessions", "def_possessions"]].min(axis=1).ge(3000)
+    ].copy()
+    lab_leaderboards.append(
+        leaderboard(
+            "wp-spm-aio-2026",
+            "wp-spm-aio",
+            "WP-RAPM and statistical-prior posteriors · 2026",
+            [
+                ("player_name", "Player"),
+                ("candidate", "Model"),
+                ("offense_per_100", "Offense"),
+                ("defense_per_100", "Defense"),
+                ("net_per_100", "Net"),
+                ("off_possessions", "Off poss"),
+                ("def_possessions", "Def poss"),
+            ],
+            wp_aio_qualified.sort_values(["candidate", "net_per_100"], ascending=[True, False]),
         )
     )
 

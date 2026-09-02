@@ -8,7 +8,7 @@ import { MatchupLabPayload, RapmLabPayload } from "../lib/data";
 import { fmtInt, fmtRating } from "../lib/viz";
 import { MatchupsView } from "./MatchupsView";
 
-type Project = "tests" | "replications" | "rubberband" | "age" | "matchups";
+type Project = "tests" | "rubberband" | "age" | "matchups";
 type RubberbandBasis = "actual_clock" | "possession_progress";
 type RubberbandModel = "normal" | "clock" | "possession";
 
@@ -39,7 +39,6 @@ export function RapmLabView({
   matchupLab: MatchupLabPayload | null;
 }) {
   const [project, setProject] = useState<Project>("tests");
-  const [replicationBoardId, setReplicationBoardId] = useState("darko-wowy-2026");
   const [timeBucket, setTimeBucket] = useState(7);
   const [rubberbandBasis, setRubberbandBasis] =
     useState<RubberbandBasis>("actual_clock");
@@ -96,9 +95,6 @@ export function RapmLabView({
   );
   const selectedLeaderboard = lab?.leaderboards.find(
     (row) => row.id === leaderboardId,
-  );
-  const selectedReplicationBoard = lab?.replication_leaderboards.find(
-    (row) => row.id === replicationBoardId,
   );
   const sortedLeaderboardRows = useMemo(() => {
     if (!selectedLeaderboard) return [];
@@ -225,7 +221,6 @@ export function RapmLabView({
           <div className="segmented" role="group" aria-label="RAPM Lab project">
             {([
               ["tests", "Tests"],
-              ["replications", "Replications"],
               ["rubberband", "Rubber band"],
               ["age", "Age"],
               ["matchups", "Matchups"],
@@ -315,133 +310,28 @@ export function RapmLabView({
               <h2>Test, result, decision</h2>
             </div>
           </div>
-          <div className="table-wrap rapm-lab-results">
-            <table className="data">
-              <caption className="visually-hidden">
-                RAPM research tests, results, and decisions
-              </caption>
-              <thead>
-                <tr>
-                  <th className="left" scope="col"><button type="button" disabled>Experiment</button></th>
-                  <th className="left" scope="col"><button type="button" disabled>Testing</button></th>
-                  <th className="left" scope="col"><button type="button" disabled>Result</button></th>
-                  <th className="left" scope="col"><button type="button" disabled>Decision</button></th>
-                </tr>
-              </thead>
-              <tbody>
-                {lab.experiments.map((row) => {
-                  const board = lab.leaderboards.find(
-                    (candidate) => candidate.experiment_id === row.id,
-                  );
-                  return (
-                    <tr
-                      key={row.id}
-                      className={board ? "clickable" : undefined}
-                      onClick={() => board && chooseLeaderboard(board.id)}
-                    >
-                      <td className="left name">
-                        {row.title}
-                        <span className={`lab-status ${row.status}`}>
-                          {statusLabel[row.status]}
-                        </span>
-                      </td>
-                      <td className="left lab-copy">{row.test}</td>
-                      <td className="left lab-copy">{row.result}</td>
-                      <td className="left lab-copy">{row.decision}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="rapm-lab-results" aria-label="RAPM research tests, results, and decisions">
+            {lab.experiments.map((row) => {
+              const board = lab.leaderboards.find(
+                (candidate) => candidate.experiment_id === row.id,
+              );
+              return (
+                <article className="lab-experiment" key={row.id}>
+                  <div className="lab-experiment-head">
+                    <h3>{row.title}</h3>
+                    <span className={`lab-status ${row.status}`}>{statusLabel[row.status]}</span>
+                  </div>
+                  <dl>
+                    <div><dt>Test</dt><dd>{row.test}</dd></div>
+                    <div><dt>Result</dt><dd>{row.result}</dd></div>
+                    <div><dt>Decision</dt><dd>{row.decision}</dd></div>
+                  </dl>
+                  {board && <button type="button" className="text-link" onClick={(event) => { event.stopPropagation(); chooseLeaderboard(board.id); }}>Open leaderboard</button>}
+                </article>
+              );
+            })}
           </div>
         </section>
-      )}
-
-      {project === "replications" && (
-        <div className="grid">
-        <section>
-          <div className="section-head">
-            <div>
-              <p className="kicker">Independent reference checks</p>
-              <h2>Replication status</h2>
-            </div>
-          </div>
-          <div className="table-wrap">
-            <table className="data">
-              <caption className="visually-hidden">
-                Public metric replication and reference status
-              </caption>
-              <thead>
-                <tr>
-                  <th className="left" scope="col"><button type="button" disabled>Metric</button></th>
-                  <th className="left" scope="col"><button type="button" disabled>Build</button></th>
-                  <th className="left" scope="col"><button type="button" disabled>Status</button></th>
-                  <th scope="col"><button type="button" disabled>Matched</button></th>
-                  <th scope="col"><button type="button" disabled>Pearson</button></th>
-                  <th className="left" scope="col"><button type="button" disabled>Decision</button></th>
-                </tr>
-              </thead>
-              <tbody>
-                {lab.replications.map((row) => (
-                  <tr key={`${row.metric}-${row.build}`}>
-                    <td className="left name">{row.metric}</td>
-                    <td className="left lab-copy">{row.build}</td>
-                    <td className="left">{row.status.replaceAll("_", " ")}</td>
-                    <td>{fmtInt(row.matched_rows)}</td>
-                    <td>{row.pearson == null ? "—" : row.pearson.toFixed(3)}</td>
-                    <td className="left lab-copy">{row.decision}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-        <section>
-          <div className="section-head">
-            <div>
-              <p className="kicker">Published ratings</p>
-              <h2>{selectedReplicationBoard?.title ?? "Leaderboard"}</h2>
-            </div>
-            <label className="field compact-field">
-              <span>Metric</span>
-              <select
-                value={replicationBoardId}
-                onChange={(event) => setReplicationBoardId(event.target.value)}
-              >
-                {lab.replication_leaderboards.map((board) => (
-                  <option key={board.id} value={board.id}>{board.title}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-          {selectedReplicationBoard && (
-            <div className="table-wrap lab-leaderboard">
-              <table className="data">
-                <thead>
-                  <tr>
-                    <th className="left">Player</th>
-                    <th className="left">Team</th>
-                    <th>Offense</th>
-                    <th>Defense</th>
-                    <th>Net</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedReplicationBoard.rows.map((row, index) => (
-                    <tr key={`${row.player}-${index}`}>
-                      <td className="left name">{row.player}</td>
-                      <td className="left">{row.team ?? "—"}</td>
-                      <td>{fmtRating(row.offense)}</td>
-                      <td>{fmtRating(row.defense)}</td>
-                      <td className="headline">{fmtRating(row.net)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-        </div>
       )}
 
       {project === "rubberband" && (
