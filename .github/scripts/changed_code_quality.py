@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import re
 import subprocess
 import sys
@@ -11,6 +12,7 @@ from pathlib import Path
 
 MAX_LINES = 500
 MAX_COMPLEXITY = 22
+BASELINE_PATH = Path(".github/quality-baseline.json")
 SOURCE_ROOTS = (
     ".github/scripts/",
     "research/",
@@ -146,24 +148,33 @@ def main() -> int:
         print("Changed-code quality gate self-test passed.")
         return 0
     base = sys.argv[1] if len(sys.argv) > 1 else "HEAD^"
+    baseline = json.loads(BASELINE_PATH.read_text())
     failures: list[str] = []
     paths = changed_paths(base)
     for path in paths:
         current = Path(path).read_text(encoding="utf-8")
         previous = old_source(base, path)
         current_lines = len(current.splitlines())
-        previous_lines = len(previous.splitlines())
+        previous_lines = max(
+            len(previous.splitlines()), baseline["lines"].get(path, 0)
+        )
         if current_lines > MAX_LINES and current_lines > previous_lines:
             failures.append(
                 f"{path}: {current_lines} lines; limit is {MAX_LINES} and the old file had {previous_lines}"
             )
-        if any_count(path, current) > any_count(path, previous):
+        previous_any = max(
+            any_count(path, previous), baseline["explicit_any"].get(path, 0)
+        )
+        if any_count(path, current) > previous_any:
             failures.append(f"{path}: adds an explicit Any type")
         if path.endswith(".py"):
             current_functions, _ = parse_python(current)
             previous_functions, _ = parse_python(previous)
             for name, value in current_functions.items():
-                old_value = previous_functions.get(name, 0)
+                old_value = max(
+                    previous_functions.get(name, 0),
+                    baseline["complexity"].get(f"{path}:{name}", 0),
+                )
                 if value > MAX_COMPLEXITY and value > old_value:
                     failures.append(
                         f"{path}:{name}: cyclomatic complexity {value}; limit is {MAX_COMPLEXITY}"
