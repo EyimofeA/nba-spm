@@ -63,6 +63,45 @@ def build_conserved_wp_target(
     return ordered, conservation
 
 
+def build_log_odds_wp_target(
+    frame: pd.DataFrame,
+    *,
+    probability_column: str = "probability_context",
+    epsilon: float = 0.025,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Credit possessions with clipped home-win log-odds changes."""
+    if not 0.0 < epsilon < 0.5:
+        raise ValueError("epsilon must be between zero and one half.")
+    ordered, _ = build_conserved_wp_target(
+        frame, probability_column=probability_column
+    )
+    before = ordered["home_wp_before"].clip(epsilon, 1.0 - epsilon)
+    after = ordered["home_wp_after"].clip(epsilon, 1.0 - epsilon)
+    ordered["home_log_odds_before"] = np.log(before / (1.0 - before))
+    ordered["home_log_odds_after"] = np.log(after / (1.0 - after))
+    ordered["home_log_odds_change"] = (
+        ordered["home_log_odds_after"] - ordered["home_log_odds_before"]
+    )
+    ordered["offense_log_odds_change"] = ordered["home_log_odds_change"] * np.where(
+        ordered["home_poss"].astype(bool), 1.0, -1.0
+    )
+    conservation = ordered.groupby("gameid", as_index=False).agg(
+        first_home_log_odds=("home_log_odds_before", "first"),
+        final_home_log_odds=("home_log_odds_after", "last"),
+        summed_home_log_odds_change=("home_log_odds_change", "sum"),
+        possessions=("possession_id", "size"),
+    )
+    conservation["required_log_odds_change"] = (
+        conservation["final_home_log_odds"]
+        - conservation["first_home_log_odds"]
+    )
+    conservation["conservation_error"] = (
+        conservation["summed_home_log_odds_change"]
+        - conservation["required_log_odds_change"]
+    )
+    return ordered, conservation
+
+
 def fit_win_probability_rapm(
     frame: pd.DataFrame,
     config: RapmConfig,

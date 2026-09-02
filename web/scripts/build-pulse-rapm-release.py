@@ -27,6 +27,10 @@ WP_VS_PULSE = ROOT / (
     "research/rapm_lab/outputs/wp_rapm_vs_pulse/"
     "wp_rapm_vs_pulse_v1_3d2995995c"
 )
+LOG_ODDS_WP = ROOT / (
+    "research/rapm_lab/outputs/log_odds_wp_rapm_lambda/"
+    "log_odds_wp_rapm_lambda_v1_91e7dccec4"
+)
 TEAMMATE_EFFECTS = ROOT / (
     "research/rapm_lab/outputs/teammate_play_channels/"
     "teammate_play_channels_v1_9f5feb3641"
@@ -183,6 +187,30 @@ def main() -> int:
         group="window_end", columns=["PLAYER_ID", "PLAYER_NAME", "window_start", "window_end", "offense", "defense", "net", "Poss_Off", "Poss_Def"],
         unit="win-probability percentage points per 100",
         note="Conserved game-level win-probability credit. Each board uses a rolling five-season fit; only the latest three endpoints are published.",
+    )
+
+    log_odds_wp = _normalize_player(
+        pd.read_parquet(LOG_ODDS_WP / "public_ratings_2024_2026.parquet"), names
+    )
+    log_odds_wp = log_odds_wp.loc[
+        log_odds_wp[["Poss_Off", "Poss_Def"]].min(axis=1).gt(0)
+    ].copy()
+    _add_grouped(
+        catalog, files,
+        ident="log-odds-win-probability",
+        title="Log-odds WP-RAPM",
+        frame=log_odds_wp,
+        group="Season",
+        columns=[
+            "PLAYER_ID", "PLAYER_NAME", "Season", "offense", "defense", "net",
+            "Poss_Off", "Poss_Def",
+        ],
+        unit="home-win log-odds per 100 possessions",
+        note=(
+            "Descriptive one-season leverage rating from clipped possession-to-possession "
+            "home-win log-odds changes. The 2.5% clip and 150,000/150,000 penalties "
+            "were selected on reused historical folds. This is not a forecast."
+        ),
     )
 
     units = pd.read_parquet(

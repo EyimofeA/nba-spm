@@ -11,7 +11,7 @@ type Row = Record<string, string | number | null> & { PLAYER_NAME?: string };
 const DISPLAY_ORDER = [
   "annual", "rolling-three", "rolling-five", "same-age-27",
   "full-history", "current-time-decay",
-  "current-age-time-decay", "luck-adjusted", "win-probability",
+  "current-age-time-decay", "luck-adjusted", "win-probability", "log-odds-win-probability",
   "game-level-pm", "six-factor-annual", "point-channels", "teammate-effects",
   "teammate-efg", "observable-scoring-channels", "observable-finish-channels",
   "coach", "units",
@@ -21,7 +21,8 @@ const LABELS: Record<string, string> = {
   "same-age-27": "Age 27 full span",
   "full-history": "Full span", "current-time-decay": "Time decay",
   "current-age-time-decay": "Age + decay", "luck-adjusted": "Luck adjusted",
-  "win-probability": "WP-RAPM", "game-level-pm": "Game PM",
+  "win-probability": "WP-RAPM", "log-odds-win-probability": "Log-odds WP",
+  "game-level-pm": "Game PM",
   "six-factor-annual": "Six factor", "point-channels": "Point channels",
   "teammate-effects": "Teammates", coach: "Coaches", units: "Units",
   "teammate-efg": "Teammate eFG", "observable-scoring-channels": "Scoring channels",
@@ -132,6 +133,9 @@ export function PublicRapmLabView() {
         ? GAME_PM_COLUMNS
         : STANDARD_COLUMNS;
   const usesMinutes = estimand?.id === "game-level-pm";
+  const formatValue = (value: number) => estimand?.id === "log-odds-win-probability"
+    ? `${value >= 0 ? "+" : "−"}${Math.abs(value).toFixed(3)}`
+    : fmtRating(value);
 
   useEffect(() => {
     if (!period) return;
@@ -212,8 +216,8 @@ export function PublicRapmLabView() {
             {columns.map(([key]) => key === "PLAYER_NAME"
               ? <th key={key} className="left name">{row.PLAYER_NAME ?? "—"}</th>
               : ["offense", "defense", "net"].includes(key)
-                ? <td key={key} className={`metric-cell ${numeric(row, key) >= 0 ? "positive" : "negative"}`}><b>{fmtRating(numeric(row, key))}</b><small>{ordinalSuffix(percentiles[key as "offense" | "defense" | "net"].get(row) ?? 0)}</small></td>
-                : <td key={key}>{fmtRating(numeric(row, key))}</td>)}
+                ? <td key={key} className={`metric-cell ${numeric(row, key) >= 0 ? "positive" : "negative"}`}><b>{formatValue(numeric(row, key))}</b><small>{ordinalSuffix(percentiles[key as "offense" | "defense" | "net"].get(row) ?? 0)}</small></td>
+                : <td key={key}>{formatValue(numeric(row, key))}</td>)}
           </tr>)}</tbody>
         </table></div>
       </section>

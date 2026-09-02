@@ -1257,6 +1257,7 @@ table.mini td .sub {
 .role-focus { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; }
 .role-focus h2 { margin: 0; }
 .role-focus-meta { margin: 5px 0 0; color: var(--text-secondary); font-size: 12px; }
+.role-focus-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .role-face { position: relative; display: grid; place-items: center; width: 58px; height: 58px; overflow: hidden; border: 1px solid var(--border-strong); border-radius: 50%; background: var(--surface-2); color: var(--text-muted); font: 700 13px var(--mono); }
 .role-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; background: var(--surface-2); }
 .role-neighbors { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
@@ -2302,6 +2303,9 @@ table.mini td .sub {
 }
 
 @media (max-width: 760px) {
+  .role-focus { grid-template-columns: auto minmax(0, 1fr); }
+  .role-focus-actions { grid-column: 1 / -1; justify-content: stretch; }
+  .role-focus-actions .btn { flex: 1; }
   .ratings-titlebar {
     align-items: start;
   }
