@@ -64,9 +64,9 @@
 /* Dark is the launch surface. Light remains available through the toggle. */
 :root:not([data-theme="light"]) {
   color-scheme: dark;
-  --page: #0a0b0d;
-  --surface-1: #111317;
-  --surface-2: #171a1f;
+  --page: #0d1014;
+  --surface-1: #14181d;
+  --surface-2: #1b2027;
   --text-primary: #e8ebf0;
   --text-secondary: #aeb6c2;
   --text-muted: #7f8997;
@@ -87,7 +87,7 @@
   --success-text: #0ca30c;
   --accent: #f2a65a;
   --accent-ink: #111111;
-  --rail: #07080a;
+  --rail: #0a0c10;
 }
 
 /* Dark values are declared under both scopes: the media query covers the OS
@@ -96,9 +96,9 @@
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --page: #0a0b0d;
-    --surface-1: #111317;
-    --surface-2: #171a1f;
+    --page: #0d1014;
+    --surface-1: #14181d;
+    --surface-2: #1b2027;
     --text-primary: #e8ebf0;
     --text-secondary: #aeb6c2;
     --text-muted: #7f8997;
@@ -119,15 +119,15 @@
     --success-text: #0ca30c;
     --accent: #f2a65a;
     --accent-ink: #111111;
-    --rail: #07080a;
+    --rail: #0a0c10;
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --page: #0a0b0d;
-  --surface-1: #111317;
-  --surface-2: #171a1f;
+  --page: #0d1014;
+  --surface-1: #14181d;
+  --surface-2: #1b2027;
   --text-primary: #e8ebf0;
   --text-secondary: #aeb6c2;
   --text-muted: #7f8997;
@@ -148,7 +148,7 @@
   --success-text: #0ca30c;
   --accent: #f2a65a;
   --accent-ink: #111111;
-  --rail: #07080a;
+  --rail: #0a0c10;
 }
 
 /* ---------------------------------------------------------------- base ---- */
@@ -216,7 +216,9 @@ button {
   display: flex;
   flex-direction: column;
   align-self: start;
-  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: 18px 12px 14px;
   border-right: 1px solid var(--border);
   background: var(--rail);
@@ -262,7 +264,7 @@ button {
 .rail-nav {
   display: grid;
   gap: 3px;
-  margin-top: 42px;
+  margin-top: 28px;
 }
 .rail-nav a {
   display: grid;
@@ -488,6 +490,12 @@ button {
 .comparison-player { display: grid; justify-items: center; gap: 5px; text-align: center; font-size: 12px; }
 .comparison-player span { color: var(--text-muted); font: 10px var(--mono); }
 .comparison-player .player-headshot { width: 58px; height: 58px; font-size: 15px; }
+.comparison-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.comparison-cards .comparison-player { justify-items: stretch; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); text-align: left; }
+.comparison-values { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.comparison-values span { display: grid; gap: 3px; }
+.comparison-values small { color: var(--text-muted); font: 9px var(--mono); text-transform: uppercase; }
+.comparison-values b { color: var(--text-primary); font: 650 15px var(--mono); }
 .comparison-table { margin: 0; }
 .comparison-table th:not(:first-child), .comparison-table td:not(:first-child) { text-align: right; }
 .comparison-roles { margin-top: 18px; }
@@ -1094,6 +1102,9 @@ table.data .column-groups th.left {
   text-align: left;
 }
 table.data thead tr:not(.column-groups) th {
+  top: 0;
+}
+table.data:has(.column-groups) thead tr:not(.column-groups) th {
   top: 25px;
 }
 
@@ -1197,24 +1208,40 @@ table.mini td .sub {
 
 /* Local RAPM Lab keeps each claim beside the exact test that produced it. */
 .rapm-lab-results {
-  max-height: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr));
+  gap: 12px;
 }
-.rapm-lab-results table.data {
-  min-width: 980px;
+.lab-experiment {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-1);
 }
-.rapm-lab-results table.data td {
-  vertical-align: top;
-  white-space: normal;
+.lab-experiment-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
-.rapm-lab-results table.data td:first-child {
-  min-width: 180px;
+.lab-experiment h3 { margin: 0; font-size: 1rem; }
+.lab-experiment dl,
+.lab-experiment dl div { margin: 0; }
+.lab-experiment dl { display: grid; gap: 12px; margin-top: 16px; }
+.lab-experiment dt {
+  color: var(--text-muted);
+  font: 700 9px var(--mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
 }
-.rapm-lab-results .lab-copy {
-  min-width: 250px;
-  max-width: 390px;
+.lab-experiment dd {
+  margin: 4px 0 0;
   color: var(--text-secondary);
-  line-height: 1.45;
+  line-height: 1.5;
 }
+.lab-experiment .text-link { margin-top: 14px; }
+.lab-experiment-head .lab-status { margin-top: 0; flex: 0 0 auto; }
 .lab-status {
   display: block;
   width: fit-content;
@@ -1231,6 +1258,19 @@ table.mini td .sub {
 .lab-status.estimate {
   color: var(--series-1);
 }
+.replication-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.replication-summary .tile-value { font-size: 26px; }
+
+.role-focus { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; }
+.role-focus h2 { margin: 0; }
+.role-focus-meta { margin: 5px 0 0; color: var(--text-secondary); font-size: 12px; }
+.role-face { position: relative; display: grid; place-items: center; width: 58px; height: 58px; overflow: hidden; border: 1px solid var(--border-strong); border-radius: 50%; background: var(--surface-2); color: var(--text-muted); font: 700 13px var(--mono); }
+.role-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; background: var(--surface-2); }
+.role-neighbors { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.role-neighbor { display: grid; justify-items: center; gap: 6px; min-width: 0; padding: 10px 7px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); color: var(--text-primary); }
+.role-neighbor:hover { border-color: var(--border-strong); background: var(--wash); }
+.role-neighbor > span:not(.role-face) { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 650; }
+.role-neighbor small { width: 100%; overflow: hidden; color: var(--text-muted); font: 9px var(--mono); text-overflow: ellipsis; white-space: nowrap; }
 .rubberband-summary {
   margin-top: 14px;
 }

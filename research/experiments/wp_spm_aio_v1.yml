@@ -1,0 +1,46 @@
+schema_version: experiment_preregistration_v1
+experiment_id: wp_spm_aio_v1
+status: reused_historical_diagnostic
+estimand: conserved_possession_progress_win_probability_change
+
+seasons:
+  possession_source: [2014, 2026]
+  statistical_target: [2018, 2026]
+  rating: [2021, 2022, 2023, 2024, 2025, 2026]
+  outcome: [2022, 2023, 2024, 2025, 2026]
+
+surface:
+  source_start: 1997
+  training_stride: 10
+  logistic_c: 1.0
+
+spm:
+  box15:
+    offense_alpha: 300
+    defense_alpha: 1000
+  rich:
+    offense_alpha: 0.03
+    offense_l1_ratio: 0.1
+    defense_alpha: 3000
+    correlation_prune_threshold: 0.95
+  sample_weight: square_root_minimum_side_possessions
+
+wp_rapm:
+  lambda_offense: 3000
+  lambda_defense: 10000
+  lambda_home: 300
+  prior_trust: 1.0
+
+evaluation:
+  bootstrap_draws: 5000
+  bootstrap_seed: 20260902
+  identical_next_season_games: true
+
+rules:
+  - Every win-probability surface trains only on earlier seasons.
+  - Every statistical prior trains only on five-year WP-RAPM windows ending before its rating season.
+  - Each posterior uses only the rating season's possession evidence.
+  - Legacy seasons use possession progress because exact clock is unavailable.
+  - All reported rating values use 0-to-1 win-probability change per 100 possessions.
+
+forbidden_interpretation: Exact-clock WP credit before 2025, ordinary points impact, or a portable forecast.

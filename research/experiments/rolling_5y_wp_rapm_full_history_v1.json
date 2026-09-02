@@ -1,0 +1,20 @@
+{
+  "experiment_id": "rolling_5y_wp_rapm_full_history_v1",
+  "status": "research_progress_surface",
+  "surface_source_seasons": [1997, 2026],
+  "rating_start_season": 1998,
+  "rating_end_season": 2026,
+  "rating_window": 5,
+  "surface_training_stride": 10,
+  "surface_logistic_c": 1.0,
+  "lambda_off": 3000,
+  "lambda_def": 10000,
+  "lambda_home": 300,
+  "untouched_confirmation_season": 2027,
+  "rules": [
+    "Each season's WP surface trains only on earlier seasons.",
+    "Historical progress uses prior possession count divided by 200; it does not use future game length.",
+    "Ratings use conserved next-state WP change and a terminal jump to the observed result.",
+    "The first five-year rating window ends in 2002."
+  ]
+}

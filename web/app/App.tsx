@@ -11,7 +11,6 @@ import {
 } from "react";
 import {
   Catalog,
-  Component,
   LeaderboardRow,
   LocalPlayerSkills,
   LocalSkillIndex,
@@ -53,20 +52,32 @@ const PublicRapmLabView = lazy(() =>
 const SpmLabView = lazy(() =>
   import("./views/SpmLabView").then((module) => ({ default: module.SpmLabView })),
 );
+const ReplicationsView = lazy(() =>
+  import("./views/ReplicationsView").then((module) => ({ default: module.ReplicationsView })),
+);
 
 const ALL_TABS = [
   { id: "ratings", label: "Ratings" },
   { id: "player", label: "Player" },
   { id: "roles", label: "Roles" },
   { id: "rapm-lab", label: "RAPM Lab" },
+  { id: "replications", label: "Replications" },
   { id: "spm-lab", label: "SPM Lab" },
   { id: "research", label: "Research" },
 ] as const;
 
-const NAV_TABS = [
+const PUBLIC_NAV_TABS = [
   { id: "ratings", label: "Ratings" },
   { id: "roles", label: "Role map" },
   { id: "rapm-lab", label: "RAPM Lab" },
+  { id: "research", label: "Evidence" },
+] as const;
+
+const LOCAL_NAV_TABS = [
+  { id: "ratings", label: "Ratings" },
+  { id: "roles", label: "Role map" },
+  { id: "rapm-lab", label: "RAPM Lab" },
+  { id: "replications", label: "Replications" },
   { id: "research", label: "Evidence" },
 ] as const;
 
@@ -84,7 +95,7 @@ const isLocalHost = () => {
 const isTab = (value: string, showResearchLab: boolean): value is Tab => {
   const tabs = showResearchLab
     ? ALL_TABS
-    : ALL_TABS.filter((tab) => tab.id !== "spm-lab");
+    : ALL_TABS.filter((tab) => tab.id !== "spm-lab" && tab.id !== "replications");
   return tabs.some((tab) => tab.id === value);
 };
 
@@ -121,7 +132,6 @@ export function App() {
   // Filters live at the shell so every view below reads the same slice.
   const [season, setSeason] = useState(2026);
   const [model, setModel] = useState<ModelId>("pulse");
-  const [component, setComponent] = useState<Component>("net");
   const [minPoss, setMinPoss] = useState(0);
 
   const [rows, setRows] = useState<LeaderboardRow[]>([]);
@@ -247,7 +257,7 @@ export function App() {
   }, [catalog, season]);
 
   useEffect(() => {
-    if (!catalog || !hasLocalResearch || route.tab !== "rapm-lab") return;
+    if (!catalog || !hasLocalResearch || !["player", "rapm-lab", "replications"].includes(route.tab)) return;
     let live = true;
     const run = async () => {
       try {
@@ -401,13 +411,14 @@ export function App() {
   }
 
   const { tab } = route;
+  const navTabs = hasLocalResearch ? LOCAL_NAV_TABS : PUBLIC_NAV_TABS;
   // Player pages are drilled into from the ratings board, so retain that
   // context in the primary navigation instead of making a dead-end tab.
   const activeNavTab = tab === "player" ? "ratings" : tab;
   const viewLabel =
     tab === "player"
       ? "Player report"
-      : (NAV_TABS.find((item) => item.id === activeNavTab)?.label ?? "Ratings");
+      : (navTabs.find((item) => item.id === activeNavTab)?.label ?? "Ratings");
 
   /* -------------------------------------------------------------- view --- */
 
@@ -423,7 +434,7 @@ export function App() {
         </a>
 
         <nav className="rail-nav" aria-label="Primary analysis">
-          {NAV_TABS.map((item, index) => (
+          {navTabs.map((item, index) => (
             <a
               key={item.id}
               href={`#${item.id}`}
@@ -506,7 +517,6 @@ export function App() {
                     onClick={() => openPlayer(item.id)}
                   >
                     {item.name}
-                    <em>#{item.id}</em>
                   </button>
                 ))}
               </div>
@@ -540,13 +550,12 @@ export function App() {
                 onSeason={setPlayerSeason}
                 model={model}
                 onModel={setModel}
-                component={component}
-                onComponent={setComponent}
                 index={index}
                 comparePlayer={comparePlayer}
                 localSkillIndex={localSkillIndex}
                 localSkills={localPlayerSkills}
                 compareLocalSkills={compareLocalSkills}
+                rapmLab={rapmLab}
                 onCompare={openComparison}
               />
             )}
@@ -566,6 +575,9 @@ export function App() {
                   matchupLab={matchupLab}
                 />
               ) : <PublicRapmLabView />
+            )}
+            {tab === "replications" && hasLocalResearch && (
+              <ReplicationsView lab={rapmLab} />
             )}
             {tab === "spm-lab" && <SpmLabView lab={spmLab} />}
             {tab === "research" && <ResearchView catalog={catalog} />}

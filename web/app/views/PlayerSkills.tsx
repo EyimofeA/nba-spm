@@ -85,11 +85,6 @@ export function PlayerSkills({
   const leftProfile = profileSlices(player, season);
   const rightProfile = comparison ? profileSlices(comparison, season) : [];
 
-  const tableRows = index.definitions.flatMap((item) => {
-    const row = player.skills[item.key]?.rows.find((entry) => entry[0] === season);
-    return row ? [{ definition: item, row }] : [];
-  });
-
   return (
     <section className="local-skills" aria-labelledby="current-skills-heading">
       <div className="section-head">
@@ -134,13 +129,6 @@ export function PlayerSkills({
             ...(comparison && mode === "career" ? [{ label: comparison.name, color: "var(--series-2)" }] : []),
             { label: "League", color: "var(--text-muted)" },
           ]} shape="key" />}
-          table={
-            mode === "career" ? (
-              <CareerTable rows={rows} definition={definition} />
-            ) : (
-              <GameTable rows={gameRows} definition={definition} />
-            )
-          }
           note={mode === "season" && !hasGames ? "Game-level observations are available for free throws and total three-point shooting." : definition.definition}
         >
           <SkillTrajectory
@@ -158,7 +146,6 @@ export function PlayerSkills({
           <Figure
             kicker={`Profile · ${season}`}
             title="Skill percentiles"
-            table={<ProfileTable slices={leftProfile} comparison={rightProfile} left={player.name} right={comparison?.name} />}
           >
             {comparison && rightProfile.length >= 3 ? (
               <RadarComparison left={leftProfile} right={rightProfile} leftName={player.name} rightName={comparison.name} />
@@ -167,14 +154,6 @@ export function PlayerSkills({
             )}
           </Figure>
 
-          <Figure
-            kicker={`All skills · ${season}`}
-            title="Exact values"
-            defaultView="table"
-            table={<SkillTable rows={tableRows} />}
-          >
-            <div className="empty">Open the table for all 34 estimates.</div>
-          </Figure>
         </div>
       </div>
     </section>
@@ -243,21 +222,4 @@ function SkillTrajectory({
       </svg>
     </div>
   );
-}
-
-function CareerTable({ rows, definition }: { rows: LocalSkillRow[]; definition: LocalSkillDefinition }) {
-  return <table className="mini"><thead><tr><th scope="col">Season</th><th scope="col">Stabilized</th><th scope="col">Source</th><th scope="col">Volume</th><th scope="col">Percentile</th></tr></thead><tbody>{rows.map((row) => <tr key={row[0]}><td>{row[0]}</td><td>{format(row[1], definition)}</td><td>{format(row[2], definition)}</td><td>{row[3]?.toLocaleString() ?? "—"}</td><td>{row[4]?.toFixed(0) ?? "—"}</td></tr>)}</tbody></table>;
-}
-
-function GameTable({ rows, definition }: { rows: LocalGameSkillRow[]; definition: LocalSkillDefinition }) {
-  return <table className="mini"><thead><tr><th scope="col">Date</th><th scope="col">Stabilized</th><th scope="col">Game</th><th scope="col">Attempts</th></tr></thead><tbody>{rows.map((row, index) => <tr key={`${row.date}-${index}`}><td>{row.date}</td><td>{format(row.estimate, definition)}</td><td>{format(row.raw, definition)}</td><td>{row.opportunities ?? "—"}</td></tr>)}</tbody></table>;
-}
-
-function SkillTable({ rows }: { rows: { definition: LocalSkillDefinition; row: LocalSkillRow }[] }) {
-  return <table className="mini"><thead><tr><th scope="col">Skill</th><th scope="col">Estimate</th><th scope="col">Source</th><th scope="col">Volume</th><th scope="col">Pctl</th><th scope="col">YoY</th></tr></thead><tbody>{rows.map(({ definition, row }) => <tr key={definition.key}><td><b>{definition.label}</b><span className="sub">{definition.group}</span></td><td>{format(row[1], definition)}</td><td>{format(row[2], definition)}</td><td>{row[3]?.toLocaleString() ?? "—"}</td><td>{row[4]?.toFixed(0) ?? "—"}</td><td>{row[5] === null ? "—" : `${row[5] >= 0 ? "+" : ""}${row[5].toFixed(2)}`}</td></tr>)}</tbody></table>;
-}
-
-function ProfileTable({ slices, comparison, left, right }: { slices: Slice[]; comparison: Slice[]; left: string; right?: string }) {
-  const comparisonMap = new Map(comparison.map((slice) => [slice.key, slice.value]));
-  return <table className="mini"><thead><tr><th scope="col">Profile</th><th scope="col">{left}</th>{right && <th scope="col">{right}</th>}</tr></thead><tbody>{slices.map((slice) => <tr key={slice.key}><td>{slice.label}</td><td>{slice.value.toFixed(0)}</td>{right && <td>{comparisonMap.get(slice.key)?.toFixed(0) ?? "—"}</td>}</tr>)}</tbody></table>;
 }

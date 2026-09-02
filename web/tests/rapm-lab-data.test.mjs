@@ -102,18 +102,20 @@ test("saved RAPM tests expose real leaderboards", () => {
 test("replication lab distinguishes exact outputs, proxies, and references", () => {
   assert.deepEqual(
     lab.replications.map((row) => row.metric),
-    ["DARKO WOWY", "RAPTOR table", "RAPTOR on/off", "PIPM", "BPM 2.0"],
+    ["DARKO WOWY", "RAPTOR table", "RAPTOR on/off", "PIPM", "BPM 2.0", "xRAPM"],
   );
   assert.equal(lab.replications[0].status, "exact_public_output");
   assert.equal(lab.replications[1].maximum_absolute_error, 0);
   assert.equal(lab.replications[2].status, "proxy");
   assert.equal(lab.replications[3].status, "partial_reference");
   assert.equal(lab.replications[4].status, "reference_only");
-  assert.deepEqual(
-    lab.replication_leaderboards.map((row) => row.season),
-    [2026, 2024, 2022, 2023],
-  );
+  assert.ok(lab.replication_leaderboards.length >= 40);
   assert.ok(lab.replication_leaderboards.every((row) => row.rows.length > 0));
+  assert.ok(lab.replication_leaderboards.every((row) => row.columns.length >= 4));
+  const raptor = lab.replication_leaderboards.find((row) => row.metric === "RAPTOR table");
+  assert.ok(raptor.columns.some((column) => column.key === "box_net"));
+  assert.ok(raptor.columns.some((column) => column.key === "onoff_net"));
+  assert.ok(raptor.columns.some((column) => column.key === "war"));
 });
 
 test("large unit leaderboards carry both tails", () => {
@@ -145,6 +147,11 @@ test("new full-span and five-point results are exposed without WP unit inflation
   assert.ok(
     Math.max(...rolling.rows.map((row) => Math.abs(row.net_wp_percentage_points_per_100))) < 20,
   );
+  assert.equal(Math.min(...rolling.rows.map((row) => row.window_end)), 2002);
+  assert.equal(Math.max(...rolling.rows.map((row) => row.window_end)), 2026);
+  const wpPriorTest = lab.experiments.find((row) => row.id === "wp-spm-aio");
+  assert.equal(wpPriorTest.status, "lost");
+  assert.ok(lab.leaderboards.some((row) => row.id === "wp-spm-aio-2026"));
 });
 
 test("new research tables expose fixed years and external comparison columns", () => {
