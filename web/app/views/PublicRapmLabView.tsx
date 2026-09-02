@@ -81,7 +81,7 @@ export function PublicRapmLabView() {
           if (next?.periods.length) setPeriodId(next.periods.at(-1)!.id);
         }}>{catalog.estimands.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
         <label className="field"><span>Window</span><select value={period.id} onChange={(event) => setPeriodId(event.target.value)}>{estimand.periods.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
-        <label className="field"><span>Find</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Player or unit" /></label>
+        <label className="field"><span>Find</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Player" /></label>
       </div>
       <section className="card leaderboard-panel">
         <div className="card-head"><div><p className="kicker">{period.label}</p><h2>{estimand.title}</h2></div><span className="meta">{estimand.unit}</span></div>

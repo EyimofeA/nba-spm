@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import test from "node:test";
 
 const catalog = JSON.parse(
@@ -38,17 +38,28 @@ test("public RAPM release keeps the published contract and omits rejected lab bo
 test("rejected RAPM lab shards are not fetchable", () => {
   const leaked = [
     "same-age-27-1997-2026.json",
+    "full-history-actual-age-1997.json",
+    "full-history-actual-age-2026.json",
     "current-time-decay-2022-2026.json",
     "current-age-time-decay-2022-2026.json",
     "luck-adjusted-2024-2026.json",
     "coach-1997-2026.json",
     "units-2.json",
+    "units-3.json",
+    "units-4.json",
+    "units-5.json",
     "research-curves.json",
   ];
   for (const name of leaked) {
     const path = new URL(`../public/data/rapm/${name}`, import.meta.url);
     assert.equal(existsSync(path), false, name);
   }
+  const names = readdirSync(new URL("../public/data/rapm/", import.meta.url));
+  const leakedPrefix = /same-age|actual-age|time-decay|luck-adjusted|^coach-|^units-|research-curves/;
+  const leftover = names.filter((name) => leakedPrefix.test(name));
+  assert.deepEqual(leftover, [], leftover.join(", "));
+  const catalogFiles = Object.keys(catalog.files ?? {});
+  assert.deepEqual(catalogFiles.filter((name) => leakedPrefix.test(name)), []);
 });
 
 test("every lazy RAPM shard exists", () => {
