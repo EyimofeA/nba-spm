@@ -1,0 +1,57 @@
+name: Code quality
+
+on:
+  pull_request:
+    branches: [main, codex/predictive-spm]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  changed-code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check changed code
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python .github/scripts/changed_code_quality.py "$BASE_SHA"
+      - run: python .github/scripts/changed_code_quality.py --self-test
+      - name: Install Python package
+        run: pip install -e ".[dev]"
+      - name: Run focused Python tests
+        run: >-
+          pytest
+          tests/test_repository_boundaries.py
+          tests/test_rapm.py
+          tests/test_current_single_season_rapm.py
+          tests/test_single_season_spm.py
+          tests/test_annual_spm_priors.py
+          tests/test_playtype_features.py
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - name: Run portable client tests
+        run: >-
+          node --test
+          $(find tests -name '*.test.mjs' ! -name 'matchup-lab-data.test.mjs' -print)
