@@ -23,16 +23,17 @@ still depend on it.
 
 ### RAPM
 
-- One row is one completed possession.
-- The design contains the five offensive players, five defensive players, and
-  a home indicator. Game, season, period, and possession IDs are QA fields.
-- The public reference is terminal-lineup, zero-prior ridge.
-- Penalties are 3000 offense, 3000 defense, and 300 home.
+- Possession RAPM: one completed possession, terminal lineup, home indicator.
+- Public PULSE and the public RAPM Lab 1y/3y/5y/full-history boards use
+  score-conserving stints and penalties 3000/4500/300.
+- Possession research matrices for SPM/AIO stay on 3000/3000/300 five-year
+  windows. Single-season possession RAPM uses 3000/4500/300.
 - Output is points per 100 possessions. Positive defense means points prevented.
 - Offense plus defense equals net.
 
 Canonical implementation:
-`src/nba_impact/models/rapm.py` and
+`src/nba_impact/models/rapm.py`,
+`src/nba_impact/models/stint_rapm.py`, and
 `src/nba_impact/models/current_single_season_rapm.py`.
 
 ### Annual SPM
@@ -88,7 +89,8 @@ prototype.
 Keep dirty sibling worktrees intact as research scratch space. Integrate only a
 reviewed file or result, never a whole worktree. The isolated
 `research/rapm_lab` remains
-local research and must not enter production imports or public assets.
+local research. Production code must not import it. Rejected lab
+leaderboards must not enter `web/public`.
 
 ## Parked work
 

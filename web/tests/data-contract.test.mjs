@@ -19,6 +19,9 @@ function sources(dir) {
 const client = sources(new URL("../app/", import.meta.url));
 
 test("the catalog offers exactly the models the client can render", () => {
+  const ids = catalog.catalog.models.map(({ id }) => id);
+  assert.ok(!ids.includes("wp_pulse"), "rejected WP-PULSE must stay out of the public selector");
+  assert.ok(!ids.includes("rich_spm"));
   assert.deepEqual(
     catalog.catalog.models.map(({ id, prefix }) => ({ id, prefix })),
     [

@@ -29,8 +29,9 @@ Rules the client follows:
   client never recomputes a model result.
 - Matchups is a localhost-only research view. Its payloads live in
   `web/local-data/` and are not copied into a production build.
-- RAPM Lab is localhost-only. It shows the saved test, result, and decision for
-  recent experiments, the actual-clock rubber-band estimate, and Matchups.
+- Public RAPM Lab shows PULSE/stint RAPM (1y/3y/5y/full-history), WP-RAPM,
+  and factor boards. Same-age, time-decay, luck, coach, unit, and WP-PULSE
+  boards stay in `web/local-data/rapm-lab.json` and are localhost-only.
 - Current Skills is localhost-only on the Player page. It loads one selected
   player's 34-skill shard, career and current-season views, stabilized/source
   controls, league references, and a comparison profile. The source-value

@@ -62,34 +62,28 @@ production imports, or model claims without a held-out promotion gate.
 
 ### RAPM
 
-- One row is one completed possession.
-- Inputs are five offensive player IDs, five defensive player IDs, and a home
-  indicator. IDs for game, season, period, and possession are QA fields.
-- The five-year reference uses the terminal lineup, zero player prior, and
-  ridge penalties 3000 offense, 3000 defense, and 300 home.
-- The single-season research successor uses 3000 offense, 4500 defense, and
-  300 home. Twelve next-season folds lowered mean RMSE from 13.6949 to 13.6800;
-  paired reference-minus-candidate MSE was 0.405 with a 95% interval of 0.185
-  to 0.636. Public RAPM and dependent SPM/AIO artifacts remain on 3000/3000
-  until they are rebuilt and reviewed together.
-- A 20-candidate one-season penalty grid selected 3000/6000 on 2015--22, but that
-  pair lost on 2023--26. The 3000/4500 setting ranked second early and first
-  later. Five-point score-state controls also lost. Keep 3000/4500/300.
+- Possession RAPM has one row per completed possession: five offensive IDs,
+  five defensive IDs, and a home indicator. Game, season, period, and
+  possession IDs are QA fields.
+- The public Ratings models are PULSE and RAPM. PULSE updates a Box15 prior
+  with one season of score-conserving **stint** RAPM at 3000/4500/300. The
+  public RAPM Lab 1y/3y/5y/full-history boards use the same stint contract.
+  See `docs/impact/COURTSIGNAL_PULSE_RELEASE_V1.md`.
+- Possession RAPM remains the research reference for SPM/AIO matrices:
+  terminal lineup, zero player prior, and `3000 / 3000 / 300` on five-year
+  windows. Do not copy a possession-matrix winner onto PULSE without a new
+  review.
+- Single-season possession RAPM uses 3000/4500/300. Twelve next-season folds
+  lowered mean RMSE from 13.6949 to 13.6800. A 20-candidate grid selected
+  3000/6000 on 2015--22, then lost on 2023--26. Keep 3000/4500/300.
 - Positive defense means points prevented. Offense plus defense equals net.
-- RAPM is available through 2026. The public interface calls it `RAPM`.
-- One-year RAPM is the retrospective season estimand. Unweighted five-year
-  `3000 / 3000 / 300` RAPM is the stable multi-year reference. A tuned
-  actual-age, time-decayed challenger improved 2025 but worsened reused 2026;
-  do not promote it.
-- The five-year regularization audit evaluated 196 configurations across eight
-  held-out folds. No offense/defense split penalty cleared the prediction and
-  uncertainty gates. Keep `3000 / 3000 / 300` for five-year RAPM. The separate
-  one-season audit supports `3000 / 4500 / 300`; penalty choice depends on the
-  amount of possession evidence.
-- Standard RAPM keeps technical free-throw points so game scores reconcile.
-  An exact-design sensitivity removed 2,987 technical points from 2024--26 and
-  worsened held-out 2026 margin MSE. Keep the score-conserving response and the
-  scorer-owned ledger as QA evidence.
+- Possession RAPM keeps technical free-throw points so game scores reconcile.
+  Removing 2,987 technical points from 2024--26 possessions worsened 2026 MSE.
+  PULSE stints exclude 37,735 identified made technical free throws and put
+  those points on the score RHS with zero possession weight. These are
+  different responses.
+- Age-27, actual-age, time-decay, luck-adjusted, coach, unit, and WP-PULSE
+  boards stay localhost-only. They are not public RAPM.
 - A direct joint actual-clock rubber-band fit keeps possession points unchanged
   and adds eight signed-margin columns beside home. It slightly improved reused
   2026 correlation but worsened margin RMSE; keep it local and unpromoted.
@@ -105,7 +99,8 @@ production imports, or model claims without a held-out promotion gate.
 - Teammate-event and observable shot-finish RAPMs are descriptive local Lab
   views. They are not causal effects or Synergy possession play types.
 
-Canonical code: `src/nba_impact/models/rapm.py` and
+Canonical code: `src/nba_impact/models/rapm.py`,
+`src/nba_impact/models/stint_rapm.py`, and
 `src/nba_impact/models/current_single_season_rapm.py`.
 
 ### Annual SPM
