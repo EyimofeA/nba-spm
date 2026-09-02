@@ -11,7 +11,8 @@ test("public RAPM release contains selected estimands and no tuning sweep", () =
   for (const required of [
     "annual", "rolling-three", "rolling-five", "full-history",
     "same-age-27", "current-time-decay",
-    "current-age-time-decay", "luck-adjusted", "coach", "win-probability", "units",
+    "current-age-time-decay", "luck-adjusted", "coach", "win-probability",
+    "log-odds-win-probability", "units",
     "game-level-pm", "point-channels", "six-factor-annual", "teammate-effects",
     "teammate-efg", "observable-scoring-channels", "observable-finish-channels",
   ]) assert.ok(ids.includes(required), required);
@@ -25,6 +26,17 @@ test("WP-RAPM publishes only the latest three rolling endpoints", () => {
   const wp = catalog.estimands.find((estimand) => estimand.id === "win-probability");
   assert.deepEqual(wp.periods.map((period) => period.id), ["2024", "2025", "2026"]);
   assert.match(wp.note, /rolling five-season fit/);
+});
+
+test("log-odds WP-RAPM is labeled as a descriptive three-season rating", () => {
+  const wp = catalog.estimands.find((estimand) => estimand.id === "log-odds-win-probability");
+  assert.deepEqual(wp.periods.map((period) => period.id), ["2024", "2025", "2026"]);
+  assert.match(wp.note, /descriptive/i);
+  assert.match(wp.note, /not a forecast/i);
+  const current = JSON.parse(
+    readFileSync(new URL("../public/data/rapm/log-odds-win-probability-2026.json", import.meta.url), "utf8"),
+  );
+  assert.ok(current.every((row) => row.Poss_Off > 0 && row.Poss_Def > 0));
 });
 
 test("game-level and point-channel boards use source-backed rows", () => {

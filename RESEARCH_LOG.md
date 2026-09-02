@@ -5965,3 +5965,38 @@ of `[-0.2755, -0.0975]`; the challenger wins zero of 5,000 draws.
 12 folds and does not clear the predictive gate. Keep the transform available
 for descriptive current-era scoring displays only. Season 2027 remains
 untouched.
+
+## 2026-09-02 — Clipped log-odds WP-RAPM and lambda correction
+
+**Question:** Does using possession-to-possession change in clipped win
+log-odds improve WP-RAPM, and were the prior `3000/10000` offense/defense
+penalties appropriate for next-season prediction?
+
+**Method:** Convert each past-only win-probability surface to log-odds after
+clipping at `1%`, `2.5%`, or `5%`. Fit zero-prior one-season WP-RAPM across a
+coarse `300`–`300000` offense/defense penalty grid plus a local
+`50000`–`200000` refinement. Map each candidate to point margin with an affine
+calibration trained only on earlier outcome seasons. Score the same 4,911
+common next-season games from 2023–2026 used for PULSE and ordinary RAPM.
+Season 2027 remains untouched.
+
+**Result:** The fixed reused-fold winner clips at `2.5%` and uses symmetric
+`150000/150000` penalties. Its equal-season RMSE is `15.2648`, compared with
+`15.3427` for raw-probability WP-RAPM, `14.5778` for ordinary RAPM, and
+`14.4109` for PULSE. Log-odds minus raw-WP MSE is `-2.3830`, with a 95% paired
+whole-game bootstrap interval of `[-3.2709, -1.4897]`; it wins all 5,000
+draws. Against ordinary RAPM its MSE delta is `+20.5195`, interval
+`[+16.8957, +23.9386]`, and it wins zero draws. The local lambda surface is
+flat near `100000`–`200000`, but decisively far from `3000/10000`.
+
+**Decision:** The old lambdas were tuned to the wrong objective and should not
+be used as predictive settings. Log-odds is the better WP target, but it still
+does not make WP-RAPM competitive with ordinary RAPM or PULSE for next-season
+margin. Keep WP-RAPM descriptive and keep this challenger off the public site.
+Treat `150000/150000` as a reused historical diagnostic, not a frozen launch
+parameter.
+
+**Publication amendment:** At the principal's request, publish the 2024–2026
+log-odds player coefficients as a separately labeled descriptive leaderboard.
+The public copy must say that it is not a forecast; this does not promote the
+model or change the predictive decision above.

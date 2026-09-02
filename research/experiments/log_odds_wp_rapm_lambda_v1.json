@@ -1,0 +1,23 @@
+{
+  "schema_version": "experiment_preregistration_v1",
+  "experiment_id": "log_odds_wp_rapm_lambda_v1",
+  "status": "reused_historical_diagnostic",
+  "rating_seasons": [2021, 2022, 2023, 2024, 2025],
+  "outcome_seasons": [2022, 2023, 2024, 2025, 2026],
+  "scored_outcome_seasons": [2023, 2024, 2025, 2026],
+  "epsilons": [0.01, 0.025, 0.05],
+  "lambda_offense": [300, 1000, 3000, 10000, 30000, 100000, 300000],
+  "lambda_defense": [300, 1000, 3000, 10000, 30000, 100000, 300000],
+  "lambda_home": 300,
+  "bootstrap_draws": 5000,
+  "bootstrap_seed": 20260902,
+  "refinement": {
+    "epsilon": 0.025,
+    "lambda_offense": [50000, 75000, 100000, 150000, 200000],
+    "lambda_defense": [50000, 75000, 100000, 150000, 200000]
+  },
+  "selection": "For each scored season, select using only earlier outcome-season games after an affine fit on those same earlier games.",
+  "target": "next-season whole-game point margin",
+  "untouched_confirmation_season": 2027,
+  "forbidden_interpretation": "A fresh confirmation, deployable forecast, or evidence from Season 2027."
+}

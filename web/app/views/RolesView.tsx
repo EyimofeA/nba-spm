@@ -1,9 +1,97 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Figure } from "../charts/frame";
 import { RoleDatum, RoleMap } from "../charts/scatter";
 import { Catalog, Player, RolePoint, RoleSide, loadRoleMap } from "../lib/data";
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function exportRoleMapPng(
+  host: HTMLDivElement | null,
+  player: RoleDatum,
+  side: RoleSide,
+  season: number,
+) {
+  const chart = host?.querySelector("svg");
+  if (!chart) return;
+
+  const root = getComputedStyle(document.documentElement);
+  const color = (name: string, fallback: string) =>
+    root.getPropertyValue(name).trim() || fallback;
+  const output = document.createElementNS(SVG_NS, "svg");
+  output.setAttribute("xmlns", SVG_NS);
+  output.setAttribute("viewBox", "0 0 880 570");
+  output.setAttribute("width", "1760");
+  output.setAttribute("height", "1140");
+  output.style.setProperty("--text-muted", color("--text-muted", "#8793a5"));
+  output.style.setProperty("--series-1", color("--series-1", "#63a5ff"));
+  output.style.setProperty("--series-2", color("--series-2", "#f0a45d"));
+
+  const background = document.createElementNS(SVG_NS, "rect");
+  background.setAttribute("width", "880");
+  background.setAttribute("height", "570");
+  background.setAttribute("fill", color("--surface-1", "#11161c"));
+  output.append(background);
+
+  const title = document.createElementNS(SVG_NS, "text");
+  title.setAttribute("x", "32");
+  title.setAttribute("y", "34");
+  title.setAttribute("fill", color("--text-primary", "#edf1f7"));
+  title.setAttribute("font-family", "system-ui, sans-serif");
+  title.setAttribute("font-size", "20");
+  title.setAttribute("font-weight", "700");
+  title.textContent = `${player.name} · ${side === "offense" ? "Offensive" : "Defensive"} role map`;
+  output.append(title);
+
+  const subtitle = document.createElementNS(SVG_NS, "text");
+  subtitle.setAttribute("x", "32");
+  subtitle.setAttribute("y", "56");
+  subtitle.setAttribute("fill", color("--text-secondary", "#aeb7c5"));
+  subtitle.setAttribute("font-family", "ui-monospace, monospace");
+  subtitle.setAttribute("font-size", "11");
+  subtitle.textContent = `${season - 1}–${String(season).slice(2)} · ${player.role} · CourtSignal`;
+  output.append(subtitle);
+
+  const copy = chart.cloneNode(true) as SVGSVGElement;
+  copy.setAttribute("x", "0");
+  copy.setAttribute("y", "70");
+  copy.setAttribute("width", "880");
+  copy.setAttribute("height", "500");
+  copy.querySelectorAll(".hit").forEach((node) => node.remove());
+  const style = document.createElementNS(SVG_NS, "style");
+  style.textContent = `.grid-line{stroke:${color("--grid", "#2b333d")};stroke-width:1}.axis-title{fill:${color("--text-muted", "#8793a5")};font:11px ui-monospace,monospace}.mark-label{fill:${color("--text-primary", "#edf1f7")};font:600 12px system-ui,sans-serif}`;
+  copy.prepend(style);
+  output.append(copy);
+
+  const blob = new Blob([new XMLSerializer().serializeToString(output)], {
+    type: "image/svg+xml;charset=utf-8",
+  });
+  const sourceUrl = URL.createObjectURL(blob);
+  const image = new Image();
+  image.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1760;
+    canvas.height = 1140;
+    canvas.getContext("2d")?.drawImage(image, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(sourceUrl);
+    canvas.toBlob((png) => {
+      if (!png) return;
+      const downloadUrl = URL.createObjectURL(png);
+      const link = document.createElement("a");
+      const slug = player.name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      link.href = downloadUrl;
+      link.download = `${slug}-${side}-role-map-${season}.png`;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
+    }, "image/png");
+  };
+  image.onerror = () => URL.revokeObjectURL(sourceUrl);
+  image.src = sourceUrl;
+}
 
 export function RolesView({
   catalog,
@@ -27,6 +115,7 @@ export function RolesView({
   const [emphasis, setEmphasis] = useState<string>("All");
   const [selectedId, setSelectedId] = useState<number | null>(player?.PLAYER_ID ?? null);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const mapRef = useRef<HTMLDivElement>(null);
 
   // Each side publishes its own season list, so the chosen season can fall out
   // of range when the side changes. Derive the effective season rather than
@@ -172,19 +261,21 @@ export function RolesView({
         </div>
       ) : (
         <div className="grid">
-          <Figure
-            kicker={
-              side === "offense" ? "Offense clusters" : "Defense clusters"
-            }
-            title={emphasis === "All" ? "All roles" : emphasis}
-          >
-            <RoleMap
-              rows={shaped}
-              emphasis={emphasis === "All" ? undefined : emphasis}
-              highlight={chosen?.id}
-              onSelect={(row) => setSelectedId(row.id)}
-            />
-          </Figure>
+          <div ref={mapRef}>
+            <Figure
+              kicker={
+                side === "offense" ? "Offense clusters" : "Defense clusters"
+              }
+              title={emphasis === "All" ? "All roles" : emphasis}
+            >
+              <RoleMap
+                rows={shaped}
+                emphasis={emphasis === "All" ? undefined : emphasis}
+                highlight={chosen?.id}
+                onSelect={(row) => setSelectedId(row.id)}
+              />
+            </Figure>
+          </div>
 
           {chosen && <section className="role-focus card" aria-label="Selected player role">
             <PlayerFace id={chosen.id} name={chosen.name} />
@@ -193,7 +284,10 @@ export function RolesView({
               <h2>{chosen.name}</h2>
               <p className="role-focus-meta">{chosen.team ?? "—"} · {chosen.role}</p>
             </div>
-            <button type="button" className="button-secondary" onClick={() => onPlayer(chosen.id)}>Open player</button>
+            <div className="role-focus-actions">
+              <button type="button" className="btn ghost small" onClick={() => exportRoleMapPng(mapRef.current, chosen, side, season)}>Export PNG</button>
+              <button type="button" className="btn ghost small" onClick={() => onPlayer(chosen.id)}>Open player</button>
+            </div>
           </section>}
 
           <div>
