@@ -18,6 +18,8 @@ Every pull request checks changed source files.
 
 The gate applies to production, tests, research runners, and the web client. It
 does not scan generated data, artifacts, archives, or local research output.
+`.github/quality-baseline.json` records only violations that predate the gate.
+The check allows those values to fall or stay fixed. It rejects increases.
 
 ## Review policy
 
