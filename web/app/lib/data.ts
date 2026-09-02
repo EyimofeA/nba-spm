@@ -1,89 +1,7 @@
 /** Types and cached loaders for the published web snapshot. */
-
 export type Component = "net" | "offense" | "defense";
-export type ModelId = "pulse" | "rapm";
+export type ModelId = "pulse" | "rich_spm";
 export type RoleSide = "offense" | "defense";
-export type MatchupLabPlayer = {
-  PLAYER_ID: number;
-  PLAYER_NAME: string;
-  TEAM_ABBREVIATION: string | null;
-  Season: number;
-  raw_offense: number;
-  raw_defense: number;
-  raw_net: number;
-  scorer_adjusted_offense: number | null;
-  scorer_adjusted_defense: number | null;
-  scorer_adjusted_net: number | null;
-  contextual_offense: number | null;
-  contextual_defense: number | null;
-  contextual_net: number | null;
-  sequential_offense: number | null;
-  sequential_defense: number | null;
-  sequential_net: number | null;
-  offense_matchup_possessions: number;
-  defense_matchup_possessions: number;
-  reliability: number;
-};
-export type MatchupChannel = {
-  PLAYER_ID: number;
-  PLAYER_NAME: string;
-  TEAM_ABBREVIATION: string | null;
-  Season: number;
-  channel: string;
-  offense: number;
-  defense: number;
-  offense_matchup_possessions: number;
-  defense_matchup_possessions: number;
-  reliability: number;
-};
-export type MatchupValidation = {
-  Season: number;
-  model: string;
-  weighted_matchup_points_mse: number;
-  mse: number;
-  rmse: number;
-  correlation: number;
-  calibration_slope: number;
-  games: number;
-};
-export type MatchupHistory = {
-  PLAYER_ID: number;
-  PLAYER_NAME: string;
-  TEAM_ABBREVIATION: string | null;
-  Season: number;
-  raw_offense: number;
-  raw_defense: number;
-  raw_net: number;
-  offense_matchup_possessions: number;
-  defense_matchup_possessions: number;
-};
-export type MatchupPair = {
-  SCORER_ID: number;
-  SCORER_NAME: string;
-  DEFENDER_ID: number;
-  DEFENDER_NAME: string;
-  matchup_possessions: number;
-  player_points: number;
-  field_goal_attempts: number;
-  turnovers: number;
-  assists: number;
-};
-export type MatchupLabPayload = {
-  run_id: string;
-  scope: "localhost_only";
-  status: string;
-  seasons: number[];
-  latest_season: number;
-  quality: Record<string, boolean>;
-  forbidden_interpretation: string;
-  validation: MatchupValidation[];
-  bootstrap: Record<string, string | number>[];
-  sequential_selection: Record<string, number>[];
-  players: MatchupLabPlayer[];
-  channels: MatchupChannel[];
-  history: MatchupHistory[];
-  pairs: MatchupPair[];
-};
 export type SpmLabRating = {
   PLAYER_ID: number;
   PLAYER_NAME: string;
@@ -258,9 +176,10 @@ export type RapmLabLeaderboard = {
 export type ReplicationRecord = {
   metric: string;
   build: string;
-  status: "exact_public_output" | "proxy" | "partial_reference" | "reference_only";
+  status: "exact_reconstruction" | "methodology_aligned_reconstruction";
   matched_rows: number;
   pearson: number | null;
+  r_squared: number | null;
   maximum_absolute_error: number | null;
   decision: string;
   run_id: string;
@@ -270,6 +189,7 @@ export type ReplicationLeaderboard = {
   title: string;
   season: number;
   metric: string;
+  source?: string;
   columns: { key: string; label: string }[];
   rows: ({
     player: string;
@@ -537,10 +457,10 @@ export const MODELS: {
     note: "Box prior updated with one season of lineup evidence.",
   },
   {
-    id: "rapm",
-    label: "RAPM",
-    prefix: "rapm_",
-    note: "Zero-prior one-season ridge on possessions.",
+    id: "rich_spm",
+    label: "Rich SPM",
+    prefix: "rich_spm_",
+    note: "Rich statistical impact estimate. It is not the PULSE prior.",
   },
 ];
 
@@ -570,7 +490,6 @@ export type Player = {
 };
 
 export type PlayerIndex = { id: number; name: string; shard: number };
-
 export type LocalSkillDefinition = {
   key: string;
   label: string;
@@ -798,8 +717,6 @@ export const loadShard = (shard: number) =>
   );
 export const loadRoleMap = (side: RoleSide, season: number) =>
   load<RolePoint[]>(`/data/roles-${side}-${season}.json`);
-export const loadMatchupLab = () =>
-  load<MatchupLabPayload>("/data/matchup-lab.json");
 export const loadRapmLab = () => load<RapmLabPayload>("/data/rapm-lab.json");
 export const loadSpmLab = () => load<SpmLabPayload>("/data/spm-lab.json");
 export const loadLocalSkillIndex = () =>

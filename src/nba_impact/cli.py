@@ -2091,8 +2091,6 @@ def command_serve_ratings(args: argparse.Namespace) -> int:
     store = RatingsStore(config, args.artifact_root)
     serve(store, args.host, args.port)
     return 0
-
-
 def command_build_web_snapshot(args: argparse.Namespace) -> int:
     player_sheet_source_overrides = _load_source_override_map(
         args.player_sheet_source_overrides
@@ -2113,6 +2111,7 @@ def command_build_web_snapshot(args: argparse.Namespace) -> int:
         player_sheet_source_overrides=player_sheet_source_overrides,
         pulse_run_path=args.pulse_run,
         pulse_decomposition_run_path=args.pulse_decomposition_run,
+        rich_spm_path=args.rich_spm,
         external_benchmark_run_path=args.external_benchmark_run,
         shards=args.shards,
     )
@@ -4473,6 +4472,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional exact-residual PULSE factor ledger.",
     )
+    web_snapshot.add_argument("--rich-spm", type=Path, help="Optional Rich SPM ratings.")
     web_snapshot.add_argument(
         "--external-benchmark-run",
         type=Path,

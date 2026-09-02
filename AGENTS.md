@@ -53,10 +53,11 @@ Production code must not import root legacy scripts, `rapm/src`, `zts`, a lab,
 or a notebook. Do not move `rapm/data` until absolute artifact paths and the
 canonical compatibility paths are migrated.
 
-Keep Matchups and `research/rapm_lab` local and research-only. The lab is
-self-contained and can reuse canonical loaders. It must write only below its
-own `data/` and `outputs/` paths. Neither surface can enter public assets,
-production imports, or model claims without a held-out promotion gate.
+Keep Matchups and raw `research/rapm_lab` outputs local and research-only. The
+lab is self-contained and can reuse canonical loaders. It must write only below
+its own `data/` and `outputs/` paths. A pinned, derived leaderboard may enter
+`web/public/data/rapm/` with an explicit estimand note and release test. It does
+not become a promoted production model without a held-out gate.
 
 ## Current model contracts
 

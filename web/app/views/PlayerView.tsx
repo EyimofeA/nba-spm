@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Figure, Legend } from "../charts/frame";
 import { MultiLine } from "../charts/lines";
 import { Pizza, RadarComparison, SKILLS, Slice, pizzaLegend } from "../charts/pizza";
@@ -8,23 +8,20 @@ import {
   Catalog,
   COMPONENT_LABEL,
   Component,
+  LeaderboardRow,
   ModelId,
   LocalPlayerSkills,
   LocalSkillIndex,
   Player,
   PlayerIndex,
   RapmLabPayload,
-  Role,
-  RoleSide,
   rating,
+  availableModels,
+  loadSeason,
   resolveModel,
 } from "../lib/data";
-import {
-  COMPONENT_COLOR,
-  SERIES,
-  fmtRating,
-} from "../lib/viz";
-import { ModelField } from "./controls";
+import { COMPONENT_COLOR, fmtRating, ordinalSuffix } from "../lib/viz";
+import { ComparisonCards, RoleComparisonPlayer } from "./PlayerComparison";
 import { PlayerSkills } from "./PlayerSkills";
 
 type PlayerViewProps = {
@@ -40,6 +37,17 @@ type PlayerViewProps = {
   compareLocalSkills: LocalPlayerSkills | null;
   rapmLab: RapmLabPayload | null;
   onCompare: (id: number) => void;
+};
+type ReconstructionModel = "raptor" | "pipm" | "darko_wowy";
+const RECONSTRUCTION_LABELS: Record<ReconstructionModel, string> = {
+  raptor: "RAPTOR",
+  pipm: "PIPM",
+  darko_wowy: "DARKO WOWY",
+};
+const RECONSTRUCTION_METRICS: Record<ReconstructionModel, string> = {
+  raptor: "CourtSignal RAPTOR reconstruction",
+  pipm: "CourtSignal PIPM reconstruction",
+  darko_wowy: "CourtSignal DARKO WOWY reconstruction",
 };
 
 const foldName = (value: string) =>
@@ -77,13 +85,38 @@ function PlayerBody({
   onCompare,
 }: PlayerViewProps & { player: Player }) {
   const [compareQuery, setCompareQuery] = useState("");
+  const [reconstructionModel, setReconstructionModel] = useState<ReconstructionModel | null>(null);
+  const [seasonPool, setSeasonPool] = useState<LeaderboardRow[]>([]);
   const seasons = player.annual.map((row) => row.Season);
   const current =
     player.annual.find((row) => row.Season === season) ?? player.annual.at(-1);
+  const currentSeason = current?.Season ?? season;
   const currentRows = current ? [current] : player.annual;
   const active = resolveModel(currentRows, model);
+  const reconstructionBoards = rapmLab?.replication_leaderboards ?? [];
+  const activeLabel = reconstructionModel ? RECONSTRUCTION_LABELS[reconstructionModel] : active.label;
+  useEffect(() => {
+    let live = true;
+    loadSeason(currentSeason).then((rows) => {
+      if (live) setSeasonPool(rows);
+    }).catch(() => {
+      if (live) setSeasonPool([]);
+    });
+    return () => { live = false; };
+  }, [currentSeason]);
+  const displayValue = (key: Component, row = current) => {
+    if (!reconstructionModel) return rating(row, active.prefix, key);
+    const boardRow = reconstructionBoards
+      .find((board) => board.season === row?.Season && board.metric === RECONSTRUCTION_METRICS[reconstructionModel])
+      ?.rows.find((candidate) => foldName(candidate.player) === foldName(player.PLAYER_NAME));
+    const value = boardRow?.[key];
+    return typeof value === "number" ? value : undefined;
+  };
   const profile = player.profiles.find((row) => row.Season === season);
-  const roles = player.roles.find((row) => row.Season === season);
+  const roleSeason = [...player.roles]
+    .filter((row) => row.Season <= currentSeason)
+    .sort((a, b) => b.Season - a.Season)[0];
+  const roles = roleSeason;
   const compareMatches = useMemo(() => {
     const needle = foldName(compareQuery.trim());
     if (needle.length < 2) return [];
@@ -103,7 +136,7 @@ function PlayerBody({
     label: COMPONENT_LABEL[key],
     color,
     points: player.annual.flatMap((row) => {
-      const value = rating(row, active.prefix, key);
+      const value = displayValue(key, row);
       return value === undefined ? [] : [{ x: row.Season, y: value }];
     }),
   }));
@@ -135,39 +168,67 @@ function PlayerBody({
 
   // Left unmemoized on purpose: the compiler handles it, and a hand-written dep
   // list on `active.prefix` is something it cannot verify.
-  const currentSeason = current?.Season ?? season;
   const currentRatings = (['net', 'offense', 'defense'] as Component[]).map(
-    (key) => ({ key, value: rating(current, active.prefix, key) }),
+    (key) => ({ key, value: displayValue(key) }),
   );
-  const selectedValue = rating(current, active.prefix, "net");
-  const researchComparisons = (() => {
-    if (!rapmLab) return [];
-    const values: { label: string; value: number; note: string }[] = [];
-    const wp = rapmLab.leaderboards
-      .find((board) => board.id === `wp-spm-aio-${currentSeason}`)
-      ?.rows.find((row) => row.player_name === player.PLAYER_NAME && row.candidate === "Zero WP-RAPM");
-    if (typeof wp?.net_per_100 === "number") {
-      values.push({ label: "WP-RAPM", value: wp.net_per_100, note: "WP change / 100" });
-    }
-    const seen = new Set<string>();
-    for (const board of rapmLab.replication_leaderboards) {
-      if (board.season !== currentSeason || seen.has(board.metric)) continue;
-      const row = board.rows.find((candidate) => candidate.player === player.PLAYER_NAME);
-      const value = row?.raptor ?? row?.net;
-      if (typeof value === "number") {
-        values.push({ label: board.metric.replace(" table", ""), value, note: "Reference rating" });
-        seen.add(board.metric);
-      }
-    }
-    return values;
-  })();
+  const selectedValue = displayValue("net");
+  const standingFor = (key: Component, value: number | undefined) => {
+    if (value === undefined) return null;
+    const values = reconstructionModel
+      ? reconstructionBoards
+          .find((board) => board.season === currentSeason && board.metric === RECONSTRUCTION_METRICS[reconstructionModel])
+          ?.rows.flatMap((row) => typeof row[key] === "number" ? [row[key] as number] : []) ?? []
+      : seasonPool
+          .filter((row) => Math.min(Number(row.Poss_Off), Number(row.Poss_Def)) >= 100)
+          .flatMap((row) => {
+            const candidate = rating(row, active.prefix, key);
+            return typeof candidate === "number" ? [candidate] : [];
+          });
+    if (!values.length) return null;
+    const rank = 1 + values.filter((candidate) => candidate > value).length;
+    const percentile = values.length === 1
+      ? 100
+      : Math.round(((values.length - rank) / (values.length - 1)) * 99 + 1);
+    return { rank, percentile, total: values.length };
+  };
+  const selectedStanding = standingFor("net", selectedValue);
+  const pulseEquation = current && active.id === "pulse" && !reconstructionModel
+    ? [
+        { label: "PULSE prior", value: current.pulse_prior_net },
+        { label: "Lineup update", value: current.lineup_update_net },
+        { label: "PULSE", value: current.pulse_net },
+      ].map((item) => ({
+        ...item,
+        value: typeof item.value === "number" ? item.value : undefined,
+      }))
+    : [];
+  const decomposition = current && active.id === "pulse" && !reconstructionModel ? [
+    {
+      side: "Offense",
+      parts: [
+        ["Shooting", current.pulse_offense_shooting_ts_contribution],
+        ["Turnovers", current.pulse_offense_turnover_value_contribution],
+        ["Off. rebounding", current.pulse_offense_offensive_rebound_value_contribution],
+        ["Other", current.pulse_offense_residual],
+      ],
+    },
+    {
+      side: "Defense",
+      parts: [
+        ["Shooting", current.pulse_defense_shooting_ts_contribution],
+        ["Turnovers", current.pulse_defense_turnover_value_contribution],
+        ["Opp. OREB prevention", current.pulse_defense_opponent_oreb_prevention_contribution],
+        ["Other", current.pulse_defense_residual],
+      ],
+    },
+  ].filter((group) => group.parts.some(([, value]) => typeof value === "number")) : [];
 
   return (
     <section aria-labelledby="player-heading">
       <header className="player-hero">
         <div className="player-identity">
           <div>
-            <p className="kicker">Player report · {active.label}</p>
+            <p className="kicker">Player report · {activeLabel}</p>
             <h1 id="player-heading">{player.PLAYER_NAME}</h1>
             <div className="id-line">
               <span className="chip">{current?.TEAM_ABBREVIATION ?? "—"}</span>
@@ -187,26 +248,27 @@ function PlayerBody({
             {fmtRating(selectedValue)}
           </div>
           <div className="hero-caption">
-            Net · {active.label}
+            Net · {activeLabel}{selectedStanding ? ` · #${selectedStanding.rank}/${selectedStanding.total} · ${ordinalSuffix(selectedStanding.percentile)}` : ""}
           </div>
         </div>
       </header>
 
-      <div className="filters" aria-label="Player report controls">
-        <ModelField rows={currentRows} value={model} onChange={onModel} />
-        <label className="field">
-          <span>Season</span>
-          <select
-            value={season}
-            onChange={(event) => onSeason(Number(event.target.value))}
-          >
-            {[...seasons].reverse().map((year) => (
-              <option key={year} value={year}>
-                {year - 1}–{String(year).slice(2)}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="player-switcher" aria-label="Player report controls">
+        <nav className="season-strip" aria-label="Player season">
+          {[...seasons].reverse().map((year) => (
+            <button key={year} type="button" aria-pressed={year === currentSeason} onClick={() => onSeason(year)}>
+              {year - 1}–{String(year).slice(2)}
+            </button>
+          ))}
+        </nav>
+        <div className="model-tabs" role="tablist" aria-label="Player model">
+          {availableModels(currentRows).filter((item) => item.available).map((item) => (
+            <button key={item.id} type="button" role="tab" aria-selected={!reconstructionModel && active.id === item.id} onClick={() => { setReconstructionModel(null); onModel(item.id); }}>{item.label}</button>
+          ))}
+          {(Object.keys(RECONSTRUCTION_LABELS) as ReconstructionModel[]).filter((item) =>
+            reconstructionBoards.some((board) => board.season === currentSeason && board.metric === RECONSTRUCTION_METRICS[item] && board.rows.some((row) => foldName(row.player) === foldName(player.PLAYER_NAME))),
+          ).map((item) => <button key={item} type="button" role="tab" aria-selected={reconstructionModel === item} onClick={() => setReconstructionModel(item)}>{RECONSTRUCTION_LABELS[item]}</button>)}
+        </div>
       </div>
 
       <section aria-labelledby="current-impact-heading">
@@ -217,10 +279,12 @@ function PlayerBody({
               {currentSeason - 1}–{String(currentSeason).slice(2)} ratings
             </h2>
           </div>
-          <span className="meta">{active.label} · per 100 possessions</span>
+          <span className="meta">{activeLabel} · per 100 possessions</span>
         </div>
         <div className="kpi-row">
-          {currentRatings.map(({ key, value }) => (
+          {currentRatings.map(({ key, value }) => {
+            const standing = standingFor(key, value);
+            return (
             <article className="tile" key={key}>
               <div className="tile-label">{COMPONENT_LABEL[key]}</div>
               <div
@@ -229,26 +293,39 @@ function PlayerBody({
               >
                 {fmtRating(value)}
               </div>
-              <div className="tile-sub">{active.label}</div>
+              <div className="tile-sub">{activeLabel}{standing ? ` · #${standing.rank}/${standing.total} · ${ordinalSuffix(standing.percentile)}` : ""}</div>
             </article>
-          ))}
+          );})}
         </div>
+        {pulseEquation.every((item) => item.value !== undefined) && (
+          <div className="pulse-equation" aria-label="PULSE prior plus lineup update equals PULSE">
+            {pulseEquation.map((item, index) => (
+              <div key={item.label}>
+                {index > 0 && <i aria-hidden="true">{index === 1 ? "+" : "="}</i>}
+                <span><small>{item.label}</small><b>{fmtRating(item.value)}</b></span>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
-      {researchComparisons.length > 0 && (
-        <section aria-labelledby="research-comparisons-heading">
+      {decomposition.length > 0 && (
+        <section aria-labelledby="pulse-decomposition-heading">
           <div className="section-head" style={{ marginTop: 18 }}>
-            <div>
-              <p className="kicker">Local research</p>
-              <h2 id="research-comparisons-heading">Replications and WP-RAPM</h2>
-            </div>
+            <div><p className="kicker">PULSE decomposition</p><h2 id="pulse-decomposition-heading">Where the rating comes from</h2></div>
+            <span className="meta">Components reconcile to PULSE</span>
           </div>
-          <div className="kpi-row">
-            {researchComparisons.map((item) => <article className="tile" key={item.label}>
-              <div className="tile-label">{item.label}</div>
-              <div className="tile-value">{fmtRating(item.value)}</div>
-              <div className="tile-sub">{item.note}</div>
-            </article>)}
+          <div className="decomposition-grid">
+            {decomposition.map((group) => (
+              <article className="card decomposition-card" key={group.side}>
+                <h3>{group.side}</h3>
+                {group.parts.map(([label, value]) => (
+                  <div className="decomposition-row" key={String(label)}>
+                    <span>{label}</span><b>{fmtRating(typeof value === "number" ? value : undefined)}</b>
+                  </div>
+                ))}
+              </article>
+            ))}
           </div>
         </section>
       )}
@@ -356,110 +433,17 @@ function PlayerBody({
         )}
 
         <section className="grid two" aria-label="Role detail">
-          <RoleComparisonPlayer name={player.PLAYER_NAME} roles={roles} catalog={catalog} />
+          <RoleComparisonPlayer name={player.PLAYER_NAME} roles={roles} roleSeason={roleSeason?.Season} catalog={catalog} />
           {comparePlayer ? (
             <RoleComparisonPlayer
               name={comparePlayer.PLAYER_NAME}
-              roles={comparePlayer.roles.find((row) => row.Season === season)}
+              roles={[...comparePlayer.roles].filter((row) => row.Season <= currentSeason).sort((a, b) => b.Season - a.Season)[0]}
+              roleSeason={[...comparePlayer.roles].filter((row) => row.Season <= currentSeason).sort((a, b) => b.Season - a.Season)[0]?.Season}
               catalog={catalog}
             />
-          ) : (
-            <aside className="card">
-              <p className="kicker">Role context</p>
-              <h2>Usage is not impact</h2>
-              <p className="note">Role labels describe a player’s behaviour in this season. They do not change the rating above.</p>
-            </aside>
-          )}
+          ) : null}
         </section>
       </div>
     </section>
-  );
-}
-
-function ComparisonCards({ left, right, model, season }: { left: Player; right: Player; model: ModelId; season: number }) {
-  const leftActive = resolveModel(left.annual, model);
-  const rightActive = resolveModel(right.annual, model);
-  const players = [
-    { player: left, active: leftActive, row: left.annual.find((row) => row.Season === season) },
-    { player: right, active: rightActive, row: right.annual.find((row) => row.Season === season) },
-  ];
-  return <div className="comparison-cards" style={{ marginTop: 16 }}>
-    {players.map(({ player, active, row }) => <article key={player.PLAYER_ID} className="comparison-player">
-      <h3>{player.PLAYER_NAME}</h3>
-      <div className="comparison-values" aria-label={`${player.PLAYER_NAME} ${season} offense defense and net`}>
-        {(["offense", "defense", "net"] as Component[]).map((key) => <span key={key}><small>{COMPONENT_LABEL[key]}</small><b>{fmtRating(rating(row, active.prefix, key))}</b></span>)}
-      </div>
-    </article>)}
-  </div>;
-}
-
-function RoleComparisonPlayer({ name, roles, catalog }: { name: string; roles?: Player["roles"][number]; catalog: Catalog }) {
-  return <section className="role-comparison-player"><h2>{name} · role mix</h2><RoleMix title="Offense" role={roles?.offense} side="offense" catalog={catalog} /><RoleMix title="Defense" role={roles?.defense} side="defense" catalog={catalog} /></section>;
-}
-
-/**
- * Role affinities as a small bar set. Colour is keyed to the role's position in
- * the published label list, so a player with a different mix keeps the same hue
- * per role — colour follows the entity, never the row order.
- */
-function RoleMix({
-  title,
-  role,
-  side,
-  catalog,
-}: {
-  title: string;
-  role?: Role;
-  side: RoleSide;
-  catalog: Catalog;
-}) {
-  const order = Object.keys(catalog.catalog.role_labels?.[side] ?? {});
-  if (!role) {
-    return (
-      <div>
-        <h3>{title}</h3>
-        <p className="note">No role data for this season.</p>
-      </div>
-    );
-  }
-  const colorFor = (roleId: string) => {
-    const slot = order.indexOf(roleId);
-    return SERIES[(slot < 0 ? 0 : slot) % SERIES.length];
-  };
-  return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          gap: 10,
-        }}
-      >
-        <h3>{title}</h3>
-        <span className="meta" style={{ fontSize: 11 }}>
-          {role.primary_role}
-        </span>
-      </div>
-      <div className="mix" style={{ marginTop: 10 }}>
-        {role.memberships.map((membership) => (
-          <div className="mix-row" key={membership.role_id}>
-            <span className="label">
-              <i style={{ background: colorFor(membership.role_id) }} />
-              {membership.label}
-            </span>
-            <b>{Math.round(membership.affinity * 100)}%</b>
-            <span className="track">
-              <i
-                style={{
-                  width: `${Math.max(1, membership.affinity * 100)}%`,
-                  background: colorFor(membership.role_id),
-                }}
-              />
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }

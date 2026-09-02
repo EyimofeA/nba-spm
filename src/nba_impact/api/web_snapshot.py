@@ -13,14 +13,11 @@ import pandas as pd
 
 from nba_impact.api.player_profiles import PROFILE_AXES, build_player_skill_profiles
 from nba_impact.api.ratings import ROLE_LABELS, RatingsApiConfig, RatingsStore
+from nba_impact.api.web_snapshot_models import attach_rich_spm
 from nba_impact.data.manifest import sha256_file
 from nba_impact.research.control_plane import validate_release_manifest
-
-
 COMPONENTS = ("offense", "defense", "net")
-
-# Public model selector.  `prefix` is the exported column prefix and `source`
-# is the column prefix inside the pinned annual rating run.
+# Public model selector: `prefix` is exported; `source` is the run column prefix.
 MODEL_CATALOG = [
     {
         "id": "aio",
@@ -54,11 +51,11 @@ PULSE_MODEL_CATALOG = [
         "note": "Box prior updated with one season of lineup evidence.",
     },
     {
-        "id": "rapm",
-        "label": "RAPM",
-        "prefix": "rapm_",
-        "source": "rapm_",
-        "note": "One-season zero-prior ridge fit on possession lineups.",
+        "id": "rich_spm",
+        "label": "Rich SPM",
+        "prefix": "rich_spm_",
+        "source": "rich_spm_",
+        "note": "Rich statistical impact estimate; not the PULSE prior.",
     },
 ]
 
@@ -537,6 +534,7 @@ def build_web_snapshot(
     player_sheet_source_overrides: dict[int, str | Path] | None = None,
     pulse_run_path: str | Path | None = None,
     pulse_decomposition_run_path: str | Path | None = None,
+    rich_spm_path: str | Path | None = None,
     external_benchmark_run_path: str | Path | None = None,
     shards: int = 128,
 ) -> dict:
@@ -595,6 +593,7 @@ def build_web_snapshot(
     else:
         pulse_manifest = None
         historical = store.annual.copy()
+    historical = attach_rich_spm(historical, rich_spm_path)
     decomposition_manifest: dict[str, Any] | None = None
     if pulse_decomposition_run_path is not None:
         decomposition_path = Path(pulse_decomposition_run_path)

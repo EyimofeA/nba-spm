@@ -28,9 +28,11 @@ test("server-renders the compact ratings product shell", async () => {
   }
   assert.doesNotMatch(html, /href="#home"/i);
   assert.match(html, /NBA IMPACT/i);
-  assert.match(html, /Evidence/i);
+  assert.match(html, /Research/i);
+  assert.match(html, /static\.cloudflareinsights\.com\/beacon\.min\.js/i);
+  assert.match(html, /661fa8a2a815494c887ce8d0df168206/i);
   assert.doesNotMatch(html, /href="#matchups"/i);
-  assert.match(html, /points per 100 possessions/i);
+  assert.doesNotMatch(html, /NBA impact, measured in points per 100 possessions/i);
   assert.doesNotMatch(html, /win probability|brier|stable role/i);
 });
 

@@ -27,6 +27,7 @@ from urllib.request import Request, urlopen
 
 import numpy as np
 import pandas as pd
+from nba_api.stats.static import players as nba_players
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -195,6 +196,8 @@ def reproduced_darko_panel(player_ids: list[int]) -> pd.DataFrame:
         + reproduced["reproduced_defense"]
         - reproduced["reproduced_net"]
     ).abs()
+    names = {int(row["id"]): row["full_name"] for row in nba_players.get_players()}
+    reproduced["player_name"] = reproduced["PLAYER_ID"].map(names)
     return reproduced
 
 
@@ -320,6 +323,11 @@ def _hash_file_set(paths: list[Path]) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--download-darko", action="store_true")
+    parser.add_argument(
+        "--darko-universe",
+        choices=("all", "published"),
+        default="all",
+    )
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--attempts", type=int, default=6)
     parser.add_argument(
@@ -331,7 +339,10 @@ def main() -> int:
     args = parser.parse_args()
 
     published, snapshot_paths = published_darko_panel()
-    player_ids = sorted(published["PLAYER_ID"].astype(int).unique())
+    if args.darko_universe == "all":
+        player_ids = sorted(int(row["id"]) for row in nba_players.get_players())
+    else:
+        player_ids = sorted(published["PLAYER_ID"].astype(int).unique())
     if args.limit_darko_players is not None:
         player_ids = player_ids[: args.limit_darko_players]
     if args.download_darko:
@@ -357,12 +368,16 @@ def main() -> int:
     official_raptor = RAPTOR_ROOT / "modern_RAPTOR_by_player.csv"
     download_official_raptor(official_raptor)
     local_raptor = ROOT / "data/raw/site_Data/full_raptor.csv"
+    if not local_raptor.exists():
+        local_raptor = Path("/Users/eadebayo/Downloads/Data/modern_RAPTOR_by_player.csv")
+    if not local_raptor.exists():
+        raise FileNotFoundError("No local public RAPTOR CSV was available for the identity check")
     raptor_metrics, raptor_matches = raptor_table_reproduction(local_raptor, official_raptor)
 
     inputs = {
         **{str(path.relative_to(ROOT)): sha256_file(path) for path in snapshot_paths},
         str(official_raptor.relative_to(ROOT)): sha256_file(official_raptor),
-        str(local_raptor.relative_to(ROOT)): sha256_file(local_raptor),
+        str(local_raptor): sha256_file(local_raptor),
         "darko_game_history_file_set": _hash_file_set(history_paths),
     }
     config = {
@@ -370,6 +385,10 @@ def main() -> int:
         "darko_player_count": len(player_ids),
         "darko_full_expected_player_count": int(published["PLAYER_ID"].nunique()),
         "darko_seasons": sorted(published["season"].astype(int).unique().tolist()),
+        "darko_reconstruction_seasons": sorted(
+            reproduced["season"].astype(int).unique().tolist()
+        ),
+        "darko_player_universe": args.darko_universe,
         "raptor_check": "semantic identity of local and official public CSV",
         "claims_excluded": [
             "DARKO causal daily model reproduction",
@@ -382,6 +401,7 @@ def main() -> int:
     output.mkdir(parents=True, exist_ok=True)
     metrics = pd.concat([darko_metrics, raptor_metrics], ignore_index=True)
     metrics.to_csv(output / "metrics.csv", index=False)
+    reproduced.to_parquet(output / "darko_reconstructions.parquet", index=False)
     darko_matches.to_parquet(output / "darko_matches.parquet", index=False)
     raptor_matches.to_parquet(output / "raptor_table_matches.parquet", index=False)
     run = {

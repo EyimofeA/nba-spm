@@ -14,7 +14,6 @@ import {
   LeaderboardRow,
   LocalPlayerSkills,
   LocalSkillIndex,
-  MatchupLabPayload,
   RapmLabPayload,
   SpmLabPayload,
   ModelId,
@@ -25,7 +24,6 @@ import {
   loadIndex,
   loadLocalPlayerSkills,
   loadLocalSkillIndex,
-  loadMatchupLab,
   loadRapmLab,
   loadSpmLab,
   loadPlayer,
@@ -43,9 +41,6 @@ const ResearchView = lazy(() =>
 const RolesView = lazy(() =>
   import("./views/RolesView").then((module) => ({ default: module.RolesView })),
 );
-const RapmLabView = lazy(() =>
-  import("./views/RapmLabView").then((module) => ({ default: module.RapmLabView })),
-);
 const PublicRapmLabView = lazy(() =>
   import("./views/PublicRapmLabView").then((module) => ({ default: module.PublicRapmLabView })),
 );
@@ -55,13 +50,12 @@ const SpmLabView = lazy(() =>
 const ReplicationsView = lazy(() =>
   import("./views/ReplicationsView").then((module) => ({ default: module.ReplicationsView })),
 );
-
 const ALL_TABS = [
   { id: "ratings", label: "Ratings" },
   { id: "player", label: "Player" },
   { id: "roles", label: "Roles" },
   { id: "rapm-lab", label: "RAPM Lab" },
-  { id: "replications", label: "Replications" },
+  { id: "replications", label: "Reconstructions" },
   { id: "spm-lab", label: "SPM Lab" },
   { id: "research", label: "Research" },
 ] as const;
@@ -70,15 +64,15 @@ const PUBLIC_NAV_TABS = [
   { id: "ratings", label: "Ratings" },
   { id: "roles", label: "Role map" },
   { id: "rapm-lab", label: "RAPM Lab" },
-  { id: "research", label: "Evidence" },
+  { id: "research", label: "Research" },
 ] as const;
 
 const LOCAL_NAV_TABS = [
   { id: "ratings", label: "Ratings" },
   { id: "roles", label: "Role map" },
   { id: "rapm-lab", label: "RAPM Lab" },
-  { id: "replications", label: "Replications" },
-  { id: "research", label: "Evidence" },
+  { id: "replications", label: "Reconstructions" },
+  { id: "research", label: "Research" },
 ] as const;
 
 type Tab = (typeof ALL_TABS)[number]["id"];
@@ -95,7 +89,7 @@ const isLocalHost = () => {
 const isTab = (value: string, showResearchLab: boolean): value is Tab => {
   const tabs = showResearchLab
     ? ALL_TABS
-    : ALL_TABS.filter((tab) => tab.id !== "spm-lab" && tab.id !== "replications");
+    : ALL_TABS.filter((tab) => !["spm-lab", "replications"].includes(tab.id));
   return tabs.some((tab) => tab.id === value);
 };
 
@@ -108,7 +102,7 @@ type Route = { tab: Tab; playerId?: number };
 const readHash = (showResearchLab: boolean): Route => {
   const [head, id] = window.location.hash.slice(1).split("/");
   const parsed = Number(id);
-  const routed = head === "matchups" ? "rapm-lab" : head;
+  const routed = head;
   return {
     tab:
       routed === "landscape"
@@ -132,14 +126,13 @@ export function App() {
   // Filters live at the shell so every view below reads the same slice.
   const [season, setSeason] = useState(2026);
   const [model, setModel] = useState<ModelId>("pulse");
-  const [minPoss, setMinPoss] = useState(0);
+  const [minPoss, setMinPoss] = useState(100);
 
   const [rows, setRows] = useState<LeaderboardRow[]>([]);
   const [player, setPlayer] = useState<Player | null>(null);
   const [comparePlayer, setComparePlayer] = useState<Player | null>(null);
   const [playerSeason, setPlayerSeason] = useState(2024);
   const [roleSide, setRoleSide] = useState<RoleSide>("offense");
-  const [matchupLab, setMatchupLab] = useState<MatchupLabPayload | null>(null);
   const [rapmLab, setRapmLab] = useState<RapmLabPayload | null>(null);
   const [spmLab, setSpmLab] = useState<SpmLabPayload | null>(null);
   const [localSkillIndex, setLocalSkillIndex] = useState<LocalSkillIndex | null>(null);
@@ -261,16 +254,11 @@ export function App() {
     let live = true;
     const run = async () => {
       try {
-        const [nextMatchupLab, nextLab] = await Promise.all([
-          loadMatchupLab().catch(() => null),
-          loadRapmLab().catch(() => null),
-        ]);
+        const nextLab = await loadRapmLab().catch(() => null);
         if (!live) return;
-        setMatchupLab(nextMatchupLab);
         setRapmLab(nextLab);
       } catch {
         if (live) {
-          setMatchupLab(null);
           setRapmLab(null);
         }
       }
@@ -499,7 +487,7 @@ export function App() {
               </svg>
               <input
                 aria-label="Find a player"
-                placeholder="Search 582 players"
+                placeholder="Search players"
                 value={query}
                 onChange={(event) => {
                   setQuery(event.target.value);
@@ -569,12 +557,7 @@ export function App() {
               />
             )}
             {tab === "rapm-lab" && (
-              hasLocalResearch ? (
-                <RapmLabView
-                  lab={rapmLab}
-                  matchupLab={matchupLab}
-                />
-              ) : <PublicRapmLabView />
+              <PublicRapmLabView />
             )}
             {tab === "replications" && hasLocalResearch && (
               <ReplicationsView lab={rapmLab} />
@@ -585,9 +568,6 @@ export function App() {
         )}
         </main>
 
-        <footer className="site-footer">
-          <p>NBA impact, measured in points per 100 possessions.</p>
-        </footer>
       </div>
 
       {error && (

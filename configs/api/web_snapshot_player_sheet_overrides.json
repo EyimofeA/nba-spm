@@ -1,4 +1,7 @@
 {
+  "2014": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2014.parquet",
+  "2015": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2015.parquet",
+  "2016": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2016.parquet",
   "2017": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2017.parquet",
   "2018": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2018.parquet",
   "2019": "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals/2019.parquet",

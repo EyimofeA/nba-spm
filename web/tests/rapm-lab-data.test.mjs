@@ -99,23 +99,40 @@ test("saved RAPM tests expose real leaderboards", () => {
   }
 });
 
-test("replication lab distinguishes exact outputs, proxies, and references", () => {
+test("reconstruction lab publishes generated rows and source agreement only", () => {
   assert.deepEqual(
     lab.replications.map((row) => row.metric),
-    ["DARKO WOWY", "RAPTOR table", "RAPTOR on/off", "PIPM", "BPM 2.0", "xRAPM"],
+    [
+      "CourtSignal DARKO WOWY reconstruction",
+      "CourtSignal RAPTOR reconstruction",
+      "CourtSignal PIPM reconstruction",
+    ],
   );
-  assert.equal(lab.replications[0].status, "exact_public_output");
-  assert.equal(lab.replications[1].maximum_absolute_error, 0);
-  assert.equal(lab.replications[2].status, "proxy");
-  assert.equal(lab.replications[3].status, "partial_reference");
-  assert.equal(lab.replications[4].status, "reference_only");
-  assert.ok(lab.replication_leaderboards.length >= 40);
+  assert.equal(lab.replications[0].status, "exact_reconstruction");
+  assert.equal(lab.replications[1].status, "methodology_aligned_reconstruction");
+  assert.equal(lab.replications[2].status, "methodology_aligned_reconstruction");
+  assert.equal(lab.replications[0].r_squared, 1);
+  assert.ok(lab.replications[1].r_squared > 0.75);
+  assert.ok(lab.replications[2].r_squared > 0.65);
+  assert.ok(lab.replication_leaderboards.length >= 15);
   assert.ok(lab.replication_leaderboards.every((row) => row.rows.length > 0));
   assert.ok(lab.replication_leaderboards.every((row) => row.columns.length >= 4));
-  const raptor = lab.replication_leaderboards.find((row) => row.metric === "RAPTOR table");
-  assert.ok(raptor.columns.some((column) => column.key === "box_net"));
-  assert.ok(raptor.columns.some((column) => column.key === "onoff_net"));
-  assert.ok(raptor.columns.some((column) => column.key === "war"));
+  assert.ok(lab.replication_leaderboards.every((row) => row.source === "CourtSignal reconstruction"));
+  const payload = JSON.stringify(lab.replication_leaderboards);
+  assert.doesNotMatch(payload, /reference_|official|xrapm|pipm_net|bpm_net/i);
+  const raptor = lab.replication_leaderboards.filter((row) => row.metric === "CourtSignal RAPTOR reconstruction");
+  assert.deepEqual(raptor.map((row) => row.season).sort((a, b) => a - b), [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]);
+  assert.deepEqual(raptor[0].columns.map((column) => column.key), [
+    "player", "team", "box_offense", "box_defense", "box_net",
+    "onoff_offense", "onoff_defense", "onoff_net",
+    "offense", "defense", "net", "exposure",
+  ]);
+  const darko = lab.replication_leaderboards.filter((row) => row.metric === "CourtSignal DARKO WOWY reconstruction");
+  assert.equal(Math.min(...darko.map((row) => row.season)), 1957);
+  assert.equal(Math.max(...darko.map((row) => row.season)), 2026);
+  const pipm = lab.replication_leaderboards.filter((row) => row.metric === "CourtSignal PIPM reconstruction");
+  assert.equal(Math.min(...pipm.map((row) => row.season)), 1997);
+  assert.equal(Math.max(...pipm.map((row) => row.season)), 2026);
 });
 
 test("large unit leaderboards carry both tails", () => {
@@ -147,8 +164,9 @@ test("new full-span and five-point results are exposed without WP unit inflation
   assert.ok(
     Math.max(...rolling.rows.map((row) => Math.abs(row.net_wp_percentage_points_per_100))) < 20,
   );
-  assert.equal(Math.min(...rolling.rows.map((row) => row.window_end)), 2002);
+  assert.equal(Math.min(...rolling.rows.map((row) => row.window_end)), 2018);
   assert.equal(Math.max(...rolling.rows.map((row) => row.window_end)), 2026);
+  assert.ok(rolling.rows.every((row) => typeof row.player_name === "string" && row.player_name.length > 0));
   const wpPriorTest = lab.experiments.find((row) => row.id === "wp-spm-aio");
   assert.equal(wpPriorTest.status, "lost");
   assert.ok(lab.leaderboards.some((row) => row.id === "wp-spm-aio-2026"));

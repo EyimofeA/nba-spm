@@ -5816,3 +5816,152 @@ ordinary point impact. Full methods appear in
 The full historical follow-up `rolling_5y_wp_rapm_v1_0e6e0304f0` processes
 6,738,828 possessions and produces 25 five-year windows from 1998–2002 through
 2022–2026. All 34,344 rating games conserve WP to `1.11e-15`.
+
+## 2026-09-02 — Public-method reconstruction ledger
+
+**Question:** How far can CourtSignal reproduce DARKO WOWY, PIPM, and RAPTOR
+without publishing source rows as CourtSignal ratings?
+
+**Method:** Aggregate the public DARKO player-game history into season ratings.
+Apply the published PIPM box coefficients and final on/off blend to CourtSignal
+regular-season box and lineup data. Fit the unpublished RAPTOR box mapping to
+the official 2014–2022 table, combine it with the CourtSignal RAPTOR on/off
+reconstruction using the published rounded blend weights, and apply the frozen
+mapping through 2026. Keep source values out of the reconstruction payload.
+Use them only to calculate matched-row Pearson correlation and R-squared.
+
+**Result:** The DARKO WOWY aggregation covers 1957–2026 and reproduces 5,470
+matched source player-seasons to numerical precision. The PIPM reconstruction
+covers 2014–2026; its net comparison has 4,016 matched rows, Pearson `0.8662`,
+R-squared `0.6618`, and RMSE `1.0722`. The RAPTOR reconstruction covers
+2014–2026. Its combined net comparison has 4,586 matched rows, Pearson `0.8853`,
+R-squared `0.7782`, and RMSE `2.4519`. The reconstructed RAPTOR on/off component
+has Pearson `0.9538` and R-squared `0.9096` against the corresponding source
+component.
+
+**Decision:** Label DARKO WOWY as an exact public aggregation reconstruction.
+Label PIPM and RAPTOR as methodology-aligned reconstructions. Do not claim an
+exact PIPM model because the source includes playoffs and the private luck and
+team adjustments are unavailable. Do not claim exact RAPTOR because the fitted
+box and on/off coefficients were never published. Publish only CourtSignal
+reconstruction rows. Show source agreement as summary statistics.
+
+## 2026-09-02 — CourtSignal ratings and RAPM publication pass
+
+**Question:** Which additional research ratings can be shown without changing
+their status, and how should the public tables expose horizon and factor detail?
+
+**Result:** The PIPM reconstruction now uses every compatible Gabriel season,
+2012–2026. It matches 4,956 source rows with net Pearson `0.8677`, R-squared
+`0.6673`, and RMSE `1.0623`. The 2026 full-feature SPM fit supplies a clearly
+labeled Rich SPM research extension. Box15 WP-AIO is labeled WP-PULSE; it
+remains a rejected comparison because plain WP-RAPM won all five held-out
+folds (`0.9805` versus `1.1305` RMSE). Defense residual + RAPM beat PULSE by
+only `0.0069` RMSE on the shared 2017–2020 benchmark, below the frozen `0.05`
+practical-improvement gate.
+
+**Decision:** Publish WP-PULSE as a research comparison, not the selected WP
+model. Keep the conserved win-probability-change target; a clipped log-odds
+target requires a separate chronological experiment. Publish one grouped
+six-factor table with native TS, turnover, and rebound estimates beside total
+offense, defense, and net RAPM; do not sum unlike factor units or publish the
+discarded factor reconstruction. Keep the frozen role map at its verified
+2017–2024 coverage until the missing 2025–26 dribble-context inputs are rebuilt.
+
+## 2026-09-02 — PIPM history and WP publication correction
+
+**Question:** Can the PIPM reconstruction begin before 2012, and should either
+WP statistical prior remain in the public ratings selector?
+
+**Method:** Audit the public PIPM source, the historical CourtSignal player
+sheets, and the canonical lineup ledger separately. Rebuild starter counts
+from each game's opening lineup so the same feature definition works before
+the recent player-game feed. Score the extended reconstruction against the
+source rows, which remain comparison-only. Match the 2026 zero-prior WP-RAPM
+and normal PULSE player ratings at a 100-possession floor for a scale-free
+agreement check.
+
+**Result:** The PIPM source begins in 1974, but CourtSignal's comparable lineup
+ledger begins in 1997. The historical sheets contain every published PIPM box
+input from 1997 onward. The extended 1997–2026 reconstruction matches 11,548
+source player-seasons: net Pearson `0.8772`, R-squared `0.6604`, and RMSE
+`1.0732`. Normal PULSE and zero-prior WP-RAPM have Pearson `0.5876` and rank
+correlation `0.5524` across 536 matched 2026 players with at least 100
+possessions.
+
+**Decision:** Publish the PIPM reconstruction from 1997–2026. Do not extend it
+to 1974 without a comparable lineup input. Remove WP-PULSE from the Ratings and
+player selectors. Keep plain WP-RAPM in RAPM Lab and report both rejected prior
+tests in Research: Box15 RMSE `1.1305`, Rich SPM RMSE `1.1190`, and zero-prior
+WP-RAPM RMSE `0.9805`. Restore the complete shared-coverage 2017–2020 external
+benchmark table and keep the unit mismatch explicit.
+
+## 2026-09-02 — WP-RAPM versus PULSE on next-season margins
+
+**Question:** Does one-season zero-prior WP-RAPM predict next-season whole-game
+point margins better than normal PULSE?
+
+**Method:** Join the saved WP-RAPM and PULSE predictions by outcome season and
+game. Fit a separate affine map for each model using only earlier common outcome
+seasons. Score both calibrated predictions on the same 4,911 games from
+2023–2026. Bootstrap the paired game-level squared-error difference 5,000 times
+within outcome season.
+
+**Result:** PULSE records `14.4109` equal-season RMSE and `0.3574` mean
+correlation. WP-RAPM records `15.3427` RMSE and `0.1899` correlation. WP-RAPM
+minus PULSE MSE is `+27.7392`, with a 95% interval of `[+23.7690, +31.6077]`.
+WP-RAPM wins zero of 5,000 paired bootstrap draws.
+
+**Decision:** Do not use WP-RAPM in place of PULSE for next-season point-margin
+retrodiction. Keep WP-RAPM as a descriptive win-probability attribution model.
+Label this result as reused historical evidence because it uses observed
+next-season lineups. Publish the source-backed 2024–2026 game-level PM and
+one-point, two-point, and three-plus-point RAPM decompositions as separate RAPM
+Lab boards.
+
+## 2026-09-02 — WP-RAPM control and Box15 season-centering test
+
+**Question:** Does WP-RAPM beat ordinary one-season RAPM on next-season point
+margins, and does PIPM-style same-season centering improve the Box15 prior?
+
+**Method:** Add ordinary zero-prior RAPM to the existing 4,911-game WP-RAPM and
+PULSE comparison. Apply the same expanding, past-only affine calibration to all
+three ratings. Separately subtract each rating season's
+minimum-side-possession-weighted mean from every Box15 per-100 input. Fit the
+same chronological nine-year-target ridge prior and apply the same one-season
+RAPM update on the 2015–2026 folds. Bootstrap paired game-level squared-error
+differences 5,000 times within season.
+
+**Result:** Ordinary RAPM records `14.5778` RMSE and `0.3288` mean correlation.
+WP-RAPM records `15.3427` RMSE and `0.1899` correlation. WP-RAPM minus ordinary
+RAPM MSE is `+22.9025`, with a 95% interval of `[+19.0695, +26.5194]`; WP-RAPM
+wins zero of 5,000 draws. Raw Box15 + RAPM records `13.5604` RMSE across the 12
+2015–2026 folds. Season-centered Box15 + RAPM records `13.5909`. Raw minus
+centered MSE is `-0.8279`, with a 95% interval of `[-1.0095, -0.6469]`;
+centered wins zero of 5,000 draws.
+
+**Decision:** Keep WP-RAPM as a descriptive leverage rating, not the predictive
+lineup model. Keep the raw per-100 Box15 representation. Do not promote the
+season-centered challenger. Both conclusions use reused historical folds;
+Season 2027 remains untouched.
+
+## 2026-09-02 — Box15 current-era scoring correction
+
+**Correction:** The prior season-centering run did not test the requested
+inflation adjustment. The intended scoring input is
+`PTS/100 × (2026 league ORTG / possession-weighted DRTG of defenses faced)`.
+The same dimensionless multiplier applies to PTS/75. The canonical lineup
+ledger supplied exact opponent exposure for all 14,568 player-seasons from
+1997–2026, so no same-season league-average fallback was used.
+
+**Result:** The 2026 reference league ORTG is `114.8676`. Player-season
+multipliers range from `0.9543` to `1.2300`. Raw Box15 plus the identical
+one-season RAPM update records `13.5604` RMSE across the 12 reused 2015–2026
+next-season folds. The current-era, defense-faced challenger records `13.5673`.
+Raw minus adjusted MSE is `-0.1855`, with a 95% whole-game bootstrap interval
+of `[-0.2755, -0.0975]`; the challenger wins zero of 5,000 draws.
+
+**Decision:** Keep raw Box15 in PULSE. The corrected adjustment loses nine of
+12 folds and does not clear the predictive gate. Keep the transform available
+for descriptive current-era scoring displays only. Season 2027 remains
+untouched.

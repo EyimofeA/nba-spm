@@ -17,6 +17,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from nba_api.stats.static import players as nba_players
 from sklearn.linear_model import LinearRegression
 
 
@@ -34,15 +35,13 @@ from research.rapm_lab.run_wowy_raptor_reproduction import (  # noqa: E402
 )
 
 
-CACHE = ROOT / "rapm/data/possession_cache"
-SCHEDULE = ROOT / "data/lake/bronze/official_game_schedule_1997_2026"
-NAMES = ROOT / "rapm/data/all_names.csv"
+STINTS = ROOT / "data/lake/silver/canonical_lineup_stints"
 OFFICIAL = (
     ROOT
     / "research/rapm_lab/data/external/fivethirtyeight_raptor/modern_RAPTOR_by_team.csv"
 )
 OUTPUT_ROOT = ROOT / "research/rapm_lab/outputs/raptor_onoff_proxy"
-SEASONS = tuple(range(2014, 2023))
+SEASONS = tuple(range(2014, 2027))
 TRAIN_SEASONS = tuple(range(2014, 2019))
 TEST_SEASONS = tuple(range(2019, 2023))
 PLAYER_COLUMNS = [f"a{i}" for i in range(1, 6)] + [f"h{i}" for i in range(1, 6)]
@@ -344,30 +343,27 @@ def season_side_features(frame: pd.DataFrame, *, season: int, side: str) -> pd.D
 
 
 def load_season(season: int) -> pd.DataFrame:
-    cache = pd.read_parquet(
-        CACHE / f"matchups_{season}.parquet",
-        columns=["gameid", "home_poss", "pts", *PLAYER_COLUMNS],
-    )
-    schedule = pd.read_parquet(
-        SCHEDULE / f"schedule_{season}.parquet",
-        columns=["game_id", "home_team_id", "away_team_id"],
-    )
-    schedule["game_id"] = schedule["game_id"].astype(str).str.zfill(10)
-    cache["gameid"] = cache["gameid"].astype(str).str.zfill(10)
-    # The public RAPTOR comparison below is regular season only.  NBA game IDs
-    # beginning with 002 are regular-season games; 004 identifies playoffs.
-    cache = cache.loc[cache["gameid"].str.startswith("002")].copy()
-    merged = cache.merge(
-        schedule,
-        left_on="gameid",
-        right_on="game_id",
-        how="left",
-        validate="many_to_one",
-    )
-    if merged[["home_team_id", "away_team_id"]].isna().any().any():
-        missing = merged.loc[merged["home_team_id"].isna(), "gameid"].nunique()
-        raise ValueError(f"Season {season} has {missing} games without team mapping")
-    return merged
+    source = pd.read_parquet(STINTS / f"season={season}/regular.parquet")
+    rows = []
+    away = [f"away_player_{slot}" for slot in range(1, 6)]
+    home = [f"home_player_{slot}" for slot in range(1, 6)]
+    for home_poss, possession_column, point_column in (
+        (False, "away_possessions", "away_points"),
+        (True, "home_possessions", "home_points"),
+    ):
+        part = source.loc[source[possession_column].gt(0)].copy()
+        counts = part[possession_column].astype(int)
+        part["pts"] = part[point_column] / counts
+        part = part.loc[part.index.repeat(counts)].reset_index(drop=True)
+        part["home_poss"] = home_poss
+        part = part.rename(
+            columns={
+                **{column: f"a{slot}" for slot, column in enumerate(away, 1)},
+                **{column: f"h{slot}" for slot, column in enumerate(home, 1)},
+            }
+        )
+        rows.append(part[["game_id", "home_poss", "pts", "home_team_id", "away_team_id", *PLAYER_COLUMNS]])
+    return pd.concat(rows, ignore_index=True)
 
 
 def build_feature_panel(checkpoint: Path) -> pd.DataFrame:
@@ -417,9 +413,10 @@ def official_regular_season_panel() -> pd.DataFrame:
 
 
 def attach_names(features: pd.DataFrame) -> pd.DataFrame:
-    names = pd.read_csv(NAMES).drop_duplicates("PLAYER_ID")
-    name_column = "PLAYER_NAME" if "PLAYER_NAME" in names else names.columns[1]
-    names = names[["PLAYER_ID", name_column]].rename(columns={name_column: "local_name"})
+    names = pd.DataFrame(
+        [(row["id"], row["full_name"]) for row in nba_players.get_players()],
+        columns=["PLAYER_ID", "local_name"],
+    ).drop_duplicates("PLAYER_ID")
     features = features.merge(names, on="PLAYER_ID", how="left", validate="many_to_one")
     features["name_key"] = features["local_name"].map(normalize_name)
     return features
@@ -438,11 +435,13 @@ def fit_and_score(features: pd.DataFrame, official: pd.DataFrame) -> tuple[pd.Da
     # same-name seasons instead of guessing which player is which.
     unique_name_season = ~wide.duplicated(["name_key", "season"], keep=False)
     wide = wide.loc[unique_name_season].copy()
-    merged = wide.merge(official, on=["name_key", "season"], how="inner", validate="one_to_one")
+    merged = wide.merge(official, on=["name_key", "season"], how="left", validate="one_to_one")
 
     train_rows = []
     for side in ("offense", "defense"):
-        part = merged.loc[merged["season"].isin(TRAIN_SEASONS)].copy()
+        part = merged.loc[
+            merged["season"].isin(TRAIN_SEASONS) & merged[f"target_{side}"].notna()
+        ].copy()
         part["target"] = part[f"target_{side}"]
         part["side"] = side
         for feature in FEATURE_COLUMNS:
@@ -509,16 +508,12 @@ def main() -> int:
     if not OFFICIAL.exists():
         download_official_raptor(OFFICIAL, url=RAPTOR_TEAM_URL)
     source_hashes = {
-        str(NAMES.relative_to(ROOT)): sha256_file(NAMES),
         str(OFFICIAL.relative_to(ROOT)): sha256_file(OFFICIAL),
         str(Path(__file__).resolve().relative_to(ROOT)): sha256_file(Path(__file__).resolve()),
     }
     for season in SEASONS:
-        for path in (
-            CACHE / f"matchups_{season}.parquet",
-            SCHEDULE / f"schedule_{season}.parquet",
-        ):
-            source_hashes[str(path.relative_to(ROOT))] = sha256_file(path)
+        path = STINTS / f"season={season}/regular.parquet"
+        source_hashes[str(path.relative_to(ROOT))] = sha256_file(path)
     identity_payload = {
         "seasons": SEASONS,
         "train": TRAIN_SEASONS,
@@ -547,6 +542,7 @@ def main() -> int:
         ),
         "development_seasons": list(TRAIN_SEASONS),
         "held_out_seasons": list(TEST_SEASONS),
+        "published_seasons": list(SEASONS),
         "coefficients": coefficients,
         "source_hashes": source_hashes,
         "metrics": metrics.to_dict(orient="records"),
