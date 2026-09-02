@@ -86,6 +86,50 @@ def _metrics(predictions: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _publication_ratings(
+    source: pd.DataFrame,
+    contract: dict,
+    selected: pd.Series,
+) -> pd.DataFrame:
+    target, _ = build_log_odds_wp_target(source, epsilon=float(selected["epsilon"]))
+    target["pts"] = target["offense_log_odds_change"]
+    design = build_design(target, include_home=True)
+    names = load_current_player_names(NAMES, PLAYER_GAMES)
+    rows = []
+    for season in (2024, 2025, 2026):
+        mask = design.seasons == season
+        config = RapmConfig(
+            seasons=(season,),
+            lambda_off=float(selected["lambda_offense"]),
+            lambda_def=float(selected["lambda_defense"]),
+            lambda_home=float(contract["lambda_home"]),
+            data_scope="annual_clipped_log_odds_wp_rapm",
+        )
+        beta, _ = fit_coefficients(design, config, row_mask=mask)
+        ratings = ratings_table(design, beta, names=names)
+        n_players = len(design.players)
+        exposure = pd.DataFrame(
+            {
+                "player_id": design.players,
+                "off_possessions": np.asarray(
+                    np.abs(design.X[mask, :n_players]).sum(axis=0)
+                ).ravel(),
+                "def_possessions": np.asarray(
+                    np.abs(design.X[mask, n_players : 2 * n_players]).sum(axis=0)
+                ).ravel(),
+            }
+        )
+        ratings = ratings.drop(
+            columns=["off_possessions", "def_possessions"]
+        ).merge(exposure, on="player_id", validate="one_to_one")
+        ratings["Season"] = season
+        ratings["epsilon"] = float(selected["epsilon"])
+        ratings["lambda_offense"] = int(selected["lambda_offense"])
+        ratings["lambda_defense"] = int(selected["lambda_defense"])
+        rows.append(ratings)
+    return pd.concat(rows, ignore_index=True)
+
+
 def _paired_bootstrap(
     predictions: pd.DataFrame,
     reference_column: str,
@@ -294,48 +338,7 @@ def run() -> dict:
         )
     chronological_frame = pd.DataFrame(chronological)
 
-    selected = summary.iloc[0]
-    selected_target, _ = build_log_odds_wp_target(
-        source, epsilon=float(selected["epsilon"])
-    )
-    selected_target["pts"] = selected_target["offense_log_odds_change"]
-    selected_design = build_design(selected_target, include_home=True)
-    names = load_current_player_names(NAMES, PLAYER_GAMES)
-    publication_rows = []
-    for season in (2024, 2025, 2026):
-        mask = selected_design.seasons == season
-        config = RapmConfig(
-            seasons=(season,),
-            lambda_off=float(selected["lambda_offense"]),
-            lambda_def=float(selected["lambda_defense"]),
-            lambda_home=float(contract["lambda_home"]),
-            data_scope="annual_clipped_log_odds_wp_rapm",
-        )
-        beta, _ = fit_coefficients(selected_design, config, row_mask=mask)
-        ratings = ratings_table(selected_design, beta, names=names)
-        n_players = len(selected_design.players)
-        exposure = pd.DataFrame(
-            {
-                "player_id": selected_design.players,
-                "off_possessions": np.asarray(
-                    np.abs(selected_design.X[mask, :n_players]).sum(axis=0)
-                ).ravel(),
-                "def_possessions": np.asarray(
-                    np.abs(
-                        selected_design.X[mask, n_players : 2 * n_players]
-                    ).sum(axis=0)
-                ).ravel(),
-            }
-        )
-        ratings = ratings.drop(
-            columns=["off_possessions", "def_possessions"]
-        ).merge(exposure, on="player_id", validate="one_to_one")
-        ratings["Season"] = season
-        ratings["epsilon"] = float(selected["epsilon"])
-        ratings["lambda_offense"] = int(selected["lambda_offense"])
-        ratings["lambda_defense"] = int(selected["lambda_defense"])
-        publication_rows.append(ratings)
-    public_ratings = pd.concat(publication_rows, ignore_index=True)
+    public_ratings = _publication_ratings(source, contract, summary.iloc[0])
 
     identity = hashlib.sha256(
         json.dumps(

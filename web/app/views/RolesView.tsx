@@ -10,6 +10,7 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 function exportRoleMapPng(
   host: HTMLDivElement | null,
   player: RoleDatum,
+  similar: RoleDatum[],
   side: RoleSide,
   season: number,
 ) {
@@ -21,16 +22,16 @@ function exportRoleMapPng(
     root.getPropertyValue(name).trim() || fallback;
   const output = document.createElementNS(SVG_NS, "svg");
   output.setAttribute("xmlns", SVG_NS);
-  output.setAttribute("viewBox", "0 0 880 570");
+  output.setAttribute("viewBox", "0 0 880 725");
   output.setAttribute("width", "1760");
-  output.setAttribute("height", "1140");
+  output.setAttribute("height", "1450");
   output.style.setProperty("--text-muted", color("--text-muted", "#8793a5"));
   output.style.setProperty("--series-1", color("--series-1", "#63a5ff"));
   output.style.setProperty("--series-2", color("--series-2", "#f0a45d"));
 
   const background = document.createElementNS(SVG_NS, "rect");
   background.setAttribute("width", "880");
-  background.setAttribute("height", "570");
+  background.setAttribute("height", "725");
   background.setAttribute("fill", color("--surface-1", "#11161c"));
   output.append(background);
 
@@ -64,6 +65,51 @@ function exportRoleMapPng(
   copy.prepend(style);
   output.append(copy);
 
+  const divider = document.createElementNS(SVG_NS, "line");
+  divider.setAttribute("x1", "32");
+  divider.setAttribute("x2", "848");
+  divider.setAttribute("y1", "590");
+  divider.setAttribute("y2", "590");
+  divider.setAttribute("stroke", color("--grid", "#2b333d"));
+  output.append(divider);
+
+  const neighbourLabel = document.createElementNS(SVG_NS, "text");
+  neighbourLabel.setAttribute("x", "32");
+  neighbourLabel.setAttribute("y", "616");
+  neighbourLabel.setAttribute("fill", color("--text-muted", "#8793a5"));
+  neighbourLabel.setAttribute("font-family", "ui-monospace, monospace");
+  neighbourLabel.setAttribute("font-size", "10");
+  neighbourLabel.setAttribute("font-weight", "700");
+  neighbourLabel.setAttribute("letter-spacing", "1.4");
+  neighbourLabel.textContent = "NEAREST ROLE NEIGHBOURS";
+  output.append(neighbourLabel);
+
+  similar.slice(0, 8).forEach((neighbour, index) => {
+    const x = 32 + (index % 4) * 210;
+    const y = 646 + Math.floor(index / 4) * 48;
+    const name = document.createElementNS(SVG_NS, "text");
+    name.setAttribute("x", String(x));
+    name.setAttribute("y", String(y));
+    name.setAttribute("fill", color("--text-primary", "#edf1f7"));
+    name.setAttribute("font-family", "system-ui, sans-serif");
+    name.setAttribute("font-size", "11");
+    name.setAttribute("font-weight", "650");
+    name.textContent = neighbour.name.length > 24
+      ? `${neighbour.name.slice(0, 23)}…`
+      : neighbour.name;
+    output.append(name);
+    const role = document.createElementNS(SVG_NS, "text");
+    role.setAttribute("x", String(x));
+    role.setAttribute("y", String(y + 16));
+    role.setAttribute("fill", color("--text-secondary", "#aeb7c5"));
+    role.setAttribute("font-family", "ui-monospace, monospace");
+    role.setAttribute("font-size", "9");
+    role.textContent = neighbour.role.length > 28
+      ? `${neighbour.role.slice(0, 27)}…`
+      : neighbour.role;
+    output.append(role);
+  });
+
   const blob = new Blob([new XMLSerializer().serializeToString(output)], {
     type: "image/svg+xml;charset=utf-8",
   });
@@ -72,7 +118,7 @@ function exportRoleMapPng(
   image.onload = () => {
     const canvas = document.createElement("canvas");
     canvas.width = 1760;
-    canvas.height = 1140;
+    canvas.height = 1450;
     canvas.getContext("2d")?.drawImage(image, 0, 0, canvas.width, canvas.height);
     URL.revokeObjectURL(sourceUrl);
     canvas.toBlob((png) => {
@@ -285,7 +331,7 @@ export function RolesView({
               <p className="role-focus-meta">{chosen.team ?? "—"} · {chosen.role}</p>
             </div>
             <div className="role-focus-actions">
-              <button type="button" className="btn ghost small" onClick={() => exportRoleMapPng(mapRef.current, chosen, side, season)}>Export PNG</button>
+              <button type="button" className="btn ghost small" onClick={() => exportRoleMapPng(mapRef.current, chosen, similar, side, season)}>Export PNG</button>
               <button type="button" className="btn ghost small" onClick={() => onPlayer(chosen.id)}>Open player</button>
             </div>
           </section>}

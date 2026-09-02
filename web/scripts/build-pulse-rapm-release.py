@@ -29,7 +29,7 @@ WP_VS_PULSE = ROOT / (
 )
 LOG_ODDS_WP = ROOT / (
     "research/rapm_lab/outputs/log_odds_wp_rapm_lambda/"
-    "log_odds_wp_rapm_lambda_v1_5f79de5dcc"
+    "log_odds_wp_rapm_lambda_v1_91e7dccec4"
 )
 TEAMMATE_EFFECTS = ROOT / (
     "research/rapm_lab/outputs/teammate_play_channels/"
