@@ -14,7 +14,9 @@ Public sections:
   the snapshot carries it, a skill-percentile wedge chart, role mix, and where
   the player sits in the season's distribution.
 - Roles: the behavioural map with one role lifted at a time, cluster sizes that
-  double as the picker, and nearest neighbours.
+  double as the picker, nearest neighbours, and a shareable PNG export.
+- Reconstructions: CourtSignal DARKO WOWY, RAPTOR, and PIPM reconstructions in
+  lazy season shards. Source ratings are used only for the agreement summary.
 - Research: build order, forward-only SPM accuracy, the next/previous season
   direction check, external agreement with BPM and xRAPM, aging, projection
   method selection, the recorded limits, and the working queue of plans.
@@ -32,6 +34,8 @@ Rules the client follows:
 - RAPM Lab publishes selected derived leaderboards from
   `web/public/data/rapm/`. The full experiment ledger and rejected variants
   remain localhost-only in `web/local-data/rapm-lab.json`.
+- Full-span and age-conditioned RAPM leaderboards are not published. The age
+  curve remains available as research context.
 - Current Skills is localhost-only on the Player page. It loads one selected
   player's 34-skill shard, career and current-season views, stabilized/source
   controls, league references, and a comparison profile. The source-value
@@ -70,6 +74,12 @@ Refresh the local RAPM Lab payload after research runs:
 ```bash
 uv run python web/scripts/build-rapm-lab-data.py
 uv run python web/scripts/build-spm-lab-data.py
+```
+
+Publish only the reconstruction leaderboards from that local payload:
+
+```bash
+uv run python web/scripts/build-reconstructions-release.py
 ```
 
 Refresh the local Player Skills shards from the pinned audit decision:

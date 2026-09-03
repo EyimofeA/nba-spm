@@ -1,0 +1,354 @@
+{
+  "limitations": [
+    "Observed next-season lineups; not a preseason forecast.",
+    "Historical outcomes influenced model development; not untouched confirmation.",
+    "External historical source files do not certify point-in-time training provenance.",
+    "Reconstructions are CourtSignal implementations, not source-author ratings.",
+    "RAPTOR uses its saved pooled 2014-2022 box mapping and 2014-2018 on/off mapping; early ratings are not past-only fits.",
+    "PIPM uses its saved fixed-coefficient reconstruction. Neither reconstruction was refitted for this benchmark."
+  ],
+  "paired_intervals": [
+    {
+      "lower_95": -0.1520521726299894,
+      "other": "BPM 2.0",
+      "pulse_minus_other_rmse": -0.09512548472376992,
+      "scope": "main",
+      "upper_95": -0.03775236988986631
+    },
+    {
+      "lower_95": -0.3406225880604167,
+      "other": "CourtSignal PIPM reconstruction",
+      "pulse_minus_other_rmse": -0.2983561502820997,
+      "scope": "main",
+      "upper_95": -0.25389090230371436
+    },
+    {
+      "lower_95": -0.1694618093443263,
+      "other": "CourtSignal RAPTOR reconstruction",
+      "pulse_minus_other_rmse": -0.11498417874962108,
+      "scope": "main",
+      "upper_95": -0.06051950610268132
+    },
+    {
+      "lower_95": 0.007894405147260876,
+      "other": "DARKO DPM",
+      "pulse_minus_other_rmse": 0.04890057321226848,
+      "scope": "main",
+      "upper_95": 0.08943170522127362
+    },
+    {
+      "lower_95": 0.03344046829618863,
+      "other": "EPM",
+      "pulse_minus_other_rmse": 0.07095869875978877,
+      "scope": "main",
+      "upper_95": 0.10994806788359442
+    },
+    {
+      "lower_95": -0.02669445364283929,
+      "other": "LEBRON",
+      "pulse_minus_other_rmse": 0.015471699516568904,
+      "scope": "main",
+      "upper_95": 0.05563664317856771
+    },
+    {
+      "lower_95": -0.13469489654082825,
+      "other": "Normal RAPM",
+      "pulse_minus_other_rmse": -0.10981983496453118,
+      "scope": "main",
+      "upper_95": -0.0862380292776598
+    },
+    {
+      "lower_95": 0.028123113543296267,
+      "other": "xRAPM",
+      "pulse_minus_other_rmse": 0.07543026511105388,
+      "scope": "main",
+      "upper_95": 0.12244643981293946
+    },
+    {
+      "lower_95": -0.2070644969099278,
+      "other": "BPM 2.0",
+      "pulse_minus_other_rmse": -0.1451721901983447,
+      "scope": "with_mamba",
+      "upper_95": -0.08491049125638987
+    },
+    {
+      "lower_95": -0.352474545416239,
+      "other": "CourtSignal PIPM reconstruction",
+      "pulse_minus_other_rmse": -0.3070614486461576,
+      "scope": "with_mamba",
+      "upper_95": -0.2597016209807693
+    },
+    {
+      "lower_95": -0.17673756710552674,
+      "other": "CourtSignal RAPTOR reconstruction",
+      "pulse_minus_other_rmse": -0.12345572209290978,
+      "scope": "with_mamba",
+      "upper_95": -0.06826060513328325
+    },
+    {
+      "lower_95": 0.004604824296255128,
+      "other": "DARKO DPM",
+      "pulse_minus_other_rmse": 0.046197170902354756,
+      "scope": "with_mamba",
+      "upper_95": 0.08822338605246749
+    },
+    {
+      "lower_95": 0.006765452233773494,
+      "other": "EPM",
+      "pulse_minus_other_rmse": 0.04625784059856919,
+      "scope": "with_mamba",
+      "upper_95": 0.08558490164481367
+    },
+    {
+      "lower_95": -0.03007879454098128,
+      "other": "LEBRON",
+      "pulse_minus_other_rmse": 0.011108964456504111,
+      "scope": "with_mamba",
+      "upper_95": 0.05018101588537726
+    },
+    {
+      "lower_95": 0.08456552419220928,
+      "other": "MAMBA",
+      "pulse_minus_other_rmse": 0.12402055875934437,
+      "scope": "with_mamba",
+      "upper_95": 0.16266271021295683
+    },
+    {
+      "lower_95": -0.10672210011151008,
+      "other": "Normal RAPM",
+      "pulse_minus_other_rmse": -0.08116387704727757,
+      "scope": "with_mamba",
+      "upper_95": -0.05644513028433435
+    },
+    {
+      "lower_95": 0.004259264721556379,
+      "other": "xRAPM",
+      "pulse_minus_other_rmse": 0.05478285315543907,
+      "scope": "with_mamba",
+      "upper_95": 0.1042202405398853
+    }
+  ],
+  "panels": [
+    {
+      "games": 13209,
+      "matched_exposure_max": 0.9058750440754235,
+      "matched_exposure_min": 0.861708931452447,
+      "outcome_end": 2026,
+      "outcome_start": 2016,
+      "rows": [
+        {
+          "aggregate_rmse": 13.679103491602083,
+          "candidate": "xRAPM",
+          "folds": 11,
+          "mean_calibration_slope": 0.7847611408564735,
+          "mean_correlation": 0.38304220872079325
+        },
+        {
+          "aggregate_rmse": 13.683575057953348,
+          "candidate": "EPM",
+          "folds": 11,
+          "mean_calibration_slope": 0.8087662538241119,
+          "mean_correlation": 0.3782216736439121
+        },
+        {
+          "aggregate_rmse": 13.705633183500868,
+          "candidate": "DARKO DPM",
+          "folds": 11,
+          "mean_calibration_slope": 0.9279061180701206,
+          "mean_correlation": 0.36575536019499494
+        },
+        {
+          "aggregate_rmse": 13.739062057196566,
+          "candidate": "LEBRON",
+          "folds": 11,
+          "mean_calibration_slope": 1.0259385300597406,
+          "mean_correlation": 0.35852405113803587
+        },
+        {
+          "aggregate_rmse": 13.754533756713137,
+          "candidate": "PULSE",
+          "folds": 11,
+          "mean_calibration_slope": 0.876879629036731,
+          "mean_correlation": 0.35848853830135935
+        },
+        {
+          "aggregate_rmse": 13.849659241436907,
+          "candidate": "BPM 2.0",
+          "folds": 11,
+          "mean_calibration_slope": 0.7025885049350072,
+          "mean_correlation": 0.3709740867259393
+        },
+        {
+          "aggregate_rmse": 13.864353591677668,
+          "candidate": "RAPM",
+          "folds": 11,
+          "mean_calibration_slope": 0.9296270296873477,
+          "mean_correlation": 0.3363692183629628
+        },
+        {
+          "aggregate_rmse": 13.86951793546276,
+          "candidate": "CourtSignal RAPTOR reconstruction",
+          "folds": 11,
+          "mean_calibration_slope": 0.6872119772114806,
+          "mean_correlation": 0.3729078346034834
+        },
+        {
+          "aggregate_rmse": 14.052889906995237,
+          "candidate": "CourtSignal PIPM reconstruction",
+          "folds": 11,
+          "mean_calibration_slope": 0.7176511532813747,
+          "mean_correlation": 0.32714852820040236
+        }
+      ],
+      "scope": "main"
+    },
+    {
+      "games": 11979,
+      "matched_exposure_max": 0.9058750440754235,
+      "matched_exposure_min": 0.861708931452447,
+      "outcome_end": 2025,
+      "outcome_start": 2016,
+      "rows": [
+        {
+          "aggregate_rmse": 13.469675672775441,
+          "candidate": "MAMBA",
+          "folds": 10,
+          "mean_calibration_slope": 0.8510766026534954,
+          "mean_correlation": 0.38137780336136595
+        },
+        {
+          "aggregate_rmse": 13.538913378379345,
+          "candidate": "xRAPM",
+          "folds": 10,
+          "mean_calibration_slope": 0.7739418843769117,
+          "mean_correlation": 0.38044186742980535
+        },
+        {
+          "aggregate_rmse": 13.547438390936216,
+          "candidate": "EPM",
+          "folds": 10,
+          "mean_calibration_slope": 0.7925101923058875,
+          "mean_correlation": 0.3750918531715902
+        },
+        {
+          "aggregate_rmse": 13.54749906063243,
+          "candidate": "DARKO DPM",
+          "folds": 10,
+          "mean_calibration_slope": 0.9102502981499351,
+          "mean_correlation": 0.3643804628368718
+        },
+        {
+          "aggregate_rmse": 13.58258726707828,
+          "candidate": "LEBRON",
+          "folds": 10,
+          "mean_calibration_slope": 1.012599815990535,
+          "mean_correlation": 0.35647956277748094
+        },
+        {
+          "aggregate_rmse": 13.593696231534786,
+          "candidate": "PULSE",
+          "folds": 10,
+          "mean_calibration_slope": 0.87119653911899,
+          "mean_correlation": 0.3575760066296538
+        },
+        {
+          "aggregate_rmse": 13.674860108582063,
+          "candidate": "RAPM",
+          "folds": 10,
+          "mean_calibration_slope": 0.9392286487563117,
+          "mean_correlation": 0.3392927968872576
+        },
+        {
+          "aggregate_rmse": 13.717151953627697,
+          "candidate": "CourtSignal RAPTOR reconstruction",
+          "folds": 10,
+          "mean_calibration_slope": 0.6839863691752848,
+          "mean_correlation": 0.37084198150859965
+        },
+        {
+          "aggregate_rmse": 13.73886842173313,
+          "candidate": "BPM 2.0",
+          "folds": 10,
+          "mean_calibration_slope": 0.687422616587729,
+          "mean_correlation": 0.3655593088415811
+        },
+        {
+          "aggregate_rmse": 13.900757680180941,
+          "candidate": "CourtSignal PIPM reconstruction",
+          "folds": 10,
+          "mean_calibration_slope": 0.7029620728627238,
+          "mean_correlation": 0.32638053119167026
+        }
+      ],
+      "scope": "with_mamba"
+    }
+  ],
+  "rich_prior_test": {
+    "games": 13199,
+    "lower_95": -2.454634248229175,
+    "outcome_end": 2026,
+    "outcome_start": 2016,
+    "pulse_minus_rich_mse": -1.9020706723485945,
+    "rows": [
+      {
+        "aggregate_rmse": 13.663709094407055,
+        "candidate": "PULSE (Box15 prior)",
+        "folds": 11,
+        "mean_calibration_slope": 0.8495992815599828,
+        "mean_correlation": 0.36882130440449123
+      },
+      {
+        "aggregate_rmse": 13.733135726735199,
+        "candidate": "Rich SPM prior",
+        "folds": 11,
+        "mean_calibration_slope": 0.8017979184299712,
+        "mean_correlation": 0.3616294034015639
+      }
+    ],
+    "run_id": "target_window_spm_aio_v1_8e028133cb",
+    "upper_95": -1.3164968997521993
+  },
+  "run_id": "pulse_external_common_v1_b1faa64e9b",
+  "source_rating_years": [
+    {
+      "end": 2026,
+      "model": "EPM",
+      "start": 2002
+    },
+    {
+      "end": 2026,
+      "model": "LEBRON",
+      "start": 2010
+    },
+    {
+      "end": 2026,
+      "model": "DARKO DPM",
+      "start": 1997
+    },
+    {
+      "end": 2026,
+      "model": "xRAPM",
+      "start": 1997
+    },
+    {
+      "end": 2026,
+      "model": "BPM 2.0",
+      "start": 2014
+    },
+    {
+      "end": 2026,
+      "model": "CourtSignal PIPM reconstruction",
+      "start": 1997
+    },
+    {
+      "end": 2026,
+      "model": "CourtSignal RAPTOR reconstruction",
+      "start": 2014
+    },
+    {
+      "end": 2024,
+      "model": "MAMBA",
+      "start": 2015
+    }
+  ]
+}

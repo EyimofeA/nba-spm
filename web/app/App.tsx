@@ -64,6 +64,7 @@ const PUBLIC_NAV_TABS = [
   { id: "ratings", label: "Ratings" },
   { id: "roles", label: "Role map" },
   { id: "rapm-lab", label: "RAPM Lab" },
+  { id: "replications", label: "Reconstructions" },
   { id: "research", label: "Research" },
 ] as const;
 
@@ -89,7 +90,7 @@ const isLocalHost = () => {
 const isTab = (value: string, showResearchLab: boolean): value is Tab => {
   const tabs = showResearchLab
     ? ALL_TABS
-    : ALL_TABS.filter((tab) => !["spm-lab", "replications"].includes(tab.id));
+    : ALL_TABS.filter((tab) => tab.id !== "spm-lab");
   return tabs.some((tab) => tab.id === value);
 };
 
@@ -559,7 +560,7 @@ export function App() {
             {tab === "rapm-lab" && (
               <PublicRapmLabView />
             )}
-            {tab === "replications" && hasLocalResearch && (
+            {tab === "replications" && (
               <ReplicationsView lab={rapmLab} />
             )}
             {tab === "spm-lab" && <SpmLabView lab={spmLab} />}

@@ -2,25 +2,23 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { fmtRating, ordinalSuffix } from "../lib/viz";
+import { WP_RELEASE_ID } from "../lib/rapmRelease";
 
 type Period = { id: string; label: string; url: string; rows: number };
 type Estimand = { id: string; title: string; unit: string; note: string; periods: Period[] };
-type Catalog = { schema: string; estimands: Estimand[] };
+type Catalog = { schema: string; lineage: { wp_run: string }; estimands: Estimand[] };
 type Row = Record<string, string | number | null> & { PLAYER_NAME?: string };
 
 const DISPLAY_ORDER = [
-  "annual", "rolling-three", "rolling-five", "same-age-27",
-  "full-history", "current-time-decay",
-  "current-age-time-decay", "luck-adjusted", "win-probability", "log-odds-win-probability",
+  "annual", "rolling-three", "rolling-five", "current-time-decay",
+  "luck-adjusted", "win-probability", "log-odds-win-probability",
   "game-level-pm", "six-factor-annual", "point-channels", "teammate-effects",
   "teammate-efg", "observable-scoring-channels", "observable-finish-channels",
   "coach", "units",
 ];
 const LABELS: Record<string, string> = {
   annual: "1 year", "rolling-three": "3 years", "rolling-five": "5 years",
-  "same-age-27": "Age 27 full span",
-  "full-history": "Full span", "current-time-decay": "Time decay",
-  "current-age-time-decay": "Age + decay", "luck-adjusted": "Luck adjusted",
+  "current-time-decay": "Time decay", "luck-adjusted": "Luck adjusted",
   "win-probability": "WP-RAPM", "log-odds-win-probability": "Log-odds WP",
   "game-level-pm": "Game PM",
   "six-factor-annual": "Six factor", "point-channels": "Point channels",
@@ -94,19 +92,22 @@ export function PublicRapmLabView() {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [estimandId, setEstimandId] = useState("annual");
   const [periodId, setPeriodId] = useState("2026");
-  const [rows, setRows] = useState<Row[]>([]);
+  const [board, setBoard] = useState<{ url: string; rows: Row[]; error?: boolean } | null>(null);
   const [sort, setSort] = useState("net");
   const [ascending, setAscending] = useState(false);
   const [query, setQuery] = useState("");
   const [minimum, setMinimum] = useState(100);
 
   useEffect(() => {
-    fetch("/data/rapm/catalog.json")
+    fetch(`/data/rapm/catalog.json?v=${WP_RELEASE_ID}`)
       .then((response) => {
         if (!response.ok) throw new Error("RAPM catalog unavailable");
         return response.json() as Promise<Catalog>;
       })
-      .then(setCatalog)
+      .then((data) => {
+        if (data.lineage?.wp_run !== WP_RELEASE_ID) throw new Error("Stale WP release");
+        setCatalog(data);
+      })
       .catch(() => setCatalog(null));
   }, []);
 
@@ -133,26 +134,29 @@ export function PublicRapmLabView() {
         ? GAME_PM_COLUMNS
         : STANDARD_COLUMNS;
   const usesMinutes = estimand?.id === "game-level-pm";
-  const formatValue = (value: number) => estimand?.id === "log-odds-win-probability"
+  const formatValue = (value: number) => ["win-probability", "log-odds-win-probability"].includes(estimand?.id ?? "")
     ? `${value >= 0 ? "+" : "−"}${Math.abs(value).toFixed(3)}`
     : fmtRating(value);
 
   useEffect(() => {
     if (!period) return;
+    let live = true;
     fetch(period.url)
       .then((response) => {
         if (!response.ok) throw new Error("RAPM leaderboard unavailable");
         return response.json() as Promise<Row[]>;
       })
-      .then(setRows)
-      .catch(() => setRows([]));
+      .then((rows) => { if (live) setBoard({ url: period.url, rows }); })
+      .catch(() => { if (live) setBoard({ url: period.url, rows: [], error: true }); });
+    return () => { live = false; };
   }, [period]);
 
+  const current = board?.url === period?.url ? board : null;
+  const qualified = useMemo(() => (current?.rows ?? []).filter((row) => exposure(row) >= minimum), [current, minimum]);
   const visible = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
     const direction = ascending ? 1 : -1;
-    return rows
-      .filter((row) => exposure(row) >= minimum)
+    return qualified
       .filter((row) => !needle || String(row.PLAYER_NAME ?? "").toLocaleLowerCase().includes(needle))
       .sort((left, right) => {
         const delta = sort === "PLAYER_NAME"
@@ -160,14 +164,14 @@ export function PublicRapmLabView() {
           : numeric(left, sort) - numeric(right, sort);
         return delta * direction;
       });
-  }, [ascending, minimum, query, rows, sort]);
+  }, [ascending, query, qualified, sort]);
   const percentiles = useMemo(() => {
     const byKey = (key: string) => {
-      const ordered = [...visible].sort((left, right) => numeric(left, key) - numeric(right, key));
+      const ordered = [...qualified].sort((left, right) => numeric(left, key) - numeric(right, key));
       return new Map(ordered.map((row, index) => [row, ordered.length <= 1 ? 100 : Math.round((index / (ordered.length - 1)) * 99 + 1)]));
     };
     return { offense: byKey("offense"), defense: byKey("defense"), net: byKey("net") };
-  }, [visible]);
+  }, [qualified]);
 
   const selectEstimand = (next: Estimand) => {
     setEstimandId(next.id);
@@ -185,7 +189,7 @@ export function PublicRapmLabView() {
   return (
     <section className="ratings-workbench" aria-labelledby="rapm-lab-heading">
       <header className="ratings-titlebar">
-        <div><p className="kicker">Published ratings</p><h1 id="rapm-lab-heading">RAPM Lab</h1></div>
+        <div><p className="kicker">RAPM ratings</p><h1 id="rapm-lab-heading">RAPM Lab</h1></div>
       </header>
 
       <div className="model-tabs" role="tablist" aria-label="RAPM horizon">
@@ -203,7 +207,10 @@ export function PublicRapmLabView() {
 
       <section className="leaderboard-panel">
         <header className="board-head"><div><span>{period.label}</span><h2>{estimand.title}</h2></div></header>
+        <p className="note">{estimand.unit}</p>
         {estimand.note && <p className="note">{estimand.note}</p>}
+        {!current && <p className="empty" role="status">Loading leaderboard…</p>}
+        {current?.error && <p className="empty" role="alert">Leaderboard unavailable.</p>}
         <p className="scroll-hint">Swipe for impact columns →</p>
         <div className="table-wrap"><table className="data rapm-board">
           <thead>
