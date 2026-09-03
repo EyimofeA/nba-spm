@@ -10,10 +10,99 @@ from nba_impact.data.manifest import sha256_file, write_json_atomic
 from nba_impact.models.pulse_validation import load_pulse_validation
 
 ROOT = Path(__file__).resolve().parents[2]
-RUN_ID = "pulse_external_common_v1_b1faa64e9b"
+RUN_ID = "pulse_external_common_v1_c500545ce4"
 RUN = ROOT / "research/rapm_lab/outputs/pulse_external_common" / RUN_ID
 RICH_RUN_ID = "target_window_spm_aio_v1_8e028133cb"
 RICH_RUN = ROOT / "artifacts/research/target_window_spm_aio" / RICH_RUN_ID
+
+
+def verify_benchmark_inputs(manifest, run=RUN):
+    for filename, expected in manifest["file_hashes"].items():
+        if sha256_file(run / filename) != expected:
+            raise ValueError(f"Changed benchmark artifact: {filename}")
+    for filename, expected in manifest["input_hashes"].items():
+        path = (
+            Path.home() / "Downloads" / filename.removeprefix("provided/")
+            if filename.startswith("provided/")
+            else ROOT / filename
+        )
+        if sha256_file(path) != expected:
+            raise ValueError(f"Changed benchmark input: {filename}")
+
+
+def validate_pulse_replay(manifest):
+    _, pulse_folds = load_pulse_validation(
+        ROOT / "artifacts/models/pulse" / manifest["plan"]["pulse_source_run"]
+    )
+    if not pulse_folds.training_end.lt(pulse_folds.rating_season).all():
+        raise ValueError("PULSE training cutoff failed.")
+    replay = manifest["pulse_replay"]
+    complete = {row["rating_season"] for row in replay} == set(range(2015, 2026))
+    exact = all(row["maximum_prediction_difference"] <= 1e-8 for row in replay)
+    if not complete or not exact:
+        raise ValueError("PULSE replay failed.")
+
+
+def build_panel(scope, end, manifest, games, summary, coefficients):
+    part = games.loc[games.scope.eq(scope)]
+    extra = ["MAMBA"] if scope == "with_mamba" else []
+    expected = set(manifest["plan"]["main_models"] + ["Normal RAPM"] + extra)
+    if set(part.candidate) != expected or set(part.outcome_season) != set(range(2016, end + 1)):
+        raise ValueError("Incomplete benchmark candidates or years.")
+    if not part.outcome_season.eq(part.rating_season + 1).all():
+        raise ValueError("Benchmark must score the next season.")
+    actual = part.pivot(
+        index=["outcome_season", "game_id"], columns="candidate", values="actual_margin"
+    )
+    if actual.isna().any().any() or not actual.eq(actual.PULSE, axis=0).all().all():
+        raise ValueError("Benchmark games differ between models.")
+    betas = coefficients.loc[coefficients.scope.eq(scope)]
+    mask = betas.pivot(index=["rating_season", "PLAYER_ID"], columns="candidate", values="included")
+    if mask.isna().any().any() or not mask.eq(mask.PULSE, axis=0).all().all():
+        raise ValueError("Benchmark player support differs between models.")
+    if betas.loc[~betas.included, ["offense_coefficient", "defense_coefficient"]].ne(0).any().any():
+        raise ValueError("Excluded players have nonzero ratings.")
+    errors = part.assign(error=(part.predicted_margin - part.actual_margin) ** 2)
+    measured = errors.groupby(["candidate", "outcome_season"]).error.mean().groupby("candidate").mean().pow(.5)
+    rows = summary.loc[summary.scope.eq(scope)].set_index("candidate")
+    summaries_match = np.allclose(measured, rows.loc[measured.index, "rmse"], atol=1e-10)
+    if not np.isfinite(part[["predicted_margin", "actual_margin"]]).all().all() or not summaries_match:
+        raise ValueError("Benchmark summary disagrees with its predictions.")
+    records = [
+        {
+            "candidate": "RAPM" if name == "Normal RAPM" else name,
+            "folds": int(row.folds),
+            "aggregate_rmse": float(row.rmse),
+            "mean_correlation": float(row.mean_correlation),
+            "mean_calibration_slope": float(row.mean_calibration_slope),
+        }
+        for name, row in rows.sort_values("rmse").iterrows()
+    ]
+    return {
+        "scope": scope,
+        "outcome_start": 2016,
+        "outcome_end": end,
+        "games": len(actual),
+        "rows": records,
+        "matched_exposure_min": float(rows.min_matched_exposure.min()),
+        "matched_exposure_max": float(rows.max_matched_exposure.max()),
+    }
+
+
+def source_rating_years():
+    return [
+        {"model": label, "start": start, "end": end}
+        for label, start, end in (
+            ("EPM", 2002, 2026),
+            ("LEBRON", 2010, 2026),
+            ("DARKO DPM", 1997, 2026),
+            ("xRAPM", 1997, 2026),
+            ("BPM 2.0", 2014, 2026),
+            ("CourtSignal PIPM reconstruction", 1997, 2026),
+            ("CourtSignal RAPTOR reconstruction", 2014, 2026),
+            ("MAMBA", 2015, 2024),
+        )
+    ]
 
 
 def build_rich_prior_test(run=RICH_RUN):
@@ -84,64 +173,19 @@ def build_payload(run=RUN):
     manifest = json.loads((run / "run.json").read_text())
     if manifest["run_id"] != RUN_ID:
         raise ValueError("Unexpected external benchmark run.")
-    for filename, expected in manifest["file_hashes"].items():
-        if sha256_file(run / filename) != expected:
-            raise ValueError(f"Changed benchmark artifact: {filename}")
-    for filename, expected in manifest["input_hashes"].items():
-        path = Path.home() / "Downloads" / filename.removeprefix("provided/") if filename.startswith("provided/") else ROOT / filename
-        if sha256_file(path) != expected:
-            raise ValueError(f"Changed benchmark input: {filename}")
-    _, pulse_folds = load_pulse_validation(ROOT / "artifacts/models/pulse" / manifest["plan"]["pulse_source_run"])
-    if not pulse_folds.training_end.lt(pulse_folds.rating_season).all():
-        raise ValueError("PULSE training cutoff failed.")
-    replay = manifest["pulse_replay"]
-    if {row["rating_season"] for row in replay} != set(range(2015, 2026)) or any(
-        row["maximum_prediction_difference"] > 1e-8 for row in replay
-    ):
-        raise ValueError("PULSE replay failed.")
+    verify_benchmark_inputs(manifest, run)
+    validate_pulse_replay(manifest)
     games = pd.read_parquet(run / "game_predictions.parquet")
     summary = pd.read_parquet(run / "summary.parquet")
     coefficients = pd.read_parquet(run / "scored_coefficients.parquet")
     intervals = pd.read_parquet(run / "paired_intervals.parquet")
-    panels = []
-    for scope, end in (("main", 2026), ("with_mamba", 2025)):
-        part = games.loc[games.scope.eq(scope)]
-        expected = set(manifest["plan"]["main_models"] + ["Normal RAPM"] + (["MAMBA"] if scope == "with_mamba" else []))
-        if set(part.candidate) != expected or set(part.outcome_season) != set(range(2016, end + 1)):
-            raise ValueError("Incomplete benchmark candidates or years.")
-        if not part.outcome_season.eq(part.rating_season + 1).all():
-            raise ValueError("Benchmark must score the next season.")
-        actual = part.pivot(index=["outcome_season", "game_id"], columns="candidate", values="actual_margin")
-        if actual.isna().any().any() or not actual.eq(actual.PULSE, axis=0).all().all():
-            raise ValueError("Benchmark games differ between models.")
-        betas = coefficients.loc[coefficients.scope.eq(scope)]
-        mask = betas.pivot(index=["rating_season", "PLAYER_ID"], columns="candidate", values="included")
-        if mask.isna().any().any() or not mask.eq(mask.PULSE, axis=0).all().all():
-            raise ValueError("Benchmark player support differs between models.")
-        if betas.loc[~betas.included, ["offense_coefficient", "defense_coefficient"]].ne(0).any().any():
-            raise ValueError("Excluded players have nonzero ratings.")
-        errors = part.assign(error=(part.predicted_margin - part.actual_margin) ** 2)
-        measured = errors.groupby(["candidate", "outcome_season"]).error.mean().groupby("candidate").mean().pow(.5)
-        rows = summary.loc[summary.scope.eq(scope)].set_index("candidate")
-        if not np.isfinite(part[["predicted_margin", "actual_margin"]]).all().all() or not np.allclose(measured, rows.loc[measured.index, "rmse"], atol=1e-10):
-            raise ValueError("Benchmark summary disagrees with its predictions.")
-        records = []
-        for name, row in rows.sort_values("rmse").iterrows():
-            records.append({"candidate": "RAPM" if name == "Normal RAPM" else name,
-                "folds": int(row.folds), "aggregate_rmse": float(row.rmse),
-                "mean_correlation": float(row.mean_correlation), "mean_calibration_slope": float(row.mean_calibration_slope)})
-        panels.append({"scope": scope, "outcome_start": 2016, "outcome_end": end,
-            "games": len(actual), "rows": records,
-            "matched_exposure_min": float(rows.min_matched_exposure.min()),
-            "matched_exposure_max": float(rows.max_matched_exposure.max())})
+    panels = [
+        build_panel(scope, end, manifest, games, summary, coefficients)
+        for scope, end in (("main", 2026), ("with_mamba", 2025))
+    ]
     return {"run_id": RUN_ID, "panels": panels, "rich_prior_test": build_rich_prior_test(),
         "paired_intervals": intervals.to_dict("records"),
-        "limitations": manifest["limitations"], "source_rating_years": [
-            {"model": label, "start": start, "end": end} for label, start, end in (
-                ("EPM", 2002, 2026), ("LEBRON", 2010, 2026), ("DARKO DPM", 1997, 2026),
-                ("xRAPM", 1997, 2026), ("BPM 2.0", 2014, 2026),
-                ("CourtSignal PIPM reconstruction", 1997, 2026),
-                ("CourtSignal RAPTOR reconstruction", 2014, 2026), ("MAMBA", 2015, 2024))]}
+        "limitations": manifest["limitations"], "source_rating_years": source_rating_years()}
 
 
 if __name__ == "__main__":

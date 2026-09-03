@@ -6220,6 +6220,14 @@ one pre-existing RolesView image warning. No deployment, commit or push occurred
 The complexity review removed the unused reconstruction-refit path and reused
 existing scoring, identity and table helpers; no new dependency was added.
 
+**Release-gate provenance refresh, 2026-09-04:** GitHub's changed-code gate
+required the shared PULSE artifact validator to be split into smaller fail-closed
+checks. Because that source file is hashed by the benchmark manifest, the
+unchanged benchmark was rerun as `pulse_external_common_v1_c500545ce4` instead
+of weakening the hash check. All 11 fold replays remain byte-exact and every
+reported score is numerically unchanged. The public summary now pins the new
+run ID.
+
 ## 2026-09-03 — Rich SPM prior swap and full-coverage PULSE release
 
 Reused the pinned `target_window_spm_aio_v1_8e028133cb` diagnostic instead of

@@ -82,9 +82,7 @@ def lineup_context(season: int) -> pd.DataFrame:
     for stem in ("off_poss", "def_poss", "off_points", "def_points"):
         player_games[f"off_{stem}"] = player_games[f"team_{stem}"] - player_games[f"on_{stem}"]
     summed = player_games.groupby("PLAYER_ID", as_index=False).sum(numeric_only=True)
-    def rate(points: str, poss: str) -> pd.Series:
-        return 100 * summed[points] / summed[poss].replace(0, np.nan)
-
+    rate = lambda points, poss: 100 * summed[points] / summed[poss].replace(0, np.nan)
     on_ortg = rate("on_off_points", "on_off_poss")
     off_ortg = rate("off_off_points", "off_off_poss")
     on_drtg = rate("on_def_points", "on_def_poss")

@@ -23,7 +23,7 @@ type BenchmarkRow = {
   mean_calibration_slope: number;
 };
 
-const EXTERNAL_RUN = "pulse_external_common_v1_b1faa64e9b";
+const EXTERNAL_RUN = "pulse_external_common_v1_c500545ce4";
 type ExternalBenchmark = {
   run_id: string;
   panels: { scope: string; outcome_start: number; outcome_end: number; games: number;

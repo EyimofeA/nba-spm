@@ -131,9 +131,7 @@ def main():
                 columns={f"{prefix}_offense": "offense", f"{prefix}_defense": "defense"})
         for scope, candidates in [("main", names)] + ([("with_mamba", names + ["MAMBA"])] if season <= 2024 else []):
             scored, metrics, betas = score_scope(tables, candidates, source, target, fits["rapm"][0][-1], fits["rapm"][1], scores, season, scope)
-            games.append(scored)
-            folds.extend(metrics)
-            coefficients.append(betas)
+            games.append(scored); folds.extend(metrics); coefficients.append(betas)
         print(f"common benchmark {season}->{season + 1}; PULSE replay max delta={delta:.2g}", flush=True)
     games, folds = pd.concat(games, ignore_index=True), pd.DataFrame(folds)
     summary = folds.groupby(["scope", "candidate"], as_index=False).agg(
@@ -183,8 +181,7 @@ def save_run(plan, input_paths, games, folds, summary, intervals, coefficients, 
             "Reconstructions are CourtSignal implementations, not source-author ratings.",
             "RAPTOR uses its saved pooled 2014-2022 box mapping and 2014-2018 on/off mapping; early ratings are not past-only fits.",
             "PIPM uses its saved fixed-coefficient reconstruction. Neither reconstruction was refitted for this benchmark."]}, output / "run.json")
-    print(summary.to_string(index=False))
-    print(output, flush=True)
+    print(summary.to_string(index=False)); print(output, flush=True)
 
 
 if __name__ == "__main__":
