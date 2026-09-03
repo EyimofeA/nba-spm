@@ -33,12 +33,26 @@ def build_conserved_wp_target(
     }
     if missing := sorted(required - set(frame.columns)):
         raise ValueError(f"Win-probability frame is missing {missing}.")
-    ordered = frame.sort_values(["gameid", "num"], kind="stable").copy()
+    # Legacy possession numbers restart each quarter. Prefer the game-global
+    # state index, or include period when only source possession numbers exist.
+    sequence = (
+        ["possession_index_before"] if "possession_index_before" in frame
+        else ["period", "num"] if "period" in frame else ["num"]
+    )
+    order = ["gameid", *sequence]
+    if frame[order].isna().any().any() or frame.duplicated(order).any():
+        raise ValueError("Possession chronology must be complete and unambiguous.")
+    ordered = frame.sort_values(order, kind="stable").copy()
     if ordered.duplicated("possession_id").any():
         raise ValueError("Win-probability possession IDs must be unique.")
     probability = pd.to_numeric(ordered[probability_column], errors="raise").astype(float)
-    if probability.lt(0).any() or probability.gt(1).any():
-        raise ValueError("Win probabilities must be in [0, 1].")
+    if not np.isfinite(probability).all() or probability.lt(0).any() or probability.gt(1).any():
+        raise ValueError("Win probabilities must be finite and in [0, 1].")
+    for column in ("home_win", "home_poss"):
+        if not ordered[column].isin([0, 1]).all():
+            raise ValueError(f"{column} must contain binary values.")
+    if ordered.groupby("gameid")["home_win"].nunique().ne(1).any():
+        raise ValueError("Each game must have one consistent final result.")
     next_probability = probability.groupby(ordered["gameid"]).shift(-1)
     terminal = ordered["home_win"].astype(float)
     probability_after = next_probability.fillna(terminal)

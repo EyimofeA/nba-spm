@@ -1962,6 +1962,13 @@ table.mini td .sub {
 .article-lede { max-width: 700px; font-size: 21px !important; color: var(--text) !important; }
 .article-columns { columns: 3; column-gap: 36px; padding-left: 20px; }
 .article-table { margin-top: 22px; }
+.article-table table.benchmark-data { min-width: 0; table-layout: fixed; }
+.article-table table.benchmark-data th { position: static; white-space: normal; }
+.article-table table.benchmark-data th:first-child { width: 40%; }
+@media (max-width: 600px) {
+  .article-table table.benchmark-data th,
+  .article-table table.benchmark-data td { padding: 10px 6px; font-size: 11px; }
+}
 
 .replication-model-tabs, .season-strip {
   display: flex;
@@ -2111,6 +2118,9 @@ table.mini td .sub {
 }
 .leaderboard-panel {
   margin-top: 16px;
+}
+.leaderboard-panel .scroll-hint {
+  margin-top: 8px;
 }
 .leaderboard-panel .table-wrap {
   border-radius: 3px;

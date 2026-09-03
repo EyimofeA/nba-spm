@@ -23,13 +23,9 @@ POINT_CHANNELS = ROOT / (
     "research/rapm_lab/outputs/points_channel_rapm/"
     "points_channel_rapm_v1_4507aab97c"
 )
-WP_VS_PULSE = ROOT / (
-    "research/rapm_lab/outputs/wp_rapm_vs_pulse/"
-    "wp_rapm_vs_pulse_v1_3d2995995c"
-)
-LOG_ODDS_WP = ROOT / (
-    "research/rapm_lab/outputs/log_odds_wp_rapm_lambda/"
-    "log_odds_wp_rapm_lambda_v1_91e7dccec4"
+WP_RELEASE = ROOT / (
+    "research/rapm_lab/outputs/wp_chronology_release/"
+    "wp_chronology_release_v2_e3a3fbf4c2"
 )
 TEAMMATE_EFFECTS = ROOT / (
     "research/rapm_lab/outputs/teammate_play_channels/"
@@ -92,14 +88,34 @@ def _add_grouped(
         filename = f"{ident}-{label}.json"
         selected = part[[column for column in columns if column in part]].copy()
         files[filename] = _write(OUTPUT / filename, _records(selected))
-        periods.append({"id": label, "label": label, "url": f"/data/rapm/{filename}", "rows": len(selected)})
+        version = f"?v={files[filename]['sha256'][:12]}" if ident in {"win-probability", "log-odds-win-probability"} else ""
+        periods.append({"id": label, "label": label, "url": f"/data/rapm/{filename}{version}", "rows": len(selected)})
     catalog.append({"id": ident, "title": title, "unit": unit, "note": note, "periods": periods})
 
 
 def main() -> int:
+    wp_run = json.loads((WP_RELEASE / "run.json").read_text())
+    if wp_run["status"] != "reused_historical_diagnostic":
+        raise ValueError("Unexpected WP publication status.")
+    required = {"public_logit_ratings.parquet", "public_raw_rolling_ratings.parquet"}
+    if not required.issubset(wp_run["artifact_hashes"]):
+        raise ValueError("Missing WP publication artifact hashes.")
+    for name, digest in wp_run["artifact_hashes"].items():
+        if hashlib.sha256((WP_RELEASE / name).read_bytes()).hexdigest() != digest:
+            raise ValueError(f"WP artifact hash mismatch: {name}")
+    penalty = wp_run["publication_gate"]["published_lambda"]
+    expected_penalty = wp_run["selection"]["selected_lambda"] if wp_run["publication_gate"]["passed"] else wp_run["config"]["reference_lambda"]
+    if penalty != expected_penalty:
+        raise ValueError("WP penalty does not match the frozen publication gate.")
     names = _player_names()
     catalog: list[dict] = []
     files: dict[str, dict] = {}
+    for retired in (
+        "full-history-1997-2026.json",
+        "same-age-27-1997-2026.json",
+        "current-age-time-decay-2022-2026.json",
+    ):
+        (OUTPUT / retired).unlink(missing_ok=True)
 
     annual = _normalize_player(pd.read_parquet(PULSE / "ratings.parquet"), names)
     _add_grouped(
@@ -119,33 +135,11 @@ def main() -> int:
         group="window_end", columns=["PLAYER_ID", "PLAYER_NAME", "window_start", "window_end", "offense", "defense", "net", "Poss_Off", "Poss_Def"],
     )
 
-    full_history = _normalize_player(pd.read_parquet(CANONICAL_SUITE / "full_history.parquet"), names)
-    filename = "full-history-1997-2026.json"
-    full_columns = ["PLAYER_ID", "PLAYER_NAME", "offense", "defense", "net", "Poss_Off", "Poss_Def"]
-    files[filename] = _write(OUTPUT / filename, _records(full_history[[column for column in full_columns if column in full_history]]))
-    catalog.append({"id": "full-history", "title": "Full-history RAPM", "unit": "points per 100", "note": "One canonical fit over 1997–2026.", "periods": [{"id": "1997-2026", "label": "1997–2026", "url": f"/data/rapm/{filename}", "rows": len(full_history)}]})
-
-    age = _normalize_player(pd.read_parquet(
-        ROOT / "research/rapm_lab/outputs/age_adjusted_rapm/age_adjusted_full_1997_2026_v1_1765feaffc/ratings.parquet"
-    ), names)
-    one = age.rename(columns={f"age27_{side}": side for side in ("offense", "defense", "net")})
-    filename = "same-age-27-1997-2026.json"
-    cols = ["PLAYER_ID", "PLAYER_NAME", "offense", "defense", "net", "Poss_Off", "Poss_Def"]
-    files[filename] = _write(OUTPUT / filename, _records(one[[c for c in cols if c in one]]))
-    catalog.append({"id": "same-age-27", "title": "Full-history age-27 RAPM", "unit": "points per 100", "note": "One 1997–2026 fit with every player evaluated at age 27. This is not single-season RAPM.", "periods": [{"id": "1997-2026", "label": "1997–2026", "url": f"/data/rapm/{filename}", "rows": len(one)}]})
-
     age_curve = pd.read_parquet(
         ROOT / "research/rapm_lab/outputs/age_adjusted_rapm/age_adjusted_full_1997_2026_v1_1765feaffc/age_curve.parquet"
     ).rename(columns={"offense": "age_offense", "defense": "age_defense", "net": "age_net"})
 
-    decay = _normalize_player(pd.read_parquet(
-        ROOT / "research/rapm_lab/outputs/time_decay_actual_age_5y_rapm/time_decay_actual_age_5y_rapm_v1_009decdcfa/ratings.parquet"
-    ), names)
-    filename = "current-age-time-decay-2022-2026.json"
     decay_cols = ["PLAYER_ID", "PLAYER_NAME", "window_start", "window_end", "offense", "defense", "net", "Poss_Off", "Poss_Def"]
-    files[filename] = _write(OUTPUT / filename, _records(decay[[c for c in decay_cols if c in decay]]))
-    catalog.append({"id": "current-age-time-decay", "title": "Current age-conditioned time decay", "unit": "points per 100", "note": "Five recent seasons with chronology-tuned decay and age controls.", "periods": [{"id": "2022-2026", "label": "2022–2026", "url": f"/data/rapm/{filename}", "rows": len(decay)}]})
-
     normal_decay = _normalize_player(pd.read_parquet(
         ROOT / "research/rapm_lab/outputs/current_time_decay_rapm/current_time_decay_rapm_v1_16f96bf312/ratings.parquet"
     ), names)
@@ -159,7 +153,7 @@ def main() -> int:
     filename = "luck-adjusted-2024-2026.json"
     luck_cols = ["PLAYER_ID", "PLAYER_NAME", "offense", "defense", "net", "Poss_Off", "Poss_Def"]
     files[filename] = _write(OUTPUT / filename, _records(luck[[c for c in luck_cols if c in luck]]))
-    catalog.append({"id": "luck-adjusted", "title": "Three-year luck-adjusted RAPM", "unit": "points per 100", "note": "Adjusts free-throw and three-point shooting residuals.", "periods": [{"id": "2024-2026", "label": "2024–2026", "url": f"/data/rapm/{filename}", "rows": len(luck)}]})
+    catalog.append({"id": "luck-adjusted", "title": "Three-year luck-adjusted RAPM", "unit": "points per 100", "note": "Research rating that adjusts free-throw and three-point shooting residuals. It is not the reference RAPM.", "periods": [{"id": "2024-2026", "label": "2024–2026", "url": f"/data/rapm/{filename}", "rows": len(luck)}]})
 
     coaches = pd.read_parquet(
         ROOT / "research/rapm_lab/outputs/full_coach_age_rapm/coach_age_full_1997_2026_v1_16d4f5e1e0/coach_ratings.parquet"
@@ -169,28 +163,17 @@ def main() -> int:
     files[filename] = _write(OUTPUT / filename, _records(coaches[coach_cols]))
     catalog.append({"id": "coach", "title": "Coach RAPM", "unit": "points per 100", "note": "Full-history coach effects with player-age controls.", "periods": [{"id": "1997-2026", "label": "1997–2026", "url": f"/data/rapm/{filename}", "rows": len(coaches)}]})
 
-    wp_source = pd.read_parquet(
-        ROOT / "research/rapm_lab/outputs/rolling_5y_wp_rapm/rolling_5y_wp_rapm_v1_39800d31b3/ratings_repaired.parquet"
-    )
-    wp_source = wp_source.drop(columns=[
-        column for column in ("offense_per_100", "defense_per_100", "net_per_100")
-        if column in wp_source
-    ])
-    wp = _normalize_player(wp_source, names).rename(columns={
-        "offense_wp_percentage_points_per_100": "offense",
-        "defense_wp_percentage_points_per_100": "defense",
-        "net_wp_percentage_points_per_100": "net",
-    })
+    wp = _normalize_player(pd.read_parquet(WP_RELEASE / "public_raw_rolling_ratings.parquet"), names)
     wp = wp.loc[wp["window_end"].between(2024, 2026)].copy()
     _add_grouped(
         catalog, files, ident="win-probability", title="Win-probability RAPM", frame=wp,
         group="window_end", columns=["PLAYER_ID", "PLAYER_NAME", "window_start", "window_end", "offense", "defense", "net", "Poss_Off", "Poss_Def"],
-        unit="win-probability percentage points per 100",
-        note="Conserved game-level win-probability credit. Each board uses a rolling five-season fit; only the latest three endpoints are published.",
+        unit="team win-probability change per 100 possessions (0–1 scale)",
+        note="Each board uses a rolling five-season fit; only the latest three endpoints are published. Corrected chronology and official winners. Historical scoring states are possession-point proxies. Legacy overtime is folded into final regulation credit. Descriptive research, not a forecast.",
     )
 
     log_odds_wp = _normalize_player(
-        pd.read_parquet(LOG_ODDS_WP / "public_ratings_2024_2026.parquet"), names
+        pd.read_parquet(WP_RELEASE / "public_logit_ratings.parquet"), names
     )
     log_odds_wp = log_odds_wp.loc[
         log_odds_wp[["Poss_Off", "Poss_Def"]].min(axis=1).gt(0)
@@ -205,11 +188,12 @@ def main() -> int:
             "PLAYER_ID", "PLAYER_NAME", "Season", "offense", "defense", "net",
             "Poss_Off", "Poss_Def",
         ],
-        unit="home-win log-odds per 100 possessions",
+        unit="team win log-odds change per 100 possessions",
         note=(
-            "Descriptive one-season leverage rating from clipped possession-to-possession "
-            "home-win log-odds changes. The 2.5% clip and 150,000/150,000 penalties "
-            "were selected on reused historical folds. This is not a forecast."
+            f"Descriptive one-season rating. Fixed 2.5% probability clip; {penalty:,}/{penalty:,} "
+            "offense/defense penalties tested chronologically on reused seasons. "
+            "Corrected chronology and official winners; historical scoring states are possession-point proxies. "
+            "Positive offense and defense mean good for the player's team. This is not a forecast."
         ),
     )
 
@@ -425,7 +409,9 @@ def main() -> int:
         "rubberband_score_signal_v1_deac872ede/curve.parquet"
     )
     curve_filename = "research-curves.json"
-    wp_vs_pulse = json.loads((WP_VS_PULSE / "run.json").read_text())
+    seasons = wp_run["config"]["diagnostic_outcomes"]
+    games = sum(wp_run["games_per_outcome"][str(season)] for season in seasons)
+    labels = {"pulse": "PULSE", "rapm": "RAPM", "raw_wp": "WP-RAPM", f"logit_{penalty}": "Log-odds WP-RAPM"}
     files[curve_filename] = _write(OUTPUT / curve_filename, {
         "age": _records(age_curve.rename(columns={
             "age_offense": "offense",
@@ -434,11 +420,14 @@ def main() -> int:
         })),
         "score_state": _records(score_state_curve),
         "wp_rapm_vs_pulse": {
-            key: wp_vs_pulse[key]
-            for key in (
-                "comparison", "target", "outcome_seasons", "games",
-                "summary", "paired_comparisons", "warning",
-            )
+            "run_id": wp_run["run_id"],
+            "target": "Official final game margin, including technical free throws",
+            "outcome_seasons": seasons, "games": games,
+            "summary": [{"model": labels[row["candidate"]], "folds": len(seasons), "games": games,
+                         "mean_correlation": row["mean_correlation"], "equal_season_rmse": row["equal_season_rmse"]}
+                        for row in wp_run["benchmark_summary"]],
+            "published_lambda": penalty,
+            "warning": "One-season ratings predict observed next-season lineups. Each affine margin calibration uses earlier outcomes only. RMSE weights seasons equally. Reused historical diagnostics, not independent confirmation or a roster-only forecast. Legacy caches omit overtime possessions, so missing overtime change enters final regulation credit. The public raw-WP board instead uses five-year fits.",
         },
     })
 
@@ -447,6 +436,8 @@ def main() -> int:
         "lineage": {
             "pulse_run": PULSE.name,
             "canonical_rapm_suite": CANONICAL_SUITE.name,
+            "wp_run": wp_run["run_id"],
+            "wp_run_sha256": hashlib.sha256((WP_RELEASE / "run.json").read_bytes()).hexdigest(),
             "other_estimands": "selected_research_artifacts_with_per-estimand_notes",
         },
         "estimands": catalog,

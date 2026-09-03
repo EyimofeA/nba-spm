@@ -345,6 +345,8 @@ def run() -> dict:
             {
                 "contract": sha256_file(CONTRACT),
                 "runner": sha256_file(Path(__file__)),
+                "wp_model": sha256_file(ROOT / "src/nba_impact/models/win_probability_rapm.py"),
+                "rapm_model": sha256_file(ROOT / "src/nba_impact/models/rapm.py"),
                 "target": sha256_file(WP_TARGET),
                 "pulse_games": sha256_file(PULSE_GAMES),
                 "reference_games": sha256_file(REFERENCE_GAMES),
@@ -353,7 +355,7 @@ def run() -> dict:
         ).encode()
     ).hexdigest()[:10]
     output = OUTPUT_ROOT / f"log_odds_wp_rapm_lambda_v1_{identity}"
-    output.mkdir(parents=True, exist_ok=True)
+    output.mkdir(parents=True, exist_ok=False)
     predictions.to_parquet(output / "game_predictions.parquet", index=False)
     folds.to_parquet(output / "fold_metrics.parquet", index=False)
     summary.to_parquet(output / "candidate_summary.parquet", index=False)

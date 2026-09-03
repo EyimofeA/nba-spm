@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 from nba_impact.models.win_probability_rapm import (
     build_conserved_wp_target,
@@ -22,6 +23,57 @@ def test_wp_target_conserves_to_game_result() -> None:
     np.testing.assert_allclose(target["home_wp_change"], [0.1, 0.1, 0.3])
     np.testing.assert_allclose(target["offense_wp_change"], [0.1, -0.1, 0.3])
     assert abs(games.iloc[0]["conservation_error"]) < 1e-12
+
+
+@pytest.mark.parametrize("with_global_index", [False, True])
+@pytest.mark.parametrize("builder", [build_conserved_wp_target, build_log_odds_wp_target])
+def test_wp_credit_preserves_quarter_order(builder, with_global_index) -> None:
+    frame = pd.DataFrame({
+        "possession_id": ["g:1:1", "g:1:2", "g:2:1", "g:2:2"],
+        "gameid": ["g"] * 4, "period": [1, 1, 2, 2], "num": [1, 2, 1, 2],
+        "home_poss": [1, 0, 1, 0], "home_win": [1] * 4,
+        "probability_context": [0.5, 0.6, 0.7, 0.8],
+    })
+    if with_global_index:
+        frame["possession_index_before"] = [0, 1, 2, 3]
+    target, games = builder(frame.iloc[[3, 0, 2, 1]])
+    assert target["possession_id"].tolist() == frame["possession_id"].tolist()
+    np.testing.assert_allclose(target["home_wp_change"], [0.1, 0.1, 0.1, 0.2])
+    assert abs(games.iloc[0]["conservation_error"]) < 1e-12
+
+
+@pytest.mark.parametrize("probability", [np.nan, np.inf, -np.inf])
+def test_wp_target_rejects_nonfinite_probability(probability) -> None:
+    frame = pd.DataFrame({
+        "possession_id": ["g:1"], "gameid": ["g"], "num": [1],
+        "home_poss": [1], "home_win": [1], "probability_context": [probability],
+    })
+    with pytest.raises(ValueError, match="finite"):
+        build_log_odds_wp_target(frame)
+
+
+@pytest.mark.parametrize("column,value", [("home_poss", np.nan), ("home_win", 2)])
+def test_wp_target_rejects_invalid_binary_state(column, value) -> None:
+    frame = pd.DataFrame({
+        "possession_id": ["g:1"], "gameid": ["g"], "num": [1],
+        "home_poss": [1], "home_win": [1], "probability_context": [0.5],
+    })
+    frame[column] = value
+    with pytest.raises(ValueError, match="binary"):
+        build_conserved_wp_target(frame)
+
+
+def test_wp_target_rejects_ambiguous_order_and_inconsistent_result() -> None:
+    frame = pd.DataFrame({
+        "possession_id": ["g:1", "g:2"], "gameid": ["g", "g"], "num": [1, 1],
+        "home_poss": [1, 0], "home_win": [1, 1], "probability_context": [0.5, 0.6],
+    })
+    with pytest.raises(ValueError, match="chronology"):
+        build_conserved_wp_target(frame)
+    frame["num"] = [1, 2]
+    frame["home_win"] = [1, 0]
+    with pytest.raises(ValueError, match="consistent"):
+        build_conserved_wp_target(frame)
 
 
 def test_wp_target_rejects_invalid_probability() -> None:

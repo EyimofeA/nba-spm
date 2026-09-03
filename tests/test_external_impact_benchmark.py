@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from nba_impact.models.external_impact_benchmark import (
     build_external_impact_benchmark,
@@ -41,6 +42,25 @@ def test_external_parsers_normalize_signs_and_names() -> None:
     assert jokic["xrapm_defense"] == 2.5
     assert jokic["xrapm_net"] == 8.6
     assert bpm.loc[bpm["normalized_name"].eq("nikola jokic"), "bpm_net"].iloc[0] == 7.0
+
+
+def test_external_parsers_accept_current_team_column_and_legacy_team_labels() -> None:
+    current = XRAPM_HTML.replace("<th>Player</th>", "<th>Player</th><th>Team</th>")
+    current = current.replace("<td>Nikola Jokić</td>", "<td>Nikola Jokić</td><td>DEN</td>")
+    current = current.replace("<td>Test Player</td>", "<td>Test Player</td><td>AAA</td>")
+    pd.testing.assert_frame_equal(parse_xrapm_html(current, 2026), parse_xrapm_html(XRAPM_HTML, 2026))
+    legacy = BPM_HTML.replace("<th>Team</th>", "<th>Tm</th>").replace("2TM", "TOT")
+    assert len(parse_bpm_html(legacy, 2014)) == 2
+
+
+def test_xrapm_ambiguous_names_require_explicit_exclusion_and_receipt() -> None:
+    duplicate = "<tr><td>Test Player</td><td>2</td><td>1</td><td>1</td></tr>"
+    html = XRAPM_HTML.replace("</tbody>", duplicate + "</tbody>")
+    with pytest.raises(ValueError, match="duplicate"):
+        parse_xrapm_html(html, 2008)
+    frame = parse_xrapm_html(html, 2008, exclude_ambiguous_names=True)
+    assert len(frame) == 1
+    assert len(frame.attrs["excluded_ambiguous_names"]) == 2
 
 
 def test_external_benchmark_builds_unique_matched_windows(tmp_path: Path) -> None:

@@ -1,5 +1,8 @@
 "use client";
 
+/* NBA headshots are remote, optional decoration; native img fallback is intentional. */
+/* eslint-disable @next/next/no-img-element */
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Figure } from "../charts/frame";
 import { RoleDatum, RoleMap } from "../charts/scatter";
@@ -157,10 +160,9 @@ export function RolesView({
     [catalog, side],
   );
   const [chosenSeason, setChosenSeason] = useState<number | null>(null);
-  const [points, setPoints] = useState<RolePoint[]>([]);
+  const [snapshot, setSnapshot] = useState<{ side: RoleSide; season: number; points: RolePoint[]; error?: boolean } | null>(null);
   const [emphasis, setEmphasis] = useState<string>("All");
   const [selectedId, setSelectedId] = useState<number | null>(player?.PLAYER_ID ?? null);
-  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const mapRef = useRef<HTMLDivElement>(null);
 
   // Each side publishes its own season list, so the chosen season can fall out
@@ -177,11 +179,10 @@ export function RolesView({
     if (!season) return;
     let live = true;
     const run = async () => {
-      setState("loading");
       try {
         const rows = await loadRoleMap(side, season);
         if (!live) return;
-        setPoints(rows);
+        setSnapshot({ side, season, points: rows });
         // Open on the biggest cluster: with every role in one colour the map
         // shows no structure, so "All roles" is an option rather than a default.
         const tally = new Map<string, number>();
@@ -191,9 +192,8 @@ export function RolesView({
           (a, b) => b[1] - a[1],
         )[0]?.[0];
         setEmphasis(biggest ?? "All");
-        setState("ready");
       } catch {
-        if (live) setState("error");
+        if (live) setSnapshot({ side, season, points: [], error: true });
       }
     };
     const start = window.setTimeout(() => void run(), 0);
@@ -203,9 +203,11 @@ export function RolesView({
     };
   }, [side, season]);
 
+  const current = snapshot?.side === side && snapshot.season === season ? snapshot : null;
+
   const shaped = useMemo<RoleDatum[]>(
     () =>
-      points.map((point) => ({
+      (current?.points ?? []).map((point) => ({
         id: point.PLAYER_ID,
         name: point.PLAYER_NAME,
         team: point.TEAM_ABBREVIATION,
@@ -213,7 +215,7 @@ export function RolesView({
         y: point.y,
         role: point.raw_role,
       })),
-    [points],
+    [current],
   );
 
   const roleNames = useMemo(
@@ -294,7 +296,7 @@ export function RolesView({
         </label>
       </div>
 
-      {state === "error" ? (
+      {!season ? <p className="empty">Role map unavailable.</p> : !current ? <p className="empty" role="status">Loading role map…</p> : current.error ? (
         <div className="empty">
           <b>Role map unavailable.</b>
           <span>

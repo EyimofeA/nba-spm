@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 
 from nba_impact.data.manifest import sha256_file, write_json_atomic
+from nba_impact.models.pulse_validation import load_pulse_validation
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -96,32 +97,12 @@ def paired_bootstrap(
 
 
 def main() -> int:
-    pulse_games = pd.read_parquet(PULSE_RUN / "validation_games.parquet").rename(
-        columns={"outcome_season": "test_season"}
-    )
-    pulse_games = pulse_games.replace({
-        "prior": "pulse_prior",
-        "pulse": "pulse",
-        "rapm": "rapm",
-        "box15_9y_normal": "pulse_prior",
-        "box15_9y_normal_aio": "pulse",
-        "zero_prior_rapm": "rapm",
-    })
-    combined = pulse_games.drop_duplicates(
-        ["candidate", "rating_season", "test_season", "game_id"]
-    )
-    maximal = combined.loc[
-        combined["candidate"].isin(["pulse_prior", "pulse", "rapm"])
-    ].copy()
+    pulse_games, _ = load_pulse_validation(PULSE_RUN)
+    combined = pulse_games.rename(columns={"outcome_season": "test_season"}).copy()
+    combined["candidate"] = combined["candidate"].replace({"prior": "pulse_prior"})
+    maximal = combined
+    # The loader requires all three candidates to score exactly the same games.
     strict = maximal.copy()
-    strict_keys = ["rating_season", "test_season", "game_id"]
-    common_keys = (
-        strict.groupby(strict_keys)["candidate"]
-        .nunique()
-        .loc[lambda values: values.eq(strict["candidate"].nunique())]
-        .index
-    )
-    strict = strict.set_index(strict_keys).loc[common_keys].reset_index()
 
     fold_metrics = pd.concat([
         metric_rows(maximal, "maximal_pulse_coverage"),
@@ -150,6 +131,9 @@ def main() -> int:
     payload = {
         "inputs": {
             "pulse_validation_games": sha256_file(PULSE_RUN / "validation_games.parquet"),
+            "pulse_validation_folds": sha256_file(PULSE_RUN / "validation_folds.parquet"),
+            "pulse_validation_priors": sha256_file(PULSE_RUN / "validation_priors.parquet"),
+            "pulse_manifest": sha256_file(PULSE_RUN / "run.json"),
         },
         "draws": DRAW_COUNT,
         "seed": SEED,

@@ -1,0 +1,39 @@
+{
+  "status": "frozen_before_common_panel_scores",
+  "main_models": [
+    "PULSE", "EPM", "LEBRON", "xRAPM", "DARKO DPM", "BPM 2.0",
+    "CourtSignal PIPM reconstruction", "CourtSignal RAPTOR reconstruction"
+  ],
+  "internal_control": "Normal RAPM",
+  "proposed_rating_years": [2015, 2025],
+  "proposed_outcome_years": [2016, 2026],
+  "target": "Official final regular-season game margins, including technical free throws",
+  "primary_score": "Square root of equal-season mean game-margin MSE",
+  "normalization": "Center each component using common matched players and rated-season side-possession weights; missing coefficients remain zero",
+  "shared_nuisance_terms": "Rated-season normal-RAPM home coefficient and intercept for every candidate",
+  "calibration": "None applied; calibration slope is diagnostic only",
+  "bootstrap_draws": 5000,
+  "bootstrap_seed": 20260903,
+  "secondary_model": {"name": "MAMBA", "last_valid_rating_year": 2024, "last_possible_outcome_year": 2025},
+  "darko_source": "DARKO - Daily Adjusted and Regressed Kalman Optimized projections - Full DPM History.csv",
+  "darko_available_rating_years": [1997, 2026],
+  "pulse_source_run": "pulse_canonical_v1_cd3c14750a",
+  "pipm_repaired_source_run": "pipm_reconstruction_v1_e0625de5fe",
+  "raptor_source_run": "raptor_reconstruction_v1_938d1becf9",
+  "reconstruction_policy": "Use saved PIPM and RAPTOR as-is per user instruction. Pooled RAPTOR historical training is explicitly caveated; do not claim all comparators are past-only.",
+  "pending": [
+    "Resolve current PULSE builder provenance and regenerate/check fold coefficient support as needed.",
+    "Score all main candidates on identical game keys and identical final player support with one explicit missing-player rule."
+  ],
+  "rules": [
+    "Never use final-descriptive PULSE as historical out-of-time predictions.",
+    "PULSE prior target ends and training years must precede each rating year. RAPTOR is an as-is reconstructed comparator with pooled training, not a chronological validation claim.",
+    "Only rated-season data may enter the lineup update or season normalization.",
+    "Outcome year must equal rating year plus one; no 2027 outcomes.",
+    "Any calibration is fitted on earlier outcome years only.",
+    "Keep frozen model choices fixed; historical results are reused diagnostics, not untouched confirmation.",
+    "Label both CourtSignal reconstructions explicitly and do not attribute them to the source authors.",
+    "Do not merge shorter MAMBA coverage into the main ranking without a separate same-timespan panel.",
+    "Record input/code hashes, actual source dates, inclusion masks, missingness and exclusions before publication."
+  ]
+}

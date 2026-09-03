@@ -15,6 +15,7 @@ from nba_impact.api.player_profiles import PROFILE_AXES, build_player_skill_prof
 from nba_impact.api.ratings import ROLE_LABELS, RatingsApiConfig, RatingsStore
 from nba_impact.api.web_snapshot_models import attach_rich_spm
 from nba_impact.data.manifest import sha256_file
+from nba_impact.models.pulse_validation import load_pulse_validation
 from nba_impact.research.control_plane import validate_release_manifest
 COMPONENTS = ("offense", "defense", "net")
 # Public model selector: `prefix` is exported; `source` is the run column prefix.
@@ -103,19 +104,16 @@ def _model_columns(
 def _pulse_evidence(project_root: Path, manifest: dict[str, Any] | None) -> dict[str, Any]:
     if manifest is None:
         return {}
-    evidence = manifest.get("config", {}).get("evidence", {})
     pulse_path = project_root / "artifacts/models/pulse" / str(manifest.get("run_id", ""))
-    canonical_summary = pulse_path / "validation_summary.parquet"
-    target_path = project_root / str(evidence.get("target_window_run", ""))
-    summary_path = canonical_summary if canonical_summary.exists() else target_path / "summary.parquet"
-    rows: list[dict[str, Any]] = []
-    if summary_path.exists():
-        summary = pd.read_parquet(summary_path)
-        wanted = summary.loc[summary["candidate"].isin([
-            "pulse", "rapm", "prior", "box15_9y_normal_aio",
-            "zero_prior_rapm", "rich_spm_9y_normal_aio",
-        ])].copy()
-        rows = wanted.round(6).astype(object).where(wanted.notna(), None).to_dict(orient="records")
+    _, folds = load_pulse_validation(pulse_path)
+    summary = folds.groupby("candidate", as_index=False).agg(
+        folds=("outcome_season", "nunique"),
+        equal_season_mse=("mse", "mean"),
+        mean_correlation=("correlation", "mean"),
+        mean_calibration_slope=("calibration_slope", "mean"),
+    )
+    summary["equal_season_rmse"] = np.sqrt(summary["equal_season_mse"])
+    rows = summary.round(6).astype(object).where(summary.notna(), None).to_dict(orient="records")
     return {
         "definition": "PULSE prior + lineup update = PULSE",
         "prior": "Ridge model of nine-year normal RAPM from one season of 15 per-100 box inputs.",
