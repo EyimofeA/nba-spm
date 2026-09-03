@@ -1,0 +1,46 @@
+schema_version: experiment_preregistration_v1
+experiment_id: single_season_expected_outcome_rapm_v1
+status: preregistered_reused_diagnostic
+estimand_id: luck_adjusted_player_impact_v1
+created_at: 2026-09-03
+
+arms:
+  - normal_realized_points
+  - location_expected_conversion
+  - context_expected_conversion
+
+season_policy:
+  rating_seasons: [2024, 2025]
+  test_seasons: [2025, 2026]
+  forbidden_season: 2027
+
+shot_expectation:
+  current_game_out_folds: 3
+  logistic_c: 0.05
+  location_features: player_neutral_location_clock_score_home_period
+  context_additions: [seconds_since_possession_start, transition, putback, second_chance, from_turnover, finish_type]
+  forbidden_features: [shooter, defender, team, lineup, shot_result]
+
+target:
+  definition: observed_nonconversion_points_plus_player_neutral_expected_field_goal_and_free_throw_points
+  free_throw_expectation: pre_season_player_neutral_history_rate
+  ordinary_response: realized_possession_points
+
+rapm:
+  lambda_off: 3000.0
+  lambda_def: 4500.0
+  lambda_home: 300.0
+  lineup_policy: terminal
+
+evaluation:
+  primary: next_season_game_margin_rmse
+  supporting: [margin_correlation, calibration_slope, paired_whole_game_rmse_interval]
+  identical_games: true
+  bootstrap_draws: 5000
+
+stopping_rules:
+  - Treat 2025 and 2026 as reused diagnostics, not independent confirmation.
+  - Do not change features, penalties, folds, or C after reading results.
+  - Do not load Season 2027.
+  - Keep every expected-outcome arm separate from ordinary RAPM.
+  - Do not publish or promote from this test.

@@ -6000,3 +6000,295 @@ parameter.
 log-odds player coefficients as a separately labeled descriptive leaderboard.
 The public copy must say that it is not a forecast; this does not promote the
 model or change the predictive decision above.
+
+## 2026-09-03 — WP possession chronology correction
+
+**Finding:** An independent Fable 5.1 source review and a local data audit
+confirmed that `build_conserved_wp_target` sorted by game and possession number
+without period. Historical possession numbers restart each quarter. The pinned
+2014–2026 WP checkpoint contains 853,715 backward sequence steps, all in
+2014–2023. Conservation still passes because an incorrectly ordered chain
+also telescopes. The checkpoint has 3,080,228 possessions across 15,659 games.
+Its SHA-256 is
+`4128b32effb6d4447949c06cfeb44d60bc74720bc686b0d119ee9abb72a9ff8e`.
+
+**Scope:** Correctly ordering the saved probability states changes historical
+possession credit but changes zero 2024–2026 credit rows. This does not directly
+alter the public annual 2024–2026 coefficients at fixed parameters. Historical
+WP fits, rolling windows containing those seasons, learned WP priors, and
+penalty/calibration comparisons require a corrected lineage audit and rerun.
+Ordinary points RAPM and PULSE do not use this target builder.
+
+**Correction to the preceding result:** Withdraw the claim that log odds is
+the better WP target and that the old lambdas were wrong. Both conclusions
+used contaminated historical targets. The reported `15.2648` RMSE also selects
+and scores a fixed winner on the same folds. The separately recorded
+chronological-selection RMSE is `15.2759`, but it shares the chronology defect
+and is not corrected evidence. Next-season prediction cannot by itself validate
+descriptive possession credit.
+
+**Changes:** The shared builder now uses the game-global state index when
+available, otherwise period and possession number. It rejects ambiguous order,
+nonfinite probabilities, nonbinary state fields, and inconsistent game results.
+The WP-AIO cache reader rejects stale credit without overwriting its checkpoint.
+The log-odds runner includes both model sources in its run identity and refuses
+to overwrite an existing output directory. Existing artifacts remain intact.
+
+**Verification:** The chronology audit reproduces the backward-step counts and
+zero modern credit changes. Corrected absolute log-odds changes have median
+`0.185676` and 99th percentile `0.856712`, including terminals. The old run
+reported `0.614199` and `4.345506`. All 23 focused target, cache, RAPM, and
+repository-boundary tests pass. No model fit, promotion, or deployment occurred.
+Season 2027 remains untouched. The reproducible check and advisory reviews are
+in `research/audits/fable_launch_review_20260903/`.
+
+## 2026-09-03 — Corrected WP lower-penalty study, preregistration
+
+Before fitting the full study, freeze `research/experiments/wp_chronology_release_v2.json`:
+fixed 2.5% clipping and home penalty 300; shared offense/defense penalties
+100, 300, 1000, 3000, 10000, 30000, and 150000. Development outcomes 2016–2021
+choose the smallest setting within 0.05 equal-season RMSE of the best that also
+passes the simultaneous all-pair bootstrap upper bound. Outcomes 2022–2026
+diagnose that frozen choice against corrected 150000; failure retains 150000
+without selecting another lower setting. Exact common game IDs include shortened
+seasons, and all calibration uses strictly earlier outcomes. These are reused,
+lineup-conditioned historical diagnostics, not clean confirmation. 2027 is excluded.
+
+Rebuild historical credit from saved probability states and preserve the stale
+checkpoint bytes. Refit the public raw-WP rolling windows and publish only
+2024–2026 endpoints; annual log-odds boards retain those three seasons. Correct
+the raw-WP unit label to probability change per 100, not percentage points.
+The single-2021 runtime pilot took 0.12 seconds to fit and 0.86 seconds total;
+the full bounded sweep should take minutes, not hours. No pilot scores were
+computed or used to change the contract. Affine margin calibration can absorb
+coefficient shrinkage, so predictive equivalence does not validate larger credit.
+
+**Pre-grid source amendment:** A read-only official-score reconciliation found
+468 incorrect cached WP winners in 2014–2026. The pinned PULSE `actual_margin`
+is the technical-free-throw-excluded scoring margin, not official final margin.
+Before any grid scores, amend the contract to hash-verified official regular-game
+winners/margins. Refit the original fixed six-feature past-only logistic surface
+(1997 source start, C=1, stride 10). Preserve its feature vectors, lineups, and
+possession identities exactly: these are cumulative offense-assigned scoring
+proxies and possession progress, not exact scoreboard/clock states. Never smear
+an endgame score correction into earlier features. Rescore frozen PULSE/RAPM
+predictions against official margins with earlier-outcome-only calibration.
+All splits, penalties, clipping and selection gates stay unchanged. The original
+WP surface quality scores are also superseded. Corrected labels legitimately
+change modern WP targets; the earlier zero-change result applied to ordering only.
+
+The preflight also found one 0–0 schedule entry (2013, `0021201214`). Exclude
+unplayed 0–0 entries only; the exact possession-to-official-winner join still
+fails for any missing played-game outcome. No grid results had been inspected.
+
+The amended pilot (full 1997–2014 source audit, one past-only WP surface, one
+2014 log-odds fit at lambda 100) passed in 237.7 seconds; the RAPM fit itself
+took 0.13 seconds. Budget roughly 8–12 minutes for the full source rebuild and
+bounded grid. Temporal-isolation and unplayed-entry fixtures bring the focused
+tests to 32 passing, with four repository-boundary/control tests also passing.
+
+The first full attempt (`wp_chronology_release_v2_a98380e219`) stopped before
+selection because the bootstrap received pandas nullable numeric columns as an
+object array. No score-based decision or release occurred. Convert the numeric
+array explicitly to float and add a nullable-dtype regression fixture. Preserve
+the incomplete run and rerun the same frozen contract in a new immutable directory.
+
+**Completed decision:** `wp_chronology_release_v2_e3a3fbf4c2` selected shared
+3000/3000, with home 300 and clip 0.025 unchanged. Development RMSE was 13.312710.
+Lambda 1000 had 13.324487 but failed the simultaneous uncertainty rule (upper
+excess 0.120078 versus tolerance 0.05). On 6,141 exact common 2022–2026 games,
+3000 scored 14.703783 RMSE versus corrected 150000 at 15.366597; paired delta
+−0.662814, upper one-sided 95% bound −0.585270, worst seasonal delta −0.313396.
+All five later seasons improved. This passes the fixed publication gate.
+PULSE scored 14.441775, ordinary RAPM 14.599081, raw one-season WP 14.934896
+on the same official-final-margin target. PULSE ratings remain unchanged.
+
+Independent review reproduced all 99 input hashes, eight artifact hashes,
+affine calibration, common-game population, selected penalty, later gate,
+conservation and public windows. The two attempts have identical contracts and
+byte-identical corrected targets; only the runner's float-conversion fix differs.
+The executed verification notebook is in `research/audits/wp_chronology_release_20260903/`.
+
+**Remaining source limit:** 2014–2023 caches omit overtime possessions. Official
+terminal closure puts missing overtime change on the final regulation lineup.
+The 2024–2026 source includes overtime. This caveat is explicit on affected
+public raw-WP boards and the research benchmark. Historical reuse, proxy scoring
+states and omitted legacy overtime preclude clean predictive or causal promotion.
+
+**Website checks and deployment pause:** 36 focused Python tests and 42 website
+tests pass; lint has no errors and one existing image-element warning. Research
+control validation, the executed verification notebook, and desktop/mobile WP
+checks pass. Cloudflare preview version `7e04be11-101a-40da-a169-96491eb7d34a`
+uploaded, but public preview verification returned HTTP 403 / Cloudflare 1010.
+Production traffic is unchanged; no access-control changes or bypass attempted.
+Await user direction before proceeding with publication.
+
+**Publication completed, 2026-09-03 13:43:19 UTC:** The user authorized deploying
+the tested upload despite the blocked automated preview check. Version
+`7e04be11-101a-40da-a169-96491eb7d34a` now serves 100% of production traffic.
+Cloudflare deployment status and a fresh public-site browser inspection confirm
+the corrected log-odds and raw-WP boards, units, penalty note, search percentiles,
+and Research benchmark. No security rules changed. Error 1010 is documented as
+a browser-signature block; the exact triggering rule remains unverified.
+The previous version `4aa6ec99-2e57-40bf-b75c-a73be6d9c10e` is the rollback target.
+
+## 2026-09-03 — External coverage and PULSE leakage audit
+
+Profiled the existing benchmark inputs without model fitting or downloads.
+Complete shared external coverage remains ratings 2017–2020, outcomes 2018–2021.
+PIPM 2021 is partial (maximum 22 GP), and MAMBA labels after 2024 do not form
+valid season panels. The separate RAPTOR latest file extends modern source
+coverage through 2023. Full coverage and source hashes are saved in
+`research/audits/benchmark_coverage_20260903/` with an executed notebook.
+
+Canonical PULSE's 12 saved folds use prior targets ending before each rating
+year, a same-rating-year lineup update, and next-season games. All three
+internal candidates share 14,439 games. The descriptive historical mapping
+trains through 2026 and is not validation evidence. Historical outcomes remain
+selection-exposed, and the canonical builder source hash differs from the saved
+snapshot; neither fact is hidden by the coefficient-chronology pass.
+
+Independent review found that the old external benchmark compares earlier
+Box15/rich/residual models, not exact current PULSE. Its strict intersection
+filters priors, but internal AIO updates regain full player support. Do not
+claim identical final player coverage or relabel old Box15+RAPM as PULSE.
+Restoration requires a corrected common-support rescore of canonical fold fits.
+
+Added one fail-closed loader shared by the validation-release builder and web
+snapshot exporter. It rejects descriptive substitutions, older-model aliases,
+missing folds, duplicate keys, invalid prior identities, future-year overlap,
+unequal game sets, and mismatched summary statistics. Removed the old summary
+fallback. Existing public internal metrics reproduce exactly. No public
+deployment, training, public rating changes, or reserved 2027 outcome access occurred.
+
+**Updated supplied source and benchmark scope:** The new Full DPM History CSV
+extends DARKO from 1997 through 2026, with 15,054 unique player-season rows and
+per-player dates. It replaces the older workbook used in the first inventory.
+The requested main comparison now includes EPM, LEBRON, xRAPM, DARKO DPM,
+BPM 2.0 and explicitly labeled CourtSignal PIPM/RAPTOR reconstructions. MAMBA
+is separate and stops at 2023–24 ratings. The proposed main test spans
+2018–2026 outcomes, pending annual 2025 xRAPM/BPM sources and chronological
+RAPTOR fits. Public page retrieval failed; no access bypass was attempted.
+
+Independent reconstruction review found full-2014–2022 box-map training in
+RAPTOR, which precludes using its existing backcasts as early out-of-time
+predictions. PIPM uses fixed coefficients, but identical selected source rows
+overweighted one player in each of 2014, 2015, 2018 and 2023. Deduplicated before
+season centering, rejected remaining ambiguous IDs, and included source/code
+hashes in run identity. Rebuilt deterministic PIPM as
+`pipm_reconstruction_v1_e0625de5fe` without altering the old run. Its 2017–2025
+benchmark slice has 4,910 finite, unique player-season rows; all 23 focused
+tests pass. No reconstruction was exported to the site or promoted by this audit.
+
+## 2026-09-03 — Corrected current-PULSE external comparison
+
+Ordinary requests to the supplied xRAPM and Basketball-Reference URLs succeeded
+after the earlier retrieval failure. Saved and hashed all 30 xRAPM pages for
+1997–2026 and 13 BPM pages for 2014–2026. Excluded ambiguous xRAPM 2008 names
+explicitly and restricted joins to exact normalized same-season identities.
+
+The user requested saved PIPM/RAPTOR reconstructions as-is. Removed the unfinished
+RAPTOR fold-refit path. Used RAPTOR `938d1becf9` and the already repaired
+fixed-coefficient PIPM `e0625de5fe`. RAPTOR's pooled training through 2022 remains
+a limitation for its early outcomes, not a past-only validation claim.
+
+Run `pulse_external_common_v1_b1faa64e9b` scores ratings 2015–2025 on 13,209
+identical official games from 2016–2026. All nine arms have identical final
+player inclusion masks, source-year side-exposure centering, zero coefficients
+for missing players, and a shared source-year RAPM baseline. Matched ratings
+cover 86.2–90.6% of target lineup exposure. No calibration or tuning was applied.
+
+Equal-season RMSE: xRAPM 13.6791, EPM 13.6836, DARKO DPM 13.7056, LEBRON
+13.7391, PULSE 13.7545, BPM 13.8497, RAPM 13.8644, CourtSignal RAPTOR 13.8695,
+CourtSignal PIPM 14.0529. PULSE minus RAPM is -0.1098, with whole-game paired
+95% interval [-0.1347, -0.0862]. The gap to LEBRON is inconclusive. MAMBA's
+separate 2016–2025 comparison scores 13.4697 versus PULSE 13.5937.
+
+All 11 frozen PULSE folds replayed saved predictions exactly before masking
+and centering. Independent review verified coefficient signs, source-year
+weights and exact official-game key equality. Historical selection exposure
+remains; these are observed-lineup diagnostics, not untouched confirmation.
+No 2027 outcomes were accessed.
+
+Added a pinned summary-only Research table, source coverage and separate MAMBA
+panel. Export checks input/output hashes, PULSE chronology/replay, identical
+games/masks, zeroed exclusions and independently recomputed RMSE. The executed
+audit notebook reproduces the checks. Desktop and 390px phone inspection passed;
+benchmark columns now fit the phone without horizontal scrolling. Focused Python
+checks including repository boundaries passed 29 tests. Client checks passed 43 tests; lint has no errors and
+one pre-existing RolesView image warning. No deployment, commit or push occurred.
+The complexity review removed the unused reconstruction-refit path and reused
+existing scoring, identity and table helpers; no new dependency was added.
+
+## 2026-09-03 — Rich SPM prior swap and full-coverage PULSE release
+
+Reused the pinned `target_window_spm_aio_v1_8e028133cb` diagnostic instead of
+refitting. Its runner and contract hashes still match. Each Rich SPM and Box15
+prior for rating season t trains on target windows ending before t, receives the
+same season-t lineup update, and scores season t+1 official game margins.
+
+On the 11 shared 2016–2026 outcome folds and 13,199 identical games, PULSE's
+nine-year normal Box15 prior scores 13.6637 equal-season RMSE. The Rich SPM prior
+scores 13.7331. PULSE minus Rich SPM MSE is -1.9021, with a whole-game paired 95%
+interval of [-2.4546, -1.3165]. Rich SPM is better as a standalone statistical
+rating but worse after the identical one-season lineup update. This is reused
+historical evidence and does not support a new promotion claim.
+
+The Research page now labels the canonical 12-fold, full-player-support PULSE
+validation as the primary site test. The external common-support benchmark and
+the Rich SPM prior swap remain secondary diagnostics. The static release contains
+summary statistics only. It contains no player coefficients, game rows, or raw
+NBA events.
+
+**Publication completed, 2026-09-03:** 26 focused Python tests and all 43 web
+tests pass. Lint has no errors and retains one existing `RolesView` image warning.
+Desktop and 390px local mobile inspection pass; the three primary benchmark
+tables fit without document overflow. Cloudflare Worker version
+`4dfde7fa-a680-4f5f-8400-a7b55d5e1a85` now serves the release. The Pages proxy
+was also refreshed as deployment `e541a4e4`. A cache-busted production check at
+`courtsignalnba.pages.dev` shows the full-coverage PULSE test and Rich SPM prior
+swap with no browser errors.
+
+## 2026-09-03 — Single-season expected-outcome RAPM null
+
+Predeclared and ran a fixed one-season comparison on reused 2025 and 2026
+next-season game diagnostics. Ordinary realized-points RAPM, a player-neutral
+location expected-conversion target, and a richer observable-context target all
+use identical terminal-lineup possessions and `3000 / 4500 / 300` penalties.
+The shot models exclude player, team, defender, and lineup identity and exclude
+the current game when estimating expected conversion. Season 2027 was not loaded.
+
+The richer shot context improves whole-game-out Brier score by .003166 in 2024
+and .003018 in 2025 versus location alone. That does not improve the RAPM target.
+Equal-season next-game RMSE is 15.3700 for ordinary points, 15.8470 for location
+expected conversion, and 15.7922 for context expected conversion. Context loses
+by .6513 RMSE in 2025, paired 95% interval [.4185, .8716], and by .1931 in 2026,
+interval [-.0360, .4312]. Its predicted margin standard deviation compresses to
+3.50 points versus 6.22 for ordinary RAPM.
+
+Reproduced the separate player-neutral possession-start null from the current
+lake. Mean possession RMSE improves only from 1.194461 to 1.194070 and Poisson
+deviance from 1.627856 to 1.627015 across 497,177 out-of-fold possessions. This
+remains below the frozen gate, so residual RAPM stays deferred. Keep ordinary
+points RAPM; do not publish either expected-outcome arm. Full method and results
+are in `research/audits/single_season_expected_outcome_rapm_v1/report.md`.
+
+## 2026-09-03 — Reliability-weighted conversion RAPM null
+
+Predeclared a partial shooting-luck follow-up after the full expected-conversion
+target compressed predicted margins. The fixed neutral blends retain 25%, 50%,
+or 75% of realized conversion residual. A separate history-reliability arm
+starts from the preseason empirical-Bayes shooter expectation and retains the
+current-season residual by category attempts divided by attempts plus the
+already-selected prior strength. All arms use identical one-season terminal
+lineups, `3000 / 4500 / 300` penalties, and next-season games.
+
+The 75% arm is the best fixed blend on the reused 2025 selection fold. It loses
+to normal by .0413 RMSE, paired 95% interval [-.0206, .1008], then improves
+reused 2026 by .0693, interval [-.1304, -.0085]. The history-reliability arm
+loses 2025 by .1158, interval [.0070, .2229], and improves 2026 by .0917,
+interval [-.1929, .0113]. No challenger improves both folds. Keep ordinary
+RAPM and do not publish this result as a rating. Run
+`reliability_weighted_conversion_rapm_v1_cff32e3e85`; report at
+`research/audits/reliability_weighted_conversion_rapm_v1/report.md`. Season
+2027 was not loaded.

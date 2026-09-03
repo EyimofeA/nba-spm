@@ -88,32 +88,40 @@ def _table_rows(html: str, table_id: str) -> list[list[str]]:
     return parser.rows
 
 
-def parse_xrapm_html(html: str, season: int) -> pd.DataFrame:
+def parse_xrapm_html(html: str, season: int, *, exclude_ambiguous_names: bool = False) -> pd.DataFrame:
     rows = _table_rows(html, "sortableTable")
-    header = next(row for row in rows if row[:4] == ["Player", "Offense", "Defense(*)", "Total"])
+    names = ["Player", "Offense", "Defense(*)", "Total"]
+    header = next(row for row in rows if all(name in row for name in names))
+    indices = [header.index(name) for name in names]
     records = []
     for row in rows[rows.index(header) + 1 :]:
-        if len(row) < 4 or row[0] == "Player":
+        if len(row) <= max(indices) or row[indices[0]] == "Player":
             continue
-        offense, defense_allowed, total = map(_parse_numeric, row[1:4])
+        offense, defense_allowed, total = (_parse_numeric(row[index]) for index in indices[1:])
         if not np.isfinite([offense, defense_allowed, total]).all():
             continue
         records.append(
             {
                 "season": season,
-                "player_name_xrapm": row[0],
-                "normalized_name": normalize_player_name(row[0]),
+                "player_name_xrapm": row[indices[0]],
+                "normalized_name": normalize_player_name(row[indices[0]]),
                 "xrapm_offense": offense,
                 "xrapm_defense": -defense_allowed,
                 "xrapm_net": total,
             }
         )
     frame = pd.DataFrame(records)
+    excluded = []
+    if not frame.empty and exclude_ambiguous_names:
+        ambiguous = frame["normalized_name"].duplicated(keep=False)
+        excluded = frame.loc[ambiguous].to_dict("records")
+        frame = frame.loc[~ambiguous].copy()
     if frame.empty or frame["normalized_name"].duplicated().any():
         raise ValueError(f"xRAPM {season} has no rows or duplicate normalized names.")
     identity_error = (frame["xrapm_offense"] + frame["xrapm_defense"] - frame["xrapm_net"]).abs()
     if identity_error.max() > 0.11:
         raise ValueError(f"xRAPM {season} offense-defense identity exceeds rounding tolerance.")
+    frame.attrs["excluded_ambiguous_names"] = excluded
     return frame
 
 
@@ -121,7 +129,7 @@ def parse_bpm_html(html: str, season: int) -> pd.DataFrame:
     rows = _table_rows(html, "advanced")
     header = next(row for row in rows if "Player" in row and "BPM" in row and "MP" in row)
     indices = {
-        name: header.index(name)
+        name: header.index("Tm" if name == "Team" and "Team" not in header else name)
         for name in ("Player", "Team", "MP", "OBPM", "DBPM", "BPM")
     }
     records = []
@@ -156,7 +164,7 @@ def parse_bpm_html(html: str, season: int) -> pd.DataFrame:
     ].unique()
     if len(duplicate_names):
         keep = ~frame["normalized_name"].isin(duplicate_names) | frame["team"].str.fullmatch(
-            r"\d+TM"
+            r"\d+TM|TOT"
         )
         frame = frame.loc[keep].copy()
     if frame["normalized_name"].duplicated().any():

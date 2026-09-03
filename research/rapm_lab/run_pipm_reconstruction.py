@@ -19,6 +19,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from nba_impact.data.manifest import sha256_file
+
 
 ROOT = Path(__file__).resolve().parents[2]
 GABRIEL_SHEETS = ROOT / "data/lake/bronze/gabriel_player_sheets/revision=54b57cf/year_totals"
@@ -80,7 +82,9 @@ def lineup_context(season: int) -> pd.DataFrame:
     for stem in ("off_poss", "def_poss", "off_points", "def_points"):
         player_games[f"off_{stem}"] = player_games[f"team_{stem}"] - player_games[f"on_{stem}"]
     summed = player_games.groupby("PLAYER_ID", as_index=False).sum(numeric_only=True)
-    rate = lambda points, poss: 100 * summed[points] / summed[poss].replace(0, np.nan)
+    def rate(points: str, poss: str) -> pd.Series:
+        return 100 * summed[points] / summed[poss].replace(0, np.nan)
+
     on_ortg = rate("on_off_points", "on_off_poss")
     off_ortg = rate("off_off_points", "off_off_poss")
     on_drtg = rate("on_def_points", "on_def_poss")
@@ -116,7 +120,11 @@ def season_features(season: int) -> pd.DataFrame:
         "PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION", "MIN", "GP", "PACE",
         "PTS", "OREB", "DREB", "AST", "STL", "BLK", "TOV", "PF", "FTA", "FG2A", "FG3A",
     ]
-    frame = sheet[required].copy().merge(lineup_context(season), on="PLAYER_ID", how="inner")
+    # Repeated source rows must not receive extra weight in season-wide centers.
+    selected = sheet[required].drop_duplicates()
+    if selected["PLAYER_ID"].isna().any() or selected["PLAYER_ID"].duplicated().any():
+        raise ValueError(f"PIPM {season} requires one unambiguous input row per player.")
+    frame = selected.merge(lineup_context(season), on="PLAYER_ID", how="inner", validate="one_to_one")
     frame = frame.merge(starter_counts(season), on="PLAYER_ID", how="left")
     frame["GS"] = frame["GS"].fillna(0)
     league_pace = np.average(frame["PACE"].fillna(frame["PACE"].median()), weights=frame["MIN"].clip(lower=1))
@@ -191,7 +199,12 @@ def metrics(panel: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 def main() -> None:
     panel = pd.concat([season_features(season) for season in SEASONS], ignore_index=True)
     agreement, matched = metrics(panel)
-    digest = hashlib.sha256(json.dumps({"seasons": list(SEASONS), "box": BOX_COEFFICIENTS}, sort_keys=True).encode()).hexdigest()[:10]
+    inputs = {"builder": sha256_file(Path(__file__)), "agreement_source": sha256_file(SOURCE)}
+    for season in SEASONS:
+        sheet = GABRIEL_SHEETS / f"{season}.parquet"
+        inputs[f"sheet_{season}"] = sha256_file(sheet if sheet.exists() else HISTORICAL_SHEETS / f"{season}.csv")
+        inputs[f"stints_{season}"] = sha256_file(STINTS / f"season={season}/regular.parquet")
+    digest = hashlib.sha256(json.dumps({"seasons": list(SEASONS), "box": BOX_COEFFICIENTS, "inputs": inputs}, sort_keys=True).encode()).hexdigest()[:10]
     run_id = f"pipm_reconstruction_v1_{digest}"
     output = OUTPUT_ROOT / run_id
     output.mkdir(parents=True, exist_ok=True)
@@ -203,6 +216,7 @@ def main() -> None:
         "created_at": datetime.now(timezone.utc).isoformat(),
         "seasons": list(SEASONS),
         "status": "methodology_aligned_reconstruction",
+        "source_hashes": inputs,
         "source_scope": "PIPM database combines regular season and playoffs",
         "reconstruction_scope": "CourtSignal regular-season lineup ledger",
         "metrics": agreement.to_dict("records"),

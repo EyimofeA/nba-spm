@@ -46,7 +46,18 @@ RICH = RICH_RUN / "annual_features.parquet"
 
 def _build_target(contract: dict) -> pd.DataFrame:
     if CHECKPOINT.exists():
-        return pd.read_parquet(CHECKPOINT)
+        cached = pd.read_parquet(CHECKPOINT)
+        rebuilt, _ = build_conserved_wp_target(cached)
+        columns = ["home_wp_after", "home_wp_change", "offense_wp_change", "pts"]
+        rebuilt["pts"] = rebuilt["offense_wp_change"]
+        if not cached["possession_id"].equals(rebuilt["possession_id"]) or not np.allclose(
+            cached[columns], rebuilt[columns], rtol=0, atol=1e-12,
+        ):
+            raise ValueError(
+                "WP checkpoint has stale possession credit. Preserve it and create "
+                "a new versioned target and dependent priors before rerunning."
+            )
+        return cached
     start, end = map(int, contract["seasons"]["possession_source"])
     source = load_unified_terminal_possessions(
         ROOT / "rapm/data/possession_cache",

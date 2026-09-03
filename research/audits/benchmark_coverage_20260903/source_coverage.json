@@ -1,0 +1,166 @@
+{
+  "coverage": [
+    {
+      "model": "EPM",
+      "first_rating_year": 2002,
+      "last_rating_year": 2026,
+      "seasons": 25,
+      "rows": 11452,
+      "note": ""
+    },
+    {
+      "model": "LEBRON",
+      "first_rating_year": 2010,
+      "last_rating_year": 2026,
+      "seasons": 17,
+      "rows": 8715,
+      "note": ""
+    },
+    {
+      "model": "PIPM",
+      "first_rating_year": 1974,
+      "last_rating_year": 2021,
+      "seasons": 48,
+      "rows": 19162,
+      "note": "2021 is partial; use through 2020 for complete-season comparison"
+    },
+    {
+      "model": "RAPTOR modern",
+      "first_rating_year": 2014,
+      "last_rating_year": 2022,
+      "seasons": 9,
+      "rows": 4685,
+      "note": ""
+    },
+    {
+      "model": "RAPTOR latest",
+      "first_rating_year": 2023,
+      "last_rating_year": 2023,
+      "seasons": 1,
+      "rows": 541,
+      "note": ""
+    },
+    {
+      "model": "RAPTOR historical",
+      "first_rating_year": 1977,
+      "last_rating_year": 2022,
+      "seasons": 46,
+      "rows": 19159,
+      "note": ""
+    },
+    {
+      "model": "MAMBA",
+      "first_rating_year": 2015,
+      "last_rating_year": 2024,
+      "seasons": 10,
+      "rows": 5275,
+      "note": "Exclude malformed labels after 2024"
+    },
+    {
+      "model": "DARKO DPM",
+      "first_rating_year": 1997,
+      "last_rating_year": 2026,
+      "seasons": 30,
+      "rows": 15054,
+      "note": "Updated user-supplied CSV replaces the older workbook; per-player date is available."
+    },
+    {
+      "model": "BPM 2.0",
+      "first_rating_year": 2014,
+      "last_rating_year": 2026,
+      "seasons": 13,
+      "rows": 6940,
+      "note": ""
+    },
+    {
+      "model": "xRAPM",
+      "first_rating_year": 1997,
+      "last_rating_year": 2026,
+      "seasons": 30,
+      "rows": 14762,
+      "note": ""
+    },
+    {
+      "model": "CourtSignal PIPM reconstruction",
+      "first_rating_year": 1997,
+      "last_rating_year": 2026,
+      "seasons": 30,
+      "rows": 14568,
+      "note": "Saved reconstruction used as-is"
+    },
+    {
+      "model": "CourtSignal RAPTOR reconstruction",
+      "first_rating_year": 2014,
+      "last_rating_year": 2026,
+      "seasons": 13,
+      "rows": 6856,
+      "note": "Saved reconstruction used as-is"
+    }
+  ],
+  "sources": {
+    "EPM": {
+      "file": "EPM_All_Seasons.csv",
+      "sha256": "c08723f5db12470f4140794a13c0bb2f1e9ebf19e9362188959ae45dcab32171"
+    },
+    "LEBRON": {
+      "file": "lebron-data-2026-2025-2024-2023-2022-2021-2020-2019-2018-2017-2016-2015-2014-2013-2012-2011-2010.csv",
+      "sha256": "3749a608559a229bc01e98f2d7a1bf570f85af5acecb9551ba696f953cbe1f90"
+    },
+    "PIPM": {
+      "file": "PIPM Player Finder through 2021 - Database.csv",
+      "sha256": "fccd30eefb122412dee2901d2bbd543516ae781cd864436cb4beb083d049d3c6"
+    },
+    "RAPTOR modern": {
+      "file": "modern_RAPTOR_by_player.csv",
+      "sha256": "cb64bd15492b540e5a376fcebddc1ba77b94847ee33ab26811d4123ef5fd7160"
+    },
+    "RAPTOR latest": {
+      "file": "latest_RAPTOR_by_player.csv",
+      "sha256": "4274e23c05507f1e3b8e43f9fa394185a259ccbe1af7a812798d7279337f35e2"
+    },
+    "RAPTOR historical": {
+      "file": "historical_RAPTOR_by_player.csv",
+      "sha256": "9c90010404c2b557524b6ab7172e2b41a08cf57e929f2753a6c7e9ac7c520ac8"
+    },
+    "MAMBA": {
+      "file": "MAMBAVALUES.xlsx - Sheet1.csv",
+      "sha256": "016a50e7f9eff2cb2f28c6964d6f91ccdd85edf2ba4630a2f7f63928496e8892"
+    },
+    "DARKO DPM": {
+      "file": "DARKO - Daily Adjusted and Regressed Kalman Optimized projections - Full DPM History.csv",
+      "sha256": "7eab0f039f618496a33e378cdbda82c8b8248e47e73f65558625538de3bcea91"
+    },
+    "BPM 2.0": {
+      "file": "research/rapm_lab/data/external/benchmark_20260903/annual_sources.parquet",
+      "sha256": "6d1de600c15ad17ce79a1909c0e57de9a1c36842a1a570359c79c432996d5fac"
+    },
+    "xRAPM": {
+      "file": "research/rapm_lab/data/external/benchmark_20260903/annual_sources.parquet",
+      "sha256": "6d1de600c15ad17ce79a1909c0e57de9a1c36842a1a570359c79c432996d5fac"
+    },
+    "CourtSignal PIPM reconstruction": {
+      "file": "research/rapm_lab/outputs/pipm_reconstruction/pipm_reconstruction_v1_e0625de5fe/reconstructions.parquet",
+      "sha256": "53d7fbb2645569e07bc11f63209edc7215ce444e1c2c9cd3b1ce323ff60b3f1d"
+    },
+    "CourtSignal RAPTOR reconstruction": {
+      "file": "research/rapm_lab/outputs/raptor_reconstruction/raptor_reconstruction_v1_938d1becf9/reconstructions.parquet",
+      "sha256": "795ce463816d02c999435ba54f186ef1d36e2e87c4b1d9e6dba551e5f0df9f74"
+    },
+    "PULSE run.json": {
+      "file": "artifacts/models/pulse/pulse_canonical_v1_cd3c14750a/run.json",
+      "sha256": "5f097e1e88e221ead556896c357a8d9262c6fab65034743a04a3056d0ba0f56d"
+    },
+    "PULSE validation_games.parquet": {
+      "file": "artifacts/models/pulse/pulse_canonical_v1_cd3c14750a/validation_games.parquet",
+      "sha256": "c294b8969f3e8027fba8c67ca97bbf01909c5857857b466ba3615b67665dcb9b"
+    },
+    "PULSE validation_folds.parquet": {
+      "file": "artifacts/models/pulse/pulse_canonical_v1_cd3c14750a/validation_folds.parquet",
+      "sha256": "c0ce621944662cd651d198956e3dc70d72c0edd226d45c852f02bcdb256d3c45"
+    },
+    "PULSE validation_priors.parquet": {
+      "file": "artifacts/models/pulse/pulse_canonical_v1_cd3c14750a/validation_priors.parquet",
+      "sha256": "a05284e3fc6e0316a92b50a8b947419860f9c581b7ab597d9a60c7d2b2e4d6b0"
+    }
+  }
+}
