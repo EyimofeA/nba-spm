@@ -85,6 +85,22 @@ def test_v3_terminal_scores_use_last_event_not_max() -> None:
     assert int(scores["away_team_id"].iloc[0]) == 1610612738
 
 
+def test_v3_terminal_scores_skip_null_final_event() -> None:
+    events = pd.DataFrame(
+        {
+            "gameId": [22400001, 22400001],
+            "actionId": [1, 2],
+            "teamId": [1610612737, 1610612738],
+            "location": ["h", "v"],
+            "scoreHome": [110, None],
+            "scoreAway": [108, None],
+        }
+    )
+    scores = v3_terminal_scores(events, 2025)
+    assert int(scores["home_score"].iloc[0]) == 110
+    assert int(scores["away_score"].iloc[0]) == 108
+
+
 def test_segments_to_stints_counts_first_segment_possession_only() -> None:
     base = {column: [10 + i, 10 + i] for i, column in enumerate(LINEUP_COLUMNS, start=1)}
     segments = pd.DataFrame({

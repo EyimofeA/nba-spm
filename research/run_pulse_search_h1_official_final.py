@@ -140,10 +140,13 @@ def shotdetail_dates(seasons: tuple[int, ...]) -> pd.DataFrame:
 def v3_terminal_scores(v3: pd.DataFrame, project_season: int) -> pd.DataFrame:
     work = v3.copy()
     work["game_id"] = work["gameId"].map(canonical_game_id)
-    last = (
-        work.sort_values(["game_id", "actionId"], kind="stable")
-        .groupby("game_id", as_index=False)
-        .tail(1)
+    ordered = work.sort_values(["game_id", "actionId"], kind="stable")
+    last = ordered.groupby("game_id", as_index=False).tail(1)
+    filled = ordered.dropna(subset=["scoreHome", "scoreAway"]).groupby("game_id", as_index=False).tail(1)
+    last = last.drop(columns=["scoreHome", "scoreAway"]).merge(
+        filled[["game_id", "scoreHome", "scoreAway"]],
+        on="game_id",
+        how="left",
     )
     teams = (
         work.loc[(work["teamId"] > 0) & work["location"].isin(["h", "v"])]
@@ -159,11 +162,11 @@ def v3_terminal_scores(v3: pd.DataFrame, project_season: int) -> pd.DataFrame:
     output = last[["game_id", "scoreHome", "scoreAway"]].merge(home, on="game_id", how="inner").merge(
         away, on="game_id", how="inner"
     )
-    output["home_score"] = pd.to_numeric(output["scoreHome"], errors="raise").astype("Int64")
-    output["away_score"] = pd.to_numeric(output["scoreAway"], errors="raise").astype("Int64")
+    output["home_score"] = pd.to_numeric(output["scoreHome"], errors="coerce").astype("Int64")
+    output["away_score"] = pd.to_numeric(output["scoreAway"], errors="coerce").astype("Int64")
     output["project_season"] = int(project_season)
     output["season_type"] = "regular"
-    if output["game_id"].duplicated().any() or output[["home_team_id", "away_team_id", "home_score", "away_score"]].isna().any().any():
+    if output["game_id"].duplicated().any() or output[["home_team_id", "away_team_id"]].isna().any().any():
         raise ValueError(f"V3 terminal scores failed for {project_season}")
     return output.drop(columns=["scoreHome", "scoreAway"])
 
@@ -206,6 +209,15 @@ def build_score_reference(seasons: tuple[int, ...], box: pd.DataFrame) -> tuple[
         scores = order
     scores["game_date"] = pd.to_datetime(scores["game_date"], errors="raise").dt.date.astype(str)
     scores = box_team_scores(box, scores)
+    scores["v3_home_score"] = scores["home_score"]
+    scores["v3_away_score"] = scores["away_score"]
+    scores["home_score"] = scores["home_score"].fillna(scores["box_home_score"])
+    scores["away_score"] = scores["away_score"].fillna(scores["box_away_score"])
+    box_present = scores["box_home_score"].notna() & scores["box_away_score"].notna()
+    scores.loc[box_present, "home_score"] = scores.loc[box_present, "box_home_score"].astype("Int64")
+    scores.loc[box_present, "away_score"] = scores.loc[box_present, "box_away_score"].astype("Int64")
+    if scores[["home_score", "away_score", "home_team_id", "away_team_id"]].isna().any().any():
+        raise ValueError("Score reference still has null finals after V3 and box fill.")
     compared = scores.loc[scores["box_home_score"].notna()]
     metrics = {
         "games": int(len(scores)),
