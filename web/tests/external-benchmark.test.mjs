@@ -23,6 +23,7 @@ test("external comparison pins current PULSE and separates MAMBA coverage", () =
   assert.match(view, /not an out-of-time test/);
   assert.match(view, /not untouched confirmation/);
   assert.match(view, /Full-coverage PULSE test/);
+  assert.match(view, /ranks fifth behind xRAPM, EPM, DARKO DPM, and LEBRON/);
   assert.equal(data.rich_prior_test.outcome_start, 2016);
   assert.equal(data.rich_prior_test.outcome_end, 2026);
   assert.equal(data.rich_prior_test.games, 13199);

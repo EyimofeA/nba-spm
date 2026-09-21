@@ -31,6 +31,15 @@ TEAMMATE_EFFECTS = ROOT / (
     "research/rapm_lab/outputs/teammate_play_channels/"
     "teammate_play_channels_v1_9f5feb3641"
 )
+STINT_RAPM_NOTE = (
+    "Stint-aggregated lineup RAPM from the PULSE companion fit. "
+    "Ridge penalties 3000 offense, 4500 defense, and 300 home. "
+    "Not terminal-lineup 3000/3000."
+)
+ROLLING_RAPM_NOTE = (
+    "Stint-aggregated rolling windows from the canonical RAPM suite. "
+    "Ridge penalties 3000 offense, 4500 defense, and 300 home."
+)
 SHOOTING_LUCK = ROOT / (
     "research/rapm_lab/outputs/luck_teammate_shooting_rapm/"
     "luck_teammate_shooting_rapm_v1_3641085323"
@@ -116,23 +125,30 @@ def main() -> int:
         "current-age-time-decay-2022-2026.json",
     ):
         (OUTPUT / retired).unlink(missing_ok=True)
+    for path in OUTPUT.glob("full-history-actual-age-*.json"):
+        path.unlink()
+    for year in range(2018, 2024):
+        (OUTPUT / f"win-probability-{year}.json").unlink(missing_ok=True)
 
     annual = _normalize_player(pd.read_parquet(PULSE / "ratings.parquet"), names)
     _add_grouped(
         catalog, files, ident="annual", title="Annual RAPM", frame=annual,
         group="Season", columns=["PLAYER_ID", "PLAYER_NAME", "Season", "rapm_offense", "rapm_defense", "rapm_net", "Poss_Off", "Poss_Def"],
+        note=STINT_RAPM_NOTE,
     )
 
     rolling = _normalize_player(pd.read_parquet(CANONICAL_SUITE / "rolling_5y.parquet"), names)
     _add_grouped(
         catalog, files, ident="rolling-five", title="Rolling five-year RAPM", frame=rolling,
         group="window_end", columns=["PLAYER_ID", "PLAYER_NAME", "window_start", "window_end", "offense", "defense", "net", "Poss_Off", "Poss_Def"],
+        note=ROLLING_RAPM_NOTE,
     )
 
     rolling_three = _normalize_player(pd.read_parquet(CANONICAL_SUITE / "rolling_3y.parquet"), names)
     _add_grouped(
         catalog, files, ident="rolling-three", title="Rolling three-year RAPM", frame=rolling_three,
         group="window_end", columns=["PLAYER_ID", "PLAYER_NAME", "window_start", "window_end", "offense", "defense", "net", "Poss_Off", "Poss_Def"],
+        note=ROLLING_RAPM_NOTE,
     )
 
     age_curve = pd.read_parquet(
@@ -145,7 +161,7 @@ def main() -> int:
     ), names)
     filename = "current-time-decay-2022-2026.json"
     files[filename] = _write(OUTPUT / filename, _records(normal_decay[[c for c in decay_cols if c in normal_decay]]))
-    catalog.append({"id": "current-time-decay", "title": "Current time-decayed RAPM", "unit": "points per 100", "note": "Five recent seasons with a five-year half-life. Research leaderboard only.", "periods": [{"id": "2022-2026", "label": "2022–2026", "url": f"/data/rapm/{filename}", "rows": len(normal_decay)}]})
+    catalog.append({"id": "current-time-decay", "title": "Time-decayed RAPM", "unit": "points per 100", "note": "Five recent seasons with a five-year half-life. Research leaderboard only.", "periods": [{"id": "2022-2026", "label": "2022–2026", "url": f"/data/rapm/{filename}", "rows": len(normal_decay)}]})
 
     luck = _normalize_player(pd.read_parquet(
         SHOOTING_LUCK / "luck_adjusted_ratings.parquet"

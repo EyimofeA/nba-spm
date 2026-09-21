@@ -236,7 +236,12 @@ function PlayerBody({
                 {currentSeason - 1}–{String(currentSeason).slice(2)}
               </span>
               {roles?.offense && (
-                <span className="chip">{roles.offense.primary_role}</span>
+                <span className="chip">
+                  {roleSeason && roleSeason.Season < currentSeason
+                    ? `${roleSeason.Season - 1}–${String(roleSeason.Season).slice(2)} role · `
+                    : ""}
+                  {roles.offense.primary_role}
+                </span>
               )}
             </div>
           </div>
@@ -312,8 +317,8 @@ function PlayerBody({
       {decomposition.length > 0 && (
         <section aria-labelledby="pulse-decomposition-heading">
           <div className="section-head" style={{ marginTop: 18 }}>
-            <div><p className="kicker">PULSE decomposition</p><h2 id="pulse-decomposition-heading">Where the rating comes from</h2></div>
-            <span className="meta">Components reconcile to PULSE</span>
+            <div><p className="kicker">PULSE decomposition</p><h2 id="pulse-decomposition-heading">Factor allocation</h2></div>
+            <span className="meta">2021–26 ledger · statistical split, not causal credit</span>
           </div>
           <div className="decomposition-grid">
             {decomposition.map((group) => (
@@ -370,7 +375,7 @@ function PlayerBody({
             kicker={`Skill profile · ${season}`}
             title="Season-relative percentile"
             legend={<Legend items={pizzaLegend} />}
-            note="Percentiles compare this player to the rest of the season."
+            note="Percentiles compare this player to the rest of the season. The axis mixture changes when matchup or tracking coverage ends."
           >
             <Pizza slices={slices} />
           </Figure>}

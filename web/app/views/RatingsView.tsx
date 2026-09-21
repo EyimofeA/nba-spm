@@ -284,6 +284,14 @@ export function RatingsView({
         ))}
       </nav>
 
+      {active.id === "pulse" && (
+        <p className="note ratings-board-note">
+          Board values are a final descriptive mapping trained through 2026, not
+          past-only fold predictions. Seasons 1997–2013 are backcast; 2014–2026
+          are refits.
+        </p>
+      )}
+
       <div className="model-tabs" role="tablist" aria-label="Rating model">
         {displayModels.map((item) => (
           <button
