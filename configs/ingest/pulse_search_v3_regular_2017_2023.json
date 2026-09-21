@@ -1,0 +1,83 @@
+{
+  "schema_version": "ingest_manifest_v1",
+  "purpose": "PULSE search real-protocol: V3 regular events for project seasons 2017-2023. 2024-2026 already local.",
+  "task_defaults": {
+    "provider": "cdechoch/nba-data-archive",
+    "license": "Apache-2.0",
+    "source_revision": "dfa8fa43f89ae2ca6c18db524edc2050a6bb2286",
+    "expected_min_rows": 100000,
+    "max_attempts": 20,
+    "connect_timeout_seconds": 30,
+    "read_timeout_seconds": 300,
+    "required_columns": [
+      "gameId", "actionId", "actionNumber", "period", "clock", "teamId",
+      "personId", "actionType", "scoreHome", "scoreAway", "description",
+      "_season", "_season_type"
+    ]
+  },
+  "tasks": [
+    {
+      "name": "nbastatsv3_2017_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2016.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2017/regular.parquet",
+      "season": 2017,
+      "season_type": "regular",
+      "expected_bytes": 14849335,
+      "expected_sha256": "970c6d92c0f043e0bd356ac9300985aec350277588ef50764e10e79bfdb32daa"
+    },
+    {
+      "name": "nbastatsv3_2018_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2017.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2018/regular.parquet",
+      "season": 2018,
+      "season_type": "regular",
+      "expected_bytes": 14864187,
+      "expected_sha256": "1bb006f166686ab459e4fd98c4733eb4b65a5711d8dbc43277b3fd56a28a9db9"
+    },
+    {
+      "name": "nbastatsv3_2019_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2018.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2019/regular.parquet",
+      "season": 2019,
+      "season_type": "regular",
+      "expected_bytes": 15399996,
+      "expected_sha256": "cacd0a8efcf1b078247c7120d56a98c612ec05424ed9f3a23b6d2914878efab2"
+    },
+    {
+      "name": "nbastatsv3_2020_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2019.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2020/regular.parquet",
+      "season": 2020,
+      "season_type": "regular",
+      "expected_bytes": 13360555,
+      "expected_sha256": "4552cd780979a2099a6b2180034758df145d1c5ec836ea36d96626eb5fdae2da"
+    },
+    {
+      "name": "nbastatsv3_2021_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2020.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2021/regular.parquet",
+      "season": 2021,
+      "season_type": "regular",
+      "expected_bytes": 13268558,
+      "expected_sha256": "351fd265e2550a8be2f9e44d3c3aa7442c77adedfd42258bde9ae7e7298df2db"
+    },
+    {
+      "name": "nbastatsv3_2022_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2021.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2022/regular.parquet",
+      "season": 2022,
+      "season_type": "regular",
+      "expected_bytes": 15175013,
+      "expected_sha256": "d1a33fbde182680787f713c65f4b45d09b27c37ea2a54719c89266899d7fc4fd"
+    },
+    {
+      "name": "nbastatsv3_2023_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2022.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2023/regular.parquet",
+      "season": 2023,
+      "season_type": "regular",
+      "expected_bytes": 15318550,
+      "expected_sha256": "499535258ae010b13e5213b6d3bff8232955e19798543e48a607fb34bc85b144"
+    }
+  ]
+}

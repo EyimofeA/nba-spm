@@ -53,7 +53,16 @@ def convert_lineups(season: int) -> Path:
         / "regular.rds"
     )
     destination = source.with_suffix(".csv.gz")
-    if not destination.exists() or destination.stat().st_mtime < source.stat().st_mtime:
+    if destination.exists() and destination.stat().st_mtime >= source.stat().st_mtime:
+        return destination
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        import pyreadr
+
+        frame = next(iter(pyreadr.read_r(str(source)).values()))
+        frame.to_csv(destination, index=False, compression="gzip")
+        return destination
+    except Exception:
         subprocess.run(
             ["Rscript", str(ROOT / "research/convert_historical_lineups.R"), str(source), str(destination)],
             check=True,
