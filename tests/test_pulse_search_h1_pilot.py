@@ -12,6 +12,31 @@ from research.run_pulse_search_h1_official_final import (
     technical_free_throws,
     v3_terminal_scores,
 )
+from research.run_pulse_search_h5_v3_defense import attribute_rim_defense, field_goal_shots
+
+
+def test_attribute_rim_defense_splits_one_fifth_per_defender() -> None:
+    shots = pd.DataFrame({
+        "isFieldGoal": [1, 1],
+        "shotDistance": [3, 20],
+        "shotResult": ["Made", "Missed"],
+        "possession": [1, 1],
+        "home_player_1": [11, 11],
+        "home_player_2": [12, 12],
+        "home_player_3": [13, 13],
+        "home_player_4": [14, 14],
+        "home_player_5": [15, 15],
+        "away_player_1": [21, 21],
+        "away_player_2": [22, 22],
+        "away_player_3": [23, 23],
+        "away_player_4": [24, 24],
+        "away_player_5": [25, 25],
+    })
+    fg = field_goal_shots(shots)
+    rim = attribute_rim_defense(fg, pd.Series([1, 1], index=fg.index))
+    assert set(rim["PLAYER_ID"]) == {21, 22, 23, 24, 25}
+    assert abs(float(rim["rim_dfga"].sum()) - 1.0) < 1e-9
+    assert abs(float(rim["rim_fgm"].sum()) - 1.0) < 1e-9
 
 
 def test_minutes_value_parses_clock_and_decimal() -> None:

@@ -15,6 +15,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+ROOT = Path(__file__).resolve().parents[1]
+import sys
+
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from nba_impact.data.manifest import sha256_file, write_json_atomic
 from nba_impact.models.canonical_pulse import game_metrics
 from nba_impact.models.rapm import RapmConfig
