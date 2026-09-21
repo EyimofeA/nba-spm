@@ -23,9 +23,9 @@ if str(ROOT) not in sys.path:
 
 from nba_impact.data.game_dim import canonical_game_id
 from nba_impact.data.manifest import sha256_file, write_json_atomic
-from nba_impact.models.canonical_pulse import game_metrics, predict_next_season_games, stint_prior_center
+from nba_impact.models.canonical_pulse import game_metrics, stint_prior_center
 from nba_impact.models.rapm import RapmConfig
-from nba_impact.models.stint_rapm import build_stint_design, load_canonical_stints
+from nba_impact.models.stint_rapm import build_stint_design
 from research.pulse_search_protocol import (
     add_z_increment,
     fit_box15_prior,
@@ -66,16 +66,6 @@ OFFICIAL = ROOT / "data/lake/bronze/official_game_scores/official_game_scores.pa
 FETCHED_BOX = ROOT / "data/lake/bronze/nba_player_game_logs"
 CANONICAL_PULSE_RMSE = 13.614
 COMMON_PANEL_RMSE = 13.755
-WIN_RMSE = 13.614
-
-
-def available_v3_seasons() -> tuple[int, ...]:
-    seasons = []
-    for season in range(2017, 2027):
-        path = V3_NESTED / f"project_season={season}" / "regular.parquet"
-        if path.exists():
-            seasons.append(season)
-    return tuple(seasons)
 
 
 def espn_player_games(espn: pd.DataFrame, scores: pd.DataFrame) -> pd.DataFrame:
@@ -148,23 +138,18 @@ def season_has_stints(season: int) -> bool:
     ).exists()
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--seasons", default="")
-    args = parser.parse_args()
+def parse_seasons(raw: str) -> tuple[int, ...]:
     seasons = (
-        tuple(int(item) for item in args.seasons.split(",") if item.strip())
-        if args.seasons
+        tuple(int(item) for item in raw.split(",") if item.strip())
+        if raw
         else tuple(range(2014, 2027))
     )
     if len(seasons) < 2:
         raise SystemExit(f"Need at least two seasons, found {seasons}")
-    SILVER.mkdir(parents=True, exist_ok=True)
-    OUTPUT.mkdir(parents=True, exist_ok=True)
+    return seasons
 
-    score_build = build_offline_official_scores(seasons)
-    print(json.dumps({"official_scores": score_build}, indent=2), flush=True)
-    official_table = pd.read_parquet(OFFICIAL)
+
+def rebuild_canonical_stints(seasons: tuple[int, ...], official_table: pd.DataFrame) -> list[dict]:
     canonical_quality = []
     for season in seasons:
         destination = CANONICAL / f"season={season}" / "regular.parquet"
@@ -183,159 +168,180 @@ def main() -> None:
         except Exception as exc:
             canonical_quality.append({"season": season, "status": "failed", "error": str(exc)})
             print(f"canonical {season} failed: {exc}", flush=True)
+    return canonical_quality
 
-    scores = official_table.copy()
-    score_metrics = {
-        "games": int(len(scores)),
-        "official_games": int(len(scores)),
-        "score_source": "offline_espn_classic_v3",
-        "canonical_quality": canonical_quality,
-        **score_build,
-    }
-    print(json.dumps({"seasons": seasons, "score_metrics_games": score_metrics["games"]}, indent=2), flush=True)
 
-    box = combined_box()
-    summaries = []
+def _write_espn_player_games(v3_scores: pd.DataFrame, players: Path) -> None:
+    espn_path = ROOT / "data/lake/bronze/llimllib_nba_data/espn/player_box.parquet"
+    espn = pd.read_parquet(espn_path)
+    espn_games = espn_player_games(espn, v3_scores)
+    if players.exists():
+        espn_games = pd.concat([pd.read_parquet(players), espn_games], ignore_index=True)
+        espn_games = espn_games.drop_duplicates(["game_id", "player_id"], keep="last")
+    players.parent.mkdir(parents=True, exist_ok=True)
+    espn_games.to_parquet(players, index=False)
+
+
+def maybe_build_v3_fallback(
+    seasons: tuple[int, ...], score_metrics: dict, box: pd.DataFrame
+) -> tuple[list, dict]:
     missing = [season for season in seasons if not season_has_stints(season)]
-    if missing:
-        v3_seasons = tuple(season for season in missing if (V3_NESTED / f"project_season={season}" / "regular.parquet").exists())
-        if v3_seasons:
-            v3_scores, v3_metrics = build_score_reference(v3_seasons, box)
-            score_metrics["v3_fallback"] = v3_metrics
-            players = SILVER / "player_games.parquet"
-            espn_path = ROOT / "data/lake/bronze/llimllib_nba_data/espn/player_box.parquet"
-            if espn_path.exists():
-                espn = pd.read_parquet(espn_path)
-                espn_games = espn_player_games(espn, v3_scores)
-                if players.exists():
-                    espn_games = pd.concat([pd.read_parquet(players), espn_games], ignore_index=True)
-                    espn_games = espn_games.drop_duplicates(["game_id", "player_id"], keep="last")
-                players.parent.mkdir(parents=True, exist_ok=True)
-                espn_games.to_parquet(players, index=False)
-            elif not players.exists():
-                box_path = SILVER / "combined_box.parquet"
-                if not box.empty:
-                    box.to_parquet(box_path, index=False)
-                build_player_games(v3_scores, box_path if not box.empty else BOX_LOGS, players, v3_seasons)
-            summaries = build_sources(v3_seasons, v3_scores, players)
-            print(json.dumps({"built": summaries}, indent=2), flush=True)
+    if not missing:
+        return [], score_metrics
+    v3_seasons = tuple(
+        season
+        for season in missing
+        if (V3_NESTED / f"project_season={season}" / "regular.parquet").exists()
+    )
+    if not v3_seasons:
+        return [], score_metrics
+    v3_scores, v3_metrics = build_score_reference(v3_seasons, box)
+    score_metrics = {**score_metrics, "v3_fallback": v3_metrics}
+    players = SILVER / "player_games.parquet"
+    espn_path = ROOT / "data/lake/bronze/llimllib_nba_data/espn/player_box.parquet"
+    if espn_path.exists():
+        _write_espn_player_games(v3_scores, players)
+    elif not players.exists():
+        box_path = SILVER / "combined_box.parquet"
+        if not box.empty:
+            box.to_parquet(box_path, index=False)
+        build_player_games(v3_scores, box_path if not box.empty else BOX_LOGS, players, v3_seasons)
+    summaries = build_sources(v3_seasons, v3_scores, players)
+    print(json.dumps({"built": summaries}, indent=2), flush=True)
+    return summaries, score_metrics
 
-    features = pd.read_parquet(FEATURES)
-    targets = pd.read_parquet(TARGETS)
-    hustle = pd.read_csv(HUSTLE)
-    rating_seasons = [season for season in seasons if season + 1 in seasons and season_has_stints(season) and season_has_stints(season + 1)]
+
+def h7_centers(ridge_center, source_design, rates, contest_center, features, targets, rating_season, prior_quality):
+    extra_centers = {
+        "rapm": np.zeros(source_design.X.shape[1]),
+        "box15": ridge_center,
+        "contest2": contest_center,
+        "h7_deflections": add_z_increment(ridge_center, source_design, rates, ("gabriel_deflections_p100",), 1.0),
+        "h7_charges": add_z_increment(ridge_center, source_design, rates, ("gabriel_charges_p100",), 1.0),
+        "h7_boxouts": add_z_increment(ridge_center, source_design, rates, ("gabriel_def_boxouts_p100",), 1.0),
+        "h7_contest3": add_z_increment(ridge_center, source_design, rates, ("gabriel_contested_3pt_p100",), 1.0),
+        "h7_hustle_block": add_z_increment(
+            ridge_center,
+            source_design,
+            rates,
+            (
+                "gabriel_contested_2pt_p100",
+                "gabriel_deflections_p100",
+                "gabriel_charges_p100",
+                "gabriel_def_boxouts_p100",
+            ),
+            1.0,
+        ),
+    }
+    for learner in ("elasticnet", "extratrees", "hgb"):
+        learner_priors, learner_quality = fit_box15_prior(
+            features, targets, training_before=rating_season, learner=learner
+        )
+        learner_quality["rating_season"] = rating_season
+        prior_quality.append(learner_quality)
+        extra_centers[f"h7_{learner}"] = stint_prior_center(source_design, learner_priors, rating_season)[0]
+    return extra_centers
+
+
+def score_fractional_arm(rating_season, ridge_priors, config, target_design, official, coverage):
+    poss_path = SILVER / f"project_season={rating_season}" / "possessions_with_tech.parquet"
+    seg_path = SILVER / f"project_season={rating_season}" / "segments.parquet"
+    if not (poss_path.exists() and seg_path.exists()):
+        return None
+    fractional = segments_to_stints_mode(
+        pd.read_parquet(poss_path), pd.read_parquet(seg_path), mode="fractional"
+    )
+    frac_design = build_stint_design(fractional.assign(
+        home_points=lambda frame: frame["home_points_excl"],
+        away_points=lambda frame: frame["away_points_excl"],
+    ))
+    frac_center, _ = stint_prior_center(frac_design, ridge_priors, rating_season)
+    frac_fits = fit_many_centers(frac_design, config, {"frac": frac_center}, scale=1.0)
+    scored = score_games(
+        frac_design, target_design, *frac_fits["frac"], official, "h7_fractional", rating_season
+    )
+    return scored, {
+        "candidate": "h7_fractional",
+        "actual": "official",
+        "rating_season": rating_season,
+        "outcome_season": rating_season + 1,
+        "prior_players_with_prior": coverage["players_with_prior"],
+        **game_metrics(scored.assign(actual_margin=scored["official_margin"])),
+    }
+
+
+def score_rating_fold(rating_season, features, targets, hustle, scores):
+    source_design = build_stint_design(load_stints(rating_season, ("home_points_excl", "away_points_excl")))
+    target_design = build_stint_design(load_stints(rating_season + 1, ("home_points_excl", "away_points_excl")))
+    official = load_official_margins(rating_season + 1, scores)
+    ridge_priors, quality = fit_box15_prior(features, targets, training_before=rating_season, learner="ridge")
+    quality["rating_season"] = rating_season
+    ridge_center, coverage = stint_prior_center(source_design, ridge_priors, rating_season)
+    rates = hustle_rates(hustle, rating_season, source_design.players, source_design.def_possessions)
+    contest_center = add_z_increment(
+        ridge_center, source_design, rates, ("gabriel_contested_2pt_p100",), 1.0
+    )
+    prior_quality = [quality]
+    extra_centers = h7_centers(
+        ridge_center, source_design, rates, contest_center, features, targets, rating_season, prior_quality
+    )
+    config = RapmConfig(
+        (rating_season,),
+        lambda_off=3000.0,
+        lambda_def=4500.0,
+        lambda_home=300.0,
+        data_scope="pulse_search_real_protocol",
+    )
+    fits = fit_many_centers(source_design, config, extra_centers, scale=1.0)
+    first_mask = game_split_mask(source_design, second_half=False)
+    second_mask = game_split_mask(source_design, second_half=True)
+    if first_mask.sum() > 100 and second_mask.sum() > 100:
+        fits["h7_half_likelihood"] = fit_many_centers(
+            source_design, config, {"box15": ridge_center}, scale=1.0, row_mask=first_mask
+        )["box15"]
+        fits["h7_current_second_half"] = fit_many_centers(
+            source_design, config, {"box15": ridge_center}, scale=1.0, row_mask=second_mask
+        )["box15"]
+    fits["h7_constrained"] = fit_constrained(source_design, config, ridge_center, scale=1.0)
+    fits["h7_constrained_contest"] = fit_constrained(source_design, config, contest_center, scale=1.0)
     rows = []
     fold_metrics = []
-    prior_quality = []
-    for rating_season in rating_seasons:
-        source_stints = load_stints(rating_season, ("home_points_excl", "away_points_excl"))
-        target_stints = load_stints(rating_season + 1, ("home_points_excl", "away_points_excl"))
-        source_design = build_stint_design(source_stints)
-        target_design = build_stint_design(target_stints)
-        official = load_official_margins(rating_season + 1, scores)
-        ridge_priors, quality = fit_box15_prior(features, targets, training_before=rating_season, learner="ridge")
-        quality["rating_season"] = rating_season
-        prior_quality.append(quality)
-        zero = np.zeros(source_design.X.shape[1])
-        ridge_center, coverage = stint_prior_center(source_design, ridge_priors, rating_season)
-        rates = hustle_rates(hustle, rating_season, source_design.players, source_design.def_possessions)
-        contest_center = add_z_increment(
-            ridge_center, source_design, rates, ("gabriel_contested_2pt_p100",), 1.0
-        )
-        extra_centers = {
-            "rapm": zero,
-            "box15": ridge_center,
-            "contest2": contest_center,
-            "h7_deflections": add_z_increment(ridge_center, source_design, rates, ("gabriel_deflections_p100",), 1.0),
-            "h7_charges": add_z_increment(ridge_center, source_design, rates, ("gabriel_charges_p100",), 1.0),
-            "h7_boxouts": add_z_increment(ridge_center, source_design, rates, ("gabriel_def_boxouts_p100",), 1.0),
-            "h7_contest3": add_z_increment(ridge_center, source_design, rates, ("gabriel_contested_3pt_p100",), 1.0),
-            "h7_hustle_block": add_z_increment(
-                ridge_center,
-                source_design,
-                rates,
-                (
-                    "gabriel_contested_2pt_p100",
-                    "gabriel_deflections_p100",
-                    "gabriel_charges_p100",
-                    "gabriel_def_boxouts_p100",
-                ),
-                1.0,
-            ),
-        }
-        for learner in ("elasticnet", "extratrees", "hgb"):
-            learner_priors, learner_quality = fit_box15_prior(
-                features, targets, training_before=rating_season, learner=learner
-            )
-            learner_quality["rating_season"] = rating_season
-            prior_quality.append(learner_quality)
-            extra_centers[f"h7_{learner}"] = stint_prior_center(source_design, learner_priors, rating_season)[0]
+    fractional = score_fractional_arm(
+        rating_season, ridge_priors, config, target_design, official, coverage
+    )
+    if fractional is not None:
+        rows.append(fractional[0])
+        fold_metrics.append(fractional[1])
+    stint_source = "canonical" if (CANONICAL / f"season={rating_season}/regular.parquet").exists() else "v3"
+    for name, (beta, intercept) in fits.items():
+        scored = score_games(source_design, target_design, beta, intercept, official, name, rating_season)
+        rows.append(scored)
+        fold_metrics.append({
+            "candidate": name,
+            "actual": "official",
+            "rating_season": rating_season,
+            "outcome_season": rating_season + 1,
+            "prior_players_with_prior": coverage["players_with_prior"],
+            "stint_source": stint_source,
+            **game_metrics(scored.assign(actual_margin=scored["official_margin"])),
+        })
+    print(
+        f"fold {rating_season}->{rating_season + 1} games={fold_metrics[-1]['games']} "
+        f"prior_rows={quality['training_rows']}",
+        flush=True,
+    )
+    return rows, fold_metrics, prior_quality
 
-        config = RapmConfig(
-            (rating_season,),
-            lambda_off=3000.0,
-            lambda_def=4500.0,
-            lambda_home=300.0,
-            data_scope="pulse_search_real_protocol",
-        )
-        fits = fit_many_centers(source_design, config, extra_centers, scale=1.0)
-        first_mask = game_split_mask(source_design, second_half=False)
-        second_mask = game_split_mask(source_design, second_half=True)
-        if first_mask.sum() > 100 and second_mask.sum() > 100:
-            fits["h7_half_likelihood"] = fit_many_centers(
-                source_design, config, {"box15": ridge_center}, scale=1.0, row_mask=first_mask
-            )["box15"]
-            fits["h7_current_second_half"] = fit_many_centers(
-                source_design, config, {"box15": ridge_center}, scale=1.0, row_mask=second_mask
-            )["box15"]
-        fits["h7_constrained"] = fit_constrained(source_design, config, ridge_center, scale=1.0)
-        fits["h7_constrained_contest"] = fit_constrained(source_design, config, contest_center, scale=1.0)
 
-        poss_path = SILVER / f"project_season={rating_season}" / "possessions_with_tech.parquet"
-        seg_path = SILVER / f"project_season={rating_season}" / "segments.parquet"
-        if poss_path.exists() and seg_path.exists():
-            fractional = segments_to_stints_mode(
-                pd.read_parquet(poss_path), pd.read_parquet(seg_path), mode="fractional"
-            )
-            frac_design = build_stint_design(fractional.assign(
-                home_points=lambda frame: frame["home_points_excl"],
-                away_points=lambda frame: frame["away_points_excl"],
-            ))
-            frac_center, _ = stint_prior_center(frac_design, ridge_priors, rating_season)
-            frac_fits = fit_many_centers(frac_design, config, {"frac": frac_center}, scale=1.0)
-            scored = score_games(
-                frac_design, target_design, *frac_fits["frac"], official, "h7_fractional", rating_season
-            )
-            rows.append(scored)
-            fold_metrics.append({
-                "candidate": "h7_fractional",
-                "actual": "official",
-                "rating_season": rating_season,
-                "outcome_season": rating_season + 1,
-                "prior_players_with_prior": coverage["players_with_prior"],
-                **game_metrics(scored.assign(actual_margin=scored["official_margin"])),
-            })
+def rating_seasons_with_stints(seasons: tuple[int, ...]) -> list[int]:
+    return [
+        season
+        for season in seasons
+        if season + 1 in seasons and season_has_stints(season) and season_has_stints(season + 1)
+    ]
 
-        for name, (beta, intercept) in fits.items():
-            scored = score_games(source_design, target_design, beta, intercept, official, name, rating_season)
-            rows.append(scored)
-            fold_metrics.append({
-                "candidate": name,
-                "actual": "official",
-                "rating_season": rating_season,
-                "outcome_season": rating_season + 1,
-                "prior_players_with_prior": coverage["players_with_prior"],
-                "stint_source": "canonical" if (CANONICAL / f"season={rating_season}/regular.parquet").exists() else "v3",
-                **game_metrics(scored.assign(actual_margin=scored["official_margin"])),
-            })
-        print(
-            f"fold {rating_season}->{rating_season + 1} games={fold_metrics[-1]['games']} "
-            f"prior_rows={quality['training_rows']}",
-            flush=True,
-        )
 
-    games = pd.concat(rows, ignore_index=True)
-    folds = pd.DataFrame(fold_metrics)
+def summarize_protocol(folds: pd.DataFrame) -> pd.DataFrame:
     summary = folds.groupby(["candidate"], as_index=False).agg(
         folds=("outcome_season", "nunique"),
         games=("games", "sum"),
@@ -346,6 +352,10 @@ def main() -> None:
     summary["equal_season_rmse"] = np.sqrt(summary["equal_season_mse"])
     summary["beats_canonical_13614"] = summary["equal_season_rmse"].lt(CANONICAL_PULSE_RMSE)
     summary["beats_common_13755"] = summary["equal_season_rmse"].lt(COMMON_PANEL_RMSE)
+    return summary
+
+
+def paired_intervals_vs_baseline(games: pd.DataFrame, summary: pd.DataFrame) -> dict:
     intervals = {}
     baseline = "box15"
     for candidate in sorted(summary["candidate"].unique()):
@@ -361,7 +371,20 @@ def main() -> None:
             )
         except Exception as exc:
             intervals[f"{candidate}_minus_{baseline}"] = {"error": str(exc)}
+    return intervals
 
+
+def write_real_protocol_run(
+    seasons: tuple[int, ...],
+    rating_seasons: list[int],
+    games: pd.DataFrame,
+    folds: pd.DataFrame,
+    summary: pd.DataFrame,
+    prior_quality: list,
+    score_metrics: dict,
+    summaries: list,
+    intervals: dict,
+) -> dict:
     run_id = "pulse_search_real_protocol_v1"
     destination = OUTPUT / run_id
     destination.mkdir(parents=True, exist_ok=True)
@@ -409,6 +432,58 @@ def main() -> None:
     print(summary.sort_values("equal_season_rmse").to_string(index=False))
     print(json.dumps({"best": run["best_candidate"], "rmse": run["best_rmse"], "dual_gate": dual_gate}, indent=2))
     print(destination, flush=True)
+    return run
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--seasons", default="")
+    args = parser.parse_args()
+    seasons = parse_seasons(args.seasons)
+    SILVER.mkdir(parents=True, exist_ok=True)
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    score_build = build_offline_official_scores(seasons)
+    print(json.dumps({"official_scores": score_build}, indent=2), flush=True)
+    official_table = pd.read_parquet(OFFICIAL)
+    canonical_quality = rebuild_canonical_stints(seasons, official_table)
+    scores = official_table.copy()
+    score_metrics = {
+        "games": int(len(scores)),
+        "official_games": int(len(scores)),
+        "score_source": "offline_espn_classic_v3",
+        "canonical_quality": canonical_quality,
+        **score_build,
+    }
+    print(json.dumps({"seasons": seasons, "score_metrics_games": score_metrics["games"]}, indent=2), flush=True)
+    summaries, score_metrics = maybe_build_v3_fallback(seasons, score_metrics, combined_box())
+    features = pd.read_parquet(FEATURES)
+    targets = pd.read_parquet(TARGETS)
+    hustle = pd.read_csv(HUSTLE)
+    rating_seasons = rating_seasons_with_stints(seasons)
+    rows = []
+    fold_metrics = []
+    prior_quality = []
+    for rating_season in rating_seasons:
+        fold_rows, fold_rows_metrics, quality = score_rating_fold(
+            rating_season, features, targets, hustle, scores
+        )
+        rows.extend(fold_rows)
+        fold_metrics.extend(fold_rows_metrics)
+        prior_quality.extend(quality)
+    games = pd.concat(rows, ignore_index=True)
+    folds = pd.DataFrame(fold_metrics)
+    summary = summarize_protocol(folds)
+    write_real_protocol_run(
+        seasons,
+        rating_seasons,
+        games,
+        folds,
+        summary,
+        prior_quality,
+        score_metrics,
+        summaries,
+        paired_intervals_vs_baseline(games, summary),
+    )
 
 
 if __name__ == "__main__":

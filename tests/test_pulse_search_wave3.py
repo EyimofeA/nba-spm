@@ -8,6 +8,7 @@ from research.pulse_search_protocol import (
     keep_calibrated_variant,
     scale_side_center,
 )
+from research.pulse_search_wave3_stints import coerce_game_date
 
 
 def test_keep_calibrated_variant_requires_rmse_and_slope() -> None:
@@ -53,3 +54,13 @@ def test_fold_internal_affine_uses_only_earlier_seasons() -> None:
         / np.var(np.array([5.0, -2.0, 40.0, 1.0]))
     )
     assert not np.isclose(second["affine_slope"].iloc[0], future_only_slope)
+
+
+def test_coerce_game_date_fills_missing_and_invalid_values() -> None:
+    missing = coerce_game_date(pd.DataFrame({"game_id": ["0021200001"]}), 2013)
+    assert list(missing["game_date"]) == ["2013-01-01"]
+    present = coerce_game_date(
+        pd.DataFrame({"game_id": ["0021200001", "0021200002"], "game_date": ["2012-11-02", None]}),
+        2013,
+    )
+    assert list(present["game_date"]) == ["2012-11-02", "2013-01-01"]
