@@ -99,6 +99,9 @@ def espn_player_games(espn: pd.DataFrame, scores: pd.DataFrame) -> pd.DataFrame:
         "game_id", "season_end", "season_label", "season_type", "game_date",
         "team_id", "player_id", "player_name", "starter", "minutes_seconds",
     ]].drop_duplicates(["game_id", "player_id"])
+
+
+def combined_box() -> pd.DataFrame:
     parts = []
     if BOX_LOGS.exists():
         parts.append(_normalize_box(pd.read_parquet(BOX_LOGS)))
