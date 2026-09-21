@@ -1,0 +1,21 @@
+{
+  "schema_version": "ingest_manifest_v1",
+  "purpose": "ESPN player box for 2024 and other missing starter/minute seasons.",
+  "task_defaults": {
+    "provider": "llimllib/nba_data (ESPN Analytics mirror)",
+    "license": "not_declared_research_only",
+    "source_revision": "3519bb36e8f70a8bb61bfbf4b6c37e1fbb0f9c2c",
+    "expected_min_rows": 100000,
+    "max_attempts": 10,
+    "connect_timeout_seconds": 30,
+    "read_timeout_seconds": 300
+  },
+  "tasks": [
+    {
+      "name": "espn_player_box_all",
+      "url": "https://raw.githubusercontent.com/llimllib/nba_data/3519bb36e8f70a8bb61bfbf4b6c37e1fbb0f9c2c/data/espn/player_box.parquet",
+      "destination": "llimllib_nba_data/espn/player_box.parquet",
+      "required_columns": ["season", "game_id", "player_id", "team", "home", "starter", "minutes_played"]
+    }
+  ]
+}
