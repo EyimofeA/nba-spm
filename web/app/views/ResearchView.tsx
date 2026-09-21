@@ -174,6 +174,11 @@ export function ResearchView({ catalog }: { catalog: Catalog }) {
       <section aria-labelledby="external-benchmark-heading">
         <h2 id="external-benchmark-heading">Against other models</h2>
         <p>
+          PULSE beats CourtSignal RAPM when the target excludes technical free
+          throws; on official final margins including technical free throws,
+          PULSE ranks fifth behind xRAPM, EPM, DARKO DPM, and LEBRON.
+        </p>
+        <p>
           Ratings from 2015–2025 predict the following season’s games from 2016–2026.
           Every model uses the same games and matched player coverage. The target is
           the official final point margin, including technical free throws.
