@@ -1,0 +1,88 @@
+{
+  "schema_version": "ingest_manifest_v1",
+  "purpose": "PULSE Branch A H1 pilot: V3 regular events for project seasons 2024-2026 and NBA box logs for starters.",
+  "task_defaults": {
+    "provider": "cdechoch/nba-data-archive",
+    "license": "Apache-2.0",
+    "source_revision": "dfa8fa43f89ae2ca6c18db524edc2050a6bb2286",
+    "expected_min_rows": 100000,
+    "max_attempts": 20,
+    "connect_timeout_seconds": 30,
+    "read_timeout_seconds": 300
+  },
+  "tasks": [
+    {
+      "name": "nbastatsv3_2024_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2023.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2024/regular.parquet",
+      "season": 2024,
+      "season_type": "regular",
+      "expected_bytes": 15257332,
+      "expected_sha256": "8fd8f6f80aa9edcd8146c81ed171dffb2ce31ab85c58cfe39f4ea9f76e2a7e94",
+      "required_columns": [
+        "gameId", "actionId", "actionNumber", "period", "clock", "teamId",
+        "personId", "actionType", "scoreHome", "scoreAway", "description",
+        "_season", "_season_type"
+      ]
+    },
+    {
+      "name": "nbastatsv3_2025_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2024.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2025/regular.parquet",
+      "season": 2025,
+      "season_type": "regular",
+      "expected_bytes": 15601193,
+      "expected_sha256": "959750326d6389cdefc1eaefdff7f646ddcfc3ef6797b72b3b2ac07b727ecb0f",
+      "required_columns": [
+        "gameId", "actionId", "actionNumber", "period", "clock", "teamId",
+        "personId", "actionType", "scoreHome", "scoreAway", "description",
+        "_season", "_season_type"
+      ]
+    },
+    {
+      "name": "nbastatsv3_2026_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/nbastatsv3/2025.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/nbastatsv3/project_season=2026/regular.parquet",
+      "season": 2026,
+      "season_type": "regular",
+      "expected_bytes": 15899616,
+      "expected_sha256": "78cf9f44e68f7d767bd169e8ae37f742095134d67afb667c1677f1064927c806",
+      "required_columns": [
+        "gameId", "actionId", "actionNumber", "period", "clock", "teamId",
+        "personId", "actionType", "scoreHome", "scoreAway", "description",
+        "_season", "_season_type"
+      ]
+    },
+    {
+      "name": "shotdetail_2024_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/shotdetail/2024.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/shotdetail/project_season=2025/regular.parquet",
+      "season": 2025,
+      "season_type": "regular",
+      "expected_bytes": 2275149,
+      "expected_min_rows": 100000,
+      "required_columns": ["GAME_ID", "GAME_DATE"]
+    },
+    {
+      "name": "shotdetail_2025_regular",
+      "url": "https://huggingface.co/datasets/cdechoch/nba-data-archive/resolve/dfa8fa43f89ae2ca6c18db524edc2050a6bb2286/per_season/shotdetail/2025.parquet",
+      "destination": "nba_data_archive_scoring/revision=dfa8fa43/shotdetail/project_season=2026/regular.parquet",
+      "season": 2026,
+      "season_type": "regular",
+      "expected_min_rows": 100000,
+      "required_columns": ["GAME_ID", "GAME_DATE"]
+    },
+    {
+      "name": "nba_player_game_logs_all",
+      "url": "https://raw.githubusercontent.com/llimllib/nba_data/3519bb36e8f70a8bb61bfbf4b6c37e1fbb0f9c2c/data/player_game_logs.parquet",
+      "destination": "llimllib_nba_data/player_game_logs.parquet",
+      "provider": "llimllib/nba_data (NBA Stats mirror)",
+      "license": "not_declared_research_only",
+      "source_revision": "3519bb36e8f70a8bb61bfbf4b6c37e1fbb0f9c2c",
+      "expected_min_rows": 90000,
+      "required_columns": [
+        "gameId", "teamId", "personId", "firstName", "familyName", "position", "minutes"
+      ]
+    }
+  ]
+}
