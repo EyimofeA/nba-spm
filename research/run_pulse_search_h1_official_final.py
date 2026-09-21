@@ -308,11 +308,15 @@ def apply_technical_points(possessions: pd.DataFrame, assigned: pd.DataFrame, te
     return output
 
 
+def _attach_possession_meta(possessions: pd.DataFrame, segments: pd.DataFrame, extra: tuple[str, ...] = ()) -> pd.DataFrame:
+    meta_columns = ["possession_id", "offense_is_home", "season_end", "game_id", "technical_points", *extra]
+    meta = possessions.loc[:, [column for column in meta_columns if column in possessions.columns]]
+    overlap = [column for column in meta.columns if column != "possession_id" and column in segments.columns]
+    return segments.drop(columns=overlap).merge(meta, on="possession_id", how="inner")
+
+
 def segments_to_stints(possessions: pd.DataFrame, segments: pd.DataFrame) -> pd.DataFrame:
-    meta = possessions[[
-        "possession_id", "offense_is_home", "season_end", "game_id", "technical_points"
-    ]]
-    frame = segments.merge(meta, on="possession_id", how="inner")
+    frame = _attach_possession_meta(possessions, segments)
     first = frame.groupby("possession_id", as_index=False)["segment_number"].min().rename(
         columns={"segment_number": "first_segment"}
     )
@@ -342,10 +346,8 @@ def segments_to_stints(possessions: pd.DataFrame, segments: pd.DataFrame) -> pd.
 
 def segments_to_terminal(possessions: pd.DataFrame, segments: pd.DataFrame) -> pd.DataFrame:
     """Assign each possession's points to its last lineup. Blocked H6 comparison."""
-    meta = possessions[[
-        "possession_id", "offense_is_home", "season_end", "game_id", "technical_points", "points"
-    ]]
-    frame = segments.merge(meta, on="possession_id", how="inner", suffixes=("_seg", ""))
+    extra = ("points",) if "points" in possessions.columns else ()
+    frame = _attach_possession_meta(possessions, segments, extra=extra)
     last = frame.groupby("possession_id", as_index=False)["segment_number"].max().rename(
         columns={"segment_number": "last_segment"}
     )

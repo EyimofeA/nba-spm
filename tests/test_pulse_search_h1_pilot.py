@@ -147,3 +147,24 @@ def test_segments_to_terminal_uses_last_lineup_for_all_points() -> None:
     assert int(terminal["home_player_1"].iloc[0]) == 21
     assert int(terminal["home_points"].iloc[0]) == 3
     assert int(terminal["home_possessions"].iloc[0]) == 1
+
+
+def test_segments_to_stints_survives_overlapping_game_id() -> None:
+    base = {column: [10 + i, 10 + i] for i, column in enumerate(LINEUP_COLUMNS, start=1)}
+    segments = pd.DataFrame({
+        "possession_id": ["p1", "p1"],
+        "game_id": ["0022400001", "0022400001"],
+        "segment_number": [1, 2],
+        "points": [2, 1],
+        **base,
+    })
+    possessions = pd.DataFrame({
+        "possession_id": ["p1"],
+        "offense_is_home": [True],
+        "season_end": [2025],
+        "game_id": ["0022400001"],
+        "technical_points": [0],
+    })
+    stints = segments_to_stints(possessions, segments)
+    assert len(stints) == 1
+    assert stints["game_id"].iloc[0] == "0022400001"
