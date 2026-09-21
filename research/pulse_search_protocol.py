@@ -263,6 +263,77 @@ def _solve(lhs, rhs) -> np.ndarray:
     return np.asarray(beta, dtype=float)
 
 
+PULSE_SLOPE_GATE = 0.871
+PULSE_RMSE_GATE = 13.614
+HUSTLE_BLOCK = (
+    "gabriel_contested_2pt_p100",
+    "gabriel_deflections_p100",
+    "gabriel_charges_p100",
+    "gabriel_def_boxouts_p100",
+)
+
+
+def scale_side_center(
+    center: np.ndarray,
+    n_players: int,
+    *,
+    offense_scale: float,
+    defense_scale: float,
+) -> np.ndarray:
+    out = np.asarray(center, dtype=float).copy()
+    out[:n_players] *= offense_scale
+    out[n_players : 2 * n_players] *= defense_scale
+    return out
+
+
+def keep_calibrated_variant(
+    rmse: float,
+    slope: float,
+    baseline_rmse: float,
+    *,
+    slope_gate: float = PULSE_SLOPE_GATE,
+) -> bool:
+    """Keep only if RMSE is at or below the nine-year Box15 baseline and slope is not worse than 0.871."""
+    return float(rmse) <= float(baseline_rmse) and float(slope) >= float(slope_gate)
+
+
+def fold_internal_affine(
+    games: pd.DataFrame,
+    candidate: str,
+    *,
+    actual_column: str = "official_margin",
+    predicted_column: str = "predicted_margin",
+) -> pd.DataFrame:
+    """Fit actual ~ a * predicted + b on earlier outcome seasons only."""
+    frame = games.loc[games["candidate"].eq(candidate)].copy()
+    if frame.empty:
+        raise ValueError(f"No games for affine candidate {candidate}")
+    parts = []
+    for season, group in frame.groupby("outcome_season", sort=True):
+        prior = frame.loc[frame["outcome_season"].lt(int(season))]
+        pred = group[predicted_column].to_numpy(float)
+        if prior.empty:
+            slope, intercept = 1.0, 0.0
+        else:
+            prior_pred = prior[predicted_column].to_numpy(float)
+            prior_actual = prior[actual_column].to_numpy(float)
+            variance = float(np.var(prior_pred))
+            if variance <= 1e-12:
+                slope, intercept = 1.0, 0.0
+            else:
+                slope = float(np.cov(prior_actual, prior_pred, ddof=0)[0, 1] / variance)
+                intercept = float(prior_actual.mean() - slope * prior_pred.mean())
+        calibrated = slope * pred + intercept
+        out = group.copy()
+        out["predicted_margin"] = calibrated
+        out["affine_slope"] = slope
+        out["affine_intercept"] = intercept
+        out["candidate"] = f"{candidate}_affine"
+        out["squared_error_official"] = (out[actual_column].to_numpy(float) - calibrated) ** 2
+        parts.append(out)
+    return pd.concat(parts, ignore_index=True)
+
+
 def fit_many_centers(
     design: StintRapmDesign,
     config: RapmConfig,
@@ -279,6 +350,48 @@ def fit_many_centers(
         rhs = base_rhs if np.allclose(center, 0) else base_rhs + scale * penalty * center
         beta = _solve(lhs, rhs)
         results[name] = _center_beta(beta, weighted_x, intercept, n)
+    return results
+
+
+def fit_precision_jobs(
+    design: StintRapmDesign,
+    config: RapmConfig,
+    jobs: list[dict],
+    *,
+    row_mask: np.ndarray | None = None,
+) -> dict[str, tuple[np.ndarray, float]]:
+    """Fit many prior-scale / side-precision jobs, reusing the possession Gram matrix.
+
+    Each job needs ``name`` and ``center``. Optional keys: ``prior_scale``,
+    ``offense_penalty_mult``, ``defense_penalty_mult``.
+    """
+    mask = np.ones(len(design.points), dtype=bool) if row_mask is None else row_mask
+    x = design.X[mask]
+    points = design.points[mask]
+    possessions = design.possessions[mask]
+    intercept = float(points.sum() / float(possessions.sum()))
+    weighted_x = x.multiply(possessions[:, None]).tocsr()
+    gram = (x.T @ weighted_x).tocsr()
+    base_rhs = np.asarray(x.T @ (points - possessions * intercept)).ravel()
+    n = len(design.players)
+    base_penalty = _penalty(config, n)
+    cache: dict[tuple[float, float], tuple] = {}
+    results = {}
+    for job in jobs:
+        off_mult = float(job.get("offense_penalty_mult", 1.0))
+        def_mult = float(job.get("defense_penalty_mult", 1.0))
+        key = (off_mult, def_mult)
+        if key not in cache:
+            penalty = np.asarray(base_penalty, dtype=float).copy()
+            penalty[:n] *= off_mult
+            penalty[n : 2 * n] *= def_mult
+            cache[key] = (gram + diags(penalty, format="csr"), penalty)
+        lhs, penalty = cache[key]
+        center = np.asarray(job["center"], dtype=float)
+        scale = float(job.get("prior_scale", 1.0))
+        rhs = base_rhs if np.allclose(center, 0) else base_rhs + scale * penalty * center
+        beta = _solve(lhs, rhs)
+        results[job["name"]] = _center_beta(beta, weighted_x, intercept, n)
     return results
 
 
