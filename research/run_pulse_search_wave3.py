@@ -233,7 +233,9 @@ def write_wave3_run(
         "limitations": [
             "Nine-year RAPM is rebuilt on reconstructed canonical stints; 2014 stint hash does not match frozen pulse_canonical_v1_cd3c14750a.",
             "EPM is end-of-season expected EPM from dunksandthrees.com/epm, not the locked actual EPM_All_Seasons.csv.",
-            "DARKO/LEBRON source CSVs are used only if a public file parsed.",
+            "EPM public HTML unlocks a handful of players; Locked Player rows are dropped. DARKO/LEBRON public CSVs 404.",
+            "xRAPM IDs are exact-normalized matches to public leaderboard names; ambiguous names are dropped.",
+            "A scored xRAPM overlap is not the frozen 13,209-game xRAPM/EPM/DARKO panel.",
             "2027 unused. No promotion.",
         ],
         "pulse_rmse_gate": PULSE_RMSE_GATE,

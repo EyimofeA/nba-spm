@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+import json
 import re
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -18,7 +20,14 @@ from research.run_pulse_search_real_protocol import OFFICIAL, load_official_marg
 
 
 EXTERNAL_ROOT = OUTPUT / "external_sources_v1"
+LEADERBOARD_ROOT = Path(__file__).resolve().parents[1] / "web/public/data"
 XRAPM_URL = "https://xrapm.com/table_pages/{name}"
+COMMON_INTERNAL = (
+    ("nine-year Box15 / PULSE-equivalent", "box15"),
+    ("hgb_hustle_k1.0", "hgb_hustle_k1.0"),
+    ("hgb_hustle_prec_o1.5_d1.0", "hgb_hustle_prec_o1.5_d1.0"),
+)
+MIN_EXTERNAL_PLAYERS = 50
 EPM_RECORD = re.compile(
     r"\{season:(\d+),game_dt:\"[^\"]+\",player_id:(\d+),player_name:\"([^\"]+)\","
     r"[^}]*?off:(-?\d+(?:\.\d+)?),def:(-?\d+(?:\.\d+)?),tot:(-?\d+(?:\.\d+)?)"
@@ -92,7 +101,9 @@ def fetch_expected_epm(seasons: tuple[int, ...]) -> pd.DataFrame:
             ]
             if not found:
                 raise ValueError("no EPM records parsed")
-            rows.append(pd.DataFrame(found).drop_duplicates(["PLAYER_ID", "rating_season"]))
+            frame = pd.DataFrame(found)
+            frame = frame.loc[frame["PLAYER_ID"].ne(4) & ~frame["player_name"].eq("Locked Player")]
+            rows.append(frame.drop_duplicates(["PLAYER_ID", "rating_season"], keep="last"))
             print(f"EPM expected {season}: {len(rows[-1])}", flush=True)
         except Exception as exc:
             print(f"EPM {season} failed: {exc}", flush=True)
@@ -152,6 +163,37 @@ def fetch_darko() -> pd.DataFrame:
     return pd.DataFrame()
 
 
+def leaderboard_names(seasons: tuple[int, ...]) -> pd.DataFrame:
+    rows = []
+    for season in seasons:
+        path = LEADERBOARD_ROOT / f"leaderboard-{season}.json"
+        if not path.exists():
+            continue
+        for rec in json.loads(path.read_text()):
+            rows.append(
+                {
+                    "rating_season": season,
+                    "PLAYER_ID": int(rec["PLAYER_ID"]),
+                    "player_name": rec["PLAYER_NAME"],
+                    "normalized_name": normalize_player_name(rec["PLAYER_NAME"]),
+                }
+            )
+    names = pd.DataFrame(rows)
+    if names.empty:
+        return names
+    counts = names.groupby(["rating_season", "normalized_name"])["PLAYER_ID"].nunique()
+    ambiguous = counts.loc[counts.gt(1)].index
+    names = names.set_index(["rating_season", "normalized_name"])
+    names = names.loc[~names.index.isin(ambiguous)].reset_index()
+    return names.drop_duplicates(["rating_season", "normalized_name"])
+
+
+def eligible_external_table(group: pd.DataFrame, min_players: int = MIN_EXTERNAL_PLAYERS) -> pd.DataFrame | None:
+    if len(group) < min_players:
+        return None
+    return group[["PLAYER_ID", "offense", "defense"]]
+
+
 def name_match_xrapm(xrapm: pd.DataFrame, names: pd.DataFrame) -> pd.DataFrame:
     source = xrapm.copy()
     source["rating_season"] = source["season"].astype(int)
@@ -171,11 +213,7 @@ def load_external_ratings() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, p
     epm = fetch_expected_epm(tuple(range(2015, 2026)))
     xrapm_raw = fetch_xrapm(tuple(range(2015, 2026)))
     darko = fetch_darko()
-    names = pd.DataFrame()
-    if not epm.empty:
-        names = epm[["rating_season", "PLAYER_ID", "player_name"]].copy()
-        names["normalized_name"] = names["player_name"].map(normalize_player_name)
-        names = names.dropna().drop_duplicates(["rating_season", "normalized_name"])
+    names = leaderboard_names(tuple(range(2015, 2026)))
     xrapm = (
         name_match_xrapm(xrapm_raw, names)
         if not xrapm_raw.empty and not names.empty
@@ -189,16 +227,19 @@ def load_external_ratings() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, p
 
 def _season_tables(internal_ratings: dict, source, rating_season: int, year_ext: pd.DataFrame) -> dict:
     tables = {}
-    for label, key in (
-        ("nine-year Box15 / PULSE-equivalent", "box15"),
-        ("hgb_hustle_k1.0", "hgb_hustle_k1.0"),
-    ):
+    for label, key in COMMON_INTERNAL:
+        if key not in internal_ratings[rating_season]:
+            continue
         beta = internal_ratings[rating_season][key][0]
         tables[label] = stint_ratings(source, beta)[["PLAYER_ID", "offense", "defense"]]
     if year_ext.empty:
         return tables
     for name, group in year_ext.groupby("candidate"):
-        tables[name] = group[["PLAYER_ID", "offense", "defense"]]
+        table = eligible_external_table(group)
+        if table is None:
+            print(f"common panel {rating_season}: skip {name} with {len(group)} players", flush=True)
+            continue
+        tables[name] = table
     return tables
 
 
@@ -209,7 +250,7 @@ def score_common_panel(internal_ratings: dict[int, dict], external: pd.DataFrame
     if external.empty:
         return {"status": "unscored", "reason": "no_external_player_seasons"}
     names = sorted(set(external["candidate"]))
-    internal_names = ["nine-year Box15 / PULSE-equivalent", "hgb_hustle_k1.0"]
+    internal_names = [label for label, _key in COMMON_INTERNAL]
     for rating_season in range(2015, 2026):
         if rating_season not in internal_ratings:
             continue

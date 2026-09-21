@@ -8,6 +8,7 @@ from research.pulse_search_protocol import (
     keep_calibrated_variant,
     scale_side_center,
 )
+from research.pulse_search_wave3_external import eligible_external_table, name_match_xrapm
 from research.pulse_search_wave3_stints import coerce_game_date
 
 
@@ -64,3 +65,30 @@ def test_coerce_game_date_fills_missing_and_invalid_values() -> None:
         2013,
     )
     assert list(present["game_date"]) == ["2012-11-02", "2013-01-01"]
+
+
+def test_eligible_external_table_requires_fifty_players() -> None:
+    small = pd.DataFrame({"PLAYER_ID": [1, 2], "offense": [1.0, 2.0], "defense": [0.0, 0.0]})
+    assert eligible_external_table(small) is None
+    large = pd.DataFrame(
+        {"PLAYER_ID": list(range(50)), "offense": [0.0] * 50, "defense": [0.0] * 50}
+    )
+    assert len(eligible_external_table(large)) == 50
+
+
+def test_name_match_xrapm_keeps_exact_normalized_ids() -> None:
+    xrapm = pd.DataFrame(
+        {
+            "season": [2024, 2024],
+            "player_name_xrapm": ["Nikola Jokic", "Unknown Person"],
+            "xrapm_offense": [1.0, 2.0],
+            "xrapm_defense": [3.0, 4.0],
+            "xrapm_net": [4.0, 6.0],
+        }
+    )
+    names = pd.DataFrame(
+        {"rating_season": [2024], "PLAYER_ID": [203999], "normalized_name": ["nikola jokic"]}
+    )
+    matched = name_match_xrapm(xrapm, names)
+    assert list(matched["PLAYER_ID"]) == [203999]
+    assert list(matched["candidate"]) == ["xRAPM"]
