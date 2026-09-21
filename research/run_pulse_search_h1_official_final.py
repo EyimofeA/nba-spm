@@ -308,8 +308,38 @@ def apply_technical_points(possessions: pd.DataFrame, assigned: pd.DataFrame, te
     return output
 
 
+def tag_segment_technicals(segments: pd.DataFrame, assigned: pd.DataFrame, tech: pd.DataFrame) -> pd.DataFrame:
+    output = segments.copy()
+    mapped = assigned.merge(tech, on=["game_id", "event_order"], how="inner")
+    if mapped.empty:
+        output["technical_points"] = 0
+        output["points_excl_tech"] = output["points"]
+        return output
+    joined = mapped.merge(
+        output[["possession_id", "segment_number", "start_order_number", "end_order_number"]],
+        on="possession_id",
+        how="left",
+    )
+    hit = (
+        joined["event_order"].ge(joined["start_order_number"])
+        & joined["event_order"].le(joined["end_order_number"])
+    )
+    by_segment = (
+        joined.loc[hit]
+        .groupby(["possession_id", "segment_number"], as_index=False)["points"]
+        .sum()
+        .rename(columns={"points": "technical_points"})
+    )
+    output = output.merge(by_segment, on=["possession_id", "segment_number"], how="left")
+    output["technical_points"] = output["technical_points"].fillna(0).astype(int)
+    output["points_excl_tech"] = output["points"] - output["technical_points"]
+    if (output["points_excl_tech"] < 0).any():
+        raise ValueError("Technical-FT exclusion produced negative segment points.")
+    return output
+
+
 def _attach_possession_meta(possessions: pd.DataFrame, segments: pd.DataFrame, extra: tuple[str, ...] = ()) -> pd.DataFrame:
-    meta_columns = ["possession_id", "offense_is_home", "season_end", "game_id", "technical_points", *extra]
+    meta_columns = ["possession_id", "offense_is_home", "season_end", "game_id", *extra]
     meta = possessions.loc[:, [column for column in meta_columns if column in possessions.columns]]
     overlap = [column for column in meta.columns if column != "possession_id" and column in segments.columns]
     return segments.drop(columns=overlap).merge(meta, on="possession_id", how="inner")
@@ -322,23 +352,27 @@ def segments_to_stints(possessions: pd.DataFrame, segments: pd.DataFrame) -> pd.
     )
     frame = frame.merge(first, on="possession_id", how="left")
     frame["is_first"] = frame["segment_number"].eq(frame["first_segment"])
+    excl = frame["points_excl_tech"] if "points_excl_tech" in frame else frame["points"]
+    tech = frame["technical_points"] if "technical_points" in frame else 0
     frame["home_possessions"] = np.where(frame["offense_is_home"] & frame["is_first"], 1, 0)
     frame["away_possessions"] = np.where((~frame["offense_is_home"]) & frame["is_first"], 1, 0)
     frame["home_points"] = np.where(frame["offense_is_home"], frame["points"], 0)
     frame["away_points"] = np.where(~frame["offense_is_home"], frame["points"], 0)
-    frame["home_tech"] = np.where(frame["offense_is_home"] & frame["is_first"], frame["technical_points"], 0)
-    frame["away_tech"] = np.where((~frame["offense_is_home"]) & frame["is_first"], frame["technical_points"], 0)
+    frame["home_points_excl"] = np.where(frame["offense_is_home"], excl, 0)
+    frame["away_points_excl"] = np.where(~frame["offense_is_home"], excl, 0)
+    frame["home_technical_points_excluded"] = np.where(frame["offense_is_home"], tech, 0)
+    frame["away_technical_points_excluded"] = np.where(~frame["offense_is_home"], tech, 0)
     grouped = frame.groupby(["game_id", "season_end", *LINEUP_COLUMNS], as_index=False, sort=False).agg(
         home_possessions=("home_possessions", "sum"),
         away_possessions=("away_possessions", "sum"),
         home_points=("home_points", "sum"),
         away_points=("away_points", "sum"),
-        home_technical_points_excluded=("home_tech", "sum"),
-        away_technical_points_excluded=("away_tech", "sum"),
+        home_points_excl=("home_points_excl", "sum"),
+        away_points_excl=("away_points_excl", "sum"),
+        home_technical_points_excluded=("home_technical_points_excluded", "sum"),
+        away_technical_points_excluded=("away_technical_points_excluded", "sum"),
     )
     grouped["season"] = grouped["season_end"].astype(int)
-    grouped["home_points_excl"] = grouped["home_points"] - grouped["home_technical_points_excluded"]
-    grouped["away_points_excl"] = grouped["away_points"] - grouped["away_technical_points_excluded"]
     if (grouped[["home_points_excl", "away_points_excl"]] < 0).any().any():
         raise ValueError("Stint technical-FT exclusion produced negative points.")
     return grouped
@@ -346,31 +380,35 @@ def segments_to_stints(possessions: pd.DataFrame, segments: pd.DataFrame) -> pd.
 
 def segments_to_terminal(possessions: pd.DataFrame, segments: pd.DataFrame) -> pd.DataFrame:
     """Assign each possession's points to its last lineup. Blocked H6 comparison."""
-    extra = ("points",) if "points" in possessions.columns else ()
+    extra = tuple(column for column in ("points", "points_excl_tech", "technical_points") if column in possessions.columns)
     frame = _attach_possession_meta(possessions, segments, extra=extra)
     last = frame.groupby("possession_id", as_index=False)["segment_number"].max().rename(
         columns={"segment_number": "last_segment"}
     )
     frame = frame.merge(last, on="possession_id", how="inner")
     frame = frame.loc[frame["segment_number"].eq(frame["last_segment"])].copy()
-    points = frame["points"] if "points" in frame else frame["points_seg"]
+    points = frame["points"]
+    excl = frame["points_excl_tech"] if "points_excl_tech" in frame else points
+    tech = frame["technical_points"] if "technical_points" in frame else 0
     frame["home_possessions"] = np.where(frame["offense_is_home"], 1, 0)
     frame["away_possessions"] = np.where(~frame["offense_is_home"], 1, 0)
     frame["home_points"] = np.where(frame["offense_is_home"], points, 0)
     frame["away_points"] = np.where(~frame["offense_is_home"], points, 0)
-    frame["home_technical_points_excluded"] = np.where(frame["offense_is_home"], frame["technical_points"], 0)
-    frame["away_technical_points_excluded"] = np.where(~frame["offense_is_home"], frame["technical_points"], 0)
+    frame["home_points_excl"] = np.where(frame["offense_is_home"], excl, 0)
+    frame["away_points_excl"] = np.where(~frame["offense_is_home"], excl, 0)
+    frame["home_technical_points_excluded"] = np.where(frame["offense_is_home"], tech, 0)
+    frame["away_technical_points_excluded"] = np.where(~frame["offense_is_home"], tech, 0)
     grouped = frame.groupby(["game_id", "season_end", *LINEUP_COLUMNS], as_index=False, sort=False).agg(
         home_possessions=("home_possessions", "sum"),
         away_possessions=("away_possessions", "sum"),
         home_points=("home_points", "sum"),
         away_points=("away_points", "sum"),
+        home_points_excl=("home_points_excl", "sum"),
+        away_points_excl=("away_points_excl", "sum"),
         home_technical_points_excluded=("home_technical_points_excluded", "sum"),
         away_technical_points_excluded=("away_technical_points_excluded", "sum"),
     )
     grouped["season"] = grouped["season_end"].astype(int)
-    grouped["home_points_excl"] = grouped["home_points"] - grouped["home_technical_points_excluded"]
-    grouped["away_points_excl"] = grouped["away_points"] - grouped["away_technical_points_excluded"]
     return grouped
 
 
@@ -538,13 +576,16 @@ def build_sources(seasons: tuple[int, ...], scores: pd.DataFrame, players: Path)
                 flush=True,
             )
         v3 = pd.read_parquet(V3_NESTED / f"project_season={season}" / "regular.parquet")
+        tech = technical_free_throws(v3)
+        assigned_frame = pd.read_parquet(assigned)
         possessions = apply_technical_points(
             pd.read_parquet(attached_poss),
-            pd.read_parquet(assigned),
-            technical_free_throws(v3),
+            assigned_frame,
+            tech,
         )
-        stints = segments_to_stints(possessions, pd.read_parquet(segments))
-        terminal = segments_to_terminal(possessions, pd.read_parquet(segments))
+        tagged_segments = tag_segment_technicals(pd.read_parquet(segments), assigned_frame, tech)
+        stints = segments_to_stints(possessions, tagged_segments)
+        terminal = segments_to_terminal(possessions, tagged_segments)
         stints.to_parquet(season_root / "canonical_like_stints.parquet", index=False)
         terminal.to_parquet(season_root / "terminal_like_stints.parquet", index=False)
         possessions.to_parquet(season_root / "possessions_with_tech.parquet", index=False)

@@ -8,6 +8,7 @@ from research.run_pulse_search_h1_official_final import (
     minutes_value,
     segments_to_stints,
     segments_to_terminal,
+    tag_segment_technicals,
     technical_free_throws,
     v3_terminal_scores,
 )
@@ -107,6 +108,8 @@ def test_segments_to_stints_counts_first_segment_possession_only() -> None:
         "possession_id": ["p1", "p1"],
         "segment_number": [1, 2],
         "points": [2, 1],
+        "points_excl_tech": [1, 1],
+        "technical_points": [1, 0],
         **base,
     })
     possessions = pd.DataFrame({
@@ -114,7 +117,6 @@ def test_segments_to_stints_counts_first_segment_possession_only() -> None:
         "offense_is_home": [True],
         "season_end": [2025],
         "game_id": ["0022400001"],
-        "technical_points": [1],
     })
     stints = segments_to_stints(possessions, segments)
     assert len(stints) == 1
@@ -168,3 +170,27 @@ def test_segments_to_stints_survives_overlapping_game_id() -> None:
     stints = segments_to_stints(possessions, segments)
     assert len(stints) == 1
     assert stints["game_id"].iloc[0] == "0022400001"
+
+
+def test_tag_segment_technicals_follows_event_order() -> None:
+    segments = pd.DataFrame({
+        "possession_id": ["p1", "p1"],
+        "segment_number": [1, 2],
+        "start_order_number": [10, 20],
+        "end_order_number": [19, 29],
+        "points": [2, 1],
+    })
+    assigned = pd.DataFrame({
+        "possession_id": ["p1", "p1"],
+        "game_id": ["0022400001", "0022400001"],
+        "event_order": [12, 21],
+    })
+    tech = pd.DataFrame({
+        "game_id": ["0022400001"],
+        "event_order": [21],
+        "team_id": [1],
+        "points": [1],
+    })
+    tagged = tag_segment_technicals(segments, assigned, tech)
+    assert list(tagged["technical_points"]) == [0, 1]
+    assert list(tagged["points_excl_tech"]) == [2, 0]
